@@ -129,8 +129,8 @@ const getGoogleClientId = (): string => {
   if (clientId) {
     return clientId;
   }
-  // Default client ID from Google Cloud Console
-  return '787375969256-cdmhthionst8nslm063vdh730chdkqgm.apps.googleusercontent.com';
+  // Default client ID from Google Cloud Console (fallback - should use .env file)
+  return '787375969256-r1qbhjb39t2r77ro1evr849ph75s8i4n.apps.googleusercontent.com';
 };
 
 /**

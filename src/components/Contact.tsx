@@ -46,8 +46,8 @@ export default function Contact() {
     {
       icon: Mail,
       label: t('contact.email.label'),
-      value: 'info@sqordia.com',
-      link: 'mailto:info@sqordia.com',
+      value: 'info@sqordia.app',
+      link: 'mailto:info@sqordia.app',
       backgroundColor: '#3B82F6', // Blue for email
     },
     {
