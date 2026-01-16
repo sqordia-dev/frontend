@@ -1,0 +1,397 @@
+import { FileText, Download, Eye, Search, Filter, ArrowRight } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
+import { useTheme } from '../contexts/ThemeContext';
+import Header from '../components/Header';
+import Footer from '../components/Footer';
+
+interface ExamplePlan {
+  id: string;
+  title: string;
+  description: string;
+  category: string;
+  industry: string;
+  pages: number;
+  image: string;
+  color: string;
+  features: string[];
+  pdfUrl?: string;
+}
+
+const examplePlans: ExamplePlan[] = [
+  {
+    id: 'tech-startup',
+    title: 'Tech Startup Business Plan',
+    description: 'Complete SaaS business plan with market analysis, financial projections, and growth strategy. Perfect for technology startups seeking investment.',
+    category: 'Business Plan',
+    industry: 'Technology',
+    pages: 42,
+    image: 'https://images.pexels.com/photos/3183197/pexels-photo-3183197.jpeg?auto=compress&cs=tinysrgb&w=800',
+    color: 'from-blue-500 to-cyan-500',
+    features: ['Market Analysis', '5-Year Projections', 'Investor Ready', 'SWOT Analysis'],
+    pdfUrl: '#'
+  },
+  {
+    id: 'restaurant',
+    title: 'Restaurant Business Plan',
+    description: 'Detailed plan for opening a new restaurant with menu planning, cost analysis, and marketing strategy. Includes location analysis and operational planning.',
+    category: 'Business Plan',
+    industry: 'Food & Beverage',
+    pages: 38,
+    image: 'https://images.pexels.com/photos/941869/pexels-photo-941869.jpeg?auto=compress&cs=tinysrgb&w=800',
+    color: 'from-orange-500 to-red-500',
+    features: ['Menu Strategy', 'Location Analysis', 'Cost Breakdown', 'Marketing Plan'],
+    pdfUrl: '#'
+  },
+  {
+    id: 'ecommerce',
+    title: 'E-commerce Store Plan',
+    description: 'Comprehensive plan for launching an online retail business with logistics and marketing strategies. Includes digital marketing and supply chain management.',
+    category: 'Business Plan',
+    industry: 'Retail',
+    pages: 35,
+    image: 'https://images.pexels.com/photos/230544/pexels-photo-230544.jpeg?auto=compress&cs=tinysrgb&w=800',
+    color: 'from-orange-500 to-amber-500',
+    features: ['Digital Marketing', 'Supply Chain', 'Sales Forecast', 'Customer Acquisition'],
+    pdfUrl: '#'
+  },
+  {
+    id: 'nonprofit',
+    title: 'Nonprofit Strategic Plan',
+    description: 'Strategic plan for nonprofit organizations with funding strategies and impact measurement. Designed for grant applications and donor engagement.',
+    category: 'Strategic Plan',
+    industry: 'Nonprofit',
+    pages: 40,
+    image: 'https://images.pexels.com/photos/6646918/pexels-photo-6646918.jpeg?auto=compress&cs=tinysrgb&w=800',
+    color: 'from-purple-500 to-pink-500',
+    features: ['Grant Strategy', 'Impact Goals', 'Budget Planning', 'Mission Alignment'],
+    pdfUrl: '#'
+  },
+  {
+    id: 'consulting',
+    title: 'Consulting Firm Plan',
+    description: 'Professional services business plan with client acquisition and service delivery strategies. Includes pricing models and growth projections.',
+    category: 'Business Plan',
+    industry: 'Professional Services',
+    pages: 36,
+    image: 'https://images.pexels.com/photos/3184291/pexels-photo-3184291.jpeg?auto=compress&cs=tinysrgb&w=800',
+    color: 'from-slate-500 to-gray-600',
+    features: ['Service Model', 'Pricing Strategy', 'Client Pipeline', 'Revenue Projections'],
+    pdfUrl: '#'
+  },
+  {
+    id: 'mobile-app',
+    title: 'Mobile App Startup',
+    description: 'Complete business plan for mobile application with user acquisition and monetization strategies. Includes tech stack and development roadmap.',
+    category: 'Business Plan',
+    industry: 'Technology',
+    pages: 44,
+    image: 'https://images.pexels.com/photos/607812/pexels-photo-607812.jpeg?auto=compress&cs=tinysrgb&w=800',
+    color: 'from-cyan-500 to-blue-500',
+    features: ['User Growth', 'Monetization', 'Tech Stack', 'Market Entry'],
+    pdfUrl: '#'
+  },
+  {
+    id: 'healthcare',
+    title: 'Healthcare Clinic Plan',
+    description: 'Comprehensive business plan for healthcare facilities with regulatory compliance, staffing, and financial projections.',
+    category: 'Business Plan',
+    industry: 'Healthcare',
+    pages: 48,
+    image: 'https://images.pexels.com/photos/40568/medical-appointment-doctor-healthcare-40568.jpeg?auto=compress&cs=tinysrgb&w=800',
+    color: 'from-teal-500 to-orange-500',
+    features: ['Regulatory Compliance', 'Staffing Plan', 'Financial Projections', 'Patient Acquisition'],
+    pdfUrl: '#'
+  },
+  {
+    id: 'fitness',
+    title: 'Fitness Center Plan',
+    description: 'Business plan for fitness centers and gyms with membership models, equipment planning, and marketing strategies.',
+    category: 'Business Plan',
+    industry: 'Fitness & Wellness',
+    pages: 32,
+    image: 'https://images.pexels.com/photos/416475/pexels-photo-416475.jpeg?auto=compress&cs=tinysrgb&w=800',
+    color: 'from-red-500 to-pink-500',
+    features: ['Membership Model', 'Equipment Planning', 'Marketing Strategy', 'Revenue Streams'],
+    pdfUrl: '#'
+  },
+  {
+    id: 'education',
+    title: 'Educational Institution Plan',
+    description: 'Strategic plan for educational institutions with curriculum development, enrollment strategies, and financial sustainability.',
+    category: 'Strategic Plan',
+    industry: 'Education',
+    pages: 46,
+    image: 'https://images.pexels.com/photos/159775/library-la-trobe-study-students-159775.jpeg?auto=compress&cs=tinysrgb&w=800',
+    color: 'from-indigo-500 to-purple-500',
+    features: ['Curriculum Development', 'Enrollment Strategy', 'Financial Sustainability', 'Growth Plan'],
+    pdfUrl: '#'
+  }
+];
+
+const categories = ['All', 'Business Plan', 'Strategic Plan'];
+const industries = ['All', 'Technology', 'Food & Beverage', 'Retail', 'Nonprofit', 'Professional Services', 'Healthcare', 'Fitness & Wellness', 'Education'];
+
+export default function ExamplePlansPage() {
+  const { t, theme } = useTheme();
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [selectedIndustry, setSelectedIndustry] = useState('All');
+  const sectionRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('animate-fade-in');
+          }
+        });
+      },
+      { threshold: 0.1 }
+    );
+
+    const elements = sectionRef.current?.querySelectorAll('.fade-in-element');
+    elements?.forEach((el) => observer.observe(el));
+
+    return () => observer.disconnect();
+  }, []);
+
+  const filteredPlans = examplePlans.filter(plan => {
+    const matchesSearch = plan.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         plan.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         plan.industry.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory = selectedCategory === 'All' || plan.category === selectedCategory;
+    const matchesIndustry = selectedIndustry === 'All' || plan.industry === selectedIndustry;
+    return matchesSearch && matchesCategory && matchesIndustry;
+  });
+
+  return (
+    <div className="min-h-screen bg-white dark:bg-gray-900">
+      <Header />
+      <section ref={sectionRef} className="pt-32 pb-20">
+        {/* Hero Section */}
+        <div className="container mx-auto px-6 mb-16">
+          <div className="max-w-4xl mx-auto text-center">
+            <h1 className="fade-in-element text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 dark:text-white mb-6">
+              {t('examplePlans.title')}
+            </h1>
+            <p className="fade-in-element text-xl text-gray-600 dark:text-gray-400 mb-8">
+              {t('examplePlans.subtitle')}
+            </p>
+
+            {/* Search Bar */}
+            <div className="fade-in-element relative max-w-2xl mx-auto mb-8">
+              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+              <input
+                type="text"
+                placeholder={t('examplePlans.searchPlaceholder')}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-12 pr-4 py-4 rounded-xl border-2 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white focus:outline-none focus:border-orange-500 transition-colors"
+              />
+            </div>
+
+            {/* Filters */}
+            <div className="fade-in-element flex flex-wrap gap-4 justify-center mb-12">
+              <div className="flex items-center gap-2">
+                <Filter size={18} className="text-gray-600 dark:text-gray-400" />
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('examplePlans.category')}:</span>
+                <select
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  className="px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:border-orange-500"
+                >
+                  {categories.map(cat => (
+                    <option key={cat} value={cat}>{cat}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('examplePlans.industry')}:</span>
+                <select
+                  value={selectedIndustry}
+                  onChange={(e) => setSelectedIndustry(e.target.value)}
+                  className="px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:border-orange-500"
+                >
+                  {industries.map(ind => (
+                    <option key={ind} value={ind}>{ind}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Plans Grid */}
+        <div className="container mx-auto px-6">
+          {filteredPlans.length === 0 ? (
+            <div className="text-center py-20">
+              <p className="text-xl text-gray-600 dark:text-gray-400">{t('examplePlans.noResults')}</p>
+            </div>
+          ) : (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {filteredPlans.map((plan, index) => (
+                <div
+                  key={plan.id}
+                  className="fade-in-element group relative bg-white dark:bg-gray-800 rounded-2xl overflow-hidden border-2 border-gray-200 dark:border-gray-700 hover:border-orange-500 dark:hover:border-orange-500 hover:shadow-2xl transition-all duration-500"
+                  style={{ animationDelay: `${index * 100}ms` }}
+                >
+                  {/* Image */}
+                  <div className="relative h-48 overflow-hidden">
+                    <img
+                      src={plan.image}
+                      alt={plan.title}
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
+
+                    {/* Category Badge */}
+                    <div className="absolute top-4 left-4">
+                      <span className="px-3 py-1 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm text-gray-900 dark:text-white text-xs font-semibold rounded-full">
+                        {plan.category}
+                      </span>
+                    </div>
+
+                    {/* Pages Count */}
+                    <div className="absolute top-4 right-4">
+                      <div className="flex items-center gap-1 px-3 py-1 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm text-gray-900 dark:text-white text-xs font-semibold rounded-full">
+                        <FileText size={12} />
+                        <span>{plan.pages} {t('examplePlans.pages')}</span>
+                      </div>
+                    </div>
+
+                    {/* Industry Badge */}
+                    <div className="absolute bottom-4 left-4">
+                      <span className="px-3 py-1 bg-orange-500/90 backdrop-blur-sm text-white text-xs font-semibold rounded-full">
+                        {plan.industry}
+                      </span>
+                    </div>
+
+                    {/* Hover Overlay */}
+                    <div className="absolute inset-0 bg-orange-600/90 dark:bg-orange-700/90 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-3">
+                      <Link
+                        to={`/example-plans/${plan.id}`}
+                        className="p-3 bg-white text-orange-600 rounded-xl hover:bg-gray-100 transition-colors"
+                        title={t('examplePlans.view')}
+                      >
+                        <Eye size={20} />
+                      </Link>
+                      {plan.pdfUrl && (
+                        <a
+                          href={plan.pdfUrl}
+                          download
+                          className="p-3 bg-white text-orange-600 rounded-xl hover:bg-gray-100 transition-colors"
+                          title={t('examplePlans.download')}
+                        >
+                          <Download size={20} />
+                        </a>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Content */}
+                  <div className="p-6">
+                    <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2 group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors">
+                      {plan.title}
+                    </h3>
+                    <p className="text-gray-600 dark:text-gray-400 text-sm mb-4 leading-relaxed line-clamp-3">
+                      {plan.description}
+                    </p>
+
+                    {/* Features */}
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      {plan.features.slice(0, 3).map((feature, idx) => (
+                        <span
+                          key={idx}
+                          className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs rounded-lg"
+                        >
+                          {feature}
+                        </span>
+                      ))}
+                    </div>
+
+                    {/* Action Button */}
+                    <Link
+                      to={`/example-plans/${plan.id}`}
+                      className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white rounded-xl hover:bg-orange-600 hover:text-white dark:hover:bg-orange-600 transition-all group/btn"
+                    >
+                      <span className="font-medium">{t('examplePlans.viewPlan')}</span>
+                      <ArrowRight size={16} className="group-hover/btn:translate-x-1 transition-transform" />
+                    </Link>
+                  </div>
+
+                  {/* Border Effect */}
+                  <div className="absolute inset-x-0 bottom-0 h-1 bg-orange-600 dark:bg-orange-500 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* CTA Section */}
+        <div className="container mx-auto px-6 mt-20">
+          <div className="fade-in-element max-w-4xl mx-auto">
+            <div className="relative bg-orange-600 dark:bg-orange-700 rounded-3xl p-12 overflow-hidden">
+              <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl"></div>
+              <div className="absolute bottom-0 left-0 w-64 h-64 bg-white/10 rounded-full blur-3xl"></div>
+
+              <div className="relative z-10 text-center text-white">
+                <h3 className="text-3xl lg:text-4xl font-bold mb-4">
+                  {t('examplePlans.cta.title')}
+                </h3>
+                <p className="text-orange-100 text-lg mb-8 max-w-2xl mx-auto">
+                  {t('examplePlans.cta.subtitle')}
+                </p>
+                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                  <Link
+                    to="/register"
+                    className="px-8 py-4 bg-white text-orange-600 font-semibold rounded-xl hover:bg-gray-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
+                  >
+                    {t('examplePlans.cta.startFree')}
+                  </Link>
+                  <Link
+                    to="/"
+                    className="px-8 py-4 bg-white/20 backdrop-blur-sm text-white border-2 border-white/30 font-semibold rounded-xl hover:bg-white/30 transition-all duration-300"
+                  >
+                    {t('examplePlans.cta.learnMore')}
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <Footer />
+
+      <style>{`
+        @keyframes fade-in {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        .animate-fade-in {
+          animation: fade-in 0.6s ease-out forwards;
+        }
+
+        .fade-in-element {
+          opacity: 0;
+        }
+
+        .line-clamp-3 {
+          display: -webkit-box;
+          -webkit-line-clamp: 3;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+        }
+      `}</style>
+    </div>
+  );
+}
+

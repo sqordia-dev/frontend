@@ -1,0 +1,21 @@
+{
+  "name": "Sqordia - AI-Powered Business Planning",
+  "short_name": "Sqordia",
+  "description": "Create professional, bank-ready business plans in under 60 minutes with AI-powered automation",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FFFFFF",
+  "theme_color": "#FF6B00",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["business", "productivity", "finance"],
+  "lang": "en",
+  "dir": "ltr"
+}

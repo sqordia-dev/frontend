@@ -1,0 +1,21 @@
+node_modules
+.env
+.env.local
+.env.development
+.env.production
+docs/AI_SERVICE_SETUP.md
+docs/API_CONNECTION_GUIDE.md
+docs/API_DOCUMENTATION.md
+docs/API_ENDPOINTS_SUMMARY.md
+docs/DARK_MODE_IMPLEMENTATION.md
+docs/ENVIRONMENT_CONFIGURATION.md
+docs/FRONTEND_IMPLEMENTATION_GUIDE.md
+docs/FRONTEND_SPECIFICATION.md
+SETUP_LOCAL.md
+Projet Rétro Maniak - Plan d'affaires final  (1).docx
+Squelette plan d'affaires OBNL.docx
+docs/IMPLEMENTATION_STATUS.md
+docs/LOGIN_TROUBLESHOOTING.md
+docs/TEMPLATE_STRUCTURE.md
+.env.example
+squelette plan stratégique.md
