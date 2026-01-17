@@ -74,11 +74,11 @@ export default function About() {
         </div>
 
         {/* Stats */}
-        <div className="grid md:grid-cols-3 gap-6 lg:gap-8 mb-16 md:mb-20">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 lg:gap-8 mb-12 sm:mb-16 md:mb-20">
           {stats.map((stat, index) => (
             <div
               key={index}
-              className="slide-up-element bg-white dark:bg-gray-800 rounded-2xl p-6 md:p-8 border-2 shadow-lg text-center transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
+              className="slide-up-element bg-white dark:bg-gray-800 rounded-xl md:rounded-2xl p-5 sm:p-6 md:p-8 border-2 shadow-lg text-center transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
               style={{
                 borderColor: theme === 'dark' ? 'rgba(75, 85, 99, 0.3)' : 'rgba(229, 231, 235, 0.8)',
                 animationDelay: `${index * 100}ms`,

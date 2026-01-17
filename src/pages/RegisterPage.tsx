@@ -303,7 +303,7 @@ export default function RegisterPage() {
                     value={formData.firstName}
                     onChange={handleChange}
                     required
-                    className="w-full pl-11 pr-4 py-3.5 rounded-lg border text-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-0"
+                    className="w-full pl-11 pr-4 py-4 md:py-3.5 rounded-lg border text-base md:text-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-0 min-h-[44px]"
                     style={{
                       backgroundColor: '#FFFFFF',
                       borderColor: '#E5E7EB',
@@ -337,7 +337,7 @@ export default function RegisterPage() {
                     value={formData.lastName}
                     onChange={handleChange}
                     required
-                    className="w-full pl-11 pr-4 py-3.5 rounded-lg border text-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-0"
+                    className="w-full pl-11 pr-4 py-4 md:py-3.5 rounded-lg border text-base md:text-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-0 min-h-[44px]"
                     style={{
                       backgroundColor: '#FFFFFF',
                       borderColor: '#E5E7EB',
@@ -372,7 +372,7 @@ export default function RegisterPage() {
                   value={formData.email}
                   onChange={handleChange}
                   required
-                  className="w-full pl-12 pr-4 py-3.5 rounded-lg border text-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-0"
+                  className="w-full pl-12 pr-4 py-4 md:py-3.5 rounded-lg border text-base md:text-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-0 min-h-[44px]"
                   style={{
                     backgroundColor: '#FFFFFF',
                     borderColor: '#E5E7EB',
@@ -405,7 +405,7 @@ export default function RegisterPage() {
                   type="text"
                   value={formData.organizationName}
                   onChange={handleChange}
-                  className="w-full pl-12 pr-4 py-3.5 rounded-lg border text-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-0"
+                  className="w-full pl-12 pr-4 py-4 md:py-3.5 rounded-lg border text-base md:text-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-0 min-h-[44px]"
                   style={{
                     backgroundColor: '#FFFFFF',
                     borderColor: '#E5E7EB',
@@ -440,7 +440,7 @@ export default function RegisterPage() {
                   onChange={handleChange}
                   required
                   minLength={8}
-                  className="w-full pl-12 pr-12 py-3.5 rounded-lg border text-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-0"
+                  className="w-full pl-12 pr-12 py-4 md:py-3.5 rounded-lg border text-base md:text-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-0 min-h-[44px]"
                   style={{
                     backgroundColor: '#FFFFFF',
                     borderColor: '#E5E7EB',
@@ -505,7 +505,7 @@ export default function RegisterPage() {
                   onChange={handleChange}
                   required
                   minLength={8}
-                  className="w-full pl-12 pr-12 py-3.5 rounded-lg border text-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-0"
+                  className="w-full pl-12 pr-12 py-4 md:py-3.5 rounded-lg border text-base md:text-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-0 min-h-[44px]"
                   style={{
                     backgroundColor: '#FFFFFF',
                     borderColor: '#E5E7EB',
@@ -552,7 +552,7 @@ export default function RegisterPage() {
             <button
               type="submit"
               disabled={loading || googleLoading}
-              className="w-full py-3.5 rounded-lg font-semibold text-white text-sm transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 group"
+              className="w-full py-4 md:py-3.5 rounded-lg font-semibold text-white text-base md:text-sm transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 group min-h-[44px]"
               style={{ 
                 backgroundColor: '#FF6B00',
               }}

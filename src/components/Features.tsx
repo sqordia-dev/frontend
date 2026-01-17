@@ -105,11 +105,11 @@ export default function Features() {
         </div>
 
         {/* Features Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8 max-w-7xl mx-auto">
           {features.map((feature, index) => (
             <div
               key={index}
-              className="slide-up-element group relative bg-white dark:bg-gray-800 rounded-2xl md:rounded-3xl p-6 md:p-8 border-2 transition-all duration-500 hover:shadow-2xl hover:-translate-y-2 overflow-hidden"
+              className="slide-up-element group relative bg-white dark:bg-gray-800 rounded-xl md:rounded-2xl lg:rounded-3xl p-5 sm:p-6 md:p-8 border-2 transition-all duration-500 hover:shadow-2xl hover:-translate-y-2 overflow-hidden"
               style={{
                 borderColor: theme === 'dark' ? 'rgba(75, 85, 99, 0.3)' : 'rgba(229, 231, 235, 0.8)',
                 animationDelay: `${index * 100}ms`,

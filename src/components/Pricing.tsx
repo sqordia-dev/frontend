@@ -118,8 +118,8 @@ export default function Pricing() {
           </p>
         </div>
 
-        {/* Pricing Cards - 3 Column Grid */}
-        <div className="max-w-7xl mx-auto grid md:grid-cols-3 gap-6 lg:gap-8">
+        {/* Pricing Cards - Single column on mobile, 3 columns on desktop */}
+        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
           {plans.map((plan, index) => {
             const Icon = plan.icon;
             const isPopular = plan.popular;
@@ -127,7 +127,7 @@ export default function Pricing() {
             return (
               <div
                 key={plan.id}
-                className={`relative ${plan.bgColor} rounded-2xl md:rounded-3xl p-6 md:p-8 border-2 ${plan.borderColor} transition-all duration-500 hover:shadow-2xl hover:-translate-y-2 overflow-hidden`}
+                className={`relative ${plan.bgColor} rounded-xl md:rounded-2xl lg:rounded-3xl p-5 sm:p-6 md:p-8 border-2 ${plan.borderColor} transition-all duration-500 hover:shadow-2xl hover:-translate-y-2 overflow-hidden`}
                 style={{
                   animationDelay: `${index * 100}ms`,
                   boxShadow: plan.id === 'professional' 
@@ -224,7 +224,7 @@ export default function Pricing() {
                   {/* CTA Button */}
                   <Link
                     to="/register"
-                    className={`block w-full px-6 py-3.5 ${plan.buttonBg} ${plan.buttonText} rounded-xl font-medium text-center text-sm md:text-base transition-all duration-300 ${plan.buttonHover} hover:shadow-lg`}
+                    className={`block w-full px-6 py-4 md:py-3.5 ${plan.buttonBg} ${plan.buttonText} rounded-xl font-medium text-center text-sm md:text-base transition-all duration-300 ${plan.buttonHover} hover:shadow-lg min-h-[44px] flex items-center justify-center`}
                   >
                     {plan.id === 'enterprise' 
                       ? (t('pricing.enterprise.cta') || 'Contact Sales')

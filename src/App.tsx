@@ -31,6 +31,10 @@ import CheckoutCancelPage from './pages/CheckoutCancelPage';
 import ExamplePlansPage from './pages/ExamplePlansPage';
 import ExamplePlanDetailPage from './pages/ExamplePlanDetailPage';
 import BlogPostPage from './pages/BlogPostPage';
+import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
+import TermsOfServicePage from './pages/TermsOfServicePage';
+import SecurityPage from './pages/SecurityPage';
+import CompliancePage from './pages/CompliancePage';
 
 function App() {
   return (
@@ -45,6 +49,10 @@ function App() {
         <Route path="/example-plans" element={<ExamplePlansPage />} />
         <Route path="/example-plans/:id" element={<ExamplePlanDetailPage />} />
         <Route path="/blog/:slug" element={<BlogPostPage />} />
+        <Route path="/privacy" element={<PrivacyPolicyPage />} />
+        <Route path="/terms" element={<TermsOfServicePage />} />
+        <Route path="/security" element={<SecurityPage />} />
+        <Route path="/compliance" element={<CompliancePage />} />
         <Route path="/checkout/success" element={<CheckoutSuccessPage />} />
         <Route path="/checkout/cancel" element={<CheckoutCancelPage />} />
         <Route

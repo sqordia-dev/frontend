@@ -522,7 +522,7 @@ export default function Header() {
           <div className="flex lg:hidden items-center gap-2">
             <button
               onClick={toggleTheme}
-              className="p-2.5 rounded-lg transition-all duration-300"
+              className="p-2.5 rounded-lg transition-all duration-300 min-h-[44px] min-w-[44px] flex items-center justify-center"
               style={{
                 color: getTextColor(),
               }}
@@ -540,7 +540,7 @@ export default function Header() {
             </button>
 
             <button
-              className="p-2.5 rounded-lg transition-all duration-300"
+              className="p-2.5 rounded-lg transition-all duration-300 min-h-[44px] min-w-[44px] flex items-center justify-center"
               style={{
                 color: getTextColor(),
               }}
@@ -587,7 +587,7 @@ export default function Header() {
                   key={item}
                   href={`#${item}`}
                   onClick={(e) => handleNavClick(e, item)}
-                  className="px-4 py-3.5 rounded-xl transition-all duration-300 font-medium font-heading relative group"
+                  className="px-4 py-4 md:py-3.5 rounded-xl transition-all duration-300 font-medium font-heading relative group min-h-[44px] flex items-center"
                   style={{
                     color: isActive ? momentumOrange : (theme === 'dark' ? '#F3F4F6' : strategyBlue),
                     backgroundColor: isActive 

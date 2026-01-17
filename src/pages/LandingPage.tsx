@@ -8,6 +8,7 @@ import Blog from '../components/Blog';
 import Contact from '../components/Contact';
 import Footer from '../components/Footer';
 import ScrollButton from '../components/ScrollButton';
+import CookieConsent from '../components/CookieConsent';
 import { useTheme } from '../contexts/ThemeContext';
 import { ArrowRight, FileText } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -61,7 +62,7 @@ export default function LandingPage() {
           </div>
 
           {/* 3 Example Cards */}
-          <div className="grid md:grid-cols-3 gap-6 lg:gap-8 mb-12">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 lg:gap-8 mb-12">
             {[
               {
                 id: 'tech-startup',
@@ -185,6 +186,7 @@ export default function LandingPage() {
       <Contact />
       <Footer />
       <ScrollButton />
+      <CookieConsent />
     </div>
   );
 }

@@ -99,7 +99,7 @@ export default function HowItWorks() {
         {/* Responsive Layout: Vertical Timeline on Mobile, Horizontal on Desktop */}
         <div className="max-w-7xl mx-auto">
           {/* Mobile/Tablet: Vertical Timeline */}
-          <div className="lg:hidden space-y-8 md:space-y-12">
+          <div className="lg:hidden space-y-6 sm:space-y-8 md:space-y-12">
             {steps.map((step, index) => (
               <div
                 key={index}
@@ -118,7 +118,7 @@ export default function HowItWorks() {
 
                 {/* Step Card */}
                 <div 
-                  className={`relative bg-gradient-to-br ${step.bgGradient} border-2 ${step.borderColor} rounded-2xl md:rounded-3xl p-6 md:p-8 transition-all duration-300 hover:shadow-xl`}
+                  className={`relative bg-gradient-to-br ${step.bgGradient} border-2 ${step.borderColor} rounded-xl md:rounded-2xl lg:rounded-3xl p-5 sm:p-6 md:p-8 transition-all duration-300 hover:shadow-xl`}
                 >
                   {/* Step Number Badge */}
                   <div className="inline-block mb-4">

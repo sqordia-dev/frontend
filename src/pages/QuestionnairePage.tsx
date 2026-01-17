@@ -961,8 +961,8 @@ export default function QuestionnairePage() {
                           value={answers[question.questionId] || ''}
                           onChange={(e) => handleAnswerChange(question.questionId, e.target.value)}
                           placeholder={t('questionnaire.placeholder')}
-                          rows={6}
-                          className="w-full px-5 py-4 border-2 rounded-xl transition-all duration-200 resize-none focus:outline-none text-base"
+                          rows={8}
+                          className="w-full px-5 py-4 md:py-3 border-2 rounded-xl transition-all duration-200 resize-none focus:outline-none text-base min-h-[120px]"
                           style={{
                             backgroundColor: theme === 'dark' ? '#111827' : '#F9FAFB',
                             borderColor: isFocused ? momentumOrange : (theme === 'dark' ? '#374151' : '#E5E7EB'),

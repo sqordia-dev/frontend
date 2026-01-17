@@ -24,7 +24,8 @@ import {
   ChevronUp,
   Image as ImageIcon,
   Upload,
-  Trash2
+  Trash2,
+  Menu
 } from 'lucide-react';
 import { businessPlanService } from '../lib/business-plan-service';
 import type { BusinessPlan } from '../lib/types';
@@ -33,6 +34,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import { financialService } from '../lib/financial-service';
 import BalanceSheetTable, { BalanceSheetData } from '../components/BalanceSheetTable';
 import CashFlowTable, { CashFlowData } from '../components/CashFlowTable';
+import PlanViewTour from '../components/PlanViewTour';
 
 // Markdown parser function
 const parseMarkdown = (markdown: string): string => {
@@ -402,6 +404,7 @@ export default function PlanViewPage() {
   const [balanceSheetData, setBalanceSheetData] = useState<BalanceSheetData[]>([]);
   const [cashFlowData, setCashFlowData] = useState<CashFlowData[]>([]);
   const [loadingFinancials, setLoadingFinancials] = useState(false);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const coverImageInputRef = useRef<HTMLInputElement | null>(null);
   const sectionRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
   const modalContentRef = useRef<HTMLDivElement | null>(null);
@@ -901,12 +904,52 @@ export default function PlanViewPage() {
     }
   }, [showShareModal, id]);
 
+  // Function to translate section titles
+  const translateSectionTitle = (title: string): string => {
+    const titleMap: { [key: string]: { en: string; fr: string } } = {
+      'Executive Summary': { en: 'Executive Summary', fr: 'Résumé Exécutif' },
+      'Market Analysis': { en: 'Market Analysis', fr: 'Analyse de Marché' },
+      'Competitive Analysis': { en: 'Competitive Analysis', fr: 'Analyse Concurrentielle' },
+      'Business Model': { en: 'Business Model', fr: 'Modèle d\'Affaires' },
+      'Marketing Strategy': { en: 'Marketing Strategy', fr: 'Stratégie Marketing' },
+      'Operations Plan': { en: 'Operations Plan', fr: 'Plan d\'Opérations' },
+      'Management Team': { en: 'Management Team', fr: 'Équipe de Direction' },
+      'Financial Projections': { en: 'Financial Projections', fr: 'Projections Financières' },
+      'Financial': { en: 'Financial', fr: 'Financier' },
+      'Risk Analysis': { en: 'Risk Analysis', fr: 'Analyse des Risques' },
+      'SWOT Analysis': { en: 'SWOT Analysis', fr: 'Analyse SWOT' },
+      'Problem Statement': { en: 'Problem Statement', fr: 'Énoncé du Problème' },
+      'Solution': { en: 'Solution', fr: 'Solution' },
+      'Target Market': { en: 'Target Market', fr: 'Marché Cible' },
+      'Competitive Advantage': { en: 'Competitive Advantage', fr: 'Avantage Concurrentiel' },
+      'Funding Requirements': { en: 'Funding Requirements', fr: 'Besoins de Financement' },
+      'Exit Strategy': { en: 'Exit Strategy', fr: 'Stratégie de Sortie' },
+      'Mission Statement': { en: 'Mission Statement', fr: 'Énoncé de Mission' },
+      'Social Impact': { en: 'Social Impact', fr: 'Impact Social' },
+      'Beneficiary Profile': { en: 'Beneficiary Profile', fr: 'Profil des Bénéficiaires' },
+      'Grant Strategy': { en: 'Grant Strategy', fr: 'Stratégie de Subvention' },
+      'Sustainability Plan': { en: 'Sustainability Plan', fr: 'Plan de Durabilité' },
+      'Branding Strategy': { en: 'Branding Strategy', fr: 'Stratégie de Marque' },
+      'Business Concept': { en: 'Business Concept', fr: 'Concept d\'Affaires' },
+    };
+
+    const normalizedTitle = title.trim();
+    const translation = titleMap[normalizedTitle];
+    
+    if (translation) {
+      return language === 'fr' ? translation.fr : translation.en;
+    }
+    
+    // If no translation found, return original title
+    return title;
+  };
+
   // Move useMemo BEFORE early returns to follow Rules of Hooks
   const navSections = useMemo(() => [
     { id: 'cover', title: t('planView.cover'), icon: FileText },
     { id: 'contents', title: t('planView.contents'), icon: BookOpen },
-    ...(sections || []).map(s => ({ id: s.sectionName, title: s.title, icon: FileText }))
-  ], [sections, t]);
+    ...(sections || []).map(s => ({ id: s.sectionName, title: translateSectionTitle(s.title), icon: FileText }))
+  ], [sections, t, language]);
 
   if (loading) {
     return (
@@ -943,7 +986,7 @@ export default function PlanViewPage() {
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900">
       {/* Top Navigation Bar */}
-      <nav className="bg-white dark:bg-gray-800 border-b-2 border-gray-200 dark:border-gray-700 sticky top-0 z-20 shadow-sm">
+      <nav className="plan-view-header bg-white dark:bg-gray-800 border-b-2 border-gray-200 dark:border-gray-700 sticky top-0 z-20 shadow-sm">
         <div className="px-6 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -956,6 +999,26 @@ export default function PlanViewPage() {
               </Link>
             </div>
             <div className="flex items-center gap-2">
+              {/* Mobile Sidebar Toggle */}
+              <button
+                onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
+                className="lg:hidden p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                aria-label={language === 'fr' ? 'Menu' : 'Menu'}
+              >
+                <Menu size={24} />
+              </button>
+              <button
+                onClick={() => {
+                  localStorage.removeItem('planViewTourCompleted');
+                  (window as any).startPlanViewTour?.();
+                }}
+                className="hidden sm:flex items-center gap-2 px-4 py-2 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-lg font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200"
+                title={language === 'fr' ? 'Afficher la visite guidée' : 'Show tour guide'}
+              >
+                <Sparkles size={18} />
+                <span className="text-sm">{language === 'fr' ? 'Visite guidée' : 'Show Tour'}</span>
+              </button>
+              <div className="plan-export-buttons flex items-center gap-2">
               <button
                 onClick={() => handleExport('pdf')}
                 disabled={exporting === 'pdf'}
@@ -982,15 +1045,37 @@ export default function PlanViewPage() {
               >
                 <Share2 size={18} />
               </button>
+              </div>
             </div>
           </div>
         </div>
       </nav>
 
+      {/* Mobile Sidebar Overlay */}
+      {mobileSidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          onClick={() => setMobileSidebarOpen(false)}
+        />
+      )}
+
       {/* Main Layout */}
       <div className="flex min-h-screen">
         {/* Sidebar Navigation */}
-        <aside className="w-64 flex-shrink-0 bg-white dark:bg-gray-800 border-r-2 border-gray-300 dark:border-gray-700 sticky top-[57px] h-[calc(100vh-57px)] overflow-y-auto z-30">
+        <aside className={`plan-sidebar fixed lg:sticky inset-y-0 left-0 z-50 lg:z-30 w-64 flex-shrink-0 bg-white dark:bg-gray-800 border-r-2 border-gray-300 dark:border-gray-700 lg:top-[57px] h-screen lg:h-[calc(100vh-57px)] overflow-y-auto transform transition-transform duration-300 ease-in-out ${
+          mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+        }`}>
+          {/* Mobile Close Button */}
+          <div className="lg:hidden flex items-center justify-between p-4 border-b-2 border-gray-200 dark:border-gray-700">
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white">{t('planView.contents')}</h3>
+            <button
+              onClick={() => setMobileSidebarOpen(false)}
+              className="p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+              aria-label={language === 'fr' ? 'Fermer' : 'Close'}
+            >
+              <X size={20} />
+            </button>
+          </div>
           <div className="p-6">
             {/* Collapse/Expand All Button */}
             {sections.length > 0 && (
@@ -1047,6 +1132,8 @@ export default function PlanViewPage() {
                       } else {
                         scrollToSection(section.id);
                       }
+                      // Close mobile sidebar after navigation
+                      setMobileSidebarOpen(false);
                     }}
                     className={`w-full flex items-center gap-3 px-4 py-3 rounded transition-all text-left ${
                       isActive
@@ -1056,7 +1143,7 @@ export default function PlanViewPage() {
                     style={isActive ? { borderLeftColor: momentumOrange } : {}}
                   >
                     <section.icon size={18} className="flex-shrink-0" />
-                    <span className={`text-sm flex-1 ${isActive ? 'font-semibold' : 'font-medium'}`}>{section.title}</span>
+                    <span className={`text-sm flex-1 ${isActive ? 'font-semibold' : 'font-medium'}`}>{translateSectionTitle(section.title)}</span>
                     {index > 1 && (
                       <span className={`text-xs font-mono ${isActive ? 'text-orange-400' : 'text-gray-500 dark:text-gray-400'}`}>
                         {index - 1}
@@ -1070,7 +1157,7 @@ export default function PlanViewPage() {
         </aside>
 
         {/* Main Content */}
-        <main className="flex-1 min-w-0">
+        <main className="flex-1 min-w-0 lg:ml-0">
           {/* Cover Section */}
           <section 
             className="relative border-b-8 group" 
@@ -1174,7 +1261,7 @@ export default function PlanViewPage() {
                           {t('planView.chapter')} {index + 1}
                         </div>
                         <h3 className="text-lg font-semibold text-gray-900 dark:text-white group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors">
-                          {section.title}
+                          {translateSectionTitle(section.title)}
                         </h3>
                       </div>
                     </div>
@@ -1203,7 +1290,7 @@ export default function PlanViewPage() {
                     key={section.sectionName}
                     id={section.sectionName}
                     ref={(el) => (sectionRefs.current[section.sectionName] = el)}
-                    className="py-20 px-8 max-w-4xl mx-auto border-b border-gray-200 dark:border-gray-800 last:border-b-0 relative group"
+                    className="plan-content-section py-20 px-8 max-w-4xl mx-auto border-b border-gray-200 dark:border-gray-800 last:border-b-0 relative group"
                     onMouseEnter={() => setHoveredSection(section.sectionName)}
                     onMouseLeave={() => setHoveredSection(null)}
                   >
@@ -1236,7 +1323,7 @@ export default function PlanViewPage() {
                                   {t('planView.chapter')} {sectionIndex + 1}
                                 </div>
                                 <h2 className="text-3xl md:text-4xl font-serif text-gray-900 dark:text-white leading-tight" style={{ fontFamily: 'Georgia, serif' }}>
-                                  {section.title}
+                                  {translateSectionTitle(section.title)}
                                 </h2>
                               </div>
                             </div>
@@ -1409,8 +1496,8 @@ export default function PlanViewPage() {
 
       {/* Edit Modal */}
       {editingSection && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-5xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-0 md:p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-none md:rounded-xl shadow-2xl max-w-5xl w-full h-full md:h-auto md:max-h-[90vh] overflow-hidden flex flex-col">
             {/* Modal Header */}
             <div className="p-6 border-b-2 border-gray-200 dark:border-gray-700 flex items-center justify-between">
               <div>
@@ -1458,7 +1545,7 @@ export default function PlanViewPage() {
                         <p className="text-xs text-gray-600 dark:text-gray-400">Enhance your content with AI</p>
                       </div>
                     </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div className="plan-ai-buttons grid grid-cols-1 sm:grid-cols-3 gap-3">
                       <button
                         onClick={() => handleAISuggestion(editingSection, 'improve')}
                         disabled={!!aiLoading[editingSection!]}
@@ -1562,14 +1649,14 @@ export default function PlanViewPage() {
             <div className="p-6 border-t-2 border-gray-200 dark:border-gray-700 flex items-center justify-between">
               <button
                 onClick={cancelEditing}
-                className="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors font-semibold"
+                className="px-4 py-3 md:py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors font-semibold min-h-[44px] flex items-center justify-center"
               >
                 {t('planView.cancel')}
               </button>
               <button
                 onClick={() => saveSection(editingSection)}
                 disabled={saving === editingSection}
-                className="flex items-center gap-2 px-6 py-2 text-white rounded-lg transition-colors disabled:opacity-50 font-semibold"
+                className="flex items-center gap-2 px-6 py-3 md:py-2 text-white rounded-lg transition-colors disabled:opacity-50 font-semibold min-h-[44px]"
                 style={{ backgroundColor: momentumOrange }}
                 onMouseEnter={(e) => !(saving === editingSection) && (e.currentTarget.style.backgroundColor = momentumOrangeHover)}
                 onMouseLeave={(e) => !(saving === editingSection) && (e.currentTarget.style.backgroundColor = momentumOrange)}
@@ -1593,8 +1680,8 @@ export default function PlanViewPage() {
 
       {/* Share Modal */}
       {showShareModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-0 md:p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-none md:rounded-lg shadow-xl max-w-2xl w-full h-full md:h-auto md:max-h-[90vh] overflow-y-auto">
             <div className="p-6 border-b border-gray-200 dark:border-gray-700">
               <div className="flex items-center justify-between">
                 <h3 className="text-xl font-bold text-gray-900 dark:text-white">{t('planView.sharePlan')}</h3>
@@ -1775,8 +1862,8 @@ export default function PlanViewPage() {
 
       {/* Cover Customization Modal */}
       {showCoverModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-0 md:p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-none md:rounded-xl shadow-2xl max-w-3xl w-full h-full md:h-auto md:max-h-[90vh] overflow-hidden flex flex-col">
             {/* Modal Header */}
             <div className="p-6 border-b-2 border-gray-200 dark:border-gray-700 flex items-center justify-between">
               <h3 className="text-2xl font-bold text-gray-900 dark:text-white">{t('planView.customizeCover')}</h3>
@@ -2020,6 +2107,9 @@ export default function PlanViewPage() {
       >
         <ArrowUpCircle size={24} />
       </button>
+
+      {/* Plan View Tour */}
+      <PlanViewTour />
     </div>
   );
 }

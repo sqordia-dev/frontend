@@ -309,7 +309,7 @@ export default function DashboardPage() {
               </p>
               <Link
                 to="/create-plan"
-                className="inline-flex items-center gap-3 px-8 py-4 text-white rounded-lg font-semibold shadow-md hover:shadow-lg transition-all duration-200"
+                className="inline-flex items-center gap-3 px-6 sm:px-8 py-4 text-white rounded-lg font-semibold shadow-md hover:shadow-lg transition-all duration-200 min-h-[44px] text-sm sm:text-base"
                 style={{ backgroundColor: momentumOrange }}
                 onMouseEnter={(e) => e.currentTarget.style.backgroundColor = momentumOrangeHover}
                 onMouseLeave={(e) => e.currentTarget.style.backgroundColor = momentumOrange}
@@ -373,7 +373,7 @@ export default function DashboardPage() {
                     }`}>
                       <Link
                         to={`/plans/${plan.id}`}
-                        className="inline-flex items-center gap-2 px-5 py-2.5 text-white text-sm rounded-lg font-semibold shadow-md hover:shadow-lg transition-all duration-200"
+                        className="inline-flex items-center gap-2 px-5 py-3 md:py-2.5 text-white text-sm rounded-lg font-semibold shadow-md hover:shadow-lg transition-all duration-200 min-h-[44px]"
                         style={{ backgroundColor: momentumOrange }}
                         onMouseEnter={(e) => e.currentTarget.style.backgroundColor = momentumOrangeHover}
                         onMouseLeave={(e) => e.currentTarget.style.backgroundColor = momentumOrange}
@@ -381,14 +381,14 @@ export default function DashboardPage() {
                         <span>{t('dashboard.view')}</span>
                         <ArrowRight size={16} />
                       </Link>
-                      <div className="relative">
+                      <div className="relative flex items-center gap-2">
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
                             handleDuplicatePlan(plan.id);
                           }}
                           disabled={duplicatingPlanId === plan.id}
-                          className="p-2.5 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed hover:scale-110"
+                          className="p-3 md:p-2.5 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed hover:scale-110 min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0 flex items-center justify-center"
                           title="Duplicate plan"
                         >
                           <Copy size={18} />
@@ -399,7 +399,7 @@ export default function DashboardPage() {
                             handleDeleteClick(plan);
                           }}
                           disabled={deletingPlanId === plan.id}
-                          className="p-2.5 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed hover:scale-110"
+                          className="p-3 md:p-2.5 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed hover:scale-110 min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0 flex items-center justify-center"
                           title="Delete plan"
                         >
                           <Trash2 size={18} />
@@ -419,8 +419,8 @@ export default function DashboardPage() {
 
       {/* Delete Confirmation Modal */}
       {showDeleteModal && planToDelete && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-2xl max-w-md w-full transform transition-all animate-in zoom-in-95 duration-200 border-2 border-gray-200 dark:border-gray-700">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-0 md:p-4 animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-gray-800 rounded-none md:rounded-lg shadow-2xl max-w-md w-full h-full md:h-auto transform transition-all animate-in zoom-in-95 duration-200 border-2 border-gray-200 dark:border-gray-700">
             <div className="p-6 lg:p-8">
               {/* Header */}
               <div className="flex items-start justify-between mb-6">
@@ -466,14 +466,14 @@ export default function DashboardPage() {
                 <button
                   onClick={handleDeleteCancel}
                   disabled={deletingPlanId === planToDelete.id}
-                  className="px-6 py-3 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-xl font-semibold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-6 py-3 md:py-2.5 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-xl font-semibold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px]"
                 >
                   {t('dashboard.cancel')}
                 </button>
                 <button
                   onClick={handleDeleteConfirm}
                   disabled={deletingPlanId === planToDelete.id}
-                  className="px-6 py-3 bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600 text-white rounded-lg font-semibold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shadow-md hover:shadow-lg"
+                  className="px-6 py-3 md:py-2.5 bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600 text-white rounded-lg font-semibold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shadow-md hover:shadow-lg min-h-[44px]"
                 >
                   {deletingPlanId === planToDelete.id ? (
                     <>

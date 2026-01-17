@@ -43,28 +43,29 @@ export default function Hero() {
   return (
     <section 
       ref={heroRef} 
-      className="relative pt-32 pb-40 overflow-hidden min-h-screen flex items-center"
+      className="relative pt-16 pb-20 md:pt-32 md:pb-40 overflow-hidden min-h-[80vh] md:min-h-screen flex items-center"
       style={{ backgroundColor: '#1A2B47' }}
     >
       {/* Animated gradient background with parallax */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {/* Primary orbs */}
+        {/* Optimize blob sizes for mobile performance */}
         <div 
-          className="absolute top-20 right-10 w-[500px] h-[500px] rounded-full filter blur-[120px] opacity-30 animate-blob"
+          className="absolute top-20 right-10 w-[300px] h-[300px] md:w-[500px] md:h-[500px] rounded-full filter blur-[80px] md:blur-[120px] opacity-20 md:opacity-30 animate-blob"
           style={{ 
             backgroundColor: 'rgba(255, 107, 0, 0.3)',
             transform: `translate(${mousePosition.x * 0.02}px, ${mousePosition.y * 0.02}px)`,
           }}
         ></div>
         <div 
-          className="absolute top-40 left-10 w-[400px] h-[400px] rounded-full filter blur-[100px] opacity-25 animate-blob animation-delay-2000"
+          className="absolute top-40 left-10 w-[250px] h-[250px] md:w-[400px] md:h-[400px] rounded-full filter blur-[60px] md:blur-[100px] opacity-15 md:opacity-25 animate-blob animation-delay-2000"
           style={{ 
             backgroundColor: 'rgba(59, 130, 246, 0.25)',
             transform: `translate(${mousePosition.x * -0.015}px, ${mousePosition.y * -0.015}px)`,
           }}
         ></div>
         <div 
-          className="absolute -bottom-20 left-1/2 w-[600px] h-[600px] rounded-full filter blur-[140px] opacity-20 animate-blob animation-delay-4000"
+          className="absolute -bottom-20 left-1/2 w-[350px] h-[350px] md:w-[600px] md:h-[600px] rounded-full filter blur-[90px] md:blur-[140px] opacity-10 md:opacity-20 animate-blob animation-delay-4000"
           style={{ 
             backgroundColor: 'rgba(139, 92, 246, 0.2)',
             transform: `translate(${mousePosition.x * 0.01}px, ${mousePosition.y * 0.01}px)`,
@@ -125,7 +126,7 @@ export default function Hero() {
           </div>
 
           {/* Main Headline */}
-          <h1 className="fade-in-element font-heading text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-8 relative">
+          <h1 className="fade-in-element font-heading text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6 md:mb-8 relative">
             <span className="block text-white">
               {t('hero.headline.part1')}
             </span>
@@ -144,15 +145,15 @@ export default function Hero() {
           </h1>
 
           {/* Sub-headline with fade-in */}
-          <p className="fade-in-element text-base md:text-lg lg:text-xl leading-relaxed max-w-3xl mx-auto mb-12 font-light" style={{ color: '#D1D5DB' }}>
+          <p className="fade-in-element text-sm sm:text-base md:text-lg lg:text-xl leading-relaxed max-w-3xl mx-auto mb-8 md:mb-12 font-light px-4" style={{ color: '#D1D5DB' }}>
             {t('hero.subtitle')}
           </p>
 
           {/* Enhanced CTA Buttons with modern design */}
-          <div className="fade-in-element flex flex-col sm:flex-row gap-4 justify-center mb-16">
+          <div className="fade-in-element flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center mb-12 md:mb-16 px-4">
             <Link
               to="/register"
-              className="group relative px-10 py-5 text-white text-lg font-bold font-heading rounded-xl overflow-hidden transition-all duration-500 flex items-center justify-center gap-3 shadow-2xl"
+              className="group relative w-full sm:w-auto px-8 sm:px-10 py-4 sm:py-5 text-white text-base sm:text-lg font-bold font-heading rounded-xl overflow-hidden transition-all duration-500 flex items-center justify-center gap-3 shadow-2xl min-h-[44px]"
               style={{ 
                 backgroundColor: '#FF6B00',
                 boxShadow: '0 10px 40px rgba(255, 107, 0, 0.4)',
@@ -183,7 +184,7 @@ export default function Hero() {
             </Link>
             <Link
               to="/register"
-              className="group relative px-10 py-5 text-lg font-bold font-heading rounded-xl overflow-hidden transition-all duration-500 flex items-center justify-center gap-3 backdrop-blur-sm border-2"
+              className="group relative w-full sm:w-auto px-8 sm:px-10 py-4 sm:py-5 text-base sm:text-lg font-bold font-heading rounded-xl overflow-hidden transition-all duration-500 flex items-center justify-center gap-3 backdrop-blur-sm border-2 min-h-[44px]"
               style={{ 
                 backgroundColor: 'rgba(255, 255, 255, 0.95)',
                 color: '#1A2B47',

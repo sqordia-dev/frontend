@@ -44,10 +44,10 @@ export default function ScrollButton() {
   if (!isVisible) return null;
 
   return (
-    <div className="fixed bottom-8 right-8 z-50 flex flex-col gap-3">
+    <div className="fixed bottom-4 right-4 sm:bottom-8 sm:right-8 z-50 flex flex-col gap-3">
       <button
         onClick={isAtBottom ? scrollToTop : scrollToBottom}
-        className="group relative w-14 h-14 rounded-full shadow-2xl transition-all duration-300 hover:scale-110 active:scale-95 flex items-center justify-center overflow-hidden"
+        className="group relative w-12 h-12 sm:w-14 sm:h-14 rounded-full shadow-2xl transition-all duration-300 hover:scale-110 active:scale-95 flex items-center justify-center overflow-hidden min-h-[44px] min-w-[44px]"
         style={{
           backgroundColor: '#FF6B00',
           boxShadow: '0 8px 24px rgba(255, 107, 0, 0.4)',

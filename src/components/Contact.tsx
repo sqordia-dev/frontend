@@ -67,57 +67,53 @@ export default function Contact() {
   ];
 
   return (
-    <section ref={sectionRef} id="contact" className="py-20 md:py-28 lg:py-32 bg-white dark:bg-gray-900 relative overflow-hidden">
-      {/* Background decoration */}
-      <div className="absolute inset-0 bg-gradient-to-b from-gray-50/50 via-transparent to-white/50 dark:from-gray-900/50 dark:via-transparent dark:to-gray-900/50"></div>
+    <section ref={sectionRef} id="contact" className="py-20 md:py-28 bg-white dark:bg-gray-900 relative overflow-hidden">
+      {/* Subtle background pattern */}
+      <div className="absolute inset-0 opacity-5">
+        <div className="absolute inset-0" style={{
+          backgroundImage: `radial-gradient(circle at 2px 2px, #FF6B00 1px, transparent 0)`,
+          backgroundSize: '40px 40px'
+        }}></div>
+      </div>
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Header */}
-        <div className="text-center max-w-4xl mx-auto mb-16 md:mb-20">
-          <div className="slide-up-element inline-flex items-center gap-2 mb-6">
-            <Sparkles className="w-5 h-5 text-orange-600 dark:text-orange-400" />
-            <span className="px-4 py-1.5 bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 rounded-full text-xs md:text-sm font-semibold">
-              {t('contact.badge')}
-            </span>
-          </div>
-          <h2 className="slide-up-element text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-6 text-gray-900 dark:text-white">
+        <div className="text-center max-w-2xl mx-auto mb-12 md:mb-16">
+          <h2 className="slide-up-element text-3xl sm:text-4xl md:text-5xl font-bold mb-4 text-gray-900 dark:text-white">
             {t('contact.title')}
           </h2>
-          <p className="slide-up-element text-base sm:text-lg md:text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+          <p className="slide-up-element text-base md:text-lg text-gray-600 dark:text-gray-400">
             {t('contact.subtitle')}
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-12 max-w-6xl mx-auto">
-          {/* Contact Info */}
-          <div className="space-y-6">
-            <div className="slide-up-element">
-              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
-                {t('contact.info.title')}
-              </h3>
-              <p className="text-gray-600 dark:text-gray-400 mb-8">
-                {t('contact.info.description')}
-              </p>
-            </div>
-
+        <div className="max-w-4xl mx-auto">
+          {/* Contact Info - Horizontal Cards */}
+          <div className="grid sm:grid-cols-3 gap-4 mb-12">
             {contactInfo.map((info, index) => (
               <a
                 key={index}
                 href={info.link}
-                className="slide-up-element group flex items-start gap-4 p-6 bg-white dark:bg-gray-800 rounded-2xl border-2 border-gray-200 dark:border-gray-700 hover:border-orange-500 dark:hover:border-orange-500 hover:shadow-xl transition-all duration-300"
+                className="slide-up-element group relative bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-xl p-6 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all duration-300 overflow-hidden"
                 style={{ animationDelay: `${index * 100}ms` }}
               >
+                {/* Accent line */}
                 <div 
-                  className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform"
+                  className="absolute top-0 left-0 right-0 h-1"
                   style={{ backgroundColor: info.backgroundColor }}
-                >
-                  <info.icon className="text-white" size={24} />
-                </div>
-                <div>
-                  <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">
+                ></div>
+                
+                <div className="flex flex-col items-center text-center">
+                  <div 
+                    className="w-14 h-14 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-md"
+                    style={{ backgroundColor: info.backgroundColor }}
+                  >
+                    <info.icon className="text-white" size={24} />
+                  </div>
+                  <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wider">
                     {info.label}
                   </div>
-                  <div className="text-lg font-medium text-gray-900 dark:text-white">
+                  <div className="text-sm font-bold text-gray-900 dark:text-white break-all">
                     {info.value}
                   </div>
                 </div>
@@ -125,53 +121,67 @@ export default function Contact() {
             ))}
           </div>
 
-          {/* Contact Form */}
+          {/* Contact Form - Centered Card */}
           <div className="slide-up-element">
-            <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 rounded-2xl p-8 border-2 border-gray-200 dark:border-gray-700 shadow-lg">
-              <div className="space-y-6">
-                <div>
-                  <label htmlFor="name" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                    {t('contact.form.name')}
-                  </label>
-                  <input
-                    type="text"
-                    id="name"
-                    required
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:border-orange-500 transition-colors"
-                  />
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 p-8 md:p-10">
+              <div className="mb-6">
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                  {t('contact.info.title')}
+                </h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  {t('contact.info.description')}
+                </p>
+              </div>
+
+              <form onSubmit={handleSubmit}>
+                <div className="grid sm:grid-cols-2 gap-6 mb-6">
+                  <div>
+                    <label htmlFor="name" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                      {t('contact.form.name')}
+                    </label>
+                    <input
+                      type="text"
+                      id="name"
+                      required
+                      value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      className="w-full px-4 py-4 md:py-3 rounded-lg border-2 border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:border-orange-500 focus:bg-white dark:focus:bg-gray-800 transition-all text-base md:text-sm min-h-[44px]"
+                      placeholder={t('contact.form.name')}
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="email" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                      {t('contact.form.email')}
+                    </label>
+                    <input
+                      type="email"
+                      id="email"
+                      required
+                      value={formData.email}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      className="w-full px-4 py-4 md:py-3 rounded-lg border-2 border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:border-orange-500 focus:bg-white dark:focus:bg-gray-800 transition-all text-base md:text-sm min-h-[44px]"
+                      placeholder={t('contact.form.email')}
+                    />
+                  </div>
                 </div>
 
-                <div>
-                  <label htmlFor="email" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                    {t('contact.form.email')}
-                  </label>
-                  <input
-                    type="email"
-                    id="email"
-                    required
-                    value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:border-orange-500 transition-colors"
-                  />
-                </div>
-
-                <div>
+                <div className="mb-6">
                   <label htmlFor="subject" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                     {t('contact.form.subject')}
                   </label>
-                  <input
-                    type="text"
-                    id="subject"
-                    required
-                    value={formData.subject}
-                    onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                    className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:border-orange-500 transition-colors"
-                  />
+                    <input
+                      type="text"
+                      id="subject"
+                      required
+                      value={formData.subject}
+                      onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
+                      className="w-full px-4 py-4 md:py-3 rounded-lg border-2 border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:border-orange-500 focus:bg-white dark:focus:bg-gray-800 transition-all text-base md:text-sm min-h-[44px]"
+                      placeholder={t('contact.form.subject')}
+                    />
                 </div>
 
-                <div>
+                <div className="mb-6">
                   <label htmlFor="message" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                     {t('contact.form.message')}
                   </label>
@@ -181,14 +191,15 @@ export default function Contact() {
                     rows={6}
                     value={formData.message}
                     onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                    className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:border-orange-500 transition-colors resize-none"
+                    className="w-full px-4 py-4 md:py-3 rounded-lg border-2 border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:border-orange-500 focus:bg-white dark:focus:bg-gray-800 transition-all resize-none text-base md:text-sm min-h-[120px]"
+                    placeholder={t('contact.form.message')}
                   />
                 </div>
 
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full flex items-center justify-center gap-2 px-8 py-4 bg-orange-600 hover:bg-orange-700 disabled:bg-gray-400 text-white font-semibold rounded-xl transition-all duration-300 hover:shadow-xl hover:-translate-y-1 disabled:hover:translate-y-0"
+                  className="w-full sm:w-auto sm:min-w-[200px] flex items-center justify-center gap-2 px-8 py-4 bg-orange-600 hover:bg-orange-700 disabled:bg-gray-400 text-white font-semibold rounded-xl transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5 disabled:hover:translate-y-0 disabled:hover:shadow-none min-h-[44px]"
                 >
                   {isSubmitting ? (
                     <>
@@ -202,8 +213,8 @@ export default function Contact() {
                     </>
                   )}
                 </button>
-              </div>
-            </form>
+              </form>
+            </div>
           </div>
         </div>
       </div>
