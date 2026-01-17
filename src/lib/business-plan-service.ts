@@ -189,7 +189,11 @@ export const businessPlanService = {
   },
 
   async generateBusinessPlan(id: string): Promise<void> {
-    await apiClient.post(`/api/v1/business-plans/${id}/generate`);
+    // Business plan generation can take 2-5 minutes (multiple sections, each calling OpenAI)
+    // Set timeout to 10 minutes (600000ms) to allow for completion
+    await apiClient.post(`/api/v1/business-plans/${id}/generate`, undefined, {
+      timeout: 600000, // 10 minutes
+    });
   },
 
   async getGenerationStatus(id: string): Promise<any> {
@@ -550,5 +554,63 @@ export const businessPlanService = {
   async restoreVersion(id: string, versionNumber: number): Promise<any> {
     const response = await apiClient.post(`/api/v1/business-plans/${id}/versions/${versionNumber}/restore`);
     return response.data;
+  },
+
+  async uploadCoverImage(id: string, file: File): Promise<string> {
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      const response = await apiClient.post(`/api/v1/business-plans/${id}/cover/upload-image`, formData);
+      
+      const data = response.data;
+      
+      // Handle different response formats
+      if (data.isSuccess && data.value) {
+        return data.value;
+      }
+      
+      if (data.url) {
+        return data.url;
+      }
+      
+      if (data.coverImageUrl) {
+        return data.coverImageUrl;
+      }
+      
+      if (typeof data === 'string' && data.startsWith('http')) {
+        return data;
+      }
+      
+      if (data.errorMessage) {
+        throw new Error(data.errorMessage);
+      }
+      
+      throw new Error('Failed to upload cover image: Invalid response format');
+    } catch (error: any) {
+      console.error('Cover image upload error:', error);
+      const errorMessage = 
+        error.response?.data?.errorMessage ||
+        error.response?.data?.message ||
+        error.response?.data?.error ||
+        error.userMessage ||
+        error.message ||
+        'Failed to upload cover image';
+      throw new Error(errorMessage);
+    }
+  },
+
+  async updateCoverSettings(id: string, coverSettings: { backgroundColor?: string; accentColor?: string; coverImageUrl?: string }): Promise<void> {
+    try {
+      // Try dedicated cover endpoint first
+      await apiClient.put(`/api/v1/business-plans/${id}/cover`, coverSettings);
+    } catch (error: any) {
+      // Fallback to updating the business plan with coverSettings
+      if (error.response?.status === 404) {
+        await this.updateBusinessPlan(id, { coverSettings } as any);
+      } else {
+        throw error;
+      }
+    }
   }
 };

@@ -18,7 +18,9 @@ import {
   TrendingUp,
   BookOpen,
   Users,
-  Briefcase
+  Briefcase,
+  X,
+  FileText
 } from 'lucide-react';
 import { businessPlanService } from '../lib/business-plan-service';
 import { useTheme } from '../contexts/ThemeContext';
@@ -83,6 +85,15 @@ export default function QuestionnairePage() {
   const [autoSaveTimers, setAutoSaveTimers] = useState<Record<string, NodeJS.Timeout>>({});
   const [focusedQuestion, setFocusedQuestion] = useState<string | null>(null);
   const [planType, setPlanType] = useState<string>('StrategicPlan'); // Default to StrategicPlan for OBNL
+  const [generationStatus, setGenerationStatus] = useState<{
+    status?: string;
+    progress?: number;
+    currentStep?: string;
+    estimatedTimeRemaining?: number;
+    errorMessage?: string;
+  } | null>(null);
+  const [statusPollInterval, setStatusPollInterval] = useState<NodeJS.Timeout | null>(null);
+  const [generationStartTime, setGenerationStartTime] = useState<number | null>(null);
 
   // Sync local language state with context language
   useEffect(() => {
@@ -289,19 +300,242 @@ export default function QuestionnairePage() {
     }
   };
 
+  // Calculate simulated progress based on elapsed time
+  const calculateSimulatedProgress = useCallback(() => {
+    if (!generationStartTime) return 5; // Start at 5%
+    const elapsed = Math.floor((Date.now() - generationStartTime) / 1000); // seconds
+    const estimatedTotal = 180; // 3 minutes average
+    
+    // Simulate progress with a smooth curve
+    // Start at 5%, accelerate in middle, slow at end
+    // Use a quadratic ease-out function for natural progression
+    const normalizedTime = Math.min(1, elapsed / estimatedTotal);
+    // Ease-out quadratic: 1 - (1-t)^2
+    const easedProgress = 1 - Math.pow(1 - normalizedTime, 2);
+    // Scale from 5% to 95%
+    const progress = 5 + (easedProgress * 90);
+    return Math.max(5, Math.min(95, Math.round(progress)));
+  }, [generationStartTime]);
+
+  // Get current step based on progress
+  const getCurrentStepFromProgress = useCallback((progress: number) => {
+    if (progress < 10) return t('questionnaire.generation.step.initializing');
+    if (progress < 30) return t('questionnaire.generation.step.analyzing');
+    if (progress < 60) return t('questionnaire.generation.step.sections');
+    if (progress < 85) return t('questionnaire.generation.step.financials');
+    return t('questionnaire.generation.step.finalizing');
+  }, [t]);
+
+  // Poll generation status
+  const pollGenerationStatus = useCallback(async () => {
+    if (!planId) return;
+
+    try {
+      const status = await businessPlanService.getGenerationStatus(planId);
+      
+      // Log the response for debugging
+      console.log('Generation status response:', status);
+      
+      // Try to extract progress from various possible fields
+      let backendProgress = status?.progress || status?.Progress || status?.percentage || status?.completionPercentage || null;
+      let backendStatus = status?.status || status?.Status || status?.state || null;
+      let backendStep = status?.currentStep || status?.CurrentStep || status?.message || status?.step || status?.currentStage || null;
+      
+      // If backend doesn't provide progress, use simulated progress
+      const simulatedProgress = calculateSimulatedProgress();
+      const finalProgress = backendProgress !== null && backendProgress !== undefined ? backendProgress : simulatedProgress;
+      
+      // If backend doesn't provide step, derive from progress
+      const finalStep = backendStep || getCurrentStepFromProgress(finalProgress);
+      
+      // Update status with progress information
+      const updatedStatus = {
+        status: backendStatus || 'InProgress',
+        progress: finalProgress,
+        currentStep: finalStep,
+        estimatedTimeRemaining: status?.estimatedTimeRemaining || status?.EstimatedTimeRemaining,
+        errorMessage: status?.errorMessage || status?.ErrorMessage || status?.error
+      };
+      
+      console.log('Updated generation status:', updatedStatus);
+      setGenerationStatus(updatedStatus);
+
+      // If generation is complete, stop polling and navigate
+      if (updatedStatus.status === 'Completed' || updatedStatus.status === 'completed' || updatedStatus.status === 'Success') {
+        setStatusPollInterval((currentInterval) => {
+          if (currentInterval) {
+            clearInterval(currentInterval);
+            // Also cleanup progress interval if it exists
+            if ((currentInterval as any).progressInterval) {
+              clearInterval((currentInterval as any).progressInterval);
+            }
+          }
+          return null;
+        });
+        // Show completion message briefly before navigating
+        setGenerationStatus({
+          ...updatedStatus,
+          status: 'Completed',
+          progress: 100,
+          currentStep: t('questionnaire.generation.completed')
+        });
+        setTimeout(() => {
+          setGenerating(false);
+          setGenerationStatus(null);
+          setGenerationStartTime(null);
+          navigate(`/plan/${planId}`);
+        }, 1500);
+        return;
+      }
+
+      // If generation failed, stop polling
+      if (updatedStatus.status === 'Failed' || updatedStatus.status === 'failed' || updatedStatus.status === 'Error') {
+        setStatusPollInterval((currentInterval) => {
+          if (currentInterval) {
+            clearInterval(currentInterval);
+            // Also cleanup progress interval if it exists
+            if ((currentInterval as any).progressInterval) {
+              clearInterval((currentInterval as any).progressInterval);
+            }
+          }
+          return null;
+        });
+        setGenerating(false);
+        setGenerationStartTime(null);
+        setError(updatedStatus.errorMessage || 'Business plan generation failed. Please try again.');
+        setGenerationStatus(null);
+        return;
+      }
+    } catch (err: any) {
+      console.error('Failed to poll generation status:', err);
+      // Don't stop polling on individual errors, just log them
+      // The generation might still be in progress on the backend
+      // Use simulated progress as fallback
+      const simulatedProgress = calculateSimulatedProgress();
+      if (simulatedProgress > 0) {
+        setGenerationStatus({
+          status: 'InProgress',
+          progress: simulatedProgress,
+          currentStep: getCurrentStepFromProgress(simulatedProgress),
+          estimatedTimeRemaining: undefined,
+          errorMessage: undefined
+        });
+      }
+    }
+  }, [planId, navigate, t, calculateSimulatedProgress, getCurrentStepFromProgress]);
+
   const handleGeneratePlan = async () => {
     if (!planId) return;
 
     setGenerating(true);
+    setError(null);
+    const startTime = Date.now();
+    setGenerationStartTime(startTime);
+    setGenerationStatus({
+      status: 'Starting',
+      progress: 5, // Start at 5% to show immediate progress
+      currentStep: t('questionnaire.generation.step.initializing')
+    });
 
     try {
-      await businessPlanService.generateBusinessPlan(planId);
-      navigate(`/plan/${planId}`);
+      // Start generation (non-blocking)
+      businessPlanService.generateBusinessPlan(planId).catch((err: any) => {
+        // If the initial request fails, handle it
+        console.error('Failed to start generation:', err);
+        setStatusPollInterval((currentInterval) => {
+          if (currentInterval) {
+            clearInterval(currentInterval);
+            // Also cleanup progress interval if it exists
+            if ((currentInterval as any).progressInterval) {
+              clearInterval((currentInterval as any).progressInterval);
+            }
+          }
+          return null;
+        });
+        setGenerating(false);
+        setGenerationStatus(null);
+        setGenerationStartTime(null);
+        
+        const errorMessage = err.response?.data?.message 
+          || err.response?.data?.error 
+          || err.message 
+          || 'Failed to start business plan generation. Please try again.';
+        setError(errorMessage);
+      });
+
+      // Start polling for status updates every 2 seconds
+      const interval = setInterval(() => {
+        pollGenerationStatus();
+      }, 2000);
+      setStatusPollInterval(interval);
+
+      // Also poll immediately after a short delay
+      setTimeout(() => {
+        pollGenerationStatus();
+      }, 1000);
+
+      // Also update progress locally every second as fallback
+      // This ensures progress updates even if backend doesn't respond
+      const progressInterval = setInterval(() => {
+        setGenerationStatus((current) => {
+          if (!current) return current;
+          const simulatedProgress = calculateSimulatedProgress();
+          return {
+            ...current,
+            progress: current.progress || simulatedProgress,
+            currentStep: current.currentStep || getCurrentStepFromProgress(simulatedProgress)
+          };
+        });
+      }, 1000);
+
+      // Store progress interval for cleanup
+      (interval as any).progressInterval = progressInterval;
     } catch (err: any) {
       console.error('Failed to generate plan:', err);
-      setError('Failed to generate business plan. Please try again.');
       setGenerating(false);
+      setGenerationStatus(null);
+      setGenerationStartTime(null);
+      
+      const errorMessage = err.response?.data?.message 
+        || err.response?.data?.error 
+        || err.message 
+        || 'Failed to generate business plan. Please try again.';
+      setError(errorMessage);
     }
+  };
+
+  // Cleanup polling on unmount
+  useEffect(() => {
+    return () => {
+      if (statusPollInterval) {
+        clearInterval(statusPollInterval);
+        // Also cleanup progress interval if it exists
+        if ((statusPollInterval as any).progressInterval) {
+          clearInterval((statusPollInterval as any).progressInterval);
+        }
+      }
+    };
+  }, [statusPollInterval]);
+
+  // Get estimated time remaining
+  const getEstimatedTime = () => {
+    if (!generationStartTime) return null;
+    const elapsed = Math.floor((Date.now() - generationStartTime) / 1000);
+    const estimatedTotal = 180; // 3 minutes average
+    const remaining = Math.max(0, estimatedTotal - elapsed);
+    return remaining;
+  };
+
+  // Get progress steps for visual display
+  const getProgressSteps = () => {
+    const steps = [
+      { key: 'initializing', label: t('questionnaire.generation.step.initializing'), icon: Zap },
+      { key: 'analyzing', label: t('questionnaire.generation.step.analyzing'), icon: Target },
+      { key: 'sections', label: t('questionnaire.generation.step.sections'), icon: FileText },
+      { key: 'financials', label: t('questionnaire.generation.step.financials'), icon: TrendingUp },
+      { key: 'finalizing', label: t('questionnaire.generation.step.finalizing'), icon: CheckCircle2 },
+    ];
+    return steps;
   };
 
   const questionsBySection = questions.reduce((acc, q) => {
@@ -895,6 +1129,217 @@ export default function QuestionnairePage() {
         </div>
       </div>
 
+      {/* Generation Progress Modal */}
+      {generating && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-3xl w-full p-8 relative border-2" style={{ borderColor: momentumOrange }}>
+            {/* Animated Business Plan Illustration */}
+            <div className="flex justify-center mb-4">
+              <div className="relative w-40 h-40">
+                {/* Animated documents being built */}
+                <svg className="w-full h-full" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                  {/* Background circle with pulse animation */}
+                  <circle cx="100" cy="100" r="80" fill="none" stroke={momentumOrange} strokeWidth="2" opacity="0.2" className="animate-pulse" />
+                  
+                  {/* Document 1 - sliding in from left */}
+                  <g className="animate-document-slide-1">
+                    <rect x="30" y="60" width="40" height="50" rx="2" fill={strategyBlue} opacity="0.9" />
+                    <line x1="35" y1="75" x2="65" y2="75" stroke="white" strokeWidth="1.5" />
+                    <line x1="35" y1="85" x2="60" y2="85" stroke="white" strokeWidth="1.5" />
+                    <line x1="35" y1="95" x2="55" y2="95" stroke="white" strokeWidth="1.5" />
+                    <circle cx="50" cy="105" r="3" fill={momentumOrange} />
+                  </g>
+                  
+                  {/* Document 2 - center, being written */}
+                  <g className="animate-document-write">
+                    <rect x="80" y="50" width="40" height="60" rx="2" fill={momentumOrange} opacity="0.95" />
+                    <line x1="85" y1="65" x2="115" y2="65" stroke="white" strokeWidth="1.5" />
+                    <line x1="85" y1="75" x2="110" y2="75" stroke="white" strokeWidth="1.5" />
+                    <line x1="85" y1="85" x2="105" y2="85" stroke="white" strokeWidth="1.5" />
+                    <line x1="85" y1="95" x2="100" y2="95" stroke="white" strokeWidth="1.5" />
+                    {/* Animated writing line */}
+                    <line x1="85" y1="105" x2="95" y2="105" stroke="white" strokeWidth="2" className="animate-writing-line" />
+                  </g>
+                  
+                  {/* Document 3 - sliding in from right */}
+                  <g className="animate-document-slide-2">
+                    <rect x="130" y="70" width="40" height="50" rx="2" fill={strategyBlue} opacity="0.9" />
+                    <line x1="135" y1="85" x2="165" y2="85" stroke="white" strokeWidth="1.5" />
+                    <line x1="135" y1="95" x2="160" y2="95" stroke="white" strokeWidth="1.5" />
+                    <line x1="135" y1="105" x2="155" y2="105" stroke="white" strokeWidth="1.5" />
+                    <circle cx="150" cy="110" r="3" fill={momentumOrange} />
+                  </g>
+                  
+                  {/* Chart/Graph icon - floating */}
+                  <g className="animate-float">
+                    <rect x="85" y="120" width="30" height="20" rx="2" fill="white" opacity="0.9" stroke={momentumOrange} strokeWidth="1.5" />
+                    {/* Bar chart */}
+                    <rect x="90" y="135" width="4" height="3" fill={momentumOrange} />
+                    <rect x="96" y="132" width="4" height="6" fill={strategyBlue} />
+                    <rect x="102" y="130" width="4" height="8" fill={momentumOrange} />
+                    <rect x="108" y="133" width="4" height="5" fill={strategyBlue} />
+                  </g>
+                  
+                  {/* Sparkles/Stars - rotating */}
+                  <g className="animate-sparkle-1">
+                    <circle cx="50" cy="40" r="2" fill={momentumOrange} opacity="0.8" />
+                  </g>
+                  <g className="animate-sparkle-2">
+                    <circle cx="150" cy="50" r="2" fill={momentumOrange} opacity="0.8" />
+                  </g>
+                  <g className="animate-sparkle-3">
+                    <circle cx="160" cy="130" r="2" fill={strategyBlue} opacity="0.8" />
+                  </g>
+                </svg>
+              </div>
+            </div>
+
+            <div className="flex items-start justify-between mb-6">
+              <div className="flex-1">
+                <h3 className="text-2xl font-bold mb-2 text-center" style={{ color: theme === 'dark' ? '#F9FAFB' : strategyBlue }}>
+                  {t('questionnaire.generation.title')}
+                </h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400 text-center">
+                  {t('questionnaire.generation.subtitle')}
+                </p>
+              </div>
+              {generationStatus?.status !== 'Completed' && (
+                <button
+                  onClick={() => {
+                    if (confirm('Are you sure you want to cancel? The generation will continue in the background.')) {
+                      if (statusPollInterval) {
+                        clearInterval(statusPollInterval);
+                        setStatusPollInterval(null);
+                      }
+                      setGenerating(false);
+                      setGenerationStatus(null);
+                      setGenerationStartTime(null);
+                    }
+                  }}
+                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors ml-4 flex-shrink-0"
+                  aria-label="Close"
+                >
+                  <X size={24} />
+                </button>
+              )}
+            </div>
+
+            {/* Progress Bar */}
+            <div className="mb-6">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-semibold" style={{ color: theme === 'dark' ? '#D1D5DB' : '#6B7280' }}>
+                  {generationStatus?.currentStep || t('questionnaire.generation.step.initializing')}
+                </span>
+                <span className="text-sm font-bold" style={{ color: momentumOrange }}>
+                  {Math.round(generationStatus?.progress || 5)}%
+                </span>
+              </div>
+              <div className="w-full h-3 rounded-full overflow-hidden dark:bg-gray-700" style={{ backgroundColor: lightAIGrey }}>
+                <div
+                  className="h-full rounded-full transition-all duration-500 ease-out relative overflow-hidden"
+                  style={{ 
+                    width: `${Math.max(2, generationStatus?.progress || 5)}%`,
+                    backgroundColor: momentumOrange,
+                    minWidth: '2%'
+                  }}
+                >
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shimmer"></div>
+                </div>
+              </div>
+            </div>
+
+            {/* Progress Steps */}
+            <div className="space-y-3 mb-6">
+              {getProgressSteps().map((step, index) => {
+                const stepProgress = generationStatus?.progress || 5;
+                const stepThreshold = (index + 1) * 20;
+                const isActive = stepProgress >= stepThreshold - 10;
+                const isCompleted = stepProgress >= stepThreshold;
+                const StepIcon = step.icon;
+
+                return (
+                  <div
+                    key={step.key}
+                    className={`flex items-center gap-4 p-3 rounded-lg transition-all ${
+                      isCompleted
+                        ? 'bg-green-50 dark:bg-green-900/20 border-2'
+                        : isActive
+                        ? 'bg-orange-50 dark:bg-orange-900/20 border-2'
+                        : 'bg-gray-50 dark:bg-gray-700/50 border-2 border-transparent'
+                    }`}
+                    style={isCompleted ? {
+                      borderColor: '#10B981'
+                    } : isActive ? {
+                      borderColor: momentumOrange
+                    } : {}}
+                  >
+                    <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${
+                      isCompleted
+                        ? 'bg-green-500'
+                        : isActive
+                        ? 'bg-orange-500'
+                        : 'bg-gray-300 dark:bg-gray-600'
+                    }`}>
+                      {isCompleted ? (
+                        <CheckCircle2 size={20} className="text-white" />
+                      ) : isActive ? (
+                        <Loader2 size={20} className="text-white animate-spin" />
+                      ) : (
+                        <StepIcon size={20} className="text-gray-500 dark:text-gray-400" />
+                      )}
+                    </div>
+                    <span className={`flex-1 text-sm font-medium ${
+                      isCompleted
+                        ? 'text-green-700 dark:text-green-300'
+                        : isActive
+                        ? 'text-orange-700 dark:text-orange-300'
+                        : 'text-gray-500 dark:text-gray-400'
+                    }`}>
+                      {step.label}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Time Estimate */}
+            {generationStatus?.status !== 'Completed' && (
+              <div className="flex items-center justify-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                <Loader2 size={16} className="animate-spin" />
+                <span>
+                  {generationStatus?.estimatedTimeRemaining 
+                    ? (() => {
+                        const minutes = Math.ceil(generationStatus.estimatedTimeRemaining / 60);
+                        const unit = minutes === 1 ? t('questionnaire.generation.minute') : t('questionnaire.generation.minutes');
+                        return t('questionnaire.generation.timeRemaining')
+                          .replace('{minutes}', String(minutes))
+                          .replace('{unit}', unit)
+                          .replace('{plural}', minutes === 1 ? '' : 's');
+                      })()
+                    : getEstimatedTime() !== null && getEstimatedTime()! > 0
+                    ? (() => {
+                        const minutes = Math.ceil((getEstimatedTime() || 0) / 60);
+                        const unit = minutes === 1 ? t('questionnaire.generation.minute') : t('questionnaire.generation.minutes');
+                        return t('questionnaire.generation.timeRemaining')
+                          .replace('{minutes}', String(minutes))
+                          .replace('{unit}', unit)
+                          .replace('{plural}', minutes === 1 ? '' : 's');
+                      })()
+                    : t('questionnaire.generation.processing')}
+                </span>
+              </div>
+            )}
+
+            {generationStatus?.status === 'Completed' && (
+              <div className="flex items-center justify-center gap-2 text-sm font-semibold" style={{ color: '#10B981' }}>
+                <CheckCircle2 size={20} />
+                <span>{t('questionnaire.generation.redirecting')}</span>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       <style>{`
         @keyframes shimmer {
           0% { transform: translateX(-100%); }
@@ -915,6 +1360,120 @@ export default function QuestionnairePage() {
         }
         .animate-slide-in {
           animation: slide-in 0.3s ease-out;
+        }
+        @keyframes document-slide-1 {
+          0% {
+            transform: translateX(-30px);
+            opacity: 0;
+          }
+          50% {
+            opacity: 1;
+          }
+          100% {
+            transform: translateX(0);
+            opacity: 1;
+          }
+        }
+        .animate-document-slide-1 {
+          animation: document-slide-1 2s ease-out infinite;
+        }
+        @keyframes document-write {
+          0%, 100% {
+            transform: scale(1);
+            opacity: 0.95;
+          }
+          50% {
+            transform: scale(1.05);
+            opacity: 1;
+          }
+        }
+        .animate-document-write {
+          animation: document-write 2s ease-in-out infinite;
+        }
+        @keyframes writing-line {
+          0% {
+            stroke-dasharray: 0, 20;
+            opacity: 0;
+          }
+          50% {
+            opacity: 1;
+          }
+          100% {
+            stroke-dasharray: 20, 0;
+            opacity: 0;
+          }
+        }
+        .animate-writing-line {
+          animation: writing-line 1.5s ease-in-out infinite;
+          stroke-dasharray: 10;
+        }
+        @keyframes document-slide-2 {
+          0% {
+            transform: translateX(30px);
+            opacity: 0;
+          }
+          50% {
+            opacity: 1;
+          }
+          100% {
+            transform: translateX(0);
+            opacity: 1;
+          }
+        }
+        .animate-document-slide-2 {
+          animation: document-slide-2 2.5s ease-out infinite;
+        }
+        @keyframes float {
+          0%, 100% {
+            transform: translateY(0);
+          }
+          50% {
+            transform: translateY(-8px);
+          }
+        }
+        .animate-float {
+          animation: float 3s ease-in-out infinite;
+        }
+        @keyframes sparkle-1 {
+          0%, 100% {
+            opacity: 0.3;
+            transform: scale(1);
+          }
+          50% {
+            opacity: 1;
+            transform: scale(1.5);
+          }
+        }
+        .animate-sparkle-1 {
+          animation: sparkle-1 2s ease-in-out infinite;
+        }
+        @keyframes sparkle-2 {
+          0%, 100% {
+            opacity: 0.3;
+            transform: scale(1);
+          }
+          50% {
+            opacity: 1;
+            transform: scale(1.5);
+          }
+        }
+        .animate-sparkle-2 {
+          animation: sparkle-2 2.5s ease-in-out infinite;
+          animation-delay: 0.5s;
+        }
+        @keyframes sparkle-3 {
+          0%, 100% {
+            opacity: 0.3;
+            transform: scale(1);
+          }
+          50% {
+            opacity: 1;
+            transform: scale(1.5);
+          }
+        }
+        .animate-sparkle-3 {
+          animation: sparkle-3 2.2s ease-in-out infinite;
+          animation-delay: 1s;
         }
       `}</style>
     </div>

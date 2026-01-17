@@ -1,7 +1,9 @@
 import { useRef, useEffect, useState } from 'react';
-// Note: react-quill uses deprecated findDOMNode internally, which causes a warning in React StrictMode.
-// This is a known issue with react-quill v2.0.0 and is safe to ignore.
-// The warning doesn't affect functionality and will be resolved when react-quill updates.
+// Note: react-quill uses deprecated APIs (findDOMNode, DOMNodeInserted) which cause warnings.
+// These are known issues with react-quill v2.0.0 and are safe to ignore.
+// The findDOMNode warning is suppressed in development via suppressWarnings utility.
+// The DOMNodeInserted browser deprecation notice cannot be suppressed but is harmless.
+// These warnings don't affect functionality and will be resolved when react-quill updates.
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import { Sparkles, Loader2 } from 'lucide-react';
@@ -144,7 +146,7 @@ export default function RichTextEditor({
       )}
 
       {/* Rich Text Editor */}
-      <div className="border border-gray-300 rounded-lg overflow-hidden bg-white">
+      <div className="border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden bg-white dark:bg-gray-800">
         <ReactQuill
           ref={quillRef}
           theme="snow"
@@ -160,15 +162,40 @@ export default function RichTextEditor({
           .rich-text-editor .ql-container {
             min-height: 300px;
             font-size: 16px;
-            font-family: inherit;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+            color: #1f2937;
+          }
+          .dark .rich-text-editor .ql-container {
+            color: #f9fafb;
           }
           .rich-text-editor .ql-editor {
             min-height: 300px;
             padding: 16px;
+            color: #1f2937;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+          }
+          .dark .rich-text-editor .ql-editor {
+            color: #f9fafb;
+            background-color: #1f2937;
+          }
+          .rich-text-editor .ql-editor p,
+          .rich-text-editor .ql-editor h1,
+          .rich-text-editor .ql-editor h2,
+          .rich-text-editor .ql-editor h3,
+          .rich-text-editor .ql-editor h4,
+          .rich-text-editor .ql-editor h5,
+          .rich-text-editor .ql-editor h6,
+          .rich-text-editor .ql-editor li,
+          .rich-text-editor .ql-editor span,
+          .rich-text-editor .ql-editor div {
+            color: inherit;
           }
           .rich-text-editor .ql-editor.ql-blank::before {
             color: #9ca3af;
             font-style: normal;
+          }
+          .dark .rich-text-editor .ql-editor.ql-blank::before {
+            color: #6b7280;
           }
           .rich-text-editor .ql-toolbar {
             border-top: 1px solid #e5e7eb;
@@ -178,11 +205,21 @@ export default function RichTextEditor({
             background: #f9fafb;
             padding: 8px;
           }
+          .dark .rich-text-editor .ql-toolbar {
+            background: #374151;
+            border-color: #4b5563;
+          }
           .rich-text-editor .ql-toolbar .ql-stroke {
             stroke: #374151;
           }
+          .dark .rich-text-editor .ql-toolbar .ql-stroke {
+            stroke: #d1d5db;
+          }
           .rich-text-editor .ql-toolbar .ql-fill {
             fill: #374151;
+          }
+          .dark .rich-text-editor .ql-toolbar .ql-fill {
+            fill: #d1d5db;
           }
           .rich-text-editor .ql-toolbar button:hover,
           .rich-text-editor .ql-toolbar button.ql-active {

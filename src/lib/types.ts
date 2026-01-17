@@ -56,6 +56,11 @@ export interface BusinessPlan {
   businessType?: string;
   status: string;
   createdAt: string;
+  coverSettings?: {
+    backgroundColor?: string;
+    accentColor?: string;
+    coverImageUrl?: string;
+  };
 }
 
 export interface CreateBusinessPlanRequest {

@@ -21,12 +21,331 @@ import {
   Sparkles,
   BookOpen,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  Image as ImageIcon,
+  Upload,
+  Trash2
 } from 'lucide-react';
 import { businessPlanService } from '../lib/business-plan-service';
 import type { BusinessPlan } from '../lib/types';
 import RichTextEditor from '../components/RichTextEditor';
 import { useTheme } from '../contexts/ThemeContext';
+import { financialService } from '../lib/financial-service';
+import BalanceSheetTable, { BalanceSheetData } from '../components/BalanceSheetTable';
+import CashFlowTable, { CashFlowData } from '../components/CashFlowTable';
+
+// Markdown parser function
+const parseMarkdown = (markdown: string): string => {
+  if (!markdown) return '';
+  
+  let html = markdown;
+  
+  // Check if content is already fully HTML without markdown patterns
+  // Be more aggressive in detecting markdown - check for any #, ##, ###, etc.
+  const hasMarkdown = /#{1,6}\s|\*\*[^*]+\*\*|^\* |^\d+\.\s|\[.*\]\(.*\)/m.test(html) || 
+                      html.includes('##') || html.includes('###') || html.includes('####');
+  const hasCompleteHTML = /<[a-z]+[^>]*>[\s\S]*<\/[a-z]+>/i.test(html);
+  
+  // If it's already complete HTML without markdown, return as-is
+  if (hasCompleteHTML && !hasMarkdown) {
+    return html;
+  }
+  
+  // Pre-process: Convert all markdown headings to HTML FIRST (before escaping)
+  // This ensures we catch headings anywhere in the content
+  const headingPlaceholders: { [key: string]: string } = {};
+  let placeholderIndex = 0;
+  
+  // More aggressive heading detection - match headings at start of line or after newline
+  // Also handle headings that might have extra spaces
+  html = html.replace(/(^|\n)(\s*)(#{1,6})\s+([^\n]+?)(?:\n|$)/g, (match, prefix, indent, hashes, text) => {
+    const level = hashes.length;
+    const headingClass = level === 1 
+      ? 'text-4xl font-bold mt-12 mb-6 text-gray-900 dark:text-white'
+      : level === 2
+      ? 'text-3xl font-bold mt-10 mb-5 text-gray-900 dark:text-white'
+      : level === 3
+      ? 'text-2xl font-bold mt-8 mb-4 text-gray-900 dark:text-white'
+      : level === 4
+      ? 'text-xl font-bold mt-6 mb-3 text-gray-900 dark:text-white'
+      : level === 5
+      ? 'text-lg font-bold mt-5 mb-2 text-gray-900 dark:text-white'
+      : 'text-base font-bold mt-4 mb-2 text-gray-900 dark:text-white';
+    const headingHtml = `${prefix}${indent}<h${Math.min(level, 6)} class="${headingClass}">${text.trim()}</h${Math.min(level, 6)}>`;
+    const key = `__HEADING_${placeholderIndex++}__`;
+    headingPlaceholders[key] = headingHtml;
+    return key;
+  });
+  
+  // Also catch headings that appear in the middle of lines (less common but possible)
+  // This handles cases where headings might be embedded in paragraphs
+  html = html.replace(/([^\n])(#{1,6})\s+([^\n#]+)/g, (match, before, hashes, text) => {
+    // Only process if it looks like a standalone heading (not part of a URL or code)
+    if (before.match(/[a-zA-Z0-9]/) && !before.endsWith('http') && !before.endsWith('https')) {
+      const level = hashes.length;
+      const headingClass = level === 1 
+        ? 'text-4xl font-bold mt-12 mb-6 text-gray-900 dark:text-white'
+        : level === 2
+        ? 'text-3xl font-bold mt-10 mb-5 text-gray-900 dark:text-white'
+        : level === 3
+        ? 'text-2xl font-bold mt-8 mb-4 text-gray-900 dark:text-white'
+        : level === 4
+        ? 'text-xl font-bold mt-6 mb-3 text-gray-900 dark:text-white'
+        : level === 5
+        ? 'text-lg font-bold mt-5 mb-2 text-gray-900 dark:text-white'
+        : 'text-base font-bold mt-4 mb-2 text-gray-900 dark:text-white';
+      const headingHtml = `<h${Math.min(level, 6)} class="${headingClass}">${text.trim()}</h${Math.min(level, 6)}>`;
+      const key = `__HEADING_${placeholderIndex++}__`;
+      headingPlaceholders[key] = headingHtml;
+      return `${before}${key}`;
+    }
+    return match;
+  });
+  
+  // Simple HTML escaping - escape all < and >, then we'll create new HTML tags
+  // Protect existing HTML entities first
+  const entityPlaceholders: { [key: string]: string } = {};
+  html = html.replace(/&[a-z0-9#]+;/gi, (match) => {
+    const key = `__ENTITY_${placeholderIndex++}__`;
+    entityPlaceholders[key] = match;
+    return key;
+  });
+  
+  // Escape < and > 
+  html = html.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  
+  // Restore headings (they're already HTML, so they won't be escaped)
+  Object.keys(headingPlaceholders).forEach(key => {
+    html = html.replace(new RegExp(key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), headingPlaceholders[key]);
+  });
+  
+  // Split into lines for processing
+  const lines = html.split('\n');
+  const processedLines: string[] = [];
+  let inList = false;
+  let listType: 'ul' | 'ol' | null = null;
+  let listItems: string[] = [];
+  
+  const flushList = () => {
+    if (listItems.length > 0 && listType) {
+      const listTag = listType === 'ul' ? 'ul' : 'ol';
+      const listClass = listType === 'ul' 
+        ? 'my-6 space-y-3 ml-6 list-disc' 
+        : 'my-6 space-y-3 ml-6 list-decimal';
+      processedLines.push(`<${listTag} class="${listClass}">`);
+      processedLines.push(...listItems);
+      processedLines.push(`</${listTag}>`);
+      listItems = [];
+    }
+    inList = false;
+    listType = null;
+  };
+  
+  for (let i = 0; i < lines.length; i++) {
+    let line = lines[i];
+    const trimmedLine = line.trim();
+    
+    // Empty line - flush list if active
+    if (!trimmedLine) {
+      flushList();
+      continue;
+    }
+      
+    // Check if line is already a processed heading (from pre-processing)
+    if (trimmedLine.match(/^<h[1-6]/)) {
+      flushList();
+      processedLines.push(trimmedLine);
+      continue;
+    }
+    
+    // Headings (must be processed before other formatting)
+    // Match #, ##, ###, ####, #####, ###### at start of line
+    const headingMatch = trimmedLine.match(/^(#{1,6})\s+(.+)$/);
+    if (headingMatch) {
+      flushList();
+      const level = headingMatch[1].length;
+      const text = headingMatch[2].trim();
+      const headingClass = level === 1 
+        ? 'text-4xl font-bold mt-12 mb-6 text-gray-900 dark:text-white'
+        : level === 2
+        ? 'text-3xl font-bold mt-10 mb-5 text-gray-900 dark:text-white'
+        : level === 3
+        ? 'text-2xl font-bold mt-8 mb-4 text-gray-900 dark:text-white'
+        : level === 4
+        ? 'text-xl font-bold mt-6 mb-3 text-gray-900 dark:text-white'
+        : level === 5
+        ? 'text-lg font-bold mt-5 mb-2 text-gray-900 dark:text-white'
+        : 'text-base font-bold mt-4 mb-2 text-gray-900 dark:text-white';
+      processedLines.push(`<h${Math.min(level, 6)} class="${headingClass}">${text}</h${Math.min(level, 6)}>`);
+      continue;
+    }
+    
+    
+    // Unordered list items
+    if (trimmedLine.match(/^[\*\-]\s+/)) {
+      if (!inList || listType !== 'ul') {
+        flushList();
+        inList = true;
+        listType = 'ul';
+      }
+      const text = trimmedLine.replace(/^[\*\-]\s+/, '');
+      listItems.push(`<li class="mb-2">${processInlineMarkdown(text)}</li>`);
+      continue;
+    }
+    
+    // Ordered list items
+    if (trimmedLine.match(/^\d+\.\s+/)) {
+      if (!inList || listType !== 'ol') {
+        flushList();
+        inList = true;
+        listType = 'ol';
+      }
+      const text = trimmedLine.replace(/^\d+\.\s+/, '');
+      listItems.push(`<li class="mb-2">${processInlineMarkdown(text)}</li>`);
+      continue;
+    }
+    
+    // Regular paragraph
+    flushList();
+    const processedLine = processInlineMarkdown(trimmedLine);
+    processedLines.push(`<p class="mb-4 leading-relaxed text-gray-700 dark:text-gray-300">${processedLine}</p>`);
+  }
+  
+  // Flush any remaining list
+  flushList();
+  
+  // Restore HTML entities
+  let result = processedLines.join('\n');
+  Object.keys(entityPlaceholders).forEach(key => {
+    result = result.replace(new RegExp(key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), entityPlaceholders[key]);
+  });
+  
+  return result;
+};
+
+// Process inline markdown (bold, italic, links) within a line
+const processInlineMarkdown = (text: string): string => {
+  let result = text;
+  
+  // Links [text](url) - process before bold/italic
+  result = result.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-blue-600 dark:text-blue-400 hover:underline font-medium" target="_blank" rel="noopener noreferrer">$1</a>');
+  
+  // Bold text (**text** or __text__) - process before italic to avoid conflicts
+  result = result.replace(/\*\*([^*]+)\*\*/g, '<strong class="font-bold text-gray-900 dark:text-white">$1</strong>');
+  result = result.replace(/__([^_]+)__/g, '<strong class="font-bold text-gray-900 dark:text-white">$1</strong>');
+  
+  // Italic text (*text* or _text_) - process after bold to avoid conflicts
+  // Only process single asterisks/underscores that weren't part of bold
+  // Since bold was already processed, we can safely process remaining single markers
+  result = result.replace(/\*([^*\n]+?)\*/g, '<em class="italic text-gray-700 dark:text-gray-300">$1</em>');
+  result = result.replace(/_([^_\n]+?)_/g, '<em class="italic text-gray-700 dark:text-gray-300">$1</em>');
+  
+  return result;
+};
+
+// Convert markdown to HTML for RichTextEditor (Quill expects HTML)
+// This is a simpler version that converts markdown to HTML without CSS classes
+// since Quill will handle the styling
+const markdownToHTML = (content: string): string => {
+  if (!content) return '';
+  
+  // Check if content is already HTML (from Quill)
+  const hasHTMLTags = /<[a-z]+[^>]*>[\s\S]*<\/[a-z]+>/i.test(content);
+  const hasMarkdown = /#{1,6}\s|\*\*[^*]+\*\*|^\* |^\d+\.\s|\[.*\]\(.*\)/m.test(content) || 
+                      content.includes('##') || content.includes('###') || content.includes('**');
+  
+  // If it's already HTML without markdown, return as-is
+  if (hasHTMLTags && !hasMarkdown) {
+    return content;
+  }
+  
+  // Split into lines first to process block-level elements (headings, lists, paragraphs)
+  const lines = content.split('\n');
+  const processedLines: string[] = [];
+  let inList = false;
+  let listType: 'ul' | 'ol' | null = null;
+  let listItems: string[] = [];
+  
+  const flushList = () => {
+    if (listItems.length > 0 && listType) {
+      const listTag = listType === 'ul' ? 'ul' : 'ol';
+      processedLines.push(`<${listTag}>`);
+      processedLines.push(...listItems);
+      processedLines.push(`</${listTag}>`);
+      listItems = [];
+    }
+    inList = false;
+    listType = null;
+  };
+  
+  // Helper function to process inline markdown within a line
+  const processInline = (text: string): string => {
+    let result = text;
+    // Links first
+    result = result.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>');
+    // Bold (**text** or __text__)
+    result = result.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    result = result.replace(/__([^_]+)__/g, '<strong>$1</strong>');
+    // Italic (*text* or _text_) - only single asterisks/underscores
+    result = result.replace(/\*([^*\n]+?)\*/g, '<em>$1</em>');
+    result = result.replace(/_([^_\n]+?)_/g, '<em>$1</em>');
+    return result;
+  };
+  
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const trimmedLine = line.trim();
+    
+    if (!trimmedLine) {
+      flushList();
+      continue;
+    }
+    
+    // Headings (must be processed before other formatting)
+    const headingMatch = trimmedLine.match(/^(#{1,6})\s+(.+)$/);
+    if (headingMatch) {
+      flushList();
+      const level = headingMatch[1].length;
+      const text = headingMatch[2].trim();
+      // Process inline formatting within heading
+      const processedText = processInline(text);
+      processedLines.push(`<h${Math.min(level, 6)}>${processedText}</h${Math.min(level, 6)}>`);
+      continue;
+    }
+    
+    // Unordered list
+    if (trimmedLine.match(/^[\*\-]\s+/)) {
+      if (!inList || listType !== 'ul') {
+        flushList();
+        inList = true;
+        listType = 'ul';
+      }
+      const text = trimmedLine.replace(/^[\*\-]\s+/, '');
+      listItems.push(`<li>${processInline(text)}</li>`);
+      continue;
+    }
+    
+    // Ordered list
+    if (trimmedLine.match(/^\d+\.\s+/)) {
+      if (!inList || listType !== 'ol') {
+        flushList();
+        inList = true;
+        listType = 'ol';
+      }
+      const text = trimmedLine.replace(/^\d+\.\s+/, '');
+      listItems.push(`<li>${processInline(text)}</li>`);
+      continue;
+    }
+    
+    // Regular paragraph
+    flushList();
+    processedLines.push(`<p>${processInline(trimmedLine)}</p>`);
+  }
+  
+  flushList();
+  
+  return processedLines.join('\n');
+};
 
 interface Section {
   sectionName: string;
@@ -46,7 +365,7 @@ interface Section {
 export default function PlanViewPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { t } = useTheme();
+  const { t, language } = useTheme();
   const strategyBlue = '#1A2B47';
   const momentumOrange = '#FF6B00';
   const momentumOrangeHover = '#E55F00';
@@ -74,14 +393,133 @@ export default function PlanViewPage() {
   const [loadingShares, setLoadingShares] = useState(false);
   const [loadingVersions, setLoadingVersions] = useState(false);
   const [exporting, setExporting] = useState<'pdf' | 'word' | null>(null);
+  const [showCoverModal, setShowCoverModal] = useState(false);
+  const [coverBackgroundColor, setCoverBackgroundColor] = useState<string>('#1A202C');
+  const [coverAccentColor, setCoverAccentColor] = useState<string>('#FF6B00');
+  const [coverImageUrl, setCoverImageUrl] = useState<string | null>(null);
+  const [uploadingCoverImage, setUploadingCoverImage] = useState(false);
+  const [savingCover, setSavingCover] = useState(false);
+  const [balanceSheetData, setBalanceSheetData] = useState<BalanceSheetData[]>([]);
+  const [cashFlowData, setCashFlowData] = useState<CashFlowData[]>([]);
+  const [loadingFinancials, setLoadingFinancials] = useState(false);
+  const coverImageInputRef = useRef<HTMLInputElement | null>(null);
   const sectionRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
+  const modalContentRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     if (id) {
       loadPlan();
       loadSections();
+      loadFinancialData();
     }
   }, [id]);
+
+  const loadFinancialData = async () => {
+    if (!id) return;
+
+    try {
+      setLoadingFinancials(true);
+      
+      // Load balance sheet data
+      try {
+        const balanceSheet = await financialService.getBalanceSheet(id);
+        if (balanceSheet) {
+          // Handle different response formats
+          let dataArray: any[] = [];
+          
+          if (Array.isArray(balanceSheet)) {
+            dataArray = balanceSheet;
+          } else if (balanceSheet.data && Array.isArray(balanceSheet.data)) {
+            dataArray = balanceSheet.data;
+          } else if (balanceSheet.value && Array.isArray(balanceSheet.value)) {
+            dataArray = balanceSheet.value;
+          } else if (balanceSheet.years && Array.isArray(balanceSheet.years)) {
+            // If it's organized by years
+            dataArray = balanceSheet.years;
+          } else {
+            // Try to extract year data from object
+            const years = Object.keys(balanceSheet).filter(k => /^\d{4}$/.test(k));
+            if (years.length > 0) {
+              dataArray = years.map(year => ({ year: parseInt(year), ...balanceSheet[year] }));
+            }
+          }
+
+          if (dataArray.length > 0) {
+            // Transform API response to our format
+            const transformed = dataArray.map((item: any) => ({
+              year: item.year || new Date().getFullYear(),
+              shortTermAssets: {
+                cash: item.cash || item.shortTermAssets?.cash || item.assets?.cash || null,
+                accountsReceivable: item.accountsReceivable || item.shortTermAssets?.accountsReceivable || item.assets?.accountsReceivable || null,
+                inventory: item.inventory || item.shortTermAssets?.inventory || item.assets?.inventory || null,
+                otherShortTermAssets: item.otherShortTermAssets || item.shortTermAssets?.other || item.assets?.otherShortTerm || null
+              },
+              fixedAssets: {
+                total: item.fixedAssets || item.fixedAssetsTotal || item.assets?.fixedAssets || null
+              },
+              otherAssets: item.otherAssets || item.assets?.other || null
+            }));
+            setBalanceSheetData(transformed);
+          }
+        }
+      } catch (err) {
+        console.warn('Failed to load balance sheet:', err);
+      }
+
+      // Load cash flow data
+      try {
+        const cashFlow = await financialService.getCashFlow(id);
+        if (cashFlow) {
+          // Handle different response formats
+          let dataArray: any[] = [];
+          
+          if (Array.isArray(cashFlow)) {
+            dataArray = cashFlow;
+          } else if (cashFlow.data && Array.isArray(cashFlow.data)) {
+            dataArray = cashFlow.data;
+          } else if (cashFlow.value && Array.isArray(cashFlow.value)) {
+            dataArray = cashFlow.value;
+          } else if (cashFlow.months && Array.isArray(cashFlow.months)) {
+            dataArray = cashFlow.months;
+          }
+
+          if (dataArray.length > 0) {
+            // Transform API response to our format
+            const transformed = dataArray.map((item: any) => {
+              const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+              const year = item.year || new Date().getFullYear();
+              const monthNum = item.month || item.monthNumber || 1;
+              const monthName = monthNames[monthNum - 1] || 'Jan';
+              const monthLabel = `${monthName}-${String(year).slice(-2)}`;
+              
+              return {
+                month: item.month || monthLabel,
+                year: year,
+                rawMaterials: item.rawMaterials || item.rawMaterialPurchase || item.purchases || null,
+                salesExpenses: item.salesExpenses || item.sellingExpenses || item.marketingExpenses || null,
+                administrativeExpenses: item.administrativeExpenses || item.adminExpenses || item.operatingExpenses || null,
+                laborAndSocialCharges: item.laborAndSocialCharges || item.laborCosts || item.salaries || null,
+                fixedAssetAcquisition: item.fixedAssetAcquisition || item.capitalExpenditure || item.capex || null,
+                salesTaxesPaid: item.salesTaxesPaid || item.taxesPaid || null,
+                salesTaxRemitted: item.salesTaxRemitted || item.taxRemitted || null,
+                taxPayable: item.taxPayable || item.taxes || null,
+                creditLineInterest: item.creditLineInterest || item.interestExpense || null,
+                debtRepaymentPrincipal: item.debtRepaymentPrincipal || item.debtPrincipal || null,
+                debtRepaymentInterest: item.debtRepaymentInterest || item.debtInterest || null
+              };
+            });
+            setCashFlowData(transformed);
+          }
+        }
+      } catch (err) {
+        console.warn('Failed to load cash flow:', err);
+      }
+    } catch (err) {
+      console.error('Failed to load financial data:', err);
+    } finally {
+      setLoadingFinancials(false);
+    }
+  };
 
   useEffect(() => {
     if (sections.length > 0 && !activeSection) {
@@ -90,6 +528,18 @@ export default function PlanViewPage() {
       setExpandedSections(new Set(sections.map(s => s.sectionName)));
     }
   }, [sections]);
+
+  // Scroll modal content to top when it opens
+  useEffect(() => {
+    if (editingSection && modalContentRef.current) {
+      // Small delay to ensure DOM is ready
+      setTimeout(() => {
+        if (modalContentRef.current) {
+          modalContentRef.current.scrollTop = 0;
+        }
+      }, 10);
+    }
+  }, [editingSection]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -117,6 +567,13 @@ export default function PlanViewPage() {
       setLoading(true);
       const planData = await businessPlanService.getBusinessPlan(id);
       setPlan(planData);
+      
+      // Load cover settings if they exist
+      if (planData.coverSettings) {
+        setCoverBackgroundColor(planData.coverSettings.backgroundColor || '#1A202C');
+        setCoverAccentColor(planData.coverSettings.accentColor || '#FF6B00');
+        setCoverImageUrl(planData.coverSettings.coverImageUrl || null);
+      }
     } catch (err) {
       console.error('Failed to load business plan:', err);
       setError('Failed to load business plan. Please try again.');
@@ -183,7 +640,16 @@ export default function PlanViewPage() {
 
   const startEditing = (section: Section) => {
     setEditingSection(section.sectionName);
-    setEditingContent(section.content || '');
+    // Convert markdown to HTML for RichTextEditor (Quill expects HTML)
+    const content = section.content || '';
+    const htmlContent = markdownToHTML(content);
+    setEditingContent(htmlContent);
+    // Scroll to top when modal opens
+    setTimeout(() => {
+      if (modalContentRef.current) {
+        modalContentRef.current.scrollTop = 0;
+      }
+    }, 0);
   };
 
   const cancelEditing = () => {
@@ -223,9 +689,9 @@ export default function PlanViewPage() {
       const result = await businessPlanService.improveSection(id, sectionName, section.content || '', planType);
 
       if (result?.improvedContent) {
-        setEditingContent(result.improvedContent);
+        setEditingContent(markdownToHTML(result.improvedContent));
       } else if (result?.content) {
-        setEditingContent(result.content);
+        setEditingContent(markdownToHTML(result.content));
       } else {
         console.warn('Unexpected AI response structure:', result);
         alert('Received unexpected response from AI service. Please try again.');
@@ -285,17 +751,17 @@ export default function PlanViewPage() {
       const planType = (plan as any)?.planType || plan?.businessType || 'BusinessPlan';
       let result: any;
       if (action === 'improve') {
-        result = await businessPlanService.improveSection(id, sectionName, section.content, planType);
+        result = await businessPlanService.improveSection(id, sectionName, section.content, planType, language);
       } else if (action === 'expand') {
-        result = await businessPlanService.expandSection(id, sectionName, section.content, planType);
+        result = await businessPlanService.expandSection(id, sectionName, section.content, planType, language);
       } else {
-        result = await businessPlanService.simplifySection(id, sectionName, section.content, planType);
+        result = await businessPlanService.simplifySection(id, sectionName, section.content, planType, language);
       }
 
       if (result?.improvedContent) {
-        setEditingContent(result.improvedContent);
+        setEditingContent(markdownToHTML(result.improvedContent));
       } else if (result?.content) {
-        setEditingContent(result.content);
+        setEditingContent(markdownToHTML(result.content));
       } else {
         console.warn('Unexpected AI response structure:', result);
         alert('Received unexpected response from AI service. Please try again.');
@@ -338,17 +804,36 @@ export default function PlanViewPage() {
         filename = `${plan?.title || 'business-plan'}_${new Date().toISOString().split('T')[0]}.docx`;
       }
       
+      // Sanitize filename - remove invalid characters for file systems
+      const sanitizeFilename = (name: string): string => {
+        return name
+          .replace(/[<>:"/\\|?*]/g, '_') // Replace invalid characters with underscore
+          .replace(/\s+/g, '_') // Replace spaces with underscore
+          .replace(/_{2,}/g, '_') // Replace multiple underscores with single
+          .substring(0, 200); // Limit length
+      };
+      
+      const sanitizedFilename = sanitizeFilename(filename);
+      
+      // Create download link
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = filename;
+      link.download = sanitizedFilename;
+      link.style.display = 'none'; // Hide the link
       document.body.appendChild(link);
+      
+      // Trigger download
       link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
+      
+      // Clean up after a short delay to ensure download starts
+      setTimeout(() => {
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      }, 100);
     } catch (error: any) {
       console.error(`Failed to export to ${format}:`, error);
-      alert(`Failed to export to ${format.toUpperCase()}: ${error.message}`);
+      alert(`Failed to export to ${format.toUpperCase()}: ${error.message || 'Unknown error'}`);
     } finally {
       setExporting(null);
     }
@@ -551,8 +1036,13 @@ export default function PlanViewPage() {
                       if (section.id === 'cover') {
                         window.scrollTo({ top: 0, behavior: 'smooth' });
                       } else if (section.id === 'contents') {
-                        if (sections.length > 0) {
-                          scrollToSection(sections[0].sectionName);
+                        const contentsElement = sectionRefs.current['contents'];
+                        if (contentsElement) {
+                          const offset = 120;
+                          const elementPosition = contentsElement.getBoundingClientRect().top;
+                          const offsetPosition = elementPosition + window.pageYOffset - offset;
+                          window.scrollTo({ top: offsetPosition, behavior: 'smooth' });
+                          setActiveSection('contents');
                         }
                       } else {
                         scrollToSection(section.id);
@@ -582,32 +1072,120 @@ export default function PlanViewPage() {
         {/* Main Content */}
         <main className="flex-1 min-w-0">
           {/* Cover Section */}
-          <section className="relative bg-gray-900 dark:bg-gray-950 border-b-8" style={{ borderBottomColor: momentumOrange }}>
+          <section 
+            className="relative border-b-8 group" 
+            style={{ 
+              backgroundColor: (coverImageUrl || plan?.coverSettings?.coverImageUrl) ? 'transparent' : (plan?.coverSettings?.backgroundColor || coverBackgroundColor || '#1A202C'),
+              borderBottomColor: plan?.coverSettings?.accentColor || coverAccentColor || momentumOrange,
+              backgroundImage: (coverImageUrl || plan?.coverSettings?.coverImageUrl) ? `url(${coverImageUrl || plan?.coverSettings?.coverImageUrl})` : 'none',
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              backgroundRepeat: 'no-repeat'
+            }}
+          >
+            {(coverImageUrl || plan?.coverSettings?.coverImageUrl) && (
+              <div className="absolute inset-0 bg-black bg-opacity-40"></div>
+            )}
             <div className="relative py-24 px-8">
               <div className="max-w-5xl mx-auto">
-                <h1 className="text-5xl md:text-6xl lg:text-7xl font-serif text-white mb-6 leading-tight" style={{ fontFamily: 'Georgia, serif' }}>
-                  {plan.title}
-                </h1>
-                {plan.description && (
-                  <p className="text-xl md:text-2xl text-gray-300 mb-10 max-w-3xl leading-relaxed" style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}>
-                    {plan.description}
-                  </p>
-                )}
-                <div className="flex items-center gap-6 text-sm text-gray-400">
-                  <div className="flex items-center gap-2">
-                    <Building2 size={16} />
-                    <span>{plan.businessType || plan.industry || 'Business Plan'}</span>
-                  </div>
-                  {plan.createdAt && (
-                    <div className="flex items-center gap-2">
-                      <Calendar size={16} />
-                      <span>{new Date(plan.createdAt).toLocaleDateString()}</span>
+                <div className="flex items-start justify-between mb-6">
+                  <div className="flex-1">
+                    <h1 className="text-5xl md:text-6xl lg:text-7xl font-serif text-white mb-6 leading-tight drop-shadow-lg" style={{ fontFamily: 'Georgia, serif' }}>
+                      {plan.title}
+                    </h1>
+                    {plan.description && (
+                      <p className="text-xl md:text-2xl text-gray-200 mb-10 max-w-3xl leading-relaxed drop-shadow-md" style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}>
+                        {plan.description}
+                      </p>
+                    )}
+                    <div className="flex items-center gap-6 text-sm text-gray-300">
+                      <div className="flex items-center gap-2">
+                        <Building2 size={16} />
+                        <span>{plan.businessType || plan.industry || 'Business Plan'}</span>
+                      </div>
+                      {plan.createdAt && (
+                        <div className="flex items-center gap-2">
+                          <Calendar size={16} />
+                          <span>{new Date(plan.createdAt).toLocaleDateString()}</span>
+                        </div>
+                      )}
                     </div>
-                  )}
+                  </div>
+                  <button
+                    onClick={() => {
+                      // Initialize modal state with current cover settings
+                      if (plan?.coverSettings) {
+                        setCoverBackgroundColor(plan.coverSettings.backgroundColor || '#1A202C');
+                        setCoverAccentColor(plan.coverSettings.accentColor || momentumOrange);
+                        setCoverImageUrl(plan.coverSettings.coverImageUrl || null);
+                      }
+                      setShowCoverModal(true);
+                    }}
+                    className="opacity-0 group-hover:opacity-100 transition-opacity p-2 text-white hover:bg-white hover:bg-opacity-20 rounded-lg"
+                    title="Customize cover"
+                  >
+                    <Pencil size={20} />
+                  </button>
                 </div>
               </div>
             </div>
           </section>
+
+          {/* Table of Contents Section */}
+          {sections.length > 0 && (
+            <section 
+              id="contents"
+              ref={(el) => (sectionRefs.current['contents'] = el)}
+              className="py-20 px-8 max-w-4xl mx-auto bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800"
+            >
+              <div className="mb-12 pb-8 border-b-2 border-gray-300 dark:border-gray-700">
+                <div className="flex items-start gap-6">
+                  <div className="flex-shrink-0">
+                    <div className="w-16 h-16 bg-gray-900 dark:bg-gray-800 rounded-lg flex items-center justify-center border-2 border-gray-300 dark:border-gray-600">
+                      <BookOpen size={24} className="text-white" />
+                    </div>
+                  </div>
+                  <div className="flex-1 pt-2">
+                    <div className="text-sm uppercase tracking-wider text-gray-500 dark:text-gray-400 font-semibold mb-2">
+                      {t('planView.tableOfContents')}
+                    </div>
+                    <h2 className="text-3xl md:text-4xl font-serif text-gray-900 dark:text-white leading-tight" style={{ fontFamily: 'Georgia, serif' }}>
+                      {t('planView.tableOfContents')}
+                    </h2>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                {sections.map((section, index) => (
+                  <button
+                    key={section.sectionName}
+                    onClick={() => scrollToSection(section.sectionName)}
+                    className="w-full flex items-center justify-between gap-4 p-4 rounded-lg border-2 border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all text-left group"
+                  >
+                    <div className="flex items-center gap-4 flex-1 min-w-0">
+                      <div className="flex-shrink-0 w-10 h-10 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center border-2 border-gray-300 dark:border-gray-600 group-hover:border-orange-500 transition-colors">
+                        <span className="text-lg font-serif text-gray-700 dark:text-gray-300 font-bold" style={{ fontFamily: 'Georgia, serif' }}>
+                          {index + 1}
+                        </span>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm uppercase tracking-wider text-gray-500 dark:text-gray-400 font-semibold mb-1">
+                          {t('planView.chapter')} {index + 1}
+                        </div>
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors">
+                          {section.title}
+                        </h3>
+                      </div>
+                    </div>
+                    <div className="flex-shrink-0 text-gray-400 dark:text-gray-500 group-hover:text-orange-500 transition-colors">
+                      <ChevronDown size={20} className="transform rotate-[-90deg]" />
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </section>
+          )}
 
           {/* Content Sections */}
           <div className="bg-white dark:bg-gray-900">
@@ -618,7 +1196,6 @@ export default function PlanViewPage() {
               </div>
             ) : (
               sections.map((section, sectionIndex) => {
-                const sectionAiLoading = aiLoading[section.sectionName];
                 const isEditing = editingSection === section.sectionName;
 
                 return (
@@ -700,11 +1277,111 @@ export default function PlanViewPage() {
                     >
                       <div className="pt-4">
                         {section.content ? (
-                          <div 
-                            className="prose max-w-none text-gray-700 dark:text-gray-300 leading-relaxed text-lg"
-                            style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}
-                            dangerouslySetInnerHTML={{ __html: section.content }}
-                          />
+                          <>
+                            <div 
+                              className="prose max-w-none text-gray-700 dark:text-gray-300 leading-relaxed text-lg rich-text-content mb-8"
+                              style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}
+                              dangerouslySetInnerHTML={{ __html: parseMarkdown(section.content) }}
+                            />
+                            
+                            {/* Financial Tables - Show in financial-projections section */}
+                            {section.sectionName === 'financial-projections' && (
+                              <div className="mt-8 space-y-12">
+                                {loadingFinancials ? (
+                                  <div className="flex items-center justify-center py-8">
+                                    <Loader2 size={24} className="animate-spin" style={{ color: momentumOrange }} />
+                                  </div>
+                                ) : (
+                                  <>
+                                    {balanceSheetData.length > 0 && (
+                                      <BalanceSheetTable 
+                                        data={balanceSheetData}
+                                        currency="$"
+                                        className="my-8"
+                                      />
+                                    )}
+                                    {cashFlowData.length > 0 && (
+                                      <CashFlowTable 
+                                        data={cashFlowData}
+                                        currency="$"
+                                        className="my-8"
+                                      />
+                                    )}
+                                  </>
+                                )}
+                              </div>
+                            )}
+                            <style>{`
+                              .rich-text-content {
+                                color: #374151;
+                              }
+                              .dark .rich-text-content {
+                                color: #f3f4f6;
+                              }
+                              .rich-text-content h1,
+                              .rich-text-content h2,
+                              .rich-text-content h3,
+                              .rich-text-content h4,
+                              .rich-text-content h5,
+                              .rich-text-content h6 {
+                                font-weight: 700;
+                                margin-top: 1.5em;
+                                margin-bottom: 0.75em;
+                                color: #111827;
+                              }
+                              .dark .rich-text-content h1,
+                              .dark .rich-text-content h2,
+                              .dark .rich-text-content h3,
+                              .dark .rich-text-content h4,
+                              .dark .rich-text-content h5,
+                              .dark .rich-text-content h6 {
+                                color: #ffffff;
+                              }
+                              .rich-text-content p {
+                                margin-bottom: 1em;
+                                line-height: 1.75;
+                              }
+                              .rich-text-content strong,
+                              .rich-text-content b {
+                                font-weight: 700;
+                                color: #111827;
+                              }
+                              .dark .rich-text-content strong,
+                              .dark .rich-text-content b {
+                                color: #ffffff;
+                              }
+                              .rich-text-content em,
+                              .rich-text-content i {
+                                font-style: italic;
+                              }
+                              .rich-text-content ul,
+                              .rich-text-content ol {
+                                margin: 1em 0;
+                                padding-left: 2em;
+                              }
+                              .rich-text-content li {
+                                margin-bottom: 0.5em;
+                              }
+                              .rich-text-content a {
+                                color: #2563eb;
+                                text-decoration: underline;
+                              }
+                              .dark .rich-text-content a {
+                                color: #60a5fa;
+                              }
+                              .rich-text-content blockquote {
+                                border-left: 4px solid #e5e7eb;
+                                padding-left: 1em;
+                                margin: 1em 0;
+                                font-style: italic;
+                                color: #6b7280;
+                              }
+                              .dark .rich-text-content blockquote {
+                                border-left-color: #4b5563;
+                                color: #9ca3af;
+                              }
+                            `}</style>
+                          </>
                         ) : (
                           <div className="text-center py-12 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg">
                         <p className="text-gray-400 dark:text-gray-500 italic mb-4">{t('planView.noContent')}</p>
@@ -784,60 +1461,60 @@ export default function PlanViewPage() {
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                       <button
                         onClick={() => handleAISuggestion(editingSection, 'improve')}
-                        disabled={!!sectionAiLoading}
+                        disabled={!!aiLoading[editingSection!]}
                         className="flex items-center justify-center gap-2 px-4 py-3 rounded-lg transition-all disabled:opacity-50 text-sm font-semibold shadow-sm hover:shadow-md"
                         style={{ 
-                          backgroundColor: sectionAiLoading === 'improve' ? momentumOrange : 'white',
-                          color: sectionAiLoading === 'improve' ? 'white' : strategyBlue,
-                          border: sectionAiLoading === 'improve' ? 'none' : `2px solid ${momentumOrange}`
+                          backgroundColor: aiLoading[editingSection!] === 'improve' ? momentumOrange : 'white',
+                          color: aiLoading[editingSection!] === 'improve' ? 'white' : strategyBlue,
+                          border: aiLoading[editingSection!] === 'improve' ? 'none' : `2px solid ${momentumOrange}`
                         }}
                         onMouseEnter={(e) => {
-                          if (!sectionAiLoading && sectionAiLoading !== 'improve') {
+                          if (!aiLoading[editingSection!]) {
                             e.currentTarget.style.backgroundColor = momentumOrange;
                             e.currentTarget.style.color = 'white';
                             e.currentTarget.style.borderColor = momentumOrange;
                           }
                         }}
                         onMouseLeave={(e) => {
-                          if (!sectionAiLoading && sectionAiLoading !== 'improve') {
+                          if (!aiLoading[editingSection!]) {
                             e.currentTarget.style.backgroundColor = 'white';
                             e.currentTarget.style.color = strategyBlue;
                             e.currentTarget.style.borderColor = momentumOrange;
                           }
                         }}
                       >
-                        {sectionAiLoading === 'improve' ? (
+                        {aiLoading[editingSection!] === 'improve' ? (
                           <Loader2 size={16} className="animate-spin" />
                         ) : (
                           <ArrowUp size={16} />
                         )}
-                        Improve
+                        {t('planView.improve')}
                       </button>
                       <button
                         onClick={() => handleAISuggestion(editingSection, 'expand')}
-                        disabled={!!sectionAiLoading}
+                        disabled={!!aiLoading[editingSection!]}
                         className="flex items-center justify-center gap-2 px-4 py-3 rounded-lg transition-all disabled:opacity-50 text-sm font-semibold shadow-sm hover:shadow-md"
                         style={{ 
-                          backgroundColor: sectionAiLoading === 'expand' ? momentumOrange : 'white',
-                          color: sectionAiLoading === 'expand' ? 'white' : strategyBlue,
-                          border: sectionAiLoading === 'expand' ? 'none' : `2px solid ${momentumOrange}`
+                          backgroundColor: aiLoading[editingSection!] === 'expand' ? momentumOrange : 'white',
+                          color: aiLoading[editingSection!] === 'expand' ? 'white' : strategyBlue,
+                          border: aiLoading[editingSection!] === 'expand' ? 'none' : `2px solid ${momentumOrange}`
                         }}
                         onMouseEnter={(e) => {
-                          if (!sectionAiLoading && sectionAiLoading !== 'expand') {
+                          if (!aiLoading[editingSection!]) {
                             e.currentTarget.style.backgroundColor = momentumOrange;
                             e.currentTarget.style.color = 'white';
                             e.currentTarget.style.borderColor = momentumOrange;
                           }
                         }}
                         onMouseLeave={(e) => {
-                          if (!sectionAiLoading && sectionAiLoading !== 'expand') {
+                          if (!aiLoading[editingSection!]) {
                             e.currentTarget.style.backgroundColor = 'white';
                             e.currentTarget.style.color = strategyBlue;
                             e.currentTarget.style.borderColor = momentumOrange;
                           }
                         }}
                       >
-                        {sectionAiLoading === 'expand' ? (
+                        {aiLoading[editingSection!] === 'expand' ? (
                           <Loader2 size={16} className="animate-spin" />
                         ) : (
                           <ArrowDown size={16} />
@@ -846,34 +1523,34 @@ export default function PlanViewPage() {
                       </button>
                       <button
                         onClick={() => handleAISuggestion(editingSection, 'simplify')}
-                        disabled={!!sectionAiLoading}
+                        disabled={!!aiLoading[editingSection!]}
                         className="flex items-center justify-center gap-2 px-4 py-3 rounded-lg transition-all disabled:opacity-50 text-sm font-semibold shadow-sm hover:shadow-md"
                         style={{ 
-                          backgroundColor: sectionAiLoading === 'simplify' ? momentumOrange : 'white',
-                          color: sectionAiLoading === 'simplify' ? 'white' : strategyBlue,
-                          border: sectionAiLoading === 'simplify' ? 'none' : `2px solid ${momentumOrange}`
+                          backgroundColor: aiLoading[editingSection!] === 'simplify' ? momentumOrange : 'white',
+                          color: aiLoading[editingSection!] === 'simplify' ? 'white' : strategyBlue,
+                          border: aiLoading[editingSection!] === 'simplify' ? 'none' : `2px solid ${momentumOrange}`
                         }}
                         onMouseEnter={(e) => {
-                          if (!sectionAiLoading && sectionAiLoading !== 'simplify') {
+                          if (!aiLoading[editingSection!]) {
                             e.currentTarget.style.backgroundColor = momentumOrange;
                             e.currentTarget.style.color = 'white';
                             e.currentTarget.style.borderColor = momentumOrange;
                           }
                         }}
                         onMouseLeave={(e) => {
-                          if (!sectionAiLoading && sectionAiLoading !== 'simplify') {
+                          if (!aiLoading[editingSection!]) {
                             e.currentTarget.style.backgroundColor = 'white';
                             e.currentTarget.style.color = strategyBlue;
                             e.currentTarget.style.borderColor = momentumOrange;
                           }
                         }}
                       >
-                        {sectionAiLoading === 'simplify' ? (
+                        {aiLoading[editingSection!] === 'simplify' ? (
                           <Loader2 size={16} className="animate-spin" />
                         ) : (
                           <Minus size={16} />
                         )}
-                        Simplify
+                        {t('planView.simplify')}
                       </button>
                     </div>
                   </div>
@@ -1091,6 +1768,242 @@ export default function PlanViewPage() {
                   </div>
                 </>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Cover Customization Modal */}
+      {showCoverModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+            {/* Modal Header */}
+            <div className="p-6 border-b-2 border-gray-200 dark:border-gray-700 flex items-center justify-between">
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-white">{t('planView.customizeCover')}</h3>
+              <button
+                onClick={() => setShowCoverModal(false)}
+                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+              >
+                <X size={24} />
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <div className="flex-1 overflow-y-auto p-6">
+              {/* Preview */}
+              <div className="mb-6">
+                <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">{t('planView.preview')}</h4>
+                <div 
+                  className="relative rounded-lg overflow-hidden border-2 border-gray-300 dark:border-gray-600"
+                  style={{ 
+                    backgroundColor: coverImageUrl ? 'transparent' : coverBackgroundColor,
+                    backgroundImage: coverImageUrl ? `url(${coverImageUrl})` : 'none',
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    minHeight: '200px'
+                  }}
+                >
+                  {coverImageUrl && <div className="absolute inset-0 bg-black bg-opacity-40"></div>}
+                  <div className="relative p-8">
+                    <h2 className="text-3xl font-serif text-white mb-4 drop-shadow-lg" style={{ fontFamily: 'Georgia, serif' }}>
+                      {plan?.title || 'Business Plan'}
+                    </h2>
+                    <div className="h-2 rounded" style={{ backgroundColor: coverAccentColor, width: '100px' }}></div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Background Color Options */}
+              <div className="mb-6">
+                <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">{t('planView.backgroundColor')}</h4>
+                <div className="grid grid-cols-4 sm:grid-cols-6 gap-3">
+                  {[
+                    { name: 'Dark Blue', value: '#1A202C' },
+                    { name: 'Navy', value: '#1A2B47' },
+                    { name: 'Charcoal', value: '#2D3748' },
+                    { name: 'Slate', value: '#4A5568' },
+                    { name: 'Teal', value: '#2C7A7B' },
+                    { name: 'Indigo', value: '#4C51BF' },
+                    { name: 'Purple', value: '#6B46C1' },
+                    { name: 'Rose', value: '#BE185D' },
+                    { name: 'Orange', value: '#C05621' },
+                    { name: 'Green', value: '#22543D' },
+                    { name: 'Red', value: '#742A2A' },
+                    { name: 'Gray', value: '#4A5568' }
+                  ].map((color) => (
+                    <button
+                      key={color.value}
+                      onClick={() => {
+                        setCoverBackgroundColor(color.value);
+                        setCoverImageUrl(null);
+                      }}
+                      className={`w-full h-16 rounded-lg border-2 transition-all ${
+                        coverBackgroundColor === color.value && !coverImageUrl
+                          ? 'border-gray-900 dark:border-white ring-2 ring-offset-2'
+                          : 'border-gray-300 dark:border-gray-600 hover:border-gray-400'
+                      }`}
+                      style={{ backgroundColor: color.value }}
+                      title={color.name}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              {/* Accent Color Options */}
+              <div className="mb-6">
+                <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">{t('planView.accentColor')}</h4>
+                <div className="grid grid-cols-4 sm:grid-cols-6 gap-3">
+                  {[
+                    { name: 'Orange', value: '#FF6B00' },
+                    { name: 'Blue', value: '#2563EB' },
+                    { name: 'Green', value: '#10B981' },
+                    { name: 'Red', value: '#EF4444' },
+                    { name: 'Purple', value: '#8B5CF6' },
+                    { name: 'Pink', value: '#EC4899' },
+                    { name: 'Yellow', value: '#F59E0B' },
+                    { name: 'Teal', value: '#14B8A6' },
+                    { name: 'Indigo', value: '#6366F1' },
+                    { name: 'Cyan', value: '#06B6D4' },
+                    { name: 'Amber', value: '#F97316' },
+                    { name: 'Emerald', value: '#059669' }
+                  ].map((color) => (
+                    <button
+                      key={color.value}
+                      onClick={() => setCoverAccentColor(color.value)}
+                      className={`w-full h-16 rounded-lg border-2 transition-all ${
+                        coverAccentColor === color.value
+                          ? 'border-gray-900 dark:border-white ring-2 ring-offset-2'
+                          : 'border-gray-300 dark:border-gray-600 hover:border-gray-400'
+                      }`}
+                      style={{ backgroundColor: color.value }}
+                      title={color.name}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              {/* Cover Image Upload */}
+              <div className="mb-6">
+                <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">{t('planView.coverImage')}</h4>
+                <div className="space-y-3">
+                  {coverImageUrl && (
+                    <div className="relative rounded-lg overflow-hidden border-2 border-gray-300 dark:border-gray-600">
+                      <img 
+                        src={coverImageUrl} 
+                        alt="Cover preview" 
+                        className="w-full h-48 object-cover"
+                      />
+                      <button
+                        onClick={() => setCoverImageUrl(null)}
+                        className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+                        title={t('planView.removeImage')}
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    </div>
+                  )}
+                  <input
+                    ref={coverImageInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file || !id) return;
+
+                      try {
+                        setUploadingCoverImage(true);
+                        // Validate file type
+                        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+                        if (!allowedTypes.includes(file.type)) {
+                          alert('Please select a valid image file (JPEG, PNG, GIF, or WebP)');
+                          return;
+                        }
+
+                        // Validate file size (10MB max)
+                        const maxSize = 10 * 1024 * 1024;
+                        if (file.size > maxSize) {
+                          alert('File size must be less than 10MB');
+                          return;
+                        }
+
+                        const imageUrl = await businessPlanService.uploadCoverImage(id, file);
+                        setCoverImageUrl(imageUrl);
+                      } catch (error: any) {
+                        console.error('Failed to upload cover image:', error);
+                        alert(`Failed to upload image: ${error.message || 'Unknown error'}`);
+                      } finally {
+                        setUploadingCoverImage(false);
+                      }
+                    }}
+                    className="hidden"
+                  />
+                  <button
+                    onClick={() => coverImageInputRef.current?.click()}
+                    disabled={uploadingCoverImage}
+                    className="w-full flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg hover:border-gray-400 dark:hover:border-gray-500 transition-colors disabled:opacity-50"
+                  >
+                    {uploadingCoverImage ? (
+                      <>
+                        <Loader2 size={18} className="animate-spin" />
+                        <span className="text-gray-700 dark:text-gray-300">{t('planView.uploading')}...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Upload size={18} className="text-gray-600 dark:text-gray-400" />
+                        <span className="text-gray-700 dark:text-gray-300">{coverImageUrl ? t('planView.changeImage') : t('planView.uploadImage')}</span>
+                      </>
+                    )}
+                  </button>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">{t('planView.imageUploadHint')}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-6 border-t-2 border-gray-200 dark:border-gray-700 flex items-center justify-between">
+              <button
+                onClick={() => setShowCoverModal(false)}
+                className="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors font-semibold"
+              >
+                {t('planView.cancel')}
+              </button>
+              <button
+                onClick={async () => {
+                  if (!id) return;
+                  try {
+                    setSavingCover(true);
+                    await businessPlanService.updateCoverSettings(id, {
+                      backgroundColor: coverBackgroundColor,
+                      accentColor: coverAccentColor,
+                      coverImageUrl: coverImageUrl || undefined
+                    });
+                    await loadPlan();
+                    setShowCoverModal(false);
+                  } catch (error: any) {
+                    console.error('Failed to save cover settings:', error);
+                    alert(`Failed to save cover settings: ${error.message || 'Unknown error'}`);
+                  } finally {
+                    setSavingCover(false);
+                  }
+                }}
+                disabled={savingCover}
+                className="flex items-center gap-2 px-6 py-2 text-white rounded-lg transition-colors disabled:opacity-50 font-semibold"
+                style={{ backgroundColor: momentumOrange }}
+                onMouseEnter={(e) => !savingCover && (e.currentTarget.style.backgroundColor = momentumOrangeHover)}
+                onMouseLeave={(e) => !savingCover && (e.currentTarget.style.backgroundColor = momentumOrange)}
+              >
+                {savingCover ? (
+                  <>
+                    <Loader2 size={18} className="animate-spin" />
+                    {t('planView.saving')}...
+                  </>
+                ) : (
+                  <>
+                    <Save size={18} />
+                    {t('planView.saveChanges')}
+                  </>
+                )}
+              </button>
             </div>
           </div>
         </div>

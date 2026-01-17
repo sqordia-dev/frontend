@@ -428,8 +428,14 @@ export default function SubscriptionPage() {
           <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4" style={{ backgroundColor: theme === 'dark' ? '#7F1D1D' : '#FEE2E2' }}>
             <AlertCircle className="w-8 h-8" style={{ color: theme === 'dark' ? '#FCA5A5' : '#DC2626' }} />
           </div>
-          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Error Loading Subscription</h2>
-          <p className="mb-6" style={{ color: theme === 'dark' ? '#FCA5A5' : '#DC2626' }}>{error}</p>
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+            {t('subscription.errorLoading') || 'Error Loading Subscription'}
+          </h2>
+          <p className="mb-6" style={{ color: theme === 'dark' ? '#FCA5A5' : '#DC2626' }}>
+            {error === 'Network Error' || error?.includes('Network Error') || error?.includes('CORS')
+              ? (t('subscription.networkError') || 'Network error: Unable to connect to the server. Please check your connection and try again.')
+              : error}
+          </p>
           <button
             onClick={() => loadSubscription(true)}
             className="px-6 py-3 rounded-xl transition-all shadow-lg hover:shadow-xl font-semibold text-white"
@@ -437,7 +443,7 @@ export default function SubscriptionPage() {
             onMouseEnter={(e) => e.currentTarget.style.backgroundColor = momentumOrangeHover}
             onMouseLeave={(e) => e.currentTarget.style.backgroundColor = momentumOrange}
           >
-            Try Again
+            {t('subscription.tryAgain') || 'Try Again'}
           </button>
         </div>
       </div>

@@ -3,6 +3,10 @@ import { createRoot } from 'react-dom/client';
 import App from './App.tsx';
 import './index.css';
 import { ThemeProvider } from './contexts/ThemeContext';
+import { suppressKnownWarnings } from './utils/suppressWarnings';
+
+// Suppress known warnings from third-party libraries (e.g., react-quill)
+suppressKnownWarnings();
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

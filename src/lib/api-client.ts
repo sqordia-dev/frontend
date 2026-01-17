@@ -11,15 +11,12 @@ const getApiBaseUrl = (): string => {
   console.log('[API Config] VITE_API_URL from env:', envUrl);
   console.log('[API Config] import.meta.env.MODE:', mode);
   
-  // In development mode, use relative URLs to leverage Vite proxy
+  // In development mode, ALWAYS use relative URLs to leverage Vite proxy
+  // This avoids CORS issues since the proxy forwards requests to the backend
   if (mode === 'development') {
-    // If VITE_API_URL is explicitly set, use it (for cases where proxy isn't desired)
-    if (envUrl && envUrl.trim() !== '') {
-      console.log('[API Config] Using environment variable in development:', envUrl);
-      return envUrl;
-    }
-    // Otherwise, use relative URL to go through Vite proxy
-    console.log('[API Config] Using relative URL for Vite proxy in development');
+    // Always use relative URL to go through Vite proxy in development
+    // The proxy is configured in vite.config.ts to forward /api requests to http://localhost:5241
+    console.log('[API Config] Using relative URL for Vite proxy in development (ignoring VITE_API_URL to avoid CORS)');
     return '';
   }
   
