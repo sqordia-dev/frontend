@@ -31,6 +31,7 @@ export default function ProfilePage() {
     profilePictureUrl: ''
   });
   const [profilePicturePreview, setProfilePicturePreview] = useState<string | null>(null);
+  const [profileImageError, setProfileImageError] = useState(false);
   const [uploadingPicture, setUploadingPicture] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -70,6 +71,7 @@ export default function ProfilePage() {
         profilePictureUrl: data.profilePictureUrl || ''
       });
       setProfilePicturePreview(data.profilePictureUrl || null);
+      setProfileImageError(false); // Reset error when profile loads
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -115,9 +117,16 @@ export default function ProfilePage() {
       // Upload file
       const fileUrl = await profileService.uploadProfilePicture(file);
       
+      // Check if URL is from mock storage (development/testing)
+      if (fileUrl.includes('mock-storage.local')) {
+        console.warn('Profile picture uploaded to mock storage. This is likely a development/testing environment.');
+        // In production, you might want to show a warning or handle this differently
+      }
+      
       // Update profile with new picture URL
       setProfile({ ...profile, profilePictureUrl: fileUrl });
       setProfilePicturePreview(fileUrl);
+      setProfileImageError(false);
       
       // Also update the profile in the backend
       await profileService.updateProfile({
@@ -129,6 +138,11 @@ export default function ProfilePage() {
       
       setSuccess('Profile picture uploaded successfully');
       
+      // Clear success message after 5 seconds
+      setTimeout(() => {
+        setSuccess(null);
+      }, 5000);
+      
       // Reload user data to update the sidebar
       try {
         const userData = await authService.getCurrentUser();
@@ -137,7 +151,10 @@ export default function ProfilePage() {
         console.error('Failed to reload user data:', err);
       }
     } catch (err: any) {
-      setError(err.message || 'Failed to upload profile picture');
+      console.error('Profile picture upload error:', err);
+      const errorMessage = err.message || err.response?.data?.message || err.response?.data?.errorMessage || 'Failed to upload profile picture';
+      setError(errorMessage);
+      setProfileImageError(true);
     } finally {
       setUploadingPicture(false);
     }
@@ -167,6 +184,11 @@ export default function ProfilePage() {
         profilePictureUrl: profile.profilePictureUrl || undefined
       });
       setSuccess('Profile updated successfully');
+      
+      // Clear success message after 5 seconds
+      setTimeout(() => {
+        setSuccess(null);
+      }, 5000);
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -325,19 +347,23 @@ export default function ProfilePage() {
                   </label>
                   <div className="flex items-center gap-6">
                     <div className="relative">
-                      {profilePicturePreview ? (
+                      {(profile.profilePictureUrl || profilePicturePreview) && !profileImageError ? (
                         <div className="relative group">
                           <img
-                            src={profilePicturePreview}
+                            src={profilePicturePreview || profile.profilePictureUrl}
                             alt="Profile"
-                            className="w-24 h-24 rounded-full object-cover border-2 border-gray-300 dark:border-gray-600"
-                            onError={() => setProfilePicturePreview(null)}
+                            className="w-24 h-24 rounded-full object-cover border-2 border-gray-200 dark:border-gray-700"
+                            onError={() => {
+                              setProfileImageError(true);
+                              setProfilePicturePreview(null);
+                            }}
                           />
                           <button
                             type="button"
                             onClick={() => {
                               setProfilePicturePreview(null);
                               setProfile({ ...profile, profilePictureUrl: '' });
+                              setProfileImageError(false);
                             }}
                             className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
                           >
@@ -345,8 +371,8 @@ export default function ProfilePage() {
                           </button>
                         </div>
                       ) : (
-                        <div className="w-24 h-24 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center border-2 border-gray-300 dark:border-gray-600">
-                          <User className="text-gray-400" size={40} />
+                        <div className="w-24 h-24 rounded-full flex items-center justify-center border-2 border-gray-200 dark:border-gray-700" style={{ backgroundColor: lightAIGrey }}>
+                          <User size={40} className="dark:text-gray-300" style={{ color: strategyBlue }} />
                         </div>
                       )}
                     </div>
@@ -389,12 +415,33 @@ export default function ProfilePage() {
                           type="url"
                           value={profile.profilePictureUrl}
                           onChange={(e) => {
-                            const url = e.target.value;
+                            const url = e.target.value.trim();
                             setProfile({ ...profile, profilePictureUrl: url });
+                            setError(null); // Clear any previous errors
+                            setProfileImageError(false);
                             if (url) {
-                              setProfilePicturePreview(url);
+                              // Validate URL format
+                              try {
+                                new URL(url);
+                                setProfilePicturePreview(url);
+                              } catch {
+                                // Invalid URL, but don't show error yet - let user finish typing
+                                setProfilePicturePreview(null);
+                              }
                             } else {
                               setProfilePicturePreview(null);
+                            }
+                          }}
+                          onBlur={(e) => {
+                            const url = e.target.value.trim();
+                            if (url) {
+                              try {
+                                new URL(url);
+                                // URL is valid
+                              } catch {
+                                setError('Please enter a valid URL (e.g., https://example.com/image.jpg)');
+                                setProfilePicturePreview(null);
+                              }
                             }
                           }}
                           placeholder="Or enter a URL to your profile picture"
