@@ -160,7 +160,9 @@ export default function PlanViewTour({ onStartTour }: PlanViewTourProps = {}) {
     }
     
     setHighlightedElement(element);
-    element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    // On mobile, use 'nearest' to avoid excessive scrolling
+    const isMobile = window.innerWidth < 640;
+    element.scrollIntoView({ behavior: 'smooth', block: isMobile ? 'nearest' : 'center' });
     
     // Calculate popup position relative to element
     setTimeout(() => {
@@ -173,9 +175,9 @@ export default function PlanViewTour({ onStartTour }: PlanViewTourProps = {}) {
       const spaceLeft = rect.left;
       const spaceBottom = window.innerHeight - rect.bottom;
       const spaceTop = rect.top;
-      const popupWidth = 500;
-      const popupHeight = 300;
-      const gap = 20;
+      const popupWidth = isMobile ? Math.min(340, window.innerWidth - 20) : 500;
+      const popupHeight = isMobile ? 250 : 300;
+      const gap = isMobile ? 10 : 20;
       
       let position: 'top' | 'bottom' | 'left' | 'right' = 'right';
       let top = 0;
@@ -198,9 +200,16 @@ export default function PlanViewTour({ onStartTour }: PlanViewTourProps = {}) {
         top = rect.top + scrollY - popupHeight - gap;
         left = rect.left + scrollX + (rect.width / 2);
       } else {
-        position = 'right';
-        top = Math.max(20, Math.min(rect.top + scrollY + (rect.height / 2), window.innerHeight + scrollY - popupHeight - 20));
-        left = rect.right + scrollX + gap;
+        // On mobile, prefer center position to avoid overflow
+        if (isMobile) {
+          position = 'center';
+          top = window.innerHeight / 2;
+          left = window.innerWidth / 2;
+        } else {
+          position = 'right';
+          top = Math.max(20, Math.min(rect.top + scrollY + (rect.height / 2), window.innerHeight + scrollY - popupHeight - 20));
+          left = rect.right + scrollX + gap;
+        }
       }
       
       setPopupPosition({ top, left, position });
@@ -262,13 +271,19 @@ export default function PlanViewTour({ onStartTour }: PlanViewTourProps = {}) {
   const isFirstStep = currentStep === 0;
   const isLastStep = currentStep === steps.length - 1;
 
-  // Ensure popup is visible with minimum position values
+  // Ensure popup is visible with minimum position values - mobile-first approach
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 640; // sm breakpoint
+  const maxPopupWidth = isMobile 
+    ? Math.min(340, window.innerWidth - 20) // Smaller on mobile with minimal padding
+    : Math.min(500, window.innerWidth - 40); // Account for padding on desktop
   const safeTop = popupPosition.position === 'center' 
     ? window.innerHeight / 2 
-    : Math.max(20, popupPosition.top);
+    : Math.max(10, Math.min(popupPosition.top, window.innerHeight - 200)); // Ensure it fits on screen
   const safeLeft = popupPosition.position === 'center'
     ? window.innerWidth / 2
-    : Math.max(20, Math.min(popupPosition.left, window.innerWidth - 520));
+    : isMobile
+    ? Math.max(10, Math.min(popupPosition.left, window.innerWidth - maxPopupWidth - 10)) // Mobile: minimal padding
+    : Math.max(20, Math.min(popupPosition.left, window.innerWidth - maxPopupWidth - 20)); // Desktop: more padding
 
   const getTransform = () => {
     if (popupPosition.position === 'center') {
@@ -289,12 +304,15 @@ export default function PlanViewTour({ onStartTour }: PlanViewTourProps = {}) {
       <div 
         className="fixed z-[9999] transition-all duration-300"
         style={{
-          top: `${safeTop}px`,
-          left: `${safeLeft}px`,
-          transform: getTransform(),
-          maxWidth: '500px',
-          width: '90%',
-          minWidth: '320px',
+          top: isMobile && popupPosition.position !== 'center' ? '10px' : `${safeTop}px`,
+          left: isMobile && popupPosition.position !== 'center' ? '10px' : `${safeLeft}px`,
+          right: isMobile && popupPosition.position !== 'center' ? '10px' : 'auto',
+          transform: isMobile && popupPosition.position !== 'center' ? 'none' : getTransform(),
+          maxWidth: `${maxPopupWidth}px`,
+          width: isMobile ? 'calc(100vw - 20px)' : 'calc(100vw - 40px)',
+          minWidth: isMobile ? '280px' : '320px',
+          maxHeight: isMobile ? 'calc(100vh - 20px)' : 'auto',
+          overflowY: 'auto',
         }}
       >
         <div 
@@ -352,32 +370,32 @@ export default function PlanViewTour({ onStartTour }: PlanViewTourProps = {}) {
             />
           )}
           {/* Header */}
-          <div className="p-6 border-b-2" style={{ borderColor: theme === 'dark' ? '#374151' : '#E5E7EB' }}>
-            <div className="flex items-start justify-between mb-4">
-              <div className="flex items-center gap-4">
+          <div className="p-4 sm:p-6 border-b-2" style={{ borderColor: theme === 'dark' ? '#374151' : '#E5E7EB' }}>
+            <div className="flex items-start justify-between gap-3 mb-3 sm:mb-4">
+              <div className="flex items-center gap-2 sm:gap-4 flex-1 min-w-0">
                 <div 
-                  className="w-12 h-12 rounded-xl flex items-center justify-center"
+                  className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center flex-shrink-0"
                   style={{ backgroundColor: momentumOrange }}
                 >
-                  <Icon className="text-white" size={24} />
+                  <Icon className="text-white" size={isMobile ? 20 : 24} />
                 </div>
-                <div>
-                  <h3 className="text-xl font-bold dark:text-white" style={{ color: theme === 'dark' ? undefined : strategyBlue }}>
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-lg sm:text-xl font-bold dark:text-white break-words" style={{ color: theme === 'dark' ? undefined : strategyBlue }}>
                     {step.title}
                   </h3>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                  <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1">
                     {language === 'fr' ? 'Étape' : 'Step'} {currentStep + 1} {language === 'fr' ? 'sur' : 'of'} {steps.length}
                   </p>
                 </div>
               </div>
               <button
                 onClick={skipTour}
-                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors p-1.5 sm:p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg flex-shrink-0"
               >
-                <X size={20} />
+                <X size={isMobile ? 18 : 20} />
               </button>
             </div>
-            <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
+            <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 leading-relaxed break-words">
               {step.description}
             </p>
           </div>

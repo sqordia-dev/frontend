@@ -2,7 +2,6 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft,
-  Brain,
   Download,
   FileText,
   Calendar,
@@ -10,7 +9,6 @@ import {
   AlertCircle,
   Share2,
   X,
-  Eye,
   Save,
   ArrowUp,
   ArrowDown,
@@ -22,7 +20,6 @@ import {
   BookOpen,
   ChevronDown,
   ChevronUp,
-  Image as ImageIcon,
   Upload,
   Trash2,
   Menu
@@ -994,7 +991,7 @@ export default function PlanViewPage() {
       />
       {/* Top Navigation Bar */}
       <nav className="plan-view-header bg-white dark:bg-gray-800 border-b-2 border-gray-200 dark:border-gray-700 sticky top-0 z-20 shadow-sm">
-        <div className="px-6 py-3">
+        <div className="px-3 sm:px-4 md:px-6 py-2 sm:py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <Link
@@ -1025,32 +1022,32 @@ export default function PlanViewPage() {
                 <Sparkles size={18} />
                 <span className="text-sm">{language === 'fr' ? 'Visite guidée' : 'Show Tour'}</span>
               </button>
-              <div className="plan-export-buttons flex items-center gap-2">
+              <div className="plan-export-buttons flex items-center gap-1 sm:gap-2 flex-wrap">
               <button
                 onClick={() => handleExport('pdf')}
                 disabled={exporting === 'pdf'}
-                className="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-700 dark:text-gray-300 border-2 border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
+                className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1.5 text-xs sm:text-sm text-gray-700 dark:text-gray-300 border-2 border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
               >
-                {exporting === 'pdf' ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
-                <span className="hidden sm:inline">{t('planView.pdf')}</span>
+                {exporting === 'pdf' ? <Loader2 size={14} className="animate-spin sm:w-4 sm:h-4" /> : <Download size={14} className="sm:w-4 sm:h-4" />}
+                <span className="hidden xs:inline sm:inline">{t('planView.pdf')}</span>
               </button>
               <button
                 onClick={() => handleExport('word')}
                 disabled={exporting === 'word'}
-                className="flex items-center gap-2 px-3 py-1.5 text-sm text-white rounded-lg transition-colors disabled:opacity-50"
+                className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1.5 text-xs sm:text-sm text-white rounded-lg transition-colors disabled:opacity-50"
                 style={{ backgroundColor: momentumOrange }}
                 onMouseEnter={(e) => !(exporting === 'word') && (e.currentTarget.style.backgroundColor = momentumOrangeHover)}
                 onMouseLeave={(e) => !(exporting === 'word') && (e.currentTarget.style.backgroundColor = momentumOrange)}
               >
-                {exporting === 'word' ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
-                <span className="hidden sm:inline">{t('planView.word')}</span>
+                {exporting === 'word' ? <Loader2 size={14} className="animate-spin sm:w-4 sm:h-4" /> : <Download size={14} className="sm:w-4 sm:h-4" />}
+                <span className="hidden xs:inline sm:inline">{t('planView.word')}</span>
               </button>
               <button
                 onClick={() => setShowShareModal(true)}
                 className="p-1.5 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
                 title={t('planView.share')}
               >
-                <Share2 size={18} />
+                <Share2 size={16} className="sm:w-[18px] sm:h-[18px]" />
               </button>
               </div>
             </div>
@@ -1067,9 +1064,9 @@ export default function PlanViewPage() {
       )}
 
       {/* Main Layout */}
-      <div className="flex min-h-screen">
+      <div className="flex min-h-screen overflow-x-hidden">
         {/* Sidebar Navigation */}
-        <aside className={`plan-sidebar fixed lg:sticky inset-y-0 left-0 z-50 lg:z-30 w-64 flex-shrink-0 bg-white dark:bg-gray-800 border-r-2 border-gray-300 dark:border-gray-700 lg:top-[57px] h-screen lg:h-[calc(100vh-57px)] overflow-y-auto transform transition-transform duration-300 ease-in-out ${
+        <aside className={`plan-sidebar fixed lg:sticky inset-y-0 left-0 z-50 lg:z-30 w-[280px] sm:w-64 flex-shrink-0 bg-white dark:bg-gray-800 border-r-2 border-gray-300 dark:border-gray-700 lg:top-[57px] h-screen lg:h-[calc(100vh-57px)] overflow-y-auto transform transition-transform duration-300 ease-in-out ${
           mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         }`}>
           {/* Mobile Close Button */}
@@ -1180,26 +1177,26 @@ export default function PlanViewPage() {
             {(coverImageUrl || plan?.coverSettings?.coverImageUrl) && (
               <div className="absolute inset-0 bg-black bg-opacity-40"></div>
             )}
-            <div className="relative py-24 px-8">
+            <div className="relative py-12 sm:py-16 md:py-24 px-4 sm:px-6 md:px-8">
               <div className="max-w-5xl mx-auto">
-                <div className="flex items-start justify-between mb-6">
-                  <div className="flex-1">
-                    <h1 className="text-5xl md:text-6xl lg:text-7xl font-serif text-white mb-6 leading-tight drop-shadow-lg" style={{ fontFamily: 'Georgia, serif' }}>
+                <div className="flex flex-col sm:flex-row items-start justify-between gap-4 mb-6">
+                  <div className="flex-1 min-w-0">
+                    <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-serif text-white mb-4 sm:mb-6 leading-tight drop-shadow-lg break-words" style={{ fontFamily: 'Georgia, serif' }}>
                       {plan.title}
                     </h1>
                     {plan.description && (
-                      <p className="text-xl md:text-2xl text-gray-200 mb-10 max-w-3xl leading-relaxed drop-shadow-md" style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}>
+                      <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-gray-200 mb-6 sm:mb-8 md:mb-10 max-w-3xl leading-relaxed drop-shadow-md break-words" style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}>
                         {plan.description}
                       </p>
                     )}
-                    <div className="flex items-center gap-6 text-sm text-gray-300">
+                    <div className="flex flex-wrap items-center gap-3 sm:gap-6 text-xs sm:text-sm text-gray-300">
                       <div className="flex items-center gap-2">
-                        <Building2 size={16} />
-                        <span>{plan.businessType || plan.industry || 'Business Plan'}</span>
+                        <Building2 size={14} className="sm:w-4 sm:h-4" />
+                        <span className="break-words">{plan.businessType || plan.industry || 'Business Plan'}</span>
                       </div>
                       {plan.createdAt && (
                         <div className="flex items-center gap-2">
-                          <Calendar size={16} />
+                          <Calendar size={14} className="sm:w-4 sm:h-4" />
                           <span>{new Date(plan.createdAt).toLocaleDateString()}</span>
                         </div>
                       )}
@@ -1229,8 +1226,8 @@ export default function PlanViewPage() {
           {sections.length > 0 && (
             <section 
               id="contents"
-              ref={(el) => (sectionRefs.current['contents'] = el)}
-              className="py-20 px-8 max-w-4xl mx-auto bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800"
+              ref={(el) => (sectionRefs.current['contents'] = el as HTMLDivElement | null)}
+              className="py-12 sm:py-16 md:py-20 px-4 sm:px-6 md:px-8 max-w-4xl mx-auto bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800"
             >
               <div className="mb-12 pb-8 border-b-2 border-gray-300 dark:border-gray-700">
                 <div className="flex items-start gap-6">
@@ -1296,8 +1293,8 @@ export default function PlanViewPage() {
                   <section
                     key={section.sectionName}
                     id={section.sectionName}
-                    ref={(el) => (sectionRefs.current[section.sectionName] = el)}
-                    className="plan-content-section py-20 px-8 max-w-4xl mx-auto border-b border-gray-200 dark:border-gray-800 last:border-b-0 relative group"
+                    ref={(el) => (sectionRefs.current[section.sectionName] = el as HTMLDivElement | null)}
+                    className="plan-content-section py-12 sm:py-16 md:py-20 px-4 sm:px-6 md:px-8 max-w-4xl mx-auto border-b border-gray-200 dark:border-gray-800 last:border-b-0 relative group"
                     onMouseEnter={() => setHoveredSection(section.sectionName)}
                     onMouseLeave={() => setHoveredSection(null)}
                   >
@@ -1373,7 +1370,7 @@ export default function PlanViewPage() {
                         {section.content ? (
                           <>
                             <div 
-                              className="prose max-w-none text-gray-700 dark:text-gray-300 leading-relaxed text-lg rich-text-content mb-8"
+                              className="prose max-w-none text-gray-700 dark:text-gray-300 leading-relaxed text-base sm:text-lg rich-text-content mb-8 break-words overflow-wrap-anywhere"
                               style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}
                               dangerouslySetInnerHTML={{ __html: parseMarkdown(section.content) }}
                             />
@@ -1503,28 +1500,28 @@ export default function PlanViewPage() {
 
       {/* Edit Modal */}
       {editingSection && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-0 md:p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-none md:rounded-xl shadow-2xl max-w-5xl w-full h-full md:h-auto md:max-h-[90vh] overflow-hidden flex flex-col">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-0 sm:p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-none sm:rounded-xl shadow-2xl max-w-5xl w-full h-full sm:h-auto sm:max-h-[90vh] overflow-hidden flex flex-col">
             {/* Modal Header */}
-            <div className="p-6 border-b-2 border-gray-200 dark:border-gray-700 flex items-center justify-between">
-              <div>
-                <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
+            <div className="p-4 sm:p-6 border-b-2 border-gray-200 dark:border-gray-700 flex items-center justify-between gap-4">
+              <div className="flex-1 min-w-0">
+                <h3 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white break-words">
                   {sections.find(s => s.sectionName === editingSection)?.title || t('planView.editSection')}
                 </h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1 break-words">
                   {getSectionInstructions(editingSection)}
                 </p>
               </div>
               <button
                 onClick={cancelEditing}
-                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors flex-shrink-0"
               >
-                <X size={24} />
+                <X size={20} className="sm:w-6 sm:h-6" />
               </button>
             </div>
 
             {/* Modal Content */}
-            <div className="flex-1 overflow-y-auto p-6">
+            <div className="flex-1 overflow-y-auto p-4 sm:p-6">
               <RichTextEditor
                 value={editingContent}
                 onChange={setEditingContent}
