@@ -92,11 +92,11 @@ export default function ValuePropositions() {
         </div>
 
         {/* Personas Grid */}
-        <div className="grid md:grid-cols-3 gap-6 lg:gap-8 max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 lg:gap-8 max-w-7xl mx-auto">
           {personas.map((persona, index) => (
             <div
               key={index}
-              className="slide-up-element group relative bg-white dark:bg-gray-800 rounded-2xl md:rounded-3xl p-6 md:p-8 border-2 transition-all duration-500 hover:shadow-2xl hover:-translate-y-2 overflow-hidden"
+              className="slide-up-element group relative bg-white dark:bg-gray-800 rounded-xl md:rounded-2xl lg:rounded-3xl p-5 sm:p-6 md:p-8 border-2 transition-all duration-500 hover:shadow-2xl hover:-translate-y-2 overflow-hidden"
               style={{
                 borderColor: theme === 'dark' ? 'rgba(75, 85, 99, 0.3)' : 'rgba(229, 231, 235, 0.8)',
                 animationDelay: `${index * 100}ms`,
@@ -148,7 +148,7 @@ export default function ValuePropositions() {
 
               {/* Learn More button */}
               <button 
-                className="w-full px-6 py-3 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white rounded-xl font-medium transition-all duration-300 flex items-center justify-center gap-2 group-hover:shadow-lg hover:bg-orange-600 hover:text-white dark:hover:bg-orange-600"
+                className="w-full px-6 py-4 md:py-3 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white rounded-xl font-medium transition-all duration-300 flex items-center justify-center gap-2 group-hover:shadow-lg hover:bg-orange-600 hover:text-white dark:hover:bg-orange-600 min-h-[44px] text-base md:text-sm"
               >
                 {t('valuePropositions.learnMore')}
                 <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />

@@ -3,10 +3,12 @@ import { useNavigate, Link } from 'react-router-dom';
 import { authService } from '../lib/auth-service';
 import { Sparkles, Mail, ArrowRight, CheckCircle, ArrowLeft } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
+import SEO from '../components/SEO';
+import { getCanonicalUrl } from '../utils/seo';
 
 export default function ForgotPasswordPage() {
   const navigate = useNavigate();
-  const { t } = useTheme();
+  const { t, language } = useTheme();
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -30,6 +32,15 @@ export default function ForgotPasswordPage() {
   if (success) {
     return (
       <div className="min-h-screen flex">
+        <SEO
+          title={language === 'fr' 
+            ? "Vérifiez Votre Email | Sqordia"
+            : "Check Your Email | Sqordia"}
+          description={language === 'fr'
+            ? "Un lien de réinitialisation de mot de passe a été envoyé à votre adresse email."
+            : "A password reset link has been sent to your email address."}
+          url={getCanonicalUrl('/forgot-password')}
+        />
         <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-blue-600 via-blue-700 to-cyan-600 relative overflow-hidden">
           <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAxMCAwIEwgMCAwIDAgMTAiIGZpbGw9Im5vbmUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS1vcGFjaXR5PSIwLjA1IiBzdHJva2Utd2lkdGg9IjEiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JpZCkiLz48L3N2Zz4=')] opacity-30"></div>
           <div className="relative z-10 flex flex-col justify-center px-16 text-white">
@@ -84,6 +95,15 @@ export default function ForgotPasswordPage() {
 
   return (
     <div className="min-h-screen flex">
+      <SEO
+        title={language === 'fr' 
+          ? "Mot de Passe Oublié | Sqordia"
+          : "Forgot Password | Sqordia"}
+        description={language === 'fr'
+          ? "Réinitialisez votre mot de passe Sqordia."
+          : "Reset your Sqordia password."}
+        url={getCanonicalUrl('/forgot-password')}
+      />
       <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-blue-600 via-blue-700 to-cyan-600 relative overflow-hidden">
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAxMCAwIEwgMCAwIDAgMTAiIGZpbGw9Im5vbmUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS1vcGFjaXR5PSIwLjA1IiBzdHJva2Utd2lkdGg9IjEiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JpZCkiLz48L3N2Zz4=')] opacity-30"></div>
 

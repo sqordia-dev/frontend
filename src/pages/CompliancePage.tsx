@@ -1,6 +1,8 @@
 import { useTheme } from '../contexts/ThemeContext';
 import { ArrowLeft, CheckCircle, FileCheck, Shield } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import SEO from '../components/SEO';
+import { getCanonicalUrl } from '../utils/seo';
 
 export default function CompliancePage() {
   const { t, language } = useTheme();
@@ -9,6 +11,15 @@ export default function CompliancePage() {
 
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900">
+      <SEO
+        title={language === 'fr' 
+          ? "Conformité | Sqordia"
+          : "Compliance | Sqordia"}
+        description={language === 'fr'
+          ? "Découvrez les certifications et normes de conformité que Sqordia respecte pour garantir la sécurité et la conformité de nos services."
+          : "Learn about the certifications and compliance standards that Sqordia adheres to ensure security and compliance of our services."}
+        url={getCanonicalUrl('/compliance')}
+      />
       <div className="max-w-4xl mx-auto px-6 py-16">
         <Link
           to="/"

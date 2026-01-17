@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import { businessPlanService } from '../lib/business-plan-service';
 import { useTheme } from '../contexts/ThemeContext';
+import SEO from '../components/SEO';
 
 interface QuestionnaireQuestion {
   questionId: string;
@@ -630,17 +631,23 @@ export default function QuestionnairePage() {
 
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900">
+      <SEO
+        title={t('questionnaire.title') || 'Questionnaire | Sqordia'}
+        description={t('questionnaire.description') || 'Complete the questionnaire to generate your business plan'}
+        noindex={true}
+        nofollow={true}
+      />
       {/* Enhanced Header with Progress */}
       <div className="bg-white dark:bg-gray-900 border-b-2 border-gray-200 dark:border-gray-700 sticky top-0 z-50 shadow-sm">
         <div className="container mx-auto px-6 py-5">
           <div className="flex items-center justify-between mb-5">
             <button
               onClick={() => navigate('/dashboard')}
-              className="group flex items-center gap-2 px-4 py-2 hover:opacity-80 transition-opacity font-medium text-sm"
+              className="group flex items-center gap-2 px-3 sm:px-4 py-2.5 sm:py-2 hover:opacity-80 transition-opacity font-medium text-sm min-h-[44px] sm:min-h-0"
               style={{ color: theme === 'dark' ? '#9CA3AF' : '#6B7280' }}
             >
               <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
-              <span>{t('questionnaire.backToDashboard')}</span>
+              <span className="hidden sm:inline">{t('questionnaire.backToDashboard')}</span>
             </button>
 
             <div className="flex items-center gap-4">
@@ -650,7 +657,7 @@ export default function QuestionnairePage() {
                   setLanguage(newLang);
                   setContextLanguage(newLang);
                 }}
-                className="flex items-center gap-2 px-4 py-2 text-sm font-semibold bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 transition-all"
+                className="flex items-center gap-2 px-3 sm:px-4 py-2.5 sm:py-2 text-sm font-semibold bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 transition-all min-h-[44px] sm:min-h-0"
                 style={{ color: theme === 'dark' ? '#F3F4F6' : strategyBlue }}
               >
                 <Languages size={16} />
@@ -713,10 +720,48 @@ export default function QuestionnairePage() {
           </div>
         )}
 
-        <div className="grid lg:grid-cols-12 gap-8">
-          {/* Enhanced Sidebar Navigation */}
-          <div className="lg:col-span-3">
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border-2 border-gray-200 dark:border-gray-700 p-6 sticky top-32">
+        {/* Mobile Section Indicator */}
+        <div className="lg:hidden mb-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border-2 border-gray-200 dark:border-gray-700 p-4">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                {SECTION_ICONS[currentSection] && (
+                  <div className="p-2 rounded-lg" style={{ backgroundColor: momentumOrange }}>
+                    {(() => {
+                      const Icon = SECTION_ICONS[currentSection];
+                      return <Icon size={18} className="text-white" />;
+                    })()}
+                  </div>
+                )}
+                <div>
+                  <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                    {t('questionnaire.section')} {currentSection + 1} / {sections.length}
+                  </div>
+                  <div className="text-sm font-bold text-gray-900 dark:text-white line-clamp-1">
+                    {sections[currentSection]}
+                  </div>
+                </div>
+              </div>
+              <div className="text-xs font-bold" style={{ color: momentumOrange }}>
+                {getSectionProgress(sections[currentSection]).answered}/{getSectionProgress(sections[currentSection]).total}
+              </div>
+            </div>
+            <div className="flex-1 h-1.5 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-600">
+              <div 
+                className="h-full rounded-full transition-all duration-300"
+                style={{ 
+                  width: `${getSectionProgress(sections[currentSection]).percentage}%`,
+                  backgroundColor: momentumOrange
+                }}
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="grid lg:grid-cols-12 gap-4 sm:gap-6 lg:gap-8">
+          {/* Enhanced Sidebar Navigation - Hidden on mobile, shown as bottom sheet */}
+          <div className="hidden lg:block lg:col-span-3">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border-2 border-gray-200 dark:border-gray-700 p-4 sm:p-6 sticky top-32">
               <div className="flex items-center gap-3 mb-6">
                 <div className="p-2.5 rounded-lg" style={{ backgroundColor: strategyBlue }}>
                   <Target className="text-white" size={20} />
@@ -736,7 +781,7 @@ export default function QuestionnairePage() {
                       key={section}
                       onClick={() => handleSectionNavigation(index)}
                       disabled={!canNavigateToSection(index)}
-                      className={`w-full text-left p-4 rounded-lg transition-all duration-200 group ${
+                      className={`w-full text-left p-3 sm:p-4 rounded-lg transition-all duration-200 group min-h-[44px] flex items-center ${
                         !canNavigateToSection(index) ? 'opacity-50 cursor-not-allowed' : ''
                       } ${
                         isCurrent
@@ -864,7 +909,7 @@ export default function QuestionnairePage() {
                     <div className="text-sm font-semibold text-white/90 mb-1 uppercase tracking-wide">
                       {t('questionnaire.sectionOf').replace('{current}', String(currentSection + 1)).replace('{total}', String(sections.length))}
                     </div>
-                    <h2 className="text-3xl font-bold text-white">
+                    <h2 className="text-2xl sm:text-3xl font-bold text-white">
                       {sections[currentSection]}
                     </h2>
                   </div>
@@ -1058,7 +1103,7 @@ export default function QuestionnairePage() {
               <button
                 onClick={() => handleSectionNavigation(Math.max(0, currentSection - 1))}
                 disabled={currentSection === 0}
-                className="flex items-center gap-2 px-6 py-3 rounded-lg border-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
+                className="flex items-center gap-2 px-4 sm:px-6 py-3 rounded-lg border-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed font-semibold min-h-[44px] text-sm sm:text-base"
                 style={{
                   color: theme === 'dark' ? '#9CA3AF' : '#6B7280',
                   borderColor: theme === 'dark' ? '#374151' : '#E5E7EB',
@@ -1105,7 +1150,7 @@ export default function QuestionnairePage() {
                     }
                   }}
                   disabled={!isSectionComplete(sections[currentSection])}
-                  className="flex items-center gap-3 px-8 py-4 text-white rounded-lg font-bold shadow-lg hover:shadow-xl transition-all hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                  className="flex items-center gap-2 sm:gap-3 px-6 sm:px-8 py-3 sm:py-4 text-white rounded-lg font-bold shadow-lg hover:shadow-xl transition-all hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 min-h-[44px] text-sm sm:text-base"
                   style={{
                     backgroundColor: momentumOrange
                   }}

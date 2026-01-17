@@ -3,6 +3,8 @@ import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { authService } from '../lib/auth-service';
 import { Sparkles, Lock, ArrowRight, Eye, EyeOff, CheckCircle, ArrowLeft, AlertCircle } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
+import SEO from '../components/SEO';
+import { getCanonicalUrl } from '../utils/seo';
 
 export default function ResetPasswordPage() {
   const navigate = useNavigate();
@@ -104,6 +106,17 @@ export default function ResetPasswordPage() {
 
   return (
     <div className="min-h-screen flex">
+      <SEO
+        title={language === 'fr' 
+          ? "Réinitialiser le Mot de Passe | Sqordia"
+          : "Reset Password | Sqordia"}
+        description={language === 'fr'
+          ? "Réinitialisez votre mot de passe Sqordia avec le lien de réinitialisation."
+          : "Reset your Sqordia password using the reset link."}
+        url={getCanonicalUrl('/reset-password')}
+        noindex={true}
+        nofollow={true}
+      />
       <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-blue-600 via-blue-700 to-cyan-600 relative overflow-hidden">
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAxMCAwIEwgMCAwIDAgMTAiIGZpbGw9Im5vbmUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS1vcGFjaXR5PSIwLjA1IiBzdHJva2Utd2lkdGg9IjEiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JpZCkiLz48L3N2Zz4=')] opacity-30"></div>
 

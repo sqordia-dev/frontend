@@ -4,6 +4,8 @@ import { Link } from 'react-router-dom';
 import { useTheme } from '../contexts/ThemeContext';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import SEO from '../components/SEO';
+import { getCanonicalUrl } from '../utils/seo';
 
 interface ExamplePlan {
   id: string;
@@ -133,7 +135,7 @@ const categories = ['All', 'Business Plan', 'Strategic Plan'];
 const industries = ['All', 'Technology', 'Food & Beverage', 'Retail', 'Nonprofit', 'Professional Services', 'Healthcare', 'Fitness & Wellness', 'Education'];
 
 export default function ExamplePlansPage() {
-  const { t, theme } = useTheme();
+  const { t, theme, language } = useTheme();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedIndustry, setSelectedIndustry] = useState('All');
@@ -166,8 +168,41 @@ export default function ExamplePlansPage() {
     return matchesSearch && matchesCategory && matchesIndustry;
   });
 
+  // Breadcrumb structured data
+  const breadcrumbStructuredData = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": language === 'fr' ? "Accueil" : "Home",
+        "item": "https://sqordia.com"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": language === 'fr' ? "Exemples de Plans" : "Example Plans",
+        "item": getCanonicalUrl('/example-plans')
+      }
+    ]
+  };
+
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900">
+      <SEO
+        title={language === 'fr' 
+          ? "Exemples de Plans d'Affaires | Sqordia"
+          : "Business Plan Examples | Sqordia"}
+        description={language === 'fr'
+          ? "Explorez nos exemples de plans d'affaires professionnels pour différentes industries. Obtenez de l'inspiration pour créer votre propre plan d'affaires avec Sqordia."
+          : "Explore our professional business plan examples for different industries. Get inspiration to create your own business plan with Sqordia."}
+        url={getCanonicalUrl('/example-plans')}
+        keywords={language === 'fr'
+          ? "exemples de plans d'affaires, modèles de plans d'affaires, plans d'affaires par industrie, exemples de plans stratégiques"
+          : "business plan examples, business plan templates, business plans by industry, strategic plan examples"}
+        structuredData={breadcrumbStructuredData}
+      />
       <Header />
       <section ref={sectionRef} className="pt-32 pb-20">
         {/* Hero Section */}
@@ -243,6 +278,9 @@ export default function ExamplePlansPage() {
                       src={plan.image}
                       alt={plan.title}
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                      loading="lazy"
+                      width={800}
+                      height={400}
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
 

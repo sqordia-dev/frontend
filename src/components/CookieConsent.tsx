@@ -115,10 +115,10 @@ export default function CookieConsent() {
     <>
     {isVisible && (
     <div
-      className={`fixed bottom-0 left-0 right-0 z-[9999] transition-all duration-500 ease-out ${
+      className={`fixed bottom-0 left-0 right-0 z-[9999] transition-all duration-500 ease-out safe-bottom ${
         isAnimating ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0'
       }`}
-      style={{ pointerEvents: 'auto' }}
+      style={{ pointerEvents: 'auto', paddingBottom: 'max(1.5rem, env(safe-area-inset-bottom))' }}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-6">
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden backdrop-blur-xl">
@@ -160,22 +160,25 @@ export default function CookieConsent() {
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mt-5">
                   <button
                     onClick={handleAccept}
-                    className="flex-1 sm:flex-none px-6 py-3 text-white font-semibold rounded-xl transition-all duration-200 hover:shadow-lg transform hover:-translate-y-0.5 active:translate-y-0"
+                    className="flex-1 sm:flex-none px-6 py-3 text-white font-semibold rounded-xl transition-all duration-200 hover:shadow-lg transform hover:-translate-y-0.5 active:translate-y-0 min-h-[44px]"
                     style={{ backgroundColor: momentumOrange }}
                     onMouseEnter={(e) => e.currentTarget.style.backgroundColor = momentumOrangeHover}
                     onMouseLeave={(e) => e.currentTarget.style.backgroundColor = momentumOrange}
+                    aria-label={language === 'fr' ? 'Accepter tous les cookies' : 'Accept all cookies'}
                   >
                     {language === 'fr' ? 'Accepter tout' : 'Accept All'}
                   </button>
                   <button
                     onClick={handleDecline}
-                    className="flex-1 sm:flex-none px-6 py-3 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-semibold rounded-xl border-2 border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500 transition-all duration-200 hover:bg-gray-50 dark:hover:bg-gray-600"
+                    className="flex-1 sm:flex-none px-6 py-3 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-semibold rounded-xl border-2 border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500 transition-all duration-200 hover:bg-gray-50 dark:hover:bg-gray-600 min-h-[44px]"
+                    aria-label={language === 'fr' ? 'Refuser les cookies' : 'Decline cookies'}
                   >
                     {language === 'fr' ? 'Refuser' : 'Decline'}
                   </button>
                   <button
                     onClick={handleSettingsOpen}
-                    className="flex-1 sm:flex-none px-6 py-3 bg-transparent text-gray-600 dark:text-gray-400 font-medium rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center justify-center gap-2"
+                    className="flex-1 sm:flex-none px-6 py-3 bg-transparent text-gray-600 dark:text-gray-400 font-medium rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center justify-center gap-2 min-h-[44px]"
+                    aria-label={language === 'fr' ? 'Paramètres de cookies' : 'Cookie settings'}
                   >
                     <Settings size={16} />
                     <span>{language === 'fr' ? 'Paramètres' : 'Settings'}</span>

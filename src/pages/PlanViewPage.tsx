@@ -35,6 +35,7 @@ import { financialService } from '../lib/financial-service';
 import BalanceSheetTable, { BalanceSheetData } from '../components/BalanceSheetTable';
 import CashFlowTable, { CashFlowData } from '../components/CashFlowTable';
 import PlanViewTour from '../components/PlanViewTour';
+import SEO from '../components/SEO';
 
 // Markdown parser function
 const parseMarkdown = (markdown: string): string => {
@@ -985,6 +986,12 @@ export default function PlanViewPage() {
 
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900">
+      <SEO
+        title={plan ? `${plan.title} | ${t('planView.title') || 'Business Plan'} | Sqordia` : `${t('planView.title') || 'Business Plan'} | Sqordia`}
+        description={plan?.description || t('planView.description') || 'View and edit your business plan'}
+        noindex={true}
+        nofollow={true}
+      />
       {/* Top Navigation Bar */}
       <nav className="plan-view-header bg-white dark:bg-gray-800 border-b-2 border-gray-200 dark:border-gray-700 sticky top-0 z-20 shadow-sm">
         <div className="px-6 py-3">
@@ -1977,7 +1984,10 @@ export default function PlanViewPage() {
                     <div className="relative rounded-lg overflow-hidden border-2 border-gray-300 dark:border-gray-600">
                       <img 
                         src={coverImageUrl} 
-                        alt="Cover preview" 
+                        alt={plan?.title ? `${plan.title} cover preview` : "Business plan cover preview"}
+                        loading="lazy"
+                        width={800}
+                        height={600} 
                         className="w-full h-48 object-cover"
                       />
                       <button

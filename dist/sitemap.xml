@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <!-- Homepage -->
+  <url>
+    <loc>https://sqordia.com/</loc>
+    <lastmod>2024-01-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://sqordia.com/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://sqordia.com/fr" />
+  </url>
+
+  <!-- Public Pages -->
+  <url>
+    <loc>https://sqordia.com/login</loc>
+    <lastmod>2024-01-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://sqordia.com/login" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://sqordia.com/fr/login" />
+  </url>
+
+  <url>
+    <loc>https://sqordia.com/register</loc>
+    <lastmod>2024-01-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://sqordia.com/register" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://sqordia.com/fr/register" />
+  </url>
+
+  <url>
+    <loc>https://sqordia.com/example-plans</loc>
+    <lastmod>2024-01-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://sqordia.com/example-plans" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://sqordia.com/fr/example-plans" />
+  </url>
+
+  <!-- Example Plans Detail Pages -->
+  <url>
+    <loc>https://sqordia.com/example-plans/tech-startup</loc>
+    <lastmod>2024-01-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://sqordia.com/example-plans/tech-startup" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://sqordia.com/fr/example-plans/tech-startup" />
+  </url>
+
+  <url>
+    <loc>https://sqordia.com/example-plans/restaurant</loc>
+    <lastmod>2024-01-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://sqordia.com/example-plans/restaurant" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://sqordia.com/fr/example-plans/restaurant" />
+  </url>
+
+  <url>
+    <loc>https://sqordia.com/example-plans/nonprofit</loc>
+    <lastmod>2024-01-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://sqordia.com/example-plans/nonprofit" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://sqordia.com/fr/example-plans/nonprofit" />
+  </url>
+
+  <!-- Blog Posts -->
+  <url>
+    <loc>https://sqordia.com/blog/how-to-write-a-business-plan-that-gets-funded</loc>
+    <lastmod>2024-01-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://sqordia.com/blog/how-to-write-a-business-plan-that-gets-funded" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://sqordia.com/fr/blog/how-to-write-a-business-plan-that-gets-funded" />
+  </url>
+
+  <url>
+    <loc>https://sqordia.com/blog/financial-projections-a-complete-guide</loc>
+    <lastmod>2024-01-09</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://sqordia.com/blog/financial-projections-a-complete-guide" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://sqordia.com/fr/blog/financial-projections-a-complete-guide" />
+  </url>
+
+  <url>
+    <loc>https://sqordia.com/blog/strategic-planning-for-nonprofits</loc>
+    <lastmod>2024-01-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://sqordia.com/blog/strategic-planning-for-nonprofits" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://sqordia.com/fr/blog/strategic-planning-for-nonprofits" />
+  </url>
+
+  <!-- Legal Pages -->
+  <url>
+    <loc>https://sqordia.com/privacy</loc>
+    <lastmod>2024-01-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://sqordia.com/privacy" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://sqordia.com/fr/privacy" />
+  </url>
+
+  <url>
+    <loc>https://sqordia.com/terms</loc>
+    <lastmod>2024-01-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://sqordia.com/terms" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://sqordia.com/fr/terms" />
+  </url>
+
+  <url>
+    <loc>https://sqordia.com/security</loc>
+    <lastmod>2024-01-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://sqordia.com/security" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://sqordia.com/fr/security" />
+  </url>
+
+  <url>
+    <loc>https://sqordia.com/compliance</loc>
+    <lastmod>2024-01-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://sqordia.com/compliance" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://sqordia.com/fr/compliance" />
+  </url>
+</urlset>

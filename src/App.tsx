@@ -39,6 +39,10 @@ import CompliancePage from './pages/CompliancePage';
 function App() {
   return (
     <Router>
+      {/* Skip to main content link for accessibility */}
+      <a href="#main-content" className="skip-to-main">
+        Skip to main content
+      </a>
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />

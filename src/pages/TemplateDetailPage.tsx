@@ -2,6 +2,9 @@ import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, Download, Eye, BookOpen, Sparkles, CheckCircle2, ArrowRight, FileText, TrendingUp, BarChart3, Users, Target } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import TemplateViewer from '../components/TemplateViewer';
+import SEO from '../components/SEO';
+import { useTheme } from '../contexts/ThemeContext';
+import { getCanonicalUrl } from '../utils/seo';
 
 interface TemplateSection {
   id: string;
@@ -650,6 +653,7 @@ const templates: Record<string, TemplateData> = {
 
 export default function TemplateDetailPage() {
   const { templateId } = useParams<{ templateId: string }>();
+  const { language } = useTheme();
   const [isPdfOpen, setIsPdfOpen] = useState(false);
   const [activeSection, setActiveSection] = useState('');
   const [isScrolled, setIsScrolled] = useState(false);
@@ -701,8 +705,51 @@ export default function TemplateDetailPage() {
     );
   }
 
+  // Service/Product structured data
+  const serviceStructuredData = {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "name": template.title,
+    "description": template.description,
+    "image": template.coverImage,
+    "provider": {
+      "@type": "Organization",
+      "name": "Sqordia",
+      "url": "https://sqordia.com"
+    },
+    "serviceType": template.category
+  };
+
+  // Breadcrumb structured data
+  const breadcrumbStructuredData = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": language === 'fr' ? "Accueil" : "Home",
+        "item": "https://sqordia.com"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": template.title,
+        "item": getCanonicalUrl(`/template/${templateId}`)
+      }
+    ]
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
+      <SEO
+        title={`${template.title} | ${language === 'fr' ? 'Modèles' : 'Templates'} | Sqordia`}
+        description={template.description}
+        image={template.coverImage}
+        url={getCanonicalUrl(`/template/${templateId}`)}
+        type="product"
+        structuredData={[serviceStructuredData, breadcrumbStructuredData]}
+      />
       {/* Top Nav */}
       <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         isScrolled ? 'bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl shadow-lg' : 'bg-transparent'
@@ -794,7 +841,14 @@ export default function TemplateDetailPage() {
             {/* Hero */}
             <div className="mb-20">
               <div className="relative rounded-3xl overflow-hidden mb-8 group">
-                <img src={template.coverImage} alt={template.title} className="w-full h-96 object-cover group-hover:scale-105 transition-transform duration-700" />
+                <img 
+                  src={template.coverImage} 
+                  alt={template.title} 
+                  className="w-full h-96 object-cover group-hover:scale-105 transition-transform duration-700"
+                  loading="lazy"
+                  width={1200}
+                  height={400}
+                />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
                 <div className="absolute bottom-0 left-0 right-0 p-8">
                   <div className={`inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r ${template.gradient} rounded-full mb-4`}>

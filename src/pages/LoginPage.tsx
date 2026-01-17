@@ -4,6 +4,8 @@ import { authService } from '../lib/auth-service';
 import { signInWithGoogle } from '../lib/google-auth';
 import { Mail, Lock, ArrowRight, Eye, EyeOff, Brain, Clock, Zap, Shield, CheckCircle, Star, Users } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
+import SEO from '../components/SEO';
+import { getCanonicalUrl } from '../utils/seo';
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -51,6 +53,11 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex">
+      <SEO
+        title={t('login.title') || 'Login | Sqordia'}
+        description={t('login.description') || 'Sign in to your Sqordia account to access your business plans and dashboard'}
+        url={getCanonicalUrl('/login')}
+      />
       {/* Left Panel - Branding */}
       <div 
         className="hidden lg:flex lg:w-[40%] flex-col justify-between p-12"

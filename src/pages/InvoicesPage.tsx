@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { Download, Calendar, CheckCircle, XCircle, Clock, AlertCircle } from 'lucide-react';
 import { apiClient } from '../lib/api-client';
 import { useTheme } from '../contexts/ThemeContext';
+import SEO from '../components/SEO';
+import { getCanonicalUrl } from '../utils/seo';
 
 interface Invoice {
   id: string;
@@ -24,7 +26,7 @@ interface Invoice {
 
 export default function InvoicesPage() {
   const navigate = useNavigate();
-  const { theme } = useTheme();
+  const { theme, language } = useTheme();
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -130,6 +132,17 @@ export default function InvoicesPage() {
 
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
+      <SEO
+        title={language === 'fr' 
+          ? "Factures | Sqordia"
+          : "Invoices | Sqordia"}
+        description={language === 'fr'
+          ? "Consultez vos factures Sqordia."
+          : "View your Sqordia invoices."}
+        url={getCanonicalUrl('/invoices')}
+        noindex={true}
+        nofollow={true}
+      />
       <div className="max-w-6xl mx-auto">
         <div className="mb-8">
           <button

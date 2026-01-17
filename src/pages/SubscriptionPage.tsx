@@ -4,6 +4,8 @@ import { X, Download, Calendar, CreditCard, AlertCircle, ExternalLink, ArrowLeft
 import { apiClient } from '../lib/api-client';
 import { subscriptionService } from '../lib/subscription-service';
 import { useTheme } from '../contexts/ThemeContext';
+import SEO from '../components/SEO';
+import { getCanonicalUrl } from '../utils/seo';
 
 interface Subscription {
   id: string;
@@ -55,7 +57,7 @@ export default function SubscriptionPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams] = useSearchParams();
-  const { t, theme } = useTheme();
+  const { t, theme, language } = useTheme();
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -484,6 +486,17 @@ export default function SubscriptionPage() {
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: theme === 'dark' ? '#111827' : lightAIGrey }}>
+      <SEO
+        title={language === 'fr' 
+          ? "Abonnement | Sqordia"
+          : "Subscription | Sqordia"}
+        description={language === 'fr'
+          ? "Gérez votre abonnement Sqordia."
+          : "Manage your Sqordia subscription."}
+        url={getCanonicalUrl('/subscription')}
+        noindex={true}
+        nofollow={true}
+      />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">

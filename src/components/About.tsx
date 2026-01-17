@@ -98,8 +98,8 @@ export default function About() {
         </div>
 
         {/* Mission */}
-        <div className="slide-up-element max-w-4xl mx-auto mb-16 md:mb-20">
-          <div className="bg-gradient-to-br from-green-50 to-amber-50 dark:from-green-950/20 dark:to-amber-950/20 rounded-3xl p-8 md:p-12 border-2 border-green-200 dark:border-green-800">
+        <div className="slide-up-element max-w-4xl mx-auto mb-12 sm:mb-16 md:mb-20">
+          <div className="bg-gradient-to-br from-green-50 to-amber-50 dark:from-green-950/20 dark:to-amber-950/20 rounded-2xl md:rounded-3xl p-6 sm:p-8 md:p-12 border-2 border-green-200 dark:border-green-800">
             <h3 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-4">
               {t('about.mission.title')}
             </h3>
@@ -114,11 +114,11 @@ export default function About() {
           <h3 className="text-2xl md:text-3xl font-bold text-center text-gray-900 dark:text-white mb-12">
             {t('about.values.title')}
           </h3>
-          <div className="grid md:grid-cols-3 gap-6 lg:gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
             {values.map((value, index) => (
               <div
                 key={index}
-                className="slide-up-element bg-white dark:bg-gray-800 rounded-2xl p-6 md:p-8 border-2 shadow-lg transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
+                className="slide-up-element bg-white dark:bg-gray-800 rounded-xl md:rounded-2xl p-5 sm:p-6 md:p-8 border-2 shadow-lg transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
                 style={{
                   borderColor: theme === 'dark' ? 'rgba(75, 85, 99, 0.3)' : 'rgba(229, 231, 235, 0.8)',
                   animationDelay: `${index * 100}ms`,

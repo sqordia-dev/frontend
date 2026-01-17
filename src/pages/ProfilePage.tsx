@@ -5,6 +5,7 @@ import { authService } from '../lib/auth-service';
 import { profileService } from '../lib/profile-service';
 import { securityService } from '../lib/security-service';
 import { useTheme } from '../contexts/ThemeContext';
+import SEO from '../components/SEO';
 
 export default function ProfilePage() {
   const navigate = useNavigate();
@@ -251,6 +252,12 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900">
+      <SEO
+        title="Profile | Sqordia"
+        description="Manage your profile, security settings, and account preferences"
+        noindex={true}
+        nofollow={true}
+      />
       <div className="container mx-auto px-6 py-8">
         <div className="mb-6">
           <Link

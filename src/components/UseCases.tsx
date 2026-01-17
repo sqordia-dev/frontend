@@ -120,6 +120,9 @@ export default function UseCases() {
                   src={useCase.image}
                   alt={t(useCase.titleKey)}
                   className="w-full h-full object-cover"
+                  loading="lazy"
+                  width={800}
+                  height={400}
                 />
               </div>
 

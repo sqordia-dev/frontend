@@ -4,6 +4,8 @@ import { authService } from '../lib/auth-service';
 import { signInWithGoogle } from '../lib/google-auth';
 import { Mail, Lock, User, Building2, ArrowRight, Eye, EyeOff, CheckCircle, Brain, Clock, Zap, Shield, Star, Users } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
+import SEO from '../components/SEO';
+import { getCanonicalUrl } from '../utils/seo';
 
 export default function RegisterPage() {
   const navigate = useNavigate();
@@ -84,6 +86,11 @@ export default function RegisterPage() {
 
   return (
     <div className="min-h-screen flex">
+      <SEO
+        title={t('register.title') || 'Sign Up | Sqordia'}
+        description={t('register.description') || 'Create your free Sqordia account and start building professional business plans in under 60 minutes'}
+        url={getCanonicalUrl('/register')}
+      />
       {/* Left Panel - Branding */}
       <div 
         className="hidden lg:flex lg:w-[40%] flex-col justify-between p-12"

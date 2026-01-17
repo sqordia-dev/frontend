@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import SEO from '../components/SEO';
 import {
   Plus,
   FileText,
@@ -178,6 +179,12 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900">
+      <SEO
+        title={t('dashboard.title') || 'Dashboard | Sqordia'}
+        description={t('dashboard.description') || 'Manage your business plans and projects'}
+        noindex={true}
+        nofollow={true}
+      />
       <div className="relative z-10 space-y-8 p-6 lg:p-8">
         {/* Header Section */}
         <div className="mb-10 dashboard-header">

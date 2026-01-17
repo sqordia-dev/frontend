@@ -5,6 +5,8 @@ import { useTheme } from '../contexts/ThemeContext';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import TemplateViewer from '../components/TemplateViewer';
+import SEO from '../components/SEO';
+import { getCanonicalUrl } from '../utils/seo';
 
 interface PlanSection {
   id: string;
@@ -1412,7 +1414,7 @@ const examplePlanDetails: Record<string, ExamplePlanDetail> = {
 export default function ExamplePlanDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { t, theme } = useTheme();
+  const { t, theme, language } = useTheme();
   const [activeSection, setActiveSection] = useState('executive-summary');
   const [isPdfOpen, setIsPdfOpen] = useState(false);
   const sectionRefs = useRef<{ [key: string]: HTMLElement | null }>({});
@@ -1466,8 +1468,58 @@ export default function ExamplePlanDetailPage() {
     ...plan.sections.map(s => ({ id: s.id, title: s.title, icon: s.icon }))
   ];
 
+  // Service/Product structured data
+  const serviceStructuredData = {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "name": plan.title,
+    "description": plan.description,
+    "image": plan.image,
+    "provider": {
+      "@type": "Organization",
+      "name": "Sqordia",
+      "url": "https://sqordia.com"
+    },
+    "serviceType": plan.category,
+    "areaServed": "Worldwide"
+  };
+
+  // Breadcrumb structured data
+  const breadcrumbStructuredData = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": language === 'fr' ? "Accueil" : "Home",
+        "item": "https://sqordia.com"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": language === 'fr' ? "Exemples de Plans" : "Example Plans",
+        "item": "https://sqordia.com/example-plans"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": plan.title,
+        "item": getCanonicalUrl(`/example-plans/${id}`)
+      }
+    ]
+  };
+
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900">
+      <SEO
+        title={`${plan.title} | ${language === 'fr' ? 'Exemples de Plans' : 'Example Plans'} | Sqordia`}
+        description={plan.description}
+        image={plan.image}
+        url={getCanonicalUrl(`/example-plans/${id}`)}
+        type="product"
+        structuredData={[serviceStructuredData, breadcrumbStructuredData]}
+      />
       <Header />
       <div className="pt-20 flex">
         {/* Sidebar Navigation */}

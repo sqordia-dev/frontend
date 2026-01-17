@@ -141,6 +141,9 @@ export default function Testimonials() {
                   src={testimonial.avatar}
                   alt={testimonial.author}
                   className="w-12 h-12 md:w-14 md:h-14 rounded-full object-cover ring-2 ring-blue-100 dark:ring-blue-900"
+                  loading="lazy"
+                  width={56}
+                  height={56}
                 />
                 <div>
                   <div className="font-bold text-gray-900 dark:text-white text-sm md:text-base">{testimonial.author}</div>

@@ -1,6 +1,8 @@
 import { useTheme } from '../contexts/ThemeContext';
 import { ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import SEO from '../components/SEO';
+import { getCanonicalUrl } from '../utils/seo';
 
 export default function PrivacyPolicyPage() {
   const { t, language } = useTheme();
@@ -9,6 +11,15 @@ export default function PrivacyPolicyPage() {
 
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900">
+      <SEO
+        title={language === 'fr' 
+          ? "Politique de Confidentialité | Sqordia"
+          : "Privacy Policy | Sqordia"}
+        description={language === 'fr'
+          ? "Consultez la politique de confidentialité de Sqordia pour comprendre comment nous collectons, utilisons et protégeons vos données personnelles."
+          : "Read Sqordia's privacy policy to understand how we collect, use, and protect your personal data."}
+        url={getCanonicalUrl('/privacy')}
+      />
       <div className="max-w-4xl mx-auto px-6 py-16">
         <Link
           to="/"

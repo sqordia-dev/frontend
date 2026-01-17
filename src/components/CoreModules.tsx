@@ -94,7 +94,7 @@ export default function CoreModules() {
         </div>
 
         {/* Responsive Grid: 1 column mobile, 2 columns tablet/desktop */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8 max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 max-w-7xl mx-auto">
           {modules.map((module, index) => {
             const features = t(module.featuresKey)?.split(',') || [];
             
@@ -106,7 +106,7 @@ export default function CoreModules() {
               >
                 {/* Feature Card */}
                 <div 
-                  className={`relative h-full bg-gradient-to-br ${module.bgGradient} border-2 ${module.borderColor} rounded-2xl md:rounded-3xl p-6 md:p-8 transition-all duration-500 hover:shadow-2xl hover:-translate-y-2 hover:scale-[1.02] overflow-hidden`}
+                  className={`relative h-full bg-gradient-to-br ${module.bgGradient} border-2 ${module.borderColor} rounded-xl md:rounded-2xl lg:rounded-3xl p-5 sm:p-6 md:p-8 transition-all duration-500 hover:shadow-2xl hover:-translate-y-2 hover:scale-[1.02] overflow-hidden`}
                   style={{
                     boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
                   }}

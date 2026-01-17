@@ -3,7 +3,9 @@ import { Calendar, Clock, ArrowLeft, Share2, User, BookOpen, TrendingUp } from '
 import { useEffect, useRef, useState } from 'react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import SEO from '../components/SEO';
 import { useTheme } from '../contexts/ThemeContext';
+import { getCanonicalUrl } from '../utils/seo';
 
 interface BlogPostContent {
   title: string;
@@ -1724,8 +1726,72 @@ export default function BlogPostPage() {
     return elements;
   };
 
+  // Article structured data
+  const articleStructuredData = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": localizedPost.title,
+    "description": localizedPost.excerpt,
+    "image": localizedPost.image,
+    "datePublished": post.date,
+    "dateModified": post.date,
+    "author": {
+      "@type": "Person",
+      "name": post.author
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "Sqordia",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://sqordia.com/favicon.svg"
+      }
+    },
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": getCanonicalUrl(`/blog/${post.slug}`)
+    }
+  };
+
+  // Breadcrumb structured data
+  const breadcrumbStructuredData = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": language === 'fr' ? "Accueil" : "Home",
+        "item": "https://sqordia.com"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": language === 'fr' ? "Blog" : "Blog",
+        "item": "https://sqordia.com/#blog"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": localizedPost.title,
+        "item": getCanonicalUrl(`/blog/${post.slug}`)
+      }
+    ]
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-white via-gray-50/50 to-gray-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-900">
+      <SEO
+        title={`${localizedPost.title} | Sqordia Blog`}
+        description={localizedPost.excerpt}
+        image={localizedPost.image}
+        url={getCanonicalUrl(`/blog/${post.slug}`)}
+        type="article"
+        author={post.author}
+        publishedTime={new Date(post.date).toISOString()}
+        modifiedTime={new Date(post.date).toISOString()}
+        structuredData={[articleStructuredData, breadcrumbStructuredData]}
+      />
       <Header />
       
       {/* Enhanced Hero Section */}
@@ -1739,6 +1805,8 @@ export default function BlogPostPage() {
             style={{
               transform: isScrolled ? 'scale(1.15)' : 'scale(1.1)',
             }}
+            width={1200}
+            height={630}
           />
         </div>
         
@@ -1914,6 +1982,9 @@ export default function BlogPostPage() {
                       <img
                         src={relatedPost.image}
                         alt={relatedPost.title}
+                        loading="lazy"
+                        width={400}
+                        height={300}
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>

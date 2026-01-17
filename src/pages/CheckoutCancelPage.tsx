@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { XCircle } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
+import SEO from '../components/SEO';
 
 export default function CheckoutCancelPage() {
   const navigate = useNavigate();
@@ -8,6 +9,12 @@ export default function CheckoutCancelPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+      <SEO
+        title="Checkout Cancelled | Sqordia"
+        description="Your payment was cancelled"
+        noindex={true}
+        nofollow={true}
+      />
       <div className="max-w-md w-full">
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 text-center">
           <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-orange-100 dark:bg-orange-900 mb-4">

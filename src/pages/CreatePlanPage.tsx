@@ -12,12 +12,14 @@ import {
 import { businessPlanService } from '../lib/business-plan-service';
 import { organizationService } from '../lib/organization-service';
 import { useTheme } from '../contexts/ThemeContext';
+import SEO from '../components/SEO';
+import { getCanonicalUrl } from '../utils/seo';
 // Template selection disabled - import removed
 // import { templateService } from '../lib/template-service';
 
 export default function CreatePlanPage() {
   const navigate = useNavigate();
-  const { t, theme } = useTheme();
+  const { t, theme, language } = useTheme();
   
   // Landing page color theme
   const strategyBlue = '#1A2B47';
@@ -170,6 +172,17 @@ export default function CreatePlanPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <SEO
+        title={language === 'fr' 
+          ? "Créer un Plan | Sqordia"
+          : "Create Plan | Sqordia"}
+        description={language === 'fr'
+          ? "Créez un nouveau plan d'affaires ou plan stratégique avec Sqordia."
+          : "Create a new business plan or strategic plan with Sqordia."}
+        url={getCanonicalUrl('/create-plan')}
+        noindex={true}
+        nofollow={true}
+      />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Header */}
         <div className="mb-12">

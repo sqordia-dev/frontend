@@ -1,6 +1,8 @@
 import { useTheme } from '../contexts/ThemeContext';
 import { ArrowLeft, Shield, Lock, Key, Eye } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import SEO from '../components/SEO';
+import { getCanonicalUrl } from '../utils/seo';
 
 export default function SecurityPage() {
   const { t, language } = useTheme();
@@ -9,6 +11,15 @@ export default function SecurityPage() {
 
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900">
+      <SEO
+        title={language === 'fr' 
+          ? "Sécurité | Sqordia"
+          : "Security | Sqordia"}
+        description={language === 'fr'
+          ? "Découvrez les mesures de sécurité de niveau bancaire que Sqordia utilise pour protéger vos données et vos informations d'affaires."
+          : "Learn about the bank-level security measures Sqordia uses to protect your data and business information."}
+        url={getCanonicalUrl('/security')}
+      />
       <div className="max-w-4xl mx-auto px-6 py-16">
         <Link
           to="/"

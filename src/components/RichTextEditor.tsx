@@ -113,7 +113,7 @@ export default function RichTextEditor({
             <button
               onClick={onHelpMeWrite}
               disabled={helpMeWriteLoading || disabled}
-              className="px-5 py-2.5 rounded-lg font-semibold text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shadow-sm hover:shadow-md"
+              className="px-4 sm:px-5 py-3 sm:py-2.5 rounded-lg font-semibold text-xs sm:text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shadow-sm hover:shadow-md min-h-[44px] sm:min-h-0"
               style={{ 
                 backgroundColor: helpMeWriteLoading ? '#E55F00' : '#FF6B00',
                 color: 'white'
@@ -204,6 +204,21 @@ export default function RichTextEditor({
             border-bottom: none;
             background: #f9fafb;
             padding: 8px;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+          }
+          @media (max-width: 640px) {
+            .rich-text-editor .ql-toolbar {
+              padding: 6px 4px;
+            }
+            .rich-text-editor .ql-toolbar .ql-formats {
+              margin-right: 4px;
+            }
+            .rich-text-editor .ql-toolbar button {
+              min-width: 32px;
+              min-height: 32px;
+              padding: 4px;
+            }
           }
           .dark .rich-text-editor .ql-toolbar {
             background: #374151;

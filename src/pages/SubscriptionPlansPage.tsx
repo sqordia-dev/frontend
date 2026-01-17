@@ -5,6 +5,8 @@ import { useNavigate } from 'react-router-dom';
 import { organizationService } from '../lib/organization-service';
 import { subscriptionService } from '../lib/subscription-service';
 import { useTheme } from '../contexts/ThemeContext';
+import SEO from '../components/SEO';
+import { getCanonicalUrl } from '../utils/seo';
 
 interface SubscriptionPlan {
   id: string;
@@ -28,7 +30,7 @@ interface SubscriptionPlan {
 
 export default function SubscriptionPlansPage() {
   const navigate = useNavigate();
-  const { t } = useTheme();
+  const { t, language } = useTheme();
   const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
   const [loading, setLoading] = useState(true);
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
@@ -389,6 +391,17 @@ export default function SubscriptionPlansPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
+      <SEO
+        title={language === 'fr' 
+          ? "Plans d'Abonnement | Sqordia"
+          : "Subscription Plans | Sqordia"}
+        description={language === 'fr'
+          ? "Choisissez le plan d'abonnement Sqordia qui correspond à vos besoins."
+          : "Choose the Sqordia subscription plan that fits your needs."}
+        url={getCanonicalUrl('/subscription-plans')}
+        noindex={true}
+        nofollow={true}
+      />
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">

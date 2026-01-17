@@ -1,6 +1,8 @@
 import { useTheme } from '../contexts/ThemeContext';
 import { ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import SEO from '../components/SEO';
+import { getCanonicalUrl } from '../utils/seo';
 
 export default function TermsOfServicePage() {
   const { t, language } = useTheme();
@@ -9,6 +11,15 @@ export default function TermsOfServicePage() {
 
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900">
+      <SEO
+        title={language === 'fr' 
+          ? "Conditions d'Utilisation | Sqordia"
+          : "Terms of Service | Sqordia"}
+        description={language === 'fr'
+          ? "Consultez les conditions d'utilisation de Sqordia pour comprendre les termes et conditions d'utilisation de notre plateforme."
+          : "Read Sqordia's terms of service to understand the terms and conditions for using our platform."}
+        url={getCanonicalUrl('/terms')}
+      />
       <div className="max-w-4xl mx-auto px-6 py-16">
         <Link
           to="/"

@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { CheckCircle, Loader } from 'lucide-react';
 import { subscriptionService } from '../lib/subscription-service';
 import { useTheme } from '../contexts/ThemeContext';
+import SEO from '../components/SEO';
 
 export default function CheckoutSuccessPage() {
   const navigate = useNavigate();
@@ -80,6 +81,12 @@ export default function CheckoutSuccessPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+      <SEO
+        title="Checkout Success | Sqordia"
+        description="Your subscription has been successfully activated"
+        noindex={true}
+        nofollow={true}
+      />
       <div className="max-w-md w-full">
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 text-center">
           {error ? (

@@ -70,24 +70,24 @@ export default function Footer() {
             <h3 className="font-heading text-lg font-bold mb-4">{t('footer.product')}</h3>
             <ul className="space-y-2 sm:space-y-3">
               <li>
-                <a href="#features" className="block py-2 hover:text-white transition-colors min-h-[44px] flex items-center" style={{ color: 'rgba(255, 255, 255, 0.8)' }}>
+                <Link to="/#features" className="block py-2 hover:text-white transition-colors min-h-[44px] flex items-center" style={{ color: 'rgba(255, 255, 255, 0.8)' }}>
                   {t('footer.features')}
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#pricing" className="block py-2 hover:text-white transition-colors min-h-[44px] flex items-center" style={{ color: 'rgba(255, 255, 255, 0.8)' }}>
+                <Link to="/#pricing" className="block py-2 hover:text-white transition-colors min-h-[44px] flex items-center" style={{ color: 'rgba(255, 255, 255, 0.8)' }}>
                   {t('footer.pricing')}
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" className="block py-2 hover:text-white transition-colors min-h-[44px] flex items-center" style={{ color: 'rgba(255, 255, 255, 0.8)' }}>
+                <Link to="/example-plans" className="block py-2 hover:text-white transition-colors min-h-[44px] flex items-center" style={{ color: 'rgba(255, 255, 255, 0.8)' }}>
                   {t('footer.caseStudies')}
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" className="block py-2 hover:text-white transition-colors min-h-[44px] flex items-center" style={{ color: 'rgba(255, 255, 255, 0.8)' }}>
+                <Link to="/#how-it-works" className="block py-2 hover:text-white transition-colors min-h-[44px] flex items-center" style={{ color: 'rgba(255, 255, 255, 0.8)' }}>
                   {t('footer.demo')}
-                </a>
+                </Link>
               </li>
             </ul>
           </div>
@@ -112,9 +112,9 @@ export default function Footer() {
                 </a>
               </li>
               <li>
-                <a href="#contact" className="block py-2 hover:text-white transition-colors min-h-[44px] flex items-center" style={{ color: 'rgba(255, 255, 255, 0.8)' }}>
+                <Link to="/#contact" className="block py-2 hover:text-white transition-colors min-h-[44px] flex items-center" style={{ color: 'rgba(255, 255, 255, 0.8)' }}>
                   {t('footer.contact')}
-                </a>
+                </Link>
               </li>
             </ul>
           </div>
