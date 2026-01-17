@@ -111,4 +111,52 @@
   body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   }
+
+  /* Checkbox styling to match brand colors */
+  input[type="checkbox"] {
+    accent-color: #FF6B00 !important;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border-color: #D1D5DB;
+  }
+
+  /* Ensure checkboxes use orange color in all states */
+  input[type="checkbox"]:checked {
+    accent-color: #FF6B00 !important;
+    background-color: #FF6B00 !important;
+    border-color: #FF6B00 !important;
+  }
+
+  input[type="checkbox"]:hover:not(:checked) {
+    border-color: #FF6B00;
+  }
+
+  input[type="checkbox"]:focus {
+    outline: 2px solid #FF6B00;
+    outline-offset: 2px;
+    ring: 2px;
+    ring-color: #FF6B00;
+  }
+
+  input[type="checkbox"]:focus-visible {
+    outline: 2px solid #FF6B00;
+    outline-offset: 2px;
+  }
+
+  /* Dark mode checkbox styling */
+  .dark input[type="checkbox"] {
+    accent-color: #FF6B00 !important;
+    border-color: #4B5563;
+    background-color: #1F2937;
+  }
+
+  .dark input[type="checkbox"]:checked {
+    accent-color: #FF6B00 !important;
+    background-color: #FF6B00 !important;
+    border-color: #FF6B00 !important;
+  }
+
+  .dark input[type="checkbox"]:hover:not(:checked) {
+    border-color: #FF6B00;
+  }
 }

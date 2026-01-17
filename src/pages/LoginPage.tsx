@@ -334,7 +334,7 @@ export default function LoginPage() {
               <label className="flex items-center cursor-pointer">
                 <input 
                   type="checkbox" 
-                  className="w-4 h-4 rounded border-gray-300 focus:ring-2 focus:ring-offset-0"
+                  className="w-4 h-4 rounded border-gray-300 focus:ring-2 focus:ring-offset-0 focus:ring-orange-500"
                   style={{ 
                     accentColor: '#FF6B00',
                   }}

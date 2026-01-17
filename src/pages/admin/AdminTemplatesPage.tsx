@@ -546,7 +546,7 @@ export default function AdminTemplatesPage() {
                   id="isPublic"
                   checked={formData.isPublic}
                   onChange={(e) => setFormData({ ...formData, isPublic: e.target.checked })}
-                  className="h-4 w-4 border-gray-300 rounded"
+                  className="h-4 w-4 border-gray-300 rounded focus:ring-2 focus:ring-offset-0 focus:ring-orange-500"
                   style={{ accentColor: '#FF6B00' }}
                 />
                 <label htmlFor="isPublic" className="ml-2 block text-sm text-gray-700 dark:text-gray-300">

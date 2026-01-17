@@ -539,7 +539,7 @@ export default function RegisterPage() {
                 <input 
                   type="checkbox" 
                   required 
-                  className="w-4 h-4 mt-1 rounded border-gray-300 focus:ring-2 focus:ring-offset-0"
+                  className="w-4 h-4 mt-1 rounded border-gray-300 focus:ring-2 focus:ring-offset-0 focus:ring-orange-500"
                   style={{ accentColor: '#FF6B00' }}
                 />
                 <span className="text-sm leading-relaxed" style={{ color: '#6B7280' }}>
