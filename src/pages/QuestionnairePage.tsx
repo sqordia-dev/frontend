@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
   ArrowLeft,
@@ -62,7 +62,7 @@ const SECTION_ICONS = [
 export default function QuestionnairePage() {
   const { planId } = useParams();
   const navigate = useNavigate();
-  const { theme } = useTheme();
+  const { theme, t, language: contextLanguage } = useTheme();
 
   // Landing page color theme
   const strategyBlue = '#1A2B47';
@@ -76,13 +76,18 @@ export default function QuestionnairePage() {
   const [saving, setSaving] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [progress, setProgress] = useState<Progress | null>(null);
-  const [language, setLanguage] = useState<'en' | 'fr'>('en');
+  const [language, setLanguage] = useState<'en' | 'fr'>(contextLanguage);
   const [generating, setGenerating] = useState(false);
   const [suggestingQuestionId, setSuggestingQuestionId] = useState<string | null>(null);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [autoSaveTimers, setAutoSaveTimers] = useState<Record<string, NodeJS.Timeout>>({});
   const [focusedQuestion, setFocusedQuestion] = useState<string | null>(null);
   const [planType, setPlanType] = useState<string>('StrategicPlan'); // Default to StrategicPlan for OBNL
+
+  // Sync local language state with context language
+  useEffect(() => {
+    setLanguage(contextLanguage);
+  }, [contextLanguage]);
 
   useEffect(() => {
     if (planId) {
@@ -315,6 +320,65 @@ export default function QuestionnairePage() {
     return { total: sectionQuestions.length, answered, percentage: sectionQuestions.length > 0 ? (answered / sectionQuestions.length) * 100 : 0 };
   };
 
+  // Check if a section is complete (all questions answered)
+  const isSectionComplete = (section: string) => {
+    const { total, answered } = getSectionProgress(section);
+    return total > 0 && answered === total;
+  };
+
+  // Check if we can navigate to a specific section
+  const canNavigateToSection = (targetIndex: number) => {
+    // Can always go back or stay in current section
+    if (targetIndex <= currentSection) return true;
+    
+    // Can only go forward if all previous sections are complete
+    for (let i = 0; i < targetIndex; i++) {
+      if (sections[i] && !isSectionComplete(sections[i])) {
+        return false;
+      }
+    }
+    return true;
+  };
+
+  // Handle section navigation with validation
+  const handleSectionNavigation = (targetIndex: number) => {
+    if (targetIndex === currentSection) return;
+    
+    // Allow backward navigation
+    if (targetIndex < currentSection) {
+      setCurrentSection(targetIndex);
+      setError(null);
+      return;
+    }
+    
+    // Forward navigation requires all previous sections to be complete
+    if (!canNavigateToSection(targetIndex)) {
+      const incompleteSection = sections.find((_, index) => index < targetIndex && !isSectionComplete(sections[index]));
+      if (incompleteSection) {
+        setError(t('questionnaire.errorCompleteBefore').replace('{section}', incompleteSection));
+      } else {
+        setError(t('questionnaire.errorCompleteCurrent'));
+      }
+      return;
+    }
+    
+    setCurrentSection(targetIndex);
+    setError(null);
+  };
+
+  // Calculate progress locally based on actual questions loaded
+  const calculatedProgress = useMemo(() => {
+    const totalQuestions = questions.length;
+    const completedQuestions = questions.filter(q => q.isAnswered).length;
+    const completionPercentage = totalQuestions > 0 ? (completedQuestions / totalQuestions) * 100 : 0;
+    return {
+      totalQuestions,
+      completedQuestions,
+      completionPercentage,
+      isComplete: completedQuestions === totalQuestions && totalQuestions > 0
+    };
+  }, [questions]);
+
   if (loading) {
     return (
       <div className="min-h-screen bg-white dark:bg-gray-900 flex items-center justify-center">
@@ -323,8 +387,8 @@ export default function QuestionnairePage() {
             <div className="absolute inset-0 border-4 rounded-full dark:border-gray-700" style={{ borderColor: theme === 'dark' ? undefined : lightAIGrey }}></div>
             <div className="absolute inset-0 border-4 border-t-transparent rounded-full animate-spin" style={{ borderColor: momentumOrange }}></div>
           </div>
-          <p className="text-lg font-semibold mb-2" style={{ color: theme === 'dark' ? '#F9FAFB' : strategyBlue }}>Loading your questionnaire...</p>
-          <p className="text-sm text-gray-500 dark:text-gray-400">Preparing your personalized experience</p>
+          <p className="text-lg font-semibold mb-2" style={{ color: theme === 'dark' ? '#F9FAFB' : strategyBlue }}>{t('questionnaire.loading')}</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">{t('questionnaire.loadingSubtitle')}</p>
         </div>
       </div>
     );
@@ -342,12 +406,16 @@ export default function QuestionnairePage() {
               style={{ color: theme === 'dark' ? '#9CA3AF' : '#6B7280' }}
             >
               <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
-              <span>Back to Dashboard</span>
+              <span>{t('questionnaire.backToDashboard')}</span>
             </button>
 
             <div className="flex items-center gap-4">
               <button
-                onClick={() => setLanguage(language === 'en' ? 'fr' : 'en')}
+                onClick={() => {
+                  const newLang = language === 'en' ? 'fr' : 'en';
+                  setLanguage(newLang);
+                  setContextLanguage(newLang);
+                }}
                 className="flex items-center gap-2 px-4 py-2 text-sm font-semibold bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 transition-all"
                 style={{ color: theme === 'dark' ? '#F3F4F6' : strategyBlue }}
               >
@@ -355,7 +423,7 @@ export default function QuestionnairePage() {
                 <span>{language === 'en' ? 'FR' : 'EN'}</span>
               </button>
 
-              {progress && (
+              {questions.length > 0 && (
                 <div className="flex items-center gap-3 px-5 py-2.5 rounded-lg border-2 dark:bg-gray-800 dark:border-gray-700" style={{ 
                   backgroundColor: lightAIGrey,
                   borderColor: theme === 'dark' ? '#374151' : '#E5E7EB'
@@ -363,25 +431,25 @@ export default function QuestionnairePage() {
                   <div className="flex items-center gap-2">
                     <div className="w-2.5 h-2.5 rounded-full animate-pulse" style={{ backgroundColor: momentumOrange }}></div>
                     <span className="text-sm font-bold" style={{ color: theme === 'dark' ? '#F9FAFB' : strategyBlue }}>
-                      {progress.completedQuestions}/{progress.totalQuestions}
+                      {calculatedProgress.completedQuestions}/{calculatedProgress.totalQuestions}
                     </span>
                   </div>
                   <div className="h-5 w-px bg-gray-300 dark:bg-gray-600"></div>
                   <span className="text-sm font-bold" style={{ color: momentumOrange }}>
-                    {Math.round(progress.completionPercentage)}%
+                    {Math.round(calculatedProgress.completionPercentage)}%
                   </span>
                 </div>
               )}
             </div>
           </div>
 
-          {progress && (
+          {questions.length > 0 && (
             <div className="relative">
               <div className="w-full rounded-full h-2 overflow-hidden dark:bg-gray-700" style={{ backgroundColor: lightAIGrey }}>
                 <div
                   className="h-full rounded-full transition-all duration-700 ease-out relative overflow-hidden"
                   style={{ 
-                    width: `${progress.completionPercentage}%`,
+                    width: `${calculatedProgress.completionPercentage}%`,
                     backgroundColor: momentumOrange
                   }}
                 >
@@ -398,7 +466,7 @@ export default function QuestionnairePage() {
           <div className="mb-6 p-5 bg-red-50 dark:bg-red-900/20 border-2 border-red-200 dark:border-red-800 rounded-xl flex items-start gap-4 animate-slide-in shadow-sm">
             <AlertCircle className="text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" size={22} />
             <div className="flex-1">
-              <p className="text-base font-bold text-red-900 dark:text-red-200 mb-1">Error</p>
+              <p className="text-base font-bold text-red-900 dark:text-red-200 mb-1">{t('questionnaire.error')}</p>
               <p className="text-sm text-red-700 dark:text-red-300 leading-relaxed">{error}</p>
             </div>
             <button 
@@ -419,7 +487,7 @@ export default function QuestionnairePage() {
                 <div className="p-2.5 rounded-lg" style={{ backgroundColor: strategyBlue }}>
                   <Target className="text-white" size={20} />
                 </div>
-                <h3 className="text-xl font-bold" style={{ color: theme === 'dark' ? '#F9FAFB' : strategyBlue }}>Sections</h3>
+                <h3 className="text-xl font-bold" style={{ color: theme === 'dark' ? '#F9FAFB' : strategyBlue }}>{t('questionnaire.sections')}</h3>
               </div>
               
               <nav className="space-y-2">
@@ -432,8 +500,11 @@ export default function QuestionnairePage() {
                   return (
                     <button
                       key={section}
-                      onClick={() => setCurrentSection(index)}
+                      onClick={() => handleSectionNavigation(index)}
+                      disabled={!canNavigateToSection(index)}
                       className={`w-full text-left p-4 rounded-lg transition-all duration-200 group ${
+                        !canNavigateToSection(index) ? 'opacity-50 cursor-not-allowed' : ''
+                      } ${
                         isCurrent
                           ? 'shadow-md'
                           : isComplete
@@ -481,7 +552,7 @@ export default function QuestionnairePage() {
                             color: theme === 'dark' ? '#F9FAFB' : strategyBlue
                           }}
                           >
-                            Section {index + 1}
+                            {t('questionnaire.section')} {index + 1}
                           </div>
                           <div className={`text-xs mb-2 line-clamp-2 ${
                             isCurrent 
@@ -557,7 +628,7 @@ export default function QuestionnairePage() {
                   )}
                   <div>
                     <div className="text-sm font-semibold text-white/90 mb-1 uppercase tracking-wide">
-                      Section {currentSection + 1} of {sections.length}
+                      {t('questionnaire.sectionOf').replace('{current}', String(currentSection + 1)).replace('{total}', String(sections.length))}
                     </div>
                     <h2 className="text-3xl font-bold text-white">
                       {sections[currentSection]}
@@ -565,7 +636,7 @@ export default function QuestionnairePage() {
                   </div>
                 </div>
                 <p className="text-white/80 text-base">
-                  {getSectionProgress(sections[currentSection]).answered} of {getSectionProgress(sections[currentSection]).total} questions completed
+                  {t('questionnaire.questionsCompleted').replace('{answered}', String(getSectionProgress(sections[currentSection]).answered)).replace('{total}', String(getSectionProgress(sections[currentSection]).total))}
                 </p>
               </div>
             </div>
@@ -655,7 +726,7 @@ export default function QuestionnairePage() {
                         <textarea
                           value={answers[question.questionId] || ''}
                           onChange={(e) => handleAnswerChange(question.questionId, e.target.value)}
-                          placeholder="Share your thoughts here... Be as detailed as you'd like."
+                          placeholder={t('questionnaire.placeholder')}
                           rows={6}
                           className="w-full px-5 py-4 border-2 rounded-xl transition-all duration-200 resize-none focus:outline-none text-base"
                           style={{
@@ -679,12 +750,12 @@ export default function QuestionnairePage() {
                             {saving === question.questionId ? (
                               <>
                                 <Loader2 size={14} className="animate-spin text-blue-600 dark:text-blue-400" />
-                                <span>Saving...</span>
+                                <span>{t('questionnaire.saving')}</span>
                               </>
                             ) : (
                               <span className="flex items-center gap-1">
                                 <Check size={14} className="text-orange-600 dark:text-orange-400" />
-                                Auto-saved
+                                {t('questionnaire.autoSaved')}
                               </span>
                             )}
                           </div>
@@ -708,12 +779,12 @@ export default function QuestionnairePage() {
                           {saving === question.questionId ? (
                             <>
                               <Loader2 size={16} className="animate-spin" />
-                              <span>Saving...</span>
+                              <span>{t('questionnaire.saving')}</span>
                             </>
                           ) : (
                             <>
                               <Save size={16} />
-                              <span>Save Now</span>
+                              <span>{t('questionnaire.saveNow')}</span>
                             </>
                           )}
                         </button>
@@ -732,12 +803,12 @@ export default function QuestionnairePage() {
                           {suggestingQuestionId === question.questionId ? (
                             <>
                               <Loader2 size={16} className="animate-spin" />
-                              <span>Generating...</span>
+                              <span>{t('questionnaire.generating')}</span>
                             </>
                           ) : (
                             <>
                               <Sparkles size={16} />
-                              <span>AI Suggestion</span>
+                              <span>{t('questionnaire.aiSuggestion')}</span>
                             </>
                           )}
                         </button>
@@ -751,7 +822,7 @@ export default function QuestionnairePage() {
             {/* Navigation Footer */}
             <div className="flex items-center justify-between pt-6 border-t-2 border-gray-200 dark:border-gray-700">
               <button
-                onClick={() => setCurrentSection(prev => Math.max(0, prev - 1))}
+                onClick={() => handleSectionNavigation(Math.max(0, currentSection - 1))}
                 disabled={currentSection === 0}
                 className="flex items-center gap-2 px-6 py-3 rounded-lg border-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
                 style={{
@@ -763,7 +834,7 @@ export default function QuestionnairePage() {
                 onMouseLeave={(e) => !(currentSection === 0) && (e.currentTarget.style.borderColor = '')}
               >
                 <ArrowLeft size={20} />
-                <span>Previous Section</span>
+                <span>{t('questionnaire.previousSection')}</span>
               </button>
 
               {currentSection === sections.length - 1 ? (
@@ -780,26 +851,42 @@ export default function QuestionnairePage() {
                   {generating ? (
                     <>
                       <Loader2 size={20} className="animate-spin" />
-                      <span>Generating Your Plan...</span>
+                      <span>{t('questionnaire.generatingPlan')}</span>
                     </>
                   ) : (
                     <>
                       <Zap size={20} />
-                      <span>Generate Business Plan</span>
+                      <span>{t('questionnaire.generatePlan')}</span>
                     </>
                   )}
                 </button>
               ) : (
                 <button
-                  onClick={() => setCurrentSection(prev => Math.min(sections.length - 1, prev + 1))}
-                  className="flex items-center gap-3 px-8 py-4 text-white rounded-lg font-bold shadow-lg hover:shadow-xl transition-all hover:scale-105 active:scale-95"
+                  onClick={() => {
+                    const nextSection = currentSection + 1;
+                    if (isSectionComplete(sections[currentSection])) {
+                      handleSectionNavigation(nextSection);
+                    } else {
+                      setError(t('questionnaire.errorCompleteSection'));
+                    }
+                  }}
+                  disabled={!isSectionComplete(sections[currentSection])}
+                  className="flex items-center gap-3 px-8 py-4 text-white rounded-lg font-bold shadow-lg hover:shadow-xl transition-all hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                   style={{
                     backgroundColor: momentumOrange
                   }}
-                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = momentumOrangeHover}
-                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = momentumOrange}
+                  onMouseEnter={(e) => {
+                    if (isSectionComplete(sections[currentSection])) {
+                      e.currentTarget.style.backgroundColor = momentumOrangeHover;
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (isSectionComplete(sections[currentSection])) {
+                      e.currentTarget.style.backgroundColor = momentumOrange;
+                    }
+                  }}
                 >
-                  <span>Next Section</span>
+                  <span>{t('questionnaire.nextSection')}</span>
                   <ArrowRight size={20} />
                 </button>
               )}

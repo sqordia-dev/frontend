@@ -433,6 +433,9 @@ export default function ProfilePage() {
                             }
                           }}
                           onBlur={(e) => {
+                            // Reset border color
+                            e.currentTarget.style.borderColor = '';
+                            // Validate URL format
                             const url = e.target.value.trim();
                             if (url) {
                               try {
@@ -446,12 +449,11 @@ export default function ProfilePage() {
                           }}
                           placeholder="Or enter a URL to your profile picture"
                           className="w-full pl-10 pr-4 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-transparent text-sm transition-colors"
-                      style={{ 
-                        focusRingColor: momentumOrange,
-                        '--tw-ring-color': momentumOrange
-                      } as React.CSSProperties & { focusRingColor?: string }}
-                      onFocus={(e) => e.currentTarget.style.borderColor = momentumOrange}
-                      onBlur={(e) => e.currentTarget.style.borderColor = ''}
+                          style={{ 
+                            focusRingColor: momentumOrange,
+                            '--tw-ring-color': momentumOrange
+                          } as React.CSSProperties & { focusRingColor?: string }}
+                          onFocus={(e) => e.currentTarget.style.borderColor = momentumOrange}
                         />
                       </div>
                       <p className="text-xs text-gray-500 dark:text-gray-400">

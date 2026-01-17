@@ -453,10 +453,10 @@ export default function SubscriptionPage() {
               <CreditCard className="w-10 h-10 text-white" />
             </div>
             <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-3">
-              No Active Subscription
+              {t('subscription.noActiveSubscription')}
             </h2>
             <p className="text-gray-600 dark:text-gray-400 mb-8 text-lg">
-              You don't have an active subscription. Choose a plan to unlock all features.
+              {t('subscription.noActiveSubscriptionDesc')}
             </p>
             <button
               onClick={() => navigate('/subscription-plans')}
@@ -465,7 +465,7 @@ export default function SubscriptionPage() {
               onMouseEnter={(e) => e.currentTarget.style.backgroundColor = momentumOrangeHover}
               onMouseLeave={(e) => e.currentTarget.style.backgroundColor = momentumOrange}
             >
-              View Plans
+              {t('subscription.viewPlans')}
             </button>
           </div>
         </div>
