@@ -25,8 +25,6 @@ import {
   Menu,
   Target,
   TrendingUp,
-  Users,
-  Briefcase,
   DollarSign,
   Rocket,
   Heart,
@@ -59,6 +57,22 @@ const parseMarkdown = (markdown: string): string => {
   if (hasCompleteHTML && !hasMarkdown) {
     return html;
   }
+  
+  // Pre-process: Protect HTML tables from being escaped
+  const tablePlaceholders: { [key: string]: string } = {};
+  let tableIndex = 0;
+  html = html.replace(/<table[\s\S]*?<\/table>/gi, (match) => {
+    const key = `__TABLE_${tableIndex++}__`;
+    // Add business-plan-table class if not already present
+    let tableHtml = match;
+    if (!tableHtml.includes('class=')) {
+      tableHtml = tableHtml.replace('<table', '<table class="business-plan-table"');
+    } else if (!tableHtml.includes('business-plan-table')) {
+      tableHtml = tableHtml.replace(/class="([^"]*)"/, 'class="$1 business-plan-table"');
+    }
+    tablePlaceholders[key] = tableHtml;
+    return key;
+  });
   
   // Pre-process: Convert all markdown headings to HTML FIRST (before escaping)
   // This ensures we catch headings anywhere in the content
@@ -150,19 +164,98 @@ const parseMarkdown = (markdown: string): string => {
     listType = null;
   };
   
+  // Helper to parse Markdown table
+  const parseMarkdownTable = (tableLines: string[]): string => {
+    if (tableLines.length < 2) return '';
+    
+    const parseRow = (row: string): string[] => {
+      return row.split('|')
+        .filter((cell, index, arr) => index !== 0 && index !== arr.length - 1 || cell.trim() !== '')
+        .map(cell => cell.trim());
+    };
+    
+    const headerCells = parseRow(tableLines[0]);
+    const bodyRows = tableLines.slice(2); // Skip header and separator
+    
+    let tableHtml = '<table class="business-plan-table">';
+    
+    // Header
+    tableHtml += '<thead><tr>';
+    headerCells.forEach(cell => {
+      tableHtml += `<th>${processInlineMarkdown(cell)}</th>`;
+    });
+    tableHtml += '</tr></thead>';
+    
+    // Body
+    tableHtml += '<tbody>';
+    bodyRows.forEach((row, rowIndex) => {
+      const cells = parseRow(row);
+      const isLastRow = rowIndex === bodyRows.length - 1;
+      const isFooterRow = isLastRow && (cells[0]?.toLowerCase().includes('total') || cells[0]?.toLowerCase().includes('total'));
+      
+      tableHtml += isFooterRow ? '<tr class="table-footer">' : '<tr>';
+      cells.forEach(cell => {
+        // Check if cell looks like currency
+        const isCurrency = /^\$[\d,]+(\.\d{2})?$/.test(cell.trim()) || /^[\d,]+\s*(€|\$|CAD|USD)/.test(cell.trim());
+        tableHtml += `<td${isCurrency ? ' class="currency"' : ''}>${processInlineMarkdown(cell)}</td>`;
+      });
+      tableHtml += '</tr>';
+    });
+    tableHtml += '</tbody></table>';
+    
+    return tableHtml;
+  };
+  
+  // Track if we're in a table
+  let inTable = false;
+  let tableLines: string[] = [];
+  
+  const flushTable = () => {
+    if (tableLines.length > 0) {
+      processedLines.push(parseMarkdownTable(tableLines));
+      tableLines = [];
+    }
+    inTable = false;
+  };
+  
   for (let i = 0; i < lines.length; i++) {
     let line = lines[i];
     const trimmedLine = line.trim();
     
+    // Check for table placeholder (already processed)
+    if (trimmedLine.startsWith('__TABLE_')) {
+      flushList();
+      flushTable();
+      processedLines.push(trimmedLine);
+      continue;
+    }
+    
+    // Check if line is a Markdown table row (starts and ends with |, or has multiple |)
+    const isTableRow = /^\|.*\|$/.test(trimmedLine) || (trimmedLine.includes('|') && trimmedLine.split('|').length >= 3);
+    const isTableSeparator = /^\|?[\s\-:|]+\|?$/.test(trimmedLine) && trimmedLine.includes('-');
+    
+    if (isTableRow || (inTable && isTableSeparator)) {
+      flushList();
+      if (!inTable) {
+        inTable = true;
+      }
+      tableLines.push(trimmedLine);
+      continue;
+    } else if (inTable) {
+      flushTable();
+    }
+    
     // Empty line - flush list if active
     if (!trimmedLine) {
       flushList();
+      flushTable();
       continue;
     }
       
     // Check if line is already a processed heading (from pre-processing)
     if (trimmedLine.match(/^<h[1-6]/)) {
       flushList();
+      flushTable();
       processedLines.push(trimmedLine);
       continue;
     }
@@ -172,6 +265,7 @@ const parseMarkdown = (markdown: string): string => {
     const headingMatch = trimmedLine.match(/^(#{1,6})\s+(.+)$/);
     if (headingMatch) {
       flushList();
+      flushTable();
       const level = headingMatch[1].length;
       const text = headingMatch[2].trim();
       const headingClass = level === 1 
@@ -192,6 +286,7 @@ const parseMarkdown = (markdown: string): string => {
     
     // Unordered list items
     if (trimmedLine.match(/^[\*\-]\s+/)) {
+      flushTable();
       if (!inList || listType !== 'ul') {
         flushList();
         inList = true;
@@ -204,6 +299,7 @@ const parseMarkdown = (markdown: string): string => {
     
     // Ordered list items
     if (trimmedLine.match(/^\d+\.\s+/)) {
+      flushTable();
       if (!inList || listType !== 'ol') {
         flushList();
         inList = true;
@@ -216,9 +312,13 @@ const parseMarkdown = (markdown: string): string => {
     
     // Regular paragraph
     flushList();
+    flushTable();
     const processedLine = processInlineMarkdown(trimmedLine);
     processedLines.push(`<p class="mb-4 leading-relaxed text-gray-700 dark:text-gray-300">${processedLine}</p>`);
   }
+  
+  // Flush any remaining table
+  flushTable();
   
   // Flush any remaining list
   flushList();
@@ -227,6 +327,11 @@ const parseMarkdown = (markdown: string): string => {
   let result = processedLines.join('\n');
   Object.keys(entityPlaceholders).forEach(key => {
     result = result.replace(new RegExp(key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), entityPlaceholders[key]);
+  });
+  
+  // Restore HTML tables
+  Object.keys(tablePlaceholders).forEach(key => {
+    result = result.replace(new RegExp(key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), tablePlaceholders[key]);
   });
   
   return result;
@@ -371,6 +476,61 @@ interface Section {
   status: string;
 }
 
+// Section categories matching the backend structure and business plan template
+// Backend uses kebab-case for section names (e.g., 'executive-summary', 'market-analysis')
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const SECTION_CATEGORIES: Record<string, { sections: string[]; icon: any; order: number }> = {
+  'Introduction': {
+    sections: ['executive-summary'],
+    icon: Target,
+    order: 1
+  },
+  'Market': {
+    sections: ['market-analysis', 'competitive-analysis'],
+    icon: TrendingUp,
+    order: 2
+  },
+  'Strategy': {
+    sections: ['business-model', 'marketing-strategy'],
+    icon: Rocket,
+    order: 3
+  },
+  'Operations': {
+    sections: ['operations-plan', 'management-team'],
+    icon: Settings,
+    order: 4
+  },
+  'Financial': {
+    sections: ['financial-projections', 'funding-requirements'],
+    icon: DollarSign,
+    order: 5
+  },
+  'Risk': {
+    sections: ['risk-analysis'],
+    icon: BarChart3,
+    order: 6
+  },
+  'StrategicPlan': {
+    sections: ['mission-statement', 'vision-statement', 'social-impact', 'beneficiary-profile'],
+    icon: Heart,
+    order: 7
+  }
+};
+
+// Category display names (localized)
+const getCategoryDisplayName = (category: string, language: string): string => {
+  const names: Record<string, { en: string; fr: string }> = {
+    'Introduction': { en: 'Introduction', fr: 'Introduction' },
+    'Market': { en: 'Market Analysis', fr: 'Analyse de Marché' },
+    'Strategy': { en: 'Strategy', fr: 'Stratégie' },
+    'Operations': { en: 'Operations & Team', fr: 'Opérations et Équipe' },
+    'Financial': { en: 'Financial', fr: 'Financier' },
+    'Risk': { en: 'Risk Analysis', fr: 'Analyse des Risques' },
+    'StrategicPlan': { en: 'Mission & Vision', fr: 'Mission et Vision' }
+  };
+  return names[category]?.[language as 'en' | 'fr'] || names[category]?.['en'] || category;
+};
+
 export default function PlanViewPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -392,7 +552,7 @@ export default function PlanViewPage() {
   const [lastSaved, setLastSaved] = useState<{ [key: string]: string }>({});
   const [hoveredSection, setHoveredSection] = useState<string | null>(null);
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
-  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set(['Introduction', 'Market', 'Strategy', 'Operations', 'Financial', 'BusinessPlan', 'StrategicPlan']));
+  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set(['Introduction', 'Market', 'Strategy', 'Operations', 'Financial', 'Risk', 'StrategicPlan']));
   const [showShareModal, setShowShareModal] = useState(false);
   const [showVersionModal, setShowVersionModal] = useState(false);
   const [shares, setShares] = useState<any[]>([]);
@@ -555,22 +715,69 @@ export default function PlanViewPage() {
   }, [editingSection]);
 
   useEffect(() => {
+    // Track visible sections with their positions
+    const visibleSections = new Map<string, number>();
+    
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            setActiveSection(entry.target.id);
+            visibleSections.set(entry.target.id, entry.boundingClientRect.top);
+          } else {
+            visibleSections.delete(entry.target.id);
           }
         });
+        
+        // Find the section closest to top of viewport among visible sections
+        if (visibleSections.size > 0) {
+          let closestSection = '';
+          let closestDistance = Infinity;
+          
+          visibleSections.forEach((top, id) => {
+            const distance = Math.abs(top - 120); // 120px offset for header
+            if (distance < closestDistance) {
+              closestDistance = distance;
+              closestSection = id;
+            }
+          });
+          
+          if (closestSection) {
+            setActiveSection(closestSection);
+          }
+        }
       },
-      { threshold: 0.3, rootMargin: '-100px 0px -60% 0px' }
+      { threshold: [0, 0.1, 0.25, 0.5, 0.75, 1], rootMargin: '-80px 0px -20% 0px' }
     );
 
     Object.values(sectionRefs.current).forEach((ref) => {
       if (ref) observer.observe(ref);
     });
+    
+    // Also handle scroll to update active section when at bottom of page
+    const handleScroll = () => {
+      const scrollTop = window.scrollY;
+      const windowHeight = window.innerHeight;
+      const documentHeight = document.documentElement.scrollHeight;
+      
+      // If at bottom of page, set active to last section
+      if (scrollTop + windowHeight >= documentHeight - 50) {
+        const allSectionIds = Object.keys(sectionRefs.current).filter(id => sectionRefs.current[id]);
+        if (allSectionIds.length > 0) {
+          // Find the last section that has content
+          const lastSection = sections[sections.length - 1];
+          if (lastSection) {
+            setActiveSection(lastSection.sectionName);
+          }
+        }
+      }
+    };
+    
+    window.addEventListener('scroll', handleScroll, { passive: true });
 
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('scroll', handleScroll);
+    };
   }, [sections]);
 
   const loadPlan = async () => {
@@ -732,19 +939,95 @@ export default function PlanViewPage() {
   };
 
   const getSectionInstructions = (sectionName: string): string => {
-    const instructionsMap: { [key: string]: string } = {
-      'executive-summary': 'Provide a comprehensive overview of your business plan highlighting key objectives, strategies, and financial projections. This should be compelling and capture the essence of your business.',
-      'business-concept': 'Describe your innovative business idea that addresses market needs and creates value for customers. Explain what makes your concept unique and valuable.',
-      'target-market': 'Provide detailed analysis of your ideal customer demographics, behaviors, and market segments. Include information about market size and growth potential.',
-      'market-analysis': 'Include in-depth research of industry trends, market size, growth potential, and competitive landscape. Support your analysis with data and research.',
-      'competitive-advantage': 'Explain unique features and strategies that differentiate your business from competitors. Highlight what gives you a sustainable competitive edge.',
-      'marketing-strategy': 'Describe your comprehensive plan for reaching and engaging your target audience through various channels. Include specific tactics and channels.',
-      'operations-plan': 'Detail your day-to-day operational structure, processes, and resources required to run your business. Include information about facilities, equipment, and processes.',
-      'management-team': 'Introduce key team members, their roles, experience, and how they contribute to business success. Highlight relevant expertise and achievements.',
-      'financial-projections': 'Provide detailed revenue forecasts, expense budgets, cash flow analysis, and break-even projections for the next 3-5 years. Include assumptions and key metrics.',
-      'risk-analysis': 'Identify potential risks and mitigation strategies to ensure business continuity. Include both internal and external risks with specific mitigation plans.',
+    const baseInstructions: { [key: string]: string } = {
+      // Executive & Introduction
+      'executive-summary': language === 'fr' 
+        ? 'Fournissez un aperçu complet de votre plan d\'affaires mettant en évidence les objectifs clés, les stratégies et les projections financières. Cela devrait être convaincant et capturer l\'essence de votre entreprise.'
+        : 'Provide a comprehensive overview of your business plan highlighting key objectives, strategies, and financial projections. This should be compelling and capture the essence of your business.',
+      'business-concept': language === 'fr'
+        ? 'Décrivez votre idée d\'entreprise innovante qui répond aux besoins du marché et crée de la valeur pour les clients. Expliquez ce qui rend votre concept unique et précieux.'
+        : 'Describe your innovative business idea that addresses market needs and creates value for customers. Explain what makes your concept unique and valuable.',
+      'problem-statement': language === 'fr'
+        ? 'Identifiez clairement le problème ou le besoin que votre entreprise résout. Expliquez l\'ampleur du problème et pourquoi les solutions existantes sont insuffisantes.'
+        : 'Clearly identify the problem or need your business solves. Explain the magnitude of the problem and why existing solutions are inadequate.',
+      'solution': language === 'fr'
+        ? 'Décrivez votre solution au problème identifié. Expliquez comment elle fonctionne et pourquoi elle est meilleure que les alternatives existantes.'
+        : 'Describe your solution to the identified problem. Explain how it works and why it is better than existing alternatives.',
+      
+      // Market sections with table guidance
+      'target-market': language === 'fr'
+        ? 'Fournissez une analyse détaillée de vos clients idéaux. INCLUEZ UN TABLEAU avec les segments de clientèle (Nom, Description, Taille, Produit/Service). Ajoutez des données démographiques et comportementales.'
+        : 'Provide detailed analysis of your ideal customer demographics. INCLUDE A TABLE with customer segments (Name, Description, Size, Product/Service). Add demographic and behavioral data.',
+      'market-analysis': language === 'fr'
+        ? 'Incluez une recherche approfondie sur les tendances, la taille du marché et le potentiel de croissance. Utilisez des TABLEAUX pour présenter les données de marché et les statistiques clés.'
+        : 'Include in-depth research of industry trends, market size, and growth potential. Use TABLES to present market data and key statistics.',
+      'competitive-analysis': language === 'fr'
+        ? 'Analysez vos concurrents. INCLUEZ UN TABLEAU COMPARATIF avec les colonnes: Concurrent, Forces, Faiblesses, Part de marché, Différenciateur clé.'
+        : 'Analyze your competitors. INCLUDE A COMPARISON TABLE with columns: Competitor, Strengths, Weaknesses, Market Share, Key Differentiator.',
+      'competitive-advantage': language === 'fr'
+        ? 'Expliquez les caractéristiques et stratégies uniques qui différencient votre entreprise de la concurrence.'
+        : 'Explain unique features and strategies that differentiate your business from competitors. Highlight what gives you a sustainable competitive edge.',
+      'swot-analysis': language === 'fr'
+        ? 'Présentez votre analyse SWOT. INCLUEZ UN TABLEAU avec 4 sections: Forces, Faiblesses, Opportunités, Menaces.'
+        : 'Present your SWOT analysis. INCLUDE A TABLE with 4 sections: Strengths, Weaknesses, Opportunities, Threats.',
+      
+      // Operations with table guidance
+      'operations-plan': language === 'fr'
+        ? 'Détaillez votre structure opérationnelle quotidienne. INCLUEZ DES TABLEAUX pour: les processus clés, les équipements nécessaires, les fournisseurs principaux.'
+        : 'Detail your day-to-day operational structure. INCLUDE TABLES for: key processes, required equipment, main suppliers.',
+      'management-team': language === 'fr'
+        ? 'Présentez les membres clés de l\'équipe. INCLUEZ UN TABLEAU avec: Nom, Rôle, Expérience, Expertise clé, Années d\'expérience.'
+        : 'Introduce key team members. INCLUDE A TABLE with: Name, Role, Experience, Key Expertise, Years of Experience.',
+      
+      // Marketing & Strategy
+      'marketing-strategy': language === 'fr'
+        ? 'Décrivez votre plan marketing complet. INCLUEZ UN TABLEAU des canaux marketing: Canal, Budget, Objectif, KPI attendu.'
+        : 'Describe your comprehensive marketing plan. INCLUDE A TABLE of marketing channels: Channel, Budget, Goal, Expected KPI.',
+      'business-model': language === 'fr'
+        ? 'Expliquez comment votre entreprise génère des revenus. INCLUEZ UN TABLEAU des sources de revenus et de la structure de prix.'
+        : 'Explain how your business generates revenue. INCLUDE A TABLE of revenue sources and pricing structure.',
+      'branding-strategy': language === 'fr'
+        ? 'Décrivez votre stratégie de marque, positionnement et identité visuelle.'
+        : 'Describe your branding strategy, positioning and visual identity.',
+      
+      // Financial sections with table requirements
+      'financial-projections': language === 'fr'
+        ? 'Fournissez des projections financières détaillées sur 3-5 ans. INCLUEZ DES TABLEAUX pour: Compte de résultat, Bilan, Flux de trésorerie, Point mort. Exemple:\n\n| Année | Revenus | Dépenses | Profit net |\n|-------|---------|----------|------------|\n| An 1 | $XXX | $XXX | $XXX |'
+        : 'Provide detailed financial projections for 3-5 years. INCLUDE TABLES for: Income Statement, Balance Sheet, Cash Flow, Break-even. Example:\n\n| Year | Revenue | Expenses | Net Profit |\n|------|---------|----------|------------|\n| Year 1 | $XXX | $XXX | $XXX |',
+      'funding-requirements': language === 'fr'
+        ? 'Détaillez vos besoins de financement. INCLUEZ UN TABLEAU: Description du besoin, Montant, Utilisation prévue, Total requis.'
+        : 'Detail your funding needs. INCLUDE A TABLE: Funding Need Description, Amount, Planned Use, Total Required.',
+      'risk-analysis': language === 'fr'
+        ? 'Identifiez les risques potentiels. INCLUEZ UN TABLEAU: Risque, Probabilité, Impact, Stratégie de mitigation.'
+        : 'Identify potential risks. INCLUDE A TABLE: Risk, Probability, Impact, Mitigation Strategy.',
+      
+      // OBNL/Strategic Plan sections
+      'mission-statement': language === 'fr'
+        ? 'Énoncez la mission et la vision de votre organisation. Expliquez vos valeurs fondamentales et votre raison d\'être.'
+        : 'State your organization\'s mission and vision. Explain your core values and purpose.',
+      'social-impact': language === 'fr'
+        ? 'Décrivez l\'impact social de votre organisation. INCLUEZ UN TABLEAU des indicateurs d\'impact: Indicateur, Cible, Méthode de mesure.'
+        : 'Describe your organization\'s social impact. INCLUDE A TABLE of impact indicators: Indicator, Target, Measurement Method.',
+      'beneficiary-profile': language === 'fr'
+        ? 'Décrivez vos bénéficiaires. INCLUEZ UN TABLEAU: Groupe, Besoins, Services offerts, Nombre estimé.'
+        : 'Describe your beneficiaries. INCLUDE A TABLE: Group, Needs, Services Offered, Estimated Number.',
+      'grant-strategy': language === 'fr'
+        ? 'Détaillez votre stratégie de financement. INCLUEZ UN TABLEAU des sources de financement: Source, Type, Montant, Statut.'
+        : 'Detail your funding strategy. INCLUDE A TABLE of funding sources: Source, Type, Amount, Status.',
+      'sustainability-plan': language === 'fr'
+        ? 'Décrivez votre plan de durabilité. INCLUEZ UN TABLEAU des initiatives: Initiative, Objectif, Échéancier, Responsable.'
+        : 'Describe your sustainability plan. INCLUDE A TABLE of initiatives: Initiative, Goal, Timeline, Responsible.',
+      'exit-strategy': language === 'fr'
+        ? 'Décrivez votre stratégie de sortie ou de succession. Incluez les options et échéanciers envisagés.'
+        : 'Describe your exit or succession strategy. Include options and timelines considered.',
     };
-    return instructionsMap[sectionName.toLowerCase()] || 'Add content to this section. Be specific and provide detailed information that supports your business plan.';
+    
+    // Normalize section name for lookup
+    const normalizedName = sectionName.toLowerCase().replace(/_/g, '-');
+    
+    return baseInstructions[normalizedName] || (language === 'fr' 
+      ? 'Ajoutez du contenu à cette section. Soyez précis et fournissez des informations détaillées qui soutiennent votre plan d\'affaires. Utilisez des tableaux lorsque approprié pour présenter les données.'
+      : 'Add content to this section. Be specific and provide detailed information that supports your business plan. Use tables when appropriate to present data.');
   };
 
   const handleAISuggestion = async (sectionName: string, action: 'improve' | 'expand' | 'simplify') => {
@@ -1125,8 +1408,8 @@ export default function PlanViewPage() {
 
       {/* Main Layout */}
       <div className="flex min-h-screen overflow-x-hidden">
-        {/* Sidebar Navigation */}
-        <aside className={`plan-sidebar fixed lg:sticky inset-y-0 left-0 z-50 lg:z-30 w-[280px] sm:w-64 flex-shrink-0 bg-white dark:bg-gray-800 border-r-2 border-gray-300 dark:border-gray-700 lg:top-[57px] h-screen lg:h-[calc(100vh-57px)] overflow-y-auto transform transition-transform duration-300 ease-in-out ${
+        {/* Sidebar Navigation - Fixed position for plan sections, positioned after Dashboard sidebar */}
+        <aside className={`plan-sidebar fixed w-64 flex-shrink-0 bg-white dark:bg-gray-800 border-r-2 border-gray-300 dark:border-gray-700 top-[57px] h-[calc(100vh-57px)] overflow-y-auto overflow-x-hidden transition-transform duration-300 ease-in-out z-30 lg:left-64 left-0 ${
           mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         }`}>
           {/* Mobile Close Button */}
@@ -1279,8 +1562,8 @@ export default function PlanViewPage() {
           </div>
         </aside>
 
-        {/* Main Content */}
-        <main className="flex-1 min-w-0 lg:ml-0">
+        {/* Main Content - offset by PlanView sidebar width (Dashboard sidebar is handled by DashboardLayout) */}
+        <main className="flex-1 min-w-0 lg:ml-64">
           {/* Cover Section */}
           <section 
             className="relative border-b-8 group" 
@@ -1492,7 +1775,7 @@ export default function PlanViewPage() {
                                   return (
                                     <>
                                       {/* Chapter Header */}
-                                      <div className="mb-12 pb-8 border-b-2 border-gray-300 dark:border-gray-700">
+                                      <div className={`pb-8 border-b-2 border-gray-300 dark:border-gray-700 ${expandedSections.has(section.sectionName) ? 'mb-12' : 'mb-0'}`}>
                                         <div className="flex items-start gap-6">
                                           <div className="flex-shrink-0">
                                             <div className="w-16 h-16 bg-gray-900 dark:bg-gray-800 rounded-lg flex items-center justify-center border-2 border-gray-300 dark:border-gray-600">
@@ -1503,13 +1786,18 @@ export default function PlanViewPage() {
                                           </div>
                                           <div className="flex-1 pt-2">
                                             <div className="flex items-start justify-between gap-4">
-                                              <div className="flex items-start gap-3 flex-1 min-w-0">
+                                              <div className="flex items-center gap-3 flex-1 min-w-0">
+                                                {/* Collapse/Expand button */}
                                                 <button
-                                                  onClick={() => startEditing(section)}
-                                                  className="opacity-0 group-hover:opacity-100 transition-opacity p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
-                                                  title={t('planView.edit') || 'Edit'}
+                                                  onClick={() => toggleSection(section.sectionName)}
+                                                  className="flex-shrink-0 p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                                                  title={expandedSections.has(section.sectionName) ? (t('planView.collapseAll') || 'Collapse') : (t('planView.expandAll') || 'Expand')}
                                                 >
-                                                  <Pencil size={18} />
+                                                  {expandedSections.has(section.sectionName) ? (
+                                                    <ChevronUp size={20} />
+                                                  ) : (
+                                                    <ChevronDown size={20} />
+                                                  )}
                                                 </button>
                                                 <div className="flex-1 min-w-0">
                                                   <div className="text-sm uppercase tracking-wider text-gray-500 dark:text-gray-400 font-semibold mb-2">
@@ -1520,13 +1808,21 @@ export default function PlanViewPage() {
                                                   </h2>
                                                 </div>
                                               </div>
+                                              {/* Edit button - on the right */}
+                                              <button
+                                                onClick={() => startEditing(section)}
+                                                className="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-all p-2 text-gray-600 dark:text-gray-400 hover:text-white hover:bg-orange-500 dark:hover:bg-orange-500 rounded-lg"
+                                                title={t('planView.edit') || 'Edit'}
+                                              >
+                                                <Pencil size={18} />
+                                              </button>
                                             </div>
                                           </div>
                                         </div>
                                       </div>
 
-                                      {/* Section Content */}
-                                      {isEditing ? (
+                                      {/* Section Content - Only show when expanded */}
+                                      {expandedSections.has(section.sectionName) && isEditing ? (
                                         <div className="space-y-4">
                                           <RichTextEditor
                                             value={editingContent}
@@ -1562,7 +1858,7 @@ export default function PlanViewPage() {
                                             </button>
                                           </div>
                                         </div>
-                                      ) : (
+                                      ) : expandedSections.has(section.sectionName) ? (
                                         <div className="prose prose-lg dark:prose-invert max-w-none">
                                           {section.content ? (
                                             <>
@@ -1572,8 +1868,8 @@ export default function PlanViewPage() {
                                                 dangerouslySetInnerHTML={{ __html: parseMarkdown(section.content) }}
                                               />
                                               
-                                              {/* Financial Tables - Show in FinancialProjections section */}
-                                              {(section.sectionName === 'FinancialProjections' || section.sectionName === 'financial-projections') && (
+                                              {/* Financial Tables - Show in financial-projections section */}
+                                              {section.sectionName === 'financial-projections' && (
                                                 <div className="mt-8 space-y-12">
                                                   {loadingFinancials ? (
                                                     <div className="flex items-center justify-center py-8">
@@ -1686,10 +1982,10 @@ export default function PlanViewPage() {
                                             </div>
                                           )}
                                         </div>
-                                      )}
+                                      ) : null}
 
                                       {/* AI Actions */}
-                                      {!isEditing && section.hasContent && (
+                                      {!isEditing && section.hasContent && expandedSections.has(section.sectionName) && (
                                         <div className="mt-8 pt-8 border-t border-gray-200 dark:border-gray-700 flex flex-wrap items-center gap-3">
                                           <button
                                             onClick={() => handleAISuggestion(section.sectionName, 'improve')}
@@ -1727,6 +2023,15 @@ export default function PlanViewPage() {
                                             )}
                                             {t('planView.simplify') || 'Simplify'}
                                           </button>
+                                        </div>
+                                      )}
+
+                                      {/* Section Footer with Company Name */}
+                                      {expandedSections.has(section.sectionName) && (
+                                        <div className="plan-section-footer">
+                                          <p className="company-name">
+                                            <strong>{language === 'fr' ? 'Plan d\'affaires' : 'Business Plan'}</strong> – {plan.title}
+                                          </p>
                                         </div>
                                       )}
                                     </>

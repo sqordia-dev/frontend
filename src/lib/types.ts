@@ -54,6 +54,7 @@ export interface BusinessPlan {
   description?: string;
   industry?: string;
   businessType?: string;
+  planType?: 'BusinessPlan' | 'StrategicPlan';
   status: string;
   createdAt: string;
   coverSettings?: {

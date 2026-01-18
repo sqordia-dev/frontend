@@ -92,6 +92,9 @@ export default function QuestionnairePage() {
     currentStep?: string;
     estimatedTimeRemaining?: number;
     errorMessage?: string;
+    completedSections?: number;
+    totalSections?: number;
+    currentSection?: string;
   } | null>(null);
   const [statusPollInterval, setStatusPollInterval] = useState<NodeJS.Timeout | null>(null);
   const [generationStartTime, setGenerationStartTime] = useState<number | null>(null);
@@ -320,13 +323,46 @@ export default function QuestionnairePage() {
     return Math.max(5, Math.min(95, Math.round(progress)));
   }, [generationStartTime]);
 
-  // Get current step based on progress
+  // Get current step based on progress (fallback for simulated progress)
   const getCurrentStepFromProgress = useCallback((progress: number) => {
     if (progress < 10) return t('questionnaire.generation.step.initializing');
     if (progress < 30) return t('questionnaire.generation.step.analyzing');
     if (progress < 60) return t('questionnaire.generation.step.sections');
     if (progress < 85) return t('questionnaire.generation.step.financials');
     return t('questionnaire.generation.step.finalizing');
+  }, [t]);
+
+  // Map backend status to current step based on completed sections
+  const getCurrentStepFromBackendStatus = useCallback((
+    completedSections: number,
+    totalSections: number,
+    currentSection?: string
+  ) => {
+    // Financial sections typically start around section 12 (index 11) for BusinessPlan
+    // For StrategicPlan, financial sections might be later due to additional sections
+    // We'll use a percentage-based approach: financial sections start around 75-80% of total
+    const financialSectionStart = Math.floor(totalSections * 0.75);
+    
+    if (completedSections === 0) {
+      return t('questionnaire.generation.step.initializing');
+    }
+    if (completedSections < 2) {
+      return t('questionnaire.generation.step.analyzing');
+    }
+    if (completedSections >= totalSections) {
+      return t('questionnaire.generation.step.finalizing');
+    }
+    // Check if we're in financial sections
+    if (currentSection) {
+      const financialSections = ['FinancialProjections', 'FundingRequirements', 'RiskAnalysis', 'ExitStrategy'];
+      if (financialSections.includes(currentSection)) {
+        return t('questionnaire.generation.step.financials');
+      }
+    }
+    if (completedSections >= financialSectionStart) {
+      return t('questionnaire.generation.step.financials');
+    }
+    return t('questionnaire.generation.step.sections');
   }, [t]);
 
   // Poll generation status
@@ -340,16 +376,49 @@ export default function QuestionnairePage() {
       console.log('Generation status response:', status);
       
       // Try to extract progress from various possible fields
-      let backendProgress = status?.progress || status?.Progress || status?.percentage || status?.completionPercentage || null;
+      // Backend returns: completionPercentage (from BusinessPlanGenerationStatus)
+      let backendProgress = status?.completionPercentage ?? status?.CompletionPercentage ?? status?.progress ?? status?.Progress ?? status?.percentage ?? null;
       let backendStatus = status?.status || status?.Status || status?.state || null;
       let backendStep = status?.currentStep || status?.CurrentStep || status?.message || status?.step || status?.currentStage || null;
       
-      // If backend doesn't provide progress, use simulated progress
-      const simulatedProgress = calculateSimulatedProgress();
-      const finalProgress = backendProgress !== null && backendProgress !== undefined ? backendProgress : simulatedProgress;
+      // Enhanced logging to debug sync issues
+      console.log('Raw backend status response:', JSON.stringify(status));
       
-      // If backend doesn't provide step, derive from progress
-      const finalStep = backendStep || getCurrentStepFromProgress(finalProgress);
+      // Extract section information from backend
+      const completedSections = status?.completedSections ?? status?.CompletedSections ?? null;
+      const totalSections = status?.totalSections ?? status?.TotalSections ?? null;
+      const currentSection = status?.currentSection ?? status?.CurrentSection ?? null;
+      
+      // Calculate progress from backend if available
+      let finalProgress: number;
+      const backendStatusLower = (backendStatus || '').toLowerCase();
+      
+      if (backendProgress !== null && backendProgress !== undefined) {
+        finalProgress = Number(backendProgress);
+      } else if (completedSections !== null && totalSections !== null && totalSections > 0) {
+        // Calculate progress from completed sections
+        const sectionProgress = (completedSections / totalSections) * 100;
+        // If generation is complete, show 100%, otherwise cap at 95% until truly complete
+        if (backendStatusLower === 'generated' || backendStatusLower === 'completed' || completedSections >= totalSections) {
+          finalProgress = 100;
+        } else {
+          finalProgress = Math.max(5, Math.min(95, Math.round(sectionProgress)));
+        }
+      } else {
+        // Fallback to simulated progress
+        finalProgress = calculateSimulatedProgress();
+      }
+      
+      // Determine current step from backend status if available
+      let finalStep: string;
+      if (backendStep) {
+        finalStep = backendStep;
+      } else if (completedSections !== null && totalSections !== null) {
+        finalStep = getCurrentStepFromBackendStatus(completedSections, totalSections, currentSection || undefined);
+      } else {
+        // Fallback to progress-based step
+        finalStep = getCurrentStepFromProgress(finalProgress);
+      }
       
       // Update status with progress information
       const updatedStatus = {
@@ -357,14 +426,37 @@ export default function QuestionnairePage() {
         progress: finalProgress,
         currentStep: finalStep,
         estimatedTimeRemaining: status?.estimatedTimeRemaining || status?.EstimatedTimeRemaining,
-        errorMessage: status?.errorMessage || status?.ErrorMessage || status?.error
+        errorMessage: status?.errorMessage || status?.ErrorMessage || status?.error,
+        completedSections: completedSections ?? undefined,
+        totalSections: totalSections ?? undefined,
+        currentSection: currentSection ?? undefined
       };
       
       console.log('Updated generation status:', updatedStatus);
       setGenerationStatus(updatedStatus);
 
       // If generation is complete, stop polling and navigate
-      if (updatedStatus.status === 'Completed' || updatedStatus.status === 'completed' || updatedStatus.status === 'Success') {
+      // Check multiple conditions for completion: explicit status OR all sections completed OR 100% progress
+      const statusLower = (updatedStatus.status || '').toLowerCase();
+      const isComplete = 
+        statusLower === 'completed' || 
+        statusLower === 'success' || 
+        statusLower === 'generated' ||
+        updatedStatus.progress === 100 ||
+        (updatedStatus.completedSections && updatedStatus.totalSections && 
+         updatedStatus.completedSections >= updatedStatus.totalSections && 
+         statusLower !== 'generating' && statusLower !== 'inprogress' && statusLower !== 'draft');
+      
+      console.log('Checking completion:', {
+        status: updatedStatus.status,
+        statusLower,
+        progress: updatedStatus.progress,
+        completedSections: updatedStatus.completedSections,
+        totalSections: updatedStatus.totalSections,
+        isComplete
+      });
+      
+      if (isComplete) {
         // Cleanup both intervals
         if (intervalsRef.current) {
           if (intervalsRef.current.statusPoll) {
@@ -1310,10 +1402,32 @@ export default function QuestionnairePage() {
             {/* Progress Steps */}
             <div className="space-y-3 mb-6">
               {getProgressSteps().map((step, index) => {
-                const stepProgress = generationStatus?.progress || 5;
-                const stepThreshold = (index + 1) * 20;
-                const isActive = stepProgress >= stepThreshold - 10;
-                const isCompleted = stepProgress >= stepThreshold;
+                const currentStepKey = generationStatus?.currentStep || t('questionnaire.generation.step.initializing');
+                const stepKeys = [
+                  t('questionnaire.generation.step.initializing'),
+                  t('questionnaire.generation.step.analyzing'),
+                  t('questionnaire.generation.step.sections'),
+                  t('questionnaire.generation.step.financials'),
+                  t('questionnaire.generation.step.finalizing')
+                ];
+                
+                // Check if generation is complete
+                const isGenerationComplete = generationStatus?.status === 'Generated' || 
+                                            generationStatus?.status === 'Completed' || 
+                                            generationStatus?.status === 'completed' ||
+                                            (generationStatus?.completedSections !== undefined && 
+                                             generationStatus?.totalSections !== undefined &&
+                                             generationStatus.completedSections >= generationStatus.totalSections);
+                
+                // Find the index of the current step
+                const currentStepIndex = stepKeys.findIndex(key => key === currentStepKey);
+                // If step not found, default to first step (initializing)
+                const effectiveStepIndex = currentStepIndex >= 0 ? currentStepIndex : 0;
+                
+                // Determine step state
+                // If generation is complete, all steps are completed
+                const isCompleted = isGenerationComplete || index < effectiveStepIndex;
+                const isActive = !isGenerationComplete && index === effectiveStepIndex;
                 const StepIcon = step.icon;
 
                 return (
@@ -1332,7 +1446,7 @@ export default function QuestionnairePage() {
                       borderColor: momentumOrange
                     } : {}}
                   >
-                    <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${
+                    <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center transition-all ${
                       isCompleted
                         ? 'bg-green-500'
                         : isActive
@@ -1342,12 +1456,12 @@ export default function QuestionnairePage() {
                       {isCompleted ? (
                         <CheckCircle2 size={20} className="text-white" />
                       ) : isActive ? (
-                        <Loader2 size={20} className="text-white animate-spin" />
+                        <StepIcon size={20} className="text-white" />
                       ) : (
                         <StepIcon size={20} className="text-gray-500 dark:text-gray-400" />
                       )}
                     </div>
-                    <span className={`flex-1 text-sm font-medium ${
+                    <span className={`flex-1 text-sm font-medium transition-colors ${
                       isCompleted
                         ? 'text-green-700 dark:text-green-300'
                         : isActive

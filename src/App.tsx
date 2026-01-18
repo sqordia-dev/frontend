@@ -35,10 +35,12 @@ import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
 import TermsOfServicePage from './pages/TermsOfServicePage';
 import SecurityPage from './pages/SecurityPage';
 import CompliancePage from './pages/CompliancePage';
+import ScrollToTop from './components/ScrollToTop';
 
 function App() {
   return (
     <Router>
+      <ScrollToTop />
       {/* Skip to main content link for accessibility */}
       <a href="#main-content" className="skip-to-main">
         Skip to main content

@@ -36,28 +36,33 @@ export default function RichTextEditor({
   const quillRef = useRef<ReactQuill>(null);
   const [showInstructions, setShowInstructions] = useState(true);
 
-  // Custom toolbar configuration
+  // Custom toolbar configuration with table support
   const modules = {
     toolbar: {
       container: [
         [{ 'header': [1, 2, 3, false] }],
-        ['bold', 'italic', 'underline'],
+        ['bold', 'italic', 'underline', 'strike'],
         [{ 'list': 'ordered'}, { 'list': 'bullet' }],
         ['blockquote'],
         ['link', 'image'],
         [{ 'align': [] }],
+        [{ 'color': [] }, { 'background': [] }],
         ['clean']
       ],
+    },
+    clipboard: {
+      matchVisual: false,
     },
   };
 
   const formats = [
     'header',
-    'bold', 'italic', 'underline',
+    'bold', 'italic', 'underline', 'strike',
     'list', 'bullet',
     'blockquote',
     'link', 'image',
-    'align'
+    'align',
+    'color', 'background'
   ];
 
   // Calculate word count from HTML
@@ -247,6 +252,40 @@ export default function RichTextEditor({
           .rich-text-editor .ql-toolbar button:hover .ql-fill,
           .rich-text-editor .ql-toolbar button.ql-active .ql-fill {
             fill: #FF6B00;
+          }
+          /* Table styles in editor */
+          .rich-text-editor .ql-editor table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+            border: 1px solid #e5e7eb;
+          }
+          .rich-text-editor .ql-editor table th,
+          .rich-text-editor .ql-editor table td {
+            border: 1px solid #e5e7eb;
+            padding: 0.5rem 0.75rem;
+            text-align: left;
+          }
+          .rich-text-editor .ql-editor table th {
+            background-color: #1A2B47;
+            color: white;
+            font-weight: 600;
+          }
+          .rich-text-editor .ql-editor table tbody tr:nth-child(even) {
+            background-color: #f9fafb;
+          }
+          .dark .rich-text-editor .ql-editor table {
+            border-color: #374151;
+          }
+          .dark .rich-text-editor .ql-editor table th,
+          .dark .rich-text-editor .ql-editor table td {
+            border-color: #374151;
+          }
+          .dark .rich-text-editor .ql-editor table th {
+            background-color: #374151;
+          }
+          .dark .rich-text-editor .ql-editor table tbody tr:nth-child(even) {
+            background-color: #1f2937;
           }
         `}</style>
       </div>
