@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
   ArrowLeft,
@@ -95,6 +95,8 @@ export default function QuestionnairePage() {
   } | null>(null);
   const [statusPollInterval, setStatusPollInterval] = useState<NodeJS.Timeout | null>(null);
   const [generationStartTime, setGenerationStartTime] = useState<number | null>(null);
+  // Use a ref to store both intervals together for proper cleanup
+  const intervalsRef = useRef<{ statusPoll?: NodeJS.Timeout; progressPoll?: NodeJS.Timeout } | null>(null);
 
   // Sync local language state with context language
   useEffect(() => {
@@ -363,16 +365,17 @@ export default function QuestionnairePage() {
 
       // If generation is complete, stop polling and navigate
       if (updatedStatus.status === 'Completed' || updatedStatus.status === 'completed' || updatedStatus.status === 'Success') {
-        setStatusPollInterval((currentInterval) => {
-          if (currentInterval) {
-            clearInterval(currentInterval);
-            // Also cleanup progress interval if it exists
-            if ((currentInterval as any).progressInterval) {
-              clearInterval((currentInterval as any).progressInterval);
-            }
+        // Cleanup both intervals
+        if (intervalsRef.current) {
+          if (intervalsRef.current.statusPoll) {
+            clearInterval(intervalsRef.current.statusPoll);
           }
-          return null;
-        });
+          if (intervalsRef.current.progressPoll) {
+            clearInterval(intervalsRef.current.progressPoll);
+          }
+          intervalsRef.current = null;
+        }
+        setStatusPollInterval(null);
         // Show completion message briefly before navigating
         setGenerationStatus({
           ...updatedStatus,
@@ -391,16 +394,17 @@ export default function QuestionnairePage() {
 
       // If generation failed, stop polling
       if (updatedStatus.status === 'Failed' || updatedStatus.status === 'failed' || updatedStatus.status === 'Error') {
-        setStatusPollInterval((currentInterval) => {
-          if (currentInterval) {
-            clearInterval(currentInterval);
-            // Also cleanup progress interval if it exists
-            if ((currentInterval as any).progressInterval) {
-              clearInterval((currentInterval as any).progressInterval);
-            }
+        // Cleanup both intervals
+        if (intervalsRef.current) {
+          if (intervalsRef.current.statusPoll) {
+            clearInterval(intervalsRef.current.statusPoll);
           }
-          return null;
-        });
+          if (intervalsRef.current.progressPoll) {
+            clearInterval(intervalsRef.current.progressPoll);
+          }
+          intervalsRef.current = null;
+        }
+        setStatusPollInterval(null);
         setGenerating(false);
         setGenerationStartTime(null);
         setError(updatedStatus.errorMessage || 'Business plan generation failed. Please try again.');
@@ -443,16 +447,17 @@ export default function QuestionnairePage() {
       businessPlanService.generateBusinessPlan(planId).catch((err: any) => {
         // If the initial request fails, handle it
         console.error('Failed to start generation:', err);
-        setStatusPollInterval((currentInterval) => {
-          if (currentInterval) {
-            clearInterval(currentInterval);
-            // Also cleanup progress interval if it exists
-            if ((currentInterval as any).progressInterval) {
-              clearInterval((currentInterval as any).progressInterval);
-            }
+        // Cleanup both intervals
+        if (intervalsRef.current) {
+          if (intervalsRef.current.statusPoll) {
+            clearInterval(intervalsRef.current.statusPoll);
           }
-          return null;
-        });
+          if (intervalsRef.current.progressPoll) {
+            clearInterval(intervalsRef.current.progressPoll);
+          }
+          intervalsRef.current = null;
+        }
+        setStatusPollInterval(null);
         setGenerating(false);
         setGenerationStatus(null);
         setGenerationStartTime(null);
@@ -465,10 +470,10 @@ export default function QuestionnairePage() {
       });
 
       // Start polling for status updates every 2 seconds
-      const interval = setInterval(() => {
+      const statusPoll = setInterval(() => {
         pollGenerationStatus();
       }, 2000);
-      setStatusPollInterval(interval);
+      setStatusPollInterval(statusPoll);
 
       // Also poll immediately after a short delay
       setTimeout(() => {
@@ -477,7 +482,7 @@ export default function QuestionnairePage() {
 
       // Also update progress locally every second as fallback
       // This ensures progress updates even if backend doesn't respond
-      const progressInterval = setInterval(() => {
+      const progressPoll = setInterval(() => {
         setGenerationStatus((current) => {
           if (!current) return current;
           const simulatedProgress = calculateSimulatedProgress();
@@ -489,8 +494,11 @@ export default function QuestionnairePage() {
         });
       }, 1000);
 
-      // Store progress interval for cleanup
-      (interval as any).progressInterval = progressInterval;
+      // Store both intervals in ref for cleanup
+      intervalsRef.current = {
+        statusPoll,
+        progressPoll
+      };
     } catch (err: any) {
       console.error('Failed to generate plan:', err);
       setGenerating(false);
@@ -508,12 +516,18 @@ export default function QuestionnairePage() {
   // Cleanup polling on unmount
   useEffect(() => {
     return () => {
+      // Cleanup both intervals
+      if (intervalsRef.current) {
+        if (intervalsRef.current.statusPoll) {
+          clearInterval(intervalsRef.current.statusPoll);
+        }
+        if (intervalsRef.current.progressPoll) {
+          clearInterval(intervalsRef.current.progressPoll);
+        }
+        intervalsRef.current = null;
+      }
       if (statusPollInterval) {
         clearInterval(statusPollInterval);
-        // Also cleanup progress interval if it exists
-        if ((statusPollInterval as any).progressInterval) {
-          clearInterval((statusPollInterval as any).progressInterval);
-        }
       }
     };
   }, [statusPollInterval]);
