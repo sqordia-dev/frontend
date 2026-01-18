@@ -22,7 +22,16 @@ import {
   ChevronUp,
   Upload,
   Trash2,
-  Menu
+  Menu,
+  Target,
+  TrendingUp,
+  Users,
+  Briefcase,
+  DollarSign,
+  Rocket,
+  Heart,
+  BarChart3,
+  Settings
 } from 'lucide-react';
 import { businessPlanService } from '../lib/business-plan-service';
 import type { BusinessPlan } from '../lib/types';
@@ -383,6 +392,7 @@ export default function PlanViewPage() {
   const [lastSaved, setLastSaved] = useState<{ [key: string]: string }>({});
   const [hoveredSection, setHoveredSection] = useState<string | null>(null);
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
+  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set(['Introduction', 'Market', 'Strategy', 'Operations', 'Financial', 'BusinessPlan', 'StrategicPlan']));
   const [showShareModal, setShowShareModal] = useState(false);
   const [showVersionModal, setShowVersionModal] = useState(false);
   const [shares, setShares] = useState<any[]>([]);
@@ -527,6 +537,8 @@ export default function PlanViewPage() {
       setActiveSection(sections[0].sectionName);
       // Initialize all sections as expanded by default
       setExpandedSections(new Set(sections.map(s => s.sectionName)));
+      // Auto-expand all categories on load
+      setExpandedCategories(new Set(Object.keys(SECTION_CATEGORIES)));
     }
   }, [sections]);
 
@@ -942,12 +954,60 @@ export default function PlanViewPage() {
     return title;
   };
 
+  // Group sections by category
+  const groupedSections = useMemo(() => {
+    if (!sections || sections.length === 0) return {};
+    
+    const planType = plan?.planType || 'BusinessPlan';
+    const groups: Record<string, Section[]> = {};
+    
+    // Initialize all categories
+    Object.keys(SECTION_CATEGORIES).forEach(category => {
+      groups[category] = [];
+    });
+    
+    // Group sections by category
+    sections.forEach(section => {
+      for (const [category, config] of Object.entries(SECTION_CATEGORIES)) {
+        if (config.sections.includes(section.sectionName)) {
+          // Only include BusinessPlan/StrategicPlan categories if they match the plan type
+          if (category === 'BusinessPlan' && planType !== 'BusinessPlan') continue;
+          if (category === 'StrategicPlan' && planType !== 'StrategicPlan') continue;
+          
+          groups[category].push(section);
+          break;
+        }
+      }
+    });
+    
+    // Remove empty categories
+    Object.keys(groups).forEach(category => {
+      if (groups[category].length === 0) {
+        delete groups[category];
+      }
+    });
+    
+    return groups;
+  }, [sections, plan?.planType]);
+
   // Move useMemo BEFORE early returns to follow Rules of Hooks
   const navSections = useMemo(() => [
     { id: 'cover', title: t('planView.cover'), icon: FileText },
     { id: 'contents', title: t('planView.contents'), icon: BookOpen },
     ...(sections || []).map(s => ({ id: s.sectionName, title: translateSectionTitle(s.title), icon: FileText }))
   ], [sections, t, language]);
+
+  const toggleCategory = (category: string) => {
+    setExpandedCategories(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(category)) {
+        newSet.delete(category);
+      } else {
+        newSet.add(category);
+      }
+      return newSet;
+    });
+  };
 
   if (loading) {
     return (
@@ -1115,8 +1175,9 @@ export default function PlanViewPage() {
                 </button>
               </div>
             )}
-            <div className="space-y-2">
-              {navSections.map((section, index) => {
+            <div className="space-y-1">
+              {/* Cover and Contents */}
+              {navSections.filter(s => s.id === 'cover' || s.id === 'contents').map((section) => {
                 const isActive = activeSection === section.id || (section.id === 'cover' && !activeSection);
                 return (
                   <button
@@ -1133,10 +1194,7 @@ export default function PlanViewPage() {
                           window.scrollTo({ top: offsetPosition, behavior: 'smooth' });
                           setActiveSection('contents');
                         }
-                      } else {
-                        scrollToSection(section.id);
                       }
-                      // Close mobile sidebar after navigation
                       setMobileSidebarOpen(false);
                     }}
                     className={`w-full flex items-center gap-3 px-4 py-3 rounded transition-all text-left ${
@@ -1148,14 +1206,75 @@ export default function PlanViewPage() {
                   >
                     <section.icon size={18} className="flex-shrink-0" />
                     <span className={`text-sm flex-1 ${isActive ? 'font-semibold' : 'font-medium'}`}>{translateSectionTitle(section.title)}</span>
-                    {index > 1 && (
-                      <span className={`text-xs font-mono ${isActive ? 'text-orange-400' : 'text-gray-500 dark:text-gray-400'}`}>
-                        {index - 1}
-                      </span>
-                    )}
                   </button>
                 );
               })}
+              
+              {/* Grouped Sections */}
+              {Object.entries(SECTION_CATEGORIES)
+                .sort((a, b) => a[1].order - b[1].order)
+                .map(([category, config]) => {
+                  const categorySections = groupedSections[category] || [];
+                  if (categorySections.length === 0) return null;
+                  
+                  const isCategoryExpanded = expandedCategories.has(category);
+                  const CategoryIcon = config.icon;
+                  
+                  return (
+                    <div key={category} className="space-y-1">
+                      {/* Category Header */}
+                      <button
+                        onClick={() => toggleCategory(category)}
+                        className="w-full flex items-center gap-3 px-4 py-2.5 rounded transition-all text-left bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-700/50 border-l-4 border-transparent"
+                      >
+                        <CategoryIcon size={16} className="flex-shrink-0 text-gray-600 dark:text-gray-400" />
+                        <span className="text-xs font-semibold uppercase tracking-wider text-gray-600 dark:text-gray-400 flex-1">
+                          {getCategoryDisplayName(category, language)}
+                        </span>
+                        {isCategoryExpanded ? (
+                          <ChevronUp size={14} className="text-gray-500 dark:text-gray-400" />
+                        ) : (
+                          <ChevronDown size={14} className="text-gray-500 dark:text-gray-400" />
+                        )}
+                      </button>
+                      
+                      {/* Category Sections */}
+                      {isCategoryExpanded && (
+                        <div className="ml-4 space-y-0.5 border-l-2 border-gray-200 dark:border-gray-700 pl-2">
+                          {categorySections
+                            .sort((a, b) => {
+                              const aIndex = config.sections.indexOf(a.sectionName);
+                              const bIndex = config.sections.indexOf(b.sectionName);
+                              return aIndex - bIndex;
+                            })
+                            .map((section) => {
+                              const isActive = activeSection === section.sectionName;
+                              return (
+                                <button
+                                  key={section.sectionName}
+                                  onClick={() => {
+                                    scrollToSection(section.sectionName);
+                                    setMobileSidebarOpen(false);
+                                  }}
+                                  className={`w-full flex items-center gap-3 px-3 py-2 rounded transition-all text-left ${
+                                    isActive
+                                      ? 'bg-gray-900 dark:bg-gray-700 text-white border-l-4'
+                                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/50 border-l-4 border-transparent'
+                                  }`}
+                                  style={isActive ? { borderLeftColor: momentumOrange } : {}}
+                                >
+                                  <FileText size={14} className="flex-shrink-0" />
+                                  <span className={`text-xs flex-1 ${isActive ? 'font-semibold' : 'font-medium'}`}>
+                                    {translateSectionTitle(section.title)}
+                                  </span>
+                                </button>
+                              );
+                            })}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
             </div>
           </div>
         </aside>
@@ -1247,33 +1366,65 @@ export default function PlanViewPage() {
                 </div>
               </div>
 
-              <div className="space-y-4">
-                {sections.map((section, index) => (
-                  <button
-                    key={section.sectionName}
-                    onClick={() => scrollToSection(section.sectionName)}
-                    className="w-full flex items-center justify-between gap-4 p-4 rounded-lg border-2 border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all text-left group"
-                  >
-                    <div className="flex items-center gap-4 flex-1 min-w-0">
-                      <div className="flex-shrink-0 w-10 h-10 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center border-2 border-gray-300 dark:border-gray-600 group-hover:border-orange-500 transition-colors">
-                        <span className="text-lg font-serif text-gray-700 dark:text-gray-300 font-bold" style={{ fontFamily: 'Georgia, serif' }}>
-                          {index + 1}
-                        </span>
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="text-sm uppercase tracking-wider text-gray-500 dark:text-gray-400 font-semibold mb-1">
-                          {t('planView.chapter')} {index + 1}
+              <div className="space-y-6">
+                {Object.entries(SECTION_CATEGORIES)
+                  .sort((a, b) => a[1].order - b[1].order)
+                  .map(([category, config]) => {
+                    const categorySections = groupedSections[category] || [];
+                    if (categorySections.length === 0) return null;
+                    
+                    const CategoryIcon = config.icon;
+                    const categoryDisplayName = getCategoryDisplayName(category, language);
+                    
+                    return (
+                      <div key={category} className="space-y-3">
+                        {/* Category Header in TOC */}
+                        <div className="flex items-center gap-3 px-3 py-2 bg-gray-100 dark:bg-gray-800 rounded-lg border-2 border-gray-200 dark:border-gray-700">
+                          <CategoryIcon size={18} className="text-gray-600 dark:text-gray-400" />
+                          <h3 className="text-sm font-semibold uppercase tracking-wider text-gray-700 dark:text-gray-300">
+                            {categoryDisplayName}
+                          </h3>
                         </div>
-                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors">
-                          {translateSectionTitle(section.title)}
-                        </h3>
+                        
+                        {/* Category Sections in TOC */}
+                        <div className="space-y-2 ml-4">
+                          {categorySections
+                            .sort((a, b) => {
+                              const aIndex = config.sections.indexOf(a.sectionName);
+                              const bIndex = config.sections.indexOf(b.sectionName);
+                              return aIndex - bIndex;
+                            })
+                            .map((section, sectionIndex) => {
+                              const globalIndex = sections.findIndex(s => s.sectionName === section.sectionName) + 1;
+                              return (
+                                <button
+                                  key={section.sectionName}
+                                  onClick={() => scrollToSection(section.sectionName)}
+                                  className="w-full flex items-center justify-between gap-4 p-3 rounded-lg border-2 border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all text-left group"
+                                >
+                                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                                    <div className="flex-shrink-0 w-8 h-8 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center border-2 border-gray-300 dark:border-gray-600 group-hover:border-orange-500 transition-colors">
+                                      <span className="text-sm font-serif text-gray-700 dark:text-gray-300 font-bold" style={{ fontFamily: 'Georgia, serif' }}>
+                                        {globalIndex}
+                                      </span>
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                      <h4 className="text-sm font-medium text-gray-900 dark:text-white group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors">
+                                        {translateSectionTitle(section.title)}
+                                      </h4>
+                                    </div>
+                                  </div>
+                                  <div className="flex-shrink-0 text-gray-400 dark:text-gray-500 group-hover:text-orange-500 transition-colors">
+                                    <ChevronDown size={16} className="transform rotate-[-90deg]" />
+                                  </div>
+                                </button>
+                              );
+                            })}
+                        </div>
                       </div>
-                    </div>
-                    <div className="flex-shrink-0 text-gray-400 dark:text-gray-500 group-hover:text-orange-500 transition-colors">
-                      <ChevronDown size={20} className="transform rotate-[-90deg]" />
-                    </div>
-                  </button>
-                ))}
+                    );
+                  })
+                  .filter(Boolean)}
               </div>
             </section>
           )}
@@ -1286,213 +1437,309 @@ export default function PlanViewPage() {
                 <p className="text-gray-600 dark:text-gray-400 text-lg">{t('planView.noSections')}</p>
               </div>
             ) : (
-              sections.map((section, sectionIndex) => {
-                const isEditing = editingSection === section.sectionName;
-
-                return (
-                  <section
-                    key={section.sectionName}
-                    id={section.sectionName}
-                    ref={(el) => (sectionRefs.current[section.sectionName] = el as HTMLDivElement | null)}
-                    className="plan-content-section py-12 sm:py-16 md:py-20 px-4 sm:px-6 md:px-8 max-w-4xl mx-auto border-b border-gray-200 dark:border-gray-800 last:border-b-0 relative group"
-                    onMouseEnter={() => setHoveredSection(section.sectionName)}
-                    onMouseLeave={() => setHoveredSection(null)}
-                  >
-                    {/* Chapter Header */}
-                    <div className="mb-12 pb-8 border-b-2 border-gray-300 dark:border-gray-700">
-                      <div className="flex items-start gap-6">
-                        <div className="flex-shrink-0">
-                          <div className="w-16 h-16 bg-gray-900 dark:bg-gray-800 rounded-lg flex items-center justify-center border-2 border-gray-300 dark:border-gray-600">
-                            <span className="text-2xl font-serif text-white font-bold" style={{ fontFamily: 'Georgia, serif' }}>
-                              {sectionIndex + 1}
-                            </span>
-                          </div>
-                        </div>
-                        <div className="flex-1 pt-2">
-                          <div className="flex items-start justify-between gap-4">
-                            <div className="flex items-start gap-3 flex-1 min-w-0">
-                              <button
-                                onClick={() => toggleSection(section.sectionName)}
-                                className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors flex-shrink-0 mt-1"
-                                title={expandedSections.has(section.sectionName) ? 'Collapse section' : 'Expand section'}
-                              >
-                                {expandedSections.has(section.sectionName) ? (
-                                  <ChevronUp size={20} style={{ color: momentumOrange }} />
-                                ) : (
-                                  <ChevronDown size={20} style={{ color: momentumOrange }} />
-                                )}
-                              </button>
-                              <div className="flex-1 min-w-0">
-                                <div className="text-sm uppercase tracking-wider text-gray-500 dark:text-gray-400 font-semibold mb-2">
-                                  {t('planView.chapter')} {sectionIndex + 1}
-                                </div>
-                                <h2 className="text-3xl md:text-4xl font-serif text-gray-900 dark:text-white leading-tight" style={{ fontFamily: 'Georgia, serif' }}>
-                                  {translateSectionTitle(section.title)}
-                                </h2>
+              (() => {
+                let globalSectionIndex = 0;
+                return Object.entries(SECTION_CATEGORIES)
+                  .sort((a, b) => a[1].order - b[1].order)
+                  .map(([category, config]) => {
+                    const categorySections = groupedSections[category] || [];
+                    if (categorySections.length === 0) return null;
+                    
+                    const CategoryIcon = config.icon;
+                    const categoryDisplayName = getCategoryDisplayName(category, language);
+                    
+                    return (
+                      <div key={category} className="category-group">
+                        {/* Category Header in Main Content */}
+                        <div className="py-8 px-4 sm:px-6 md:px-8 max-w-4xl mx-auto border-b-2 border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+                          <div className="flex items-center gap-4">
+                            <div className="flex-shrink-0">
+                              <div className="w-12 h-12 bg-gray-900 dark:bg-gray-700 rounded-lg flex items-center justify-center border-2 border-gray-300 dark:border-gray-600">
+                                <CategoryIcon size={20} className="text-white" />
                               </div>
                             </div>
-                            {/* Edit Button - Shows on Hover */}
-                            {hoveredSection === section.sectionName && !isEditing && (
-                              <button
-                                onClick={() => startEditing(section)}
-                                className="p-2 text-gray-500 dark:text-gray-400 hover:text-white rounded-lg transition-all flex-shrink-0"
-                                style={{ 
-                                  backgroundColor: hoveredSection === section.sectionName ? momentumOrange : 'transparent',
-                                  color: hoveredSection === section.sectionName ? 'white' : undefined
-                                }}
-                                onMouseEnter={(e) => {
-                                  e.currentTarget.style.backgroundColor = momentumOrange;
-                                  e.currentTarget.style.color = 'white';
-                                }}
-                                onMouseLeave={(e) => {
-                                  e.currentTarget.style.backgroundColor = 'transparent';
-                                  e.currentTarget.style.color = '';
-                                }}
-                                title="Edit section"
-                              >
-                                <Pencil size={18} />
-                              </button>
-                            )}
+                            <div>
+                              <div className="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 font-semibold mb-1">
+                                {t('planView.category') || 'Category'}
+                              </div>
+                              <h2 className="text-2xl md:text-3xl font-serif text-gray-900 dark:text-white" style={{ fontFamily: 'Georgia, serif' }}>
+                                {categoryDisplayName}
+                              </h2>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </div>
+                        
+                        {/* Category Sections */}
+                        {categorySections
+                          .sort((a, b) => {
+                            const aIndex = config.sections.indexOf(a.sectionName);
+                            const bIndex = config.sections.indexOf(b.sectionName);
+                            return aIndex - bIndex;
+                          })
+                          .map((section) => {
+                            const sectionIndex = globalSectionIndex++;
+                            return (
+                              <section
+                                key={section.sectionName}
+                                id={section.sectionName}
+                                ref={(el) => (sectionRefs.current[section.sectionName] = el as HTMLDivElement | null)}
+                                className="plan-content-section py-12 sm:py-16 md:py-20 px-4 sm:px-6 md:px-8 max-w-4xl mx-auto border-b border-gray-200 dark:border-gray-800 last:border-b-0 relative group"
+                                onMouseEnter={() => setHoveredSection(section.sectionName)}
+                                onMouseLeave={() => setHoveredSection(null)}
+                              >
+                                {(() => {
+                                  const isEditing = editingSection === section.sectionName;
+                                  return (
+                                    <>
+                                      {/* Chapter Header */}
+                                      <div className="mb-12 pb-8 border-b-2 border-gray-300 dark:border-gray-700">
+                                        <div className="flex items-start gap-6">
+                                          <div className="flex-shrink-0">
+                                            <div className="w-16 h-16 bg-gray-900 dark:bg-gray-800 rounded-lg flex items-center justify-center border-2 border-gray-300 dark:border-gray-600">
+                                              <span className="text-2xl font-serif text-white font-bold" style={{ fontFamily: 'Georgia, serif' }}>
+                                                {sectionIndex + 1}
+                                              </span>
+                                            </div>
+                                          </div>
+                                          <div className="flex-1 pt-2">
+                                            <div className="flex items-start justify-between gap-4">
+                                              <div className="flex items-start gap-3 flex-1 min-w-0">
+                                                <button
+                                                  onClick={() => startEditing(section)}
+                                                  className="opacity-0 group-hover:opacity-100 transition-opacity p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+                                                  title={t('planView.edit') || 'Edit'}
+                                                >
+                                                  <Pencil size={18} />
+                                                </button>
+                                                <div className="flex-1 min-w-0">
+                                                  <div className="text-sm uppercase tracking-wider text-gray-500 dark:text-gray-400 font-semibold mb-2">
+                                                    {t('planView.chapter')} {sectionIndex + 1}
+                                                  </div>
+                                                  <h2 className="text-3xl md:text-4xl font-serif text-gray-900 dark:text-white leading-tight" style={{ fontFamily: 'Georgia, serif' }}>
+                                                    {translateSectionTitle(section.title)}
+                                                  </h2>
+                                                </div>
+                                              </div>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      </div>
 
-                    {/* Section Content - Collapsible */}
-                    <div
-                      className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                        expandedSections.has(section.sectionName) 
-                          ? 'max-h-[10000px] opacity-100' 
-                          : 'max-h-0 opacity-0'
-                      }`}
-                    >
-                      <div className="pt-4">
-                        {section.content ? (
-                          <>
-                            <div 
-                              className="prose max-w-none text-gray-700 dark:text-gray-300 leading-relaxed text-base sm:text-lg rich-text-content mb-8 break-words overflow-wrap-anywhere"
-                              style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}
-                              dangerouslySetInnerHTML={{ __html: parseMarkdown(section.content) }}
-                            />
-                            
-                            {/* Financial Tables - Show in financial-projections section */}
-                            {section.sectionName === 'financial-projections' && (
-                              <div className="mt-8 space-y-12">
-                                {loadingFinancials ? (
-                                  <div className="flex items-center justify-center py-8">
-                                    <Loader2 size={24} className="animate-spin" style={{ color: momentumOrange }} />
-                                  </div>
-                                ) : (
-                                  <>
-                                    {balanceSheetData.length > 0 && (
-                                      <BalanceSheetTable 
-                                        data={balanceSheetData}
-                                        currency="$"
-                                        className="my-8"
-                                      />
-                                    )}
-                                    {cashFlowData.length > 0 && (
-                                      <CashFlowTable 
-                                        data={cashFlowData}
-                                        currency="$"
-                                        className="my-8"
-                                      />
-                                    )}
-                                  </>
-                                )}
-                              </div>
-                            )}
-                            <style>{`
-                              .rich-text-content {
-                                color: #374151;
-                              }
-                              .dark .rich-text-content {
-                                color: #f3f4f6;
-                              }
-                              .rich-text-content h1,
-                              .rich-text-content h2,
-                              .rich-text-content h3,
-                              .rich-text-content h4,
-                              .rich-text-content h5,
-                              .rich-text-content h6 {
-                                font-weight: 700;
-                                margin-top: 1.5em;
-                                margin-bottom: 0.75em;
-                                color: #111827;
-                              }
-                              .dark .rich-text-content h1,
-                              .dark .rich-text-content h2,
-                              .dark .rich-text-content h3,
-                              .dark .rich-text-content h4,
-                              .dark .rich-text-content h5,
-                              .dark .rich-text-content h6 {
-                                color: #ffffff;
-                              }
-                              .rich-text-content p {
-                                margin-bottom: 1em;
-                                line-height: 1.75;
-                              }
-                              .rich-text-content strong,
-                              .rich-text-content b {
-                                font-weight: 700;
-                                color: #111827;
-                              }
-                              .dark .rich-text-content strong,
-                              .dark .rich-text-content b {
-                                color: #ffffff;
-                              }
-                              .rich-text-content em,
-                              .rich-text-content i {
-                                font-style: italic;
-                              }
-                              .rich-text-content ul,
-                              .rich-text-content ol {
-                                margin: 1em 0;
-                                padding-left: 2em;
-                              }
-                              .rich-text-content li {
-                                margin-bottom: 0.5em;
-                              }
-                              .rich-text-content a {
-                                color: #2563eb;
-                                text-decoration: underline;
-                              }
-                              .dark .rich-text-content a {
-                                color: #60a5fa;
-                              }
-                              .rich-text-content blockquote {
-                                border-left: 4px solid #e5e7eb;
-                                padding-left: 1em;
-                                margin: 1em 0;
-                                font-style: italic;
-                                color: #6b7280;
-                              }
-                              .dark .rich-text-content blockquote {
-                                border-left-color: #4b5563;
-                                color: #9ca3af;
-                              }
-                            `}</style>
-                          </>
-                        ) : (
-                          <div className="text-center py-12 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg">
-                        <p className="text-gray-400 dark:text-gray-500 italic mb-4">{t('planView.noContent')}</p>
-                        <button
-                          onClick={() => startEditing(section)}
-                          className="inline-flex items-center gap-2 px-4 py-2 text-white rounded-lg transition-colors font-semibold"
-                          style={{ backgroundColor: momentumOrange }}
-                          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = momentumOrangeHover}
-                          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = momentumOrange}
-                        >
-                          <Pencil size={16} />
-                          {t('planView.addContent')}
-                        </button>
-                          </div>
-                        )}
+                                      {/* Section Content */}
+                                      {isEditing ? (
+                                        <div className="space-y-4">
+                                          <RichTextEditor
+                                            value={editingContent}
+                                            onChange={setEditingContent}
+                                            placeholder={getSectionInstructions(section.sectionName)}
+                                          />
+                                          <div className="flex items-center justify-end gap-3">
+                                            <button
+                                              onClick={cancelEditing}
+                                              className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                                            >
+                                              {t('planView.cancel') || 'Cancel'}
+                                            </button>
+                                            <button
+                                              onClick={() => saveSection(section.sectionName)}
+                                              disabled={saving === section.sectionName}
+                                              className="px-4 py-2 text-white rounded-lg transition-colors disabled:opacity-50"
+                                              style={{ backgroundColor: momentumOrange }}
+                                              onMouseEnter={(e) => !(saving === section.sectionName) && (e.currentTarget.style.backgroundColor = momentumOrangeHover)}
+                                              onMouseLeave={(e) => !(saving === section.sectionName) && (e.currentTarget.style.backgroundColor = momentumOrange)}
+                                            >
+                                              {saving === section.sectionName ? (
+                                                <span className="flex items-center gap-2">
+                                                  <Loader2 size={16} className="animate-spin" />
+                                                  {t('planView.saving') || 'Saving...'}
+                                                </span>
+                                              ) : (
+                                                <span className="flex items-center gap-2">
+                                                  <Save size={16} />
+                                                  {t('planView.save') || 'Save'}
+                                                </span>
+                                              )}
+                                            </button>
+                                          </div>
+                                        </div>
+                                      ) : (
+                                        <div className="prose prose-lg dark:prose-invert max-w-none">
+                                          {section.content ? (
+                                            <>
+                                              <div
+                                                className="section-content text-gray-700 dark:text-gray-300 leading-relaxed rich-text-content mb-8 break-words overflow-wrap-anywhere"
+                                                style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}
+                                                dangerouslySetInnerHTML={{ __html: parseMarkdown(section.content) }}
+                                              />
+                                              
+                                              {/* Financial Tables - Show in FinancialProjections section */}
+                                              {(section.sectionName === 'FinancialProjections' || section.sectionName === 'financial-projections') && (
+                                                <div className="mt-8 space-y-12">
+                                                  {loadingFinancials ? (
+                                                    <div className="flex items-center justify-center py-8">
+                                                      <Loader2 size={24} className="animate-spin" style={{ color: momentumOrange }} />
+                                                    </div>
+                                                  ) : (
+                                                    <>
+                                                      {balanceSheetData.length > 0 && (
+                                                        <BalanceSheetTable 
+                                                          data={balanceSheetData}
+                                                          currency="$"
+                                                          className="my-8"
+                                                        />
+                                                      )}
+                                                      {cashFlowData.length > 0 && (
+                                                        <CashFlowTable 
+                                                          data={cashFlowData}
+                                                          currency="$"
+                                                          className="my-8"
+                                                        />
+                                                      )}
+                                                    </>
+                                                  )}
+                                                </div>
+                                              )}
+                                              
+                                              <style>{`
+                                                .rich-text-content {
+                                                  color: #374151;
+                                                }
+                                                .dark .rich-text-content {
+                                                  color: #f3f4f6;
+                                                }
+                                                .rich-text-content h1,
+                                                .rich-text-content h2,
+                                                .rich-text-content h3,
+                                                .rich-text-content h4,
+                                                .rich-text-content h5,
+                                                .rich-text-content h6 {
+                                                  font-weight: 700;
+                                                  margin-top: 1.5em;
+                                                  margin-bottom: 0.75em;
+                                                  color: #111827;
+                                                }
+                                                .dark .rich-text-content h1,
+                                                .dark .rich-text-content h2,
+                                                .dark .rich-text-content h3,
+                                                .dark .rich-text-content h4,
+                                                .dark .rich-text-content h5,
+                                                .dark .rich-text-content h6 {
+                                                  color: #ffffff;
+                                                }
+                                                .rich-text-content p {
+                                                  margin-bottom: 1em;
+                                                  line-height: 1.75;
+                                                }
+                                                .rich-text-content strong,
+                                                .rich-text-content b {
+                                                  font-weight: 700;
+                                                  color: #111827;
+                                                }
+                                                .dark .rich-text-content strong,
+                                                .dark .rich-text-content b {
+                                                  color: #ffffff;
+                                                }
+                                                .rich-text-content em,
+                                                .rich-text-content i {
+                                                  font-style: italic;
+                                                }
+                                                .rich-text-content ul,
+                                                .rich-text-content ol {
+                                                  margin: 1em 0;
+                                                  padding-left: 2em;
+                                                }
+                                                .rich-text-content li {
+                                                  margin-bottom: 0.5em;
+                                                }
+                                                .rich-text-content a {
+                                                  color: #2563eb;
+                                                  text-decoration: underline;
+                                                }
+                                                .dark .rich-text-content a {
+                                                  color: #60a5fa;
+                                                }
+                                                .rich-text-content blockquote {
+                                                  border-left: 4px solid #e5e7eb;
+                                                  padding-left: 1em;
+                                                  margin: 1em 0;
+                                                  font-style: italic;
+                                                  color: #6b7280;
+                                                }
+                                                .dark .rich-text-content blockquote {
+                                                  border-left-color: #4b5563;
+                                                  color: #9ca3af;
+                                                }
+                                              `}</style>
+                                            </>
+                                          ) : (
+                                            <div className="text-center py-12 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg">
+                                              <p className="text-gray-500 dark:text-gray-400 mb-4">{t('planView.noContent') || 'No content yet'}</p>
+                                              <button
+                                                onClick={() => startEditing(section)}
+                                                className="px-4 py-2 text-white rounded-lg transition-colors"
+                                                style={{ backgroundColor: momentumOrange }}
+                                                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = momentumOrangeHover)}
+                                                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = momentumOrange)}
+                                              >
+                                                {t('planView.addContent') || 'Add Content'}
+                                              </button>
+                                            </div>
+                                          )}
+                                        </div>
+                                      )}
+
+                                      {/* AI Actions */}
+                                      {!isEditing && section.hasContent && (
+                                        <div className="mt-8 pt-8 border-t border-gray-200 dark:border-gray-700 flex flex-wrap items-center gap-3">
+                                          <button
+                                            onClick={() => handleAISuggestion(section.sectionName, 'improve')}
+                                            disabled={aiLoading[section.sectionName] === 'improve'}
+                                            className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors disabled:opacity-50"
+                                          >
+                                            {aiLoading[section.sectionName] === 'improve' ? (
+                                              <Loader2 size={16} className="animate-spin" />
+                                            ) : (
+                                              <Sparkles size={16} />
+                                            )}
+                                            {t('planView.improve') || 'Improve'}
+                                          </button>
+                                          <button
+                                            onClick={() => handleAISuggestion(section.sectionName, 'expand')}
+                                            disabled={aiLoading[section.sectionName] === 'expand'}
+                                            className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors disabled:opacity-50"
+                                          >
+                                            {aiLoading[section.sectionName] === 'expand' ? (
+                                              <Loader2 size={16} className="animate-spin" />
+                                            ) : (
+                                              <ArrowUpCircle size={16} />
+                                            )}
+                                            {t('planView.expand') || 'Expand'}
+                                          </button>
+                                          <button
+                                            onClick={() => handleAISuggestion(section.sectionName, 'simplify')}
+                                            disabled={aiLoading[section.sectionName] === 'simplify'}
+                                            className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors disabled:opacity-50"
+                                          >
+                                            {aiLoading[section.sectionName] === 'simplify' ? (
+                                              <Loader2 size={16} className="animate-spin" />
+                                            ) : (
+                                              <Minus size={16} />
+                                            )}
+                                            {t('planView.simplify') || 'Simplify'}
+                                          </button>
+                                        </div>
+                                      )}
+                                    </>
+                                  );
+                                })()}
+                              </section>
+                            );
+                          })}
                       </div>
-                    </div>
-                  </section>
-                );
-              })
+                    );
+                  })
+                  .filter(Boolean);
+              })()
             )}
           </div>
         </main>
