@@ -8,6 +8,8 @@ export interface ApiResponse<T> {
   }>;
 }
 
+export type PersonaType = 'Entrepreneur' | 'Consultant' | 'OBNL';
+
 export interface User {
   id: string;
   email: string;
@@ -16,6 +18,7 @@ export interface User {
   isEmailVerified: boolean;
   createdAt: string;
   profilePictureUrl?: string;
+  persona?: PersonaType;
 }
 
 export interface LoginRequest {
@@ -55,6 +58,7 @@ export interface BusinessPlan {
   industry?: string;
   businessType?: string;
   planType?: 'BusinessPlan' | 'StrategicPlan';
+  persona?: PersonaType;
   status: string;
   createdAt: string;
   coverSettings?: {
@@ -71,6 +75,7 @@ export interface CreateBusinessPlanRequest {
   businessType?: string;
   organizationId?: string;
   templateId?: string;
+  persona?: PersonaType;
 }
 
 export interface OBNLPlan {

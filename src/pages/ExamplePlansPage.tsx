@@ -204,50 +204,54 @@ export default function ExamplePlansPage() {
         structuredData={breadcrumbStructuredData}
       />
       <Header />
-      <section ref={sectionRef} className="pt-32 pb-20">
-        {/* Hero Section */}
-        <div className="container mx-auto px-6 mb-16">
-          <div className="max-w-4xl mx-auto text-center">
-            <h1 className="fade-in-element text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 dark:text-white mb-6">
-              {t('examplePlans.title')}
-            </h1>
-            <p className="fade-in-element text-xl text-gray-600 dark:text-gray-400 mb-8">
-              {t('examplePlans.subtitle')}
-            </p>
+      <div className="pt-20 flex">
+        {/* Sidebar Navigation */}
+        <aside className="fixed left-0 top-20 bottom-0 w-64 bg-white dark:bg-gray-800 border-r-2 border-gray-300 dark:border-gray-700 overflow-y-auto z-30">
+          <div className="p-6">
+            <div className="mb-8 pb-6 border-b-2 border-gray-200 dark:border-gray-700">
+              <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4">{t('examplePlans.title')}</h2>
+              <p className="text-sm text-gray-600 dark:text-gray-400">{t('examplePlans.subtitle')}</p>
+            </div>
 
             {/* Search Bar */}
-            <div className="fade-in-element relative max-w-2xl mx-auto mb-8">
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-              <input
-                type="text"
-                placeholder={t('examplePlans.searchPlaceholder')}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-12 pr-4 py-4 rounded-xl border-2 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white focus:outline-none focus:border-orange-500 transition-colors"
-              />
+            <div className="mb-6">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+                <input
+                  type="text"
+                  placeholder={t('examplePlans.searchPlaceholder')}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:outline-none focus:border-orange-500 transition-colors"
+                />
+              </div>
             </div>
 
             {/* Filters */}
-            <div className="fade-in-element flex flex-wrap gap-4 justify-center mb-12">
-              <div className="flex items-center gap-2">
-                <Filter size={18} className="text-gray-600 dark:text-gray-400" />
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('examplePlans.category')}:</span>
+            <div className="space-y-4 mb-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <Filter size={14} className="inline mr-1" />
+                  {t('examplePlans.category')}
+                </label>
                 <select
                   value={selectedCategory}
                   onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:border-orange-500"
+                  className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:outline-none focus:border-orange-500"
                 >
                   {categories.map(cat => (
                     <option key={cat} value={cat}>{cat}</option>
                   ))}
                 </select>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('examplePlans.industry')}:</span>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  {t('examplePlans.industry')}
+                </label>
                 <select
                   value={selectedIndustry}
                   onChange={(e) => setSelectedIndustry(e.target.value)}
-                  className="px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:border-orange-500"
+                  className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:outline-none focus:border-orange-500"
                 >
                   {industries.map(ind => (
                     <option key={ind} value={ind}>{ind}</option>
@@ -255,17 +259,57 @@ export default function ExamplePlansPage() {
                 </select>
               </div>
             </div>
-          </div>
-        </div>
 
-        {/* Plans Grid */}
-        <div className="container mx-auto px-6">
-          {filteredPlans.length === 0 ? (
-            <div className="text-center py-20">
-              <p className="text-xl text-gray-600 dark:text-gray-400">{t('examplePlans.noResults')}</p>
+            {/* Results Count */}
+            <div className="pt-6 border-t-2 border-gray-200 dark:border-gray-700">
+              <div className="text-sm text-gray-600 dark:text-gray-400">
+                <span className="font-semibold text-gray-900 dark:text-white">{filteredPlans.length}</span> {t('examplePlans.results') || 'plans found'}
+              </div>
             </div>
-          ) : (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+
+            {/* CTA Button */}
+            <div className="mt-8 pt-8 border-t-2 border-gray-200 dark:border-gray-700">
+              <Link
+                to="/register"
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition-all shadow-md hover:shadow-lg"
+              >
+                <span>{t('examplePlanDetail.cta.startFree') || 'Start Free Trial'}</span>
+              </Link>
+            </div>
+          </div>
+        </aside>
+
+        {/* Main Content */}
+        <main className="flex-1 ml-64">
+          {/* Hero Section */}
+          <section ref={sectionRef} className="relative bg-gray-900 dark:bg-gray-950 border-b-8 border-green-600">
+            <div className="relative py-24 px-8">
+              <div className="max-w-5xl mx-auto">
+                <div className="mb-6">
+                  <span className="inline-block px-4 py-2 bg-green-600 text-white text-xs font-semibold uppercase tracking-wider rounded">
+                    {t('examplePlans.badge') || 'Business Plan Examples'}
+                  </span>
+                </div>
+                <h1 className="text-5xl md:text-6xl lg:text-7xl font-serif text-white mb-6 leading-tight" style={{ fontFamily: 'Georgia, serif' }}>
+                  {t('examplePlans.title')}
+                </h1>
+                <p className="text-xl md:text-2xl text-gray-300 mb-10 max-w-3xl leading-relaxed" style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}>
+                  {t('examplePlans.subtitle')}
+                </p>
+              </div>
+            </div>
+          </section>
+
+          {/* Plans Grid */}
+          <div className="bg-white dark:bg-gray-900">
+            <div className="py-20 px-8">
+              {filteredPlans.length === 0 ? (
+                <div className="text-center py-20 max-w-4xl mx-auto">
+                  <p className="text-xl text-gray-600 dark:text-gray-400">{t('examplePlans.noResults')}</p>
+                </div>
+              ) : (
+                <div className="max-w-7xl mx-auto">
+                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
               {filteredPlans.map((plan, index) => (
                 <div
                   key={plan.id}
@@ -363,43 +407,39 @@ export default function ExamplePlansPage() {
                   <div className="absolute inset-x-0 bottom-0 h-1 bg-orange-600 dark:bg-orange-500 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                 </div>
               ))}
-            </div>
-          )}
-        </div>
-
-        {/* CTA Section */}
-        <div className="container mx-auto px-6 mt-20">
-          <div className="fade-in-element max-w-4xl mx-auto">
-            <div className="relative bg-orange-600 dark:bg-orange-700 rounded-3xl p-12 overflow-hidden">
-              <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl"></div>
-              <div className="absolute bottom-0 left-0 w-64 h-64 bg-white/10 rounded-full blur-3xl"></div>
-
-              <div className="relative z-10 text-center text-white">
-                <h3 className="text-3xl lg:text-4xl font-bold mb-4">
-                  {t('examplePlans.cta.title')}
-                </h3>
-                <p className="text-orange-100 text-lg mb-8 max-w-2xl mx-auto">
-                  {t('examplePlans.cta.subtitle')}
-                </p>
-                <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <Link
-                    to="/register"
-                    className="px-8 py-4 bg-white text-orange-600 font-semibold rounded-xl hover:bg-gray-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
-                  >
-                    {t('examplePlans.cta.startFree')}
-                  </Link>
-                  <Link
-                    to="/"
-                    className="px-8 py-4 bg-white/20 backdrop-blur-sm text-white border-2 border-white/30 font-semibold rounded-xl hover:bg-white/30 transition-all duration-300"
-                  >
-                    {t('examplePlans.cta.learnMore')}
-                  </Link>
                 </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* CTA Section */}
+          <div className="mt-32 bg-gray-900 dark:bg-gray-950 border-t-8 border-green-600 mx-8 mb-16 rounded-lg overflow-hidden">
+            <div className="p-12 text-center">
+              <h3 className="text-3xl lg:text-4xl font-serif text-white mb-4" style={{ fontFamily: 'Georgia, serif' }}>
+                {t('examplePlans.cta.title')}
+              </h3>
+              <p className="text-gray-300 text-lg mb-10 max-w-2xl mx-auto leading-relaxed" style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}>
+                {t('examplePlans.cta.subtitle')}
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Link
+                  to="/register"
+                  className="px-8 py-4 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
+                >
+                  {t('examplePlans.cta.startFree')}
+                </Link>
+                <Link
+                  to="/"
+                  className="px-8 py-4 bg-gray-800 hover:bg-gray-700 text-white border-2 border-gray-700 font-semibold rounded-lg transition-all duration-300"
+                >
+                  {t('examplePlans.cta.learnMore')}
+                </Link>
               </div>
             </div>
           </div>
-        </div>
-      </section>
+        </main>
+      </div>
       <Footer />
 
       <style>{`

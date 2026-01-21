@@ -1,14 +1,16 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
+import PersonaSelectionPage from './pages/PersonaSelectionPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
 import DashboardPage from './pages/DashboardPage';
 import ProfilePage from './pages/ProfilePage';
 import CreatePlanPage from './pages/CreatePlanPage';
 import QuestionnairePage from './pages/QuestionnairePage';
+import WizardQuestionnairePage from './pages/WizardQuestionnairePage';
 import PlanViewPage from './pages/PlanViewPage';
 import TemplateDetailPage from './pages/TemplateDetailPage';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -23,6 +25,7 @@ import AdminActivityLogsPage from './pages/admin/AdminActivityLogsPage';
 import AdminSystemHealthPage from './pages/admin/AdminSystemHealthPage';
 import AdminTemplatesPage from './pages/admin/AdminTemplatesPage';
 import AdminSettingsPage from './pages/admin/AdminSettingsPage';
+import { AdminAIConfigPage } from './pages/admin/AdminAIConfigPage';
 import SubscriptionPlansPage from './pages/SubscriptionPlansPage';
 import SubscriptionPage from './pages/SubscriptionPage';
 import InvoicesPage from './pages/InvoicesPage';
@@ -37,9 +40,43 @@ import SecurityPage from './pages/SecurityPage';
 import CompliancePage from './pages/CompliancePage';
 import ScrollToTop from './components/ScrollToTop';
 
+// Component to handle scroll restoration prevention
+function ScrollRestorationHandler() {
+  const location = useLocation();
+
+  useEffect(() => {
+    // Prevent browser from restoring scroll position
+    if ('scrollRestoration' in history) {
+      history.scrollRestoration = 'manual';
+    }
+  }, []);
+
+  useEffect(() => {
+    // Scroll to top on route change
+    window.scrollTo(0, 0);
+    if (document.documentElement) {
+      document.documentElement.scrollTop = 0;
+    }
+    if (document.body) {
+      document.body.scrollTop = 0;
+    }
+  }, [location.pathname]);
+
+  return null;
+}
+
 function App() {
+  // Prevent scroll restoration globally
+  useEffect(() => {
+    if ('scrollRestoration' in history) {
+      history.scrollRestoration = 'manual';
+    }
+  }, []);
+
   return (
     <Router>
+      {/* Prevent browser from restoring scroll position */}
+      <ScrollRestorationHandler />
       <ScrollToTop />
       {/* Skip to main content link for accessibility */}
       <a href="#main-content" className="skip-to-main">
@@ -49,6 +86,14 @@ function App() {
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route
+          path="/persona-selection"
+          element={
+            <ProtectedRoute>
+              <PersonaSelectionPage />
+            </ProtectedRoute>
+          }
+        />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/template/:templateId" element={<TemplateDetailPage />} />
@@ -93,6 +138,16 @@ function App() {
         </Route>
         <Route
           path="/questionnaire/:planId"
+          element={
+            <ProtectedRoute>
+              <DashboardLayout />
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<WizardQuestionnairePage />} />
+        </Route>
+        <Route
+          path="/questionnaire-legacy/:planId"
           element={
             <ProtectedRoute>
               <DashboardLayout />
@@ -159,6 +214,7 @@ function App() {
           <Route path="activity-logs" element={<AdminActivityLogsPage />} />
           <Route path="system-health" element={<AdminSystemHealthPage />} />
           <Route path="settings" element={<AdminSettingsPage />} />
+          <Route path="ai-config" element={<AdminAIConfigPage />} />
         </Route>
       </Routes>
     </Router>

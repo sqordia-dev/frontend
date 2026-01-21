@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { authService } from '../lib/auth-service';
-import { Sparkles, Mail, ArrowRight, CheckCircle, ArrowLeft } from 'lucide-react';
+import { Brain, Mail, ArrowRight, CheckCircle, ArrowLeft } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 import SEO from '../components/SEO';
 import { getCanonicalUrl } from '../utils/seo';
@@ -109,10 +109,17 @@ export default function ForgotPasswordPage() {
 
         <div className="relative z-10 flex flex-col justify-center px-16 text-white">
           <div className="mb-8">
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-md rounded-full border border-white/20 mb-8">
-              <Sparkles size={16} />
-              <span className="text-sm font-medium">Sqordia Platform</span>
-            </div>
+            <Link to="/" className="inline-flex items-center gap-3 mb-8 group">
+              <div 
+                className="p-3 rounded-xl transition-transform group-hover:scale-105"
+                style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)' }}
+              >
+                <Brain className="text-white w-7 h-7" />
+              </div>
+              <span className="text-2xl font-bold font-heading text-white">
+                Sqordia
+              </span>
+            </Link>
             <h1 className="text-5xl font-bold mb-6 leading-tight">
               Forgot Your<br />Password?
             </h1>

@@ -6,7 +6,7 @@ import { useTheme } from '../contexts/ThemeContext';
 export default function Hero() {
   const heroRef = useRef<HTMLElement>(null);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  const { t } = useTheme();
+  const { t, theme } = useTheme();
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -40,32 +40,40 @@ export default function Hero() {
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
+  const isDark = theme === 'dark';
+  const bgColor = isDark ? '#1A2B47' : '#F4F7FA';
+  const textColor = isDark ? '#FFFFFF' : '#1A2B47';
+  const textSecondaryColor = isDark ? '#D1D5DB' : '#6B7280';
+  const cardBgColor = isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(255, 255, 255, 0.8)';
+  const cardBorderColor = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(26, 43, 71, 0.1)';
+  const gridColor = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(26, 43, 71, 0.05)';
+
   return (
     <section 
       ref={heroRef} 
       className="relative pt-16 pb-20 md:pt-32 md:pb-40 overflow-hidden min-h-[80vh] md:min-h-screen flex items-center"
-      style={{ backgroundColor: '#1A2B47' }}
+      style={{ backgroundColor: bgColor }}
     >
       {/* Animated gradient background with parallax */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {/* Primary orbs */}
         {/* Optimize blob sizes for mobile performance */}
         <div 
-          className="absolute top-20 right-10 w-[300px] h-[300px] md:w-[500px] md:h-[500px] rounded-full filter blur-[80px] md:blur-[120px] opacity-20 md:opacity-30 animate-blob"
+          className={`absolute top-20 right-10 w-[300px] h-[300px] md:w-[500px] md:h-[500px] rounded-full filter blur-[80px] md:blur-[120px] animate-blob ${isDark ? 'opacity-20 md:opacity-30' : 'opacity-10 md:opacity-15'}`}
           style={{ 
             backgroundColor: 'rgba(255, 107, 0, 0.3)',
             transform: `translate(${mousePosition.x * 0.02}px, ${mousePosition.y * 0.02}px)`,
           }}
         ></div>
         <div 
-          className="absolute top-40 left-10 w-[250px] h-[250px] md:w-[400px] md:h-[400px] rounded-full filter blur-[60px] md:blur-[100px] opacity-15 md:opacity-25 animate-blob animation-delay-2000"
+          className={`absolute top-40 left-10 w-[250px] h-[250px] md:w-[400px] md:h-[400px] rounded-full filter blur-[60px] md:blur-[100px] animate-blob animation-delay-2000 ${isDark ? 'opacity-15 md:opacity-25' : 'opacity-8 md:opacity-12'}`}
           style={{ 
             backgroundColor: 'rgba(59, 130, 246, 0.25)',
             transform: `translate(${mousePosition.x * -0.015}px, ${mousePosition.y * -0.015}px)`,
           }}
         ></div>
         <div 
-          className="absolute -bottom-20 left-1/2 w-[350px] h-[350px] md:w-[600px] md:h-[600px] rounded-full filter blur-[90px] md:blur-[140px] opacity-10 md:opacity-20 animate-blob animation-delay-4000"
+          className={`absolute -bottom-20 left-1/2 w-[350px] h-[350px] md:w-[600px] md:h-[600px] rounded-full filter blur-[90px] md:blur-[140px] animate-blob animation-delay-4000 ${isDark ? 'opacity-10 md:opacity-20' : 'opacity-5 md:opacity-10'}`}
           style={{ 
             backgroundColor: 'rgba(139, 92, 246, 0.2)',
             transform: `translate(${mousePosition.x * 0.01}px, ${mousePosition.y * 0.01}px)`,
@@ -77,8 +85,8 @@ export default function Hero() {
           className="absolute inset-0 opacity-[0.03]"
           style={{
             backgroundImage: `
-              linear-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px),
-              linear-gradient(90deg, rgba(255, 255, 255, 0.1) 1px, transparent 1px)
+              linear-gradient(${gridColor} 1px, transparent 1px),
+              linear-gradient(90deg, ${gridColor} 1px, transparent 1px)
             `,
             backgroundSize: '50px 50px',
           }}
@@ -94,7 +102,7 @@ export default function Hero() {
               height: `${Math.random() * 4 + 2}px`,
               left: `${Math.random() * 100}%`,
               top: `${Math.random() * 100}%`,
-              backgroundColor: 'rgba(255, 255, 255, 0.1)',
+              backgroundColor: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(26, 43, 71, 0.1)',
               animationDelay: `${Math.random() * 5}s`,
               animationDuration: `${Math.random() * 10 + 10}s`,
             }}
@@ -113,26 +121,26 @@ export default function Hero() {
             <div 
               className="absolute inset-0 rounded-full backdrop-blur-md border"
               style={{ 
-                backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                borderColor: 'rgba(255, 255, 255, 0.2)',
+                backgroundColor: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.9)',
+                borderColor: isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(26, 43, 71, 0.2)',
               }}
             ></div>
             <Sparkles 
               size={16} 
-              className="relative z-10 text-white animate-pulse"
+              className="relative z-10 animate-pulse"
               style={{ color: '#FF6B00' }}
             />
-            <span className="relative z-10 text-white">{t('hero.badge')}</span>
+            <span className="relative z-10" style={{ color: textColor }}>{t('hero.badge')}</span>
           </div>
 
           {/* Main Headline */}
           <h1 className="fade-in-element font-heading text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6 md:mb-8 relative">
-            <span className="block text-white">
+            <span className="block" style={{ color: textColor }}>
               {t('hero.headline.part1')}
             </span>
-            <span className="block mt-2 text-white">
+            <span className="block mt-2" style={{ color: textColor }}>
               {t('hero.headline.part2')} <span className="relative inline-block">
-                <span className="text-white">{t('hero.headline.part3')}</span>
+                <span style={{ color: textColor }}>{t('hero.headline.part3')}</span>
                 <span 
                   className="absolute -bottom-2 left-0 right-0 h-1 rounded-full opacity-50"
                   style={{ 
@@ -145,7 +153,7 @@ export default function Hero() {
           </h1>
 
           {/* Sub-headline with fade-in */}
-          <p className="fade-in-element text-sm sm:text-base md:text-lg lg:text-xl leading-relaxed max-w-3xl mx-auto mb-8 md:mb-12 font-light px-4" style={{ color: '#D1D5DB' }}>
+          <p className="fade-in-element text-sm sm:text-base md:text-lg lg:text-xl leading-relaxed max-w-3xl mx-auto mb-8 md:mb-12 font-light px-4" style={{ color: textSecondaryColor }}>
             {t('hero.subtitle')}
           </p>
 
@@ -186,20 +194,20 @@ export default function Hero() {
               to="/register"
               className="group relative w-full sm:w-auto px-8 sm:px-10 py-4 sm:py-5 text-base sm:text-lg font-bold font-heading rounded-xl overflow-hidden transition-all duration-500 flex items-center justify-center gap-3 backdrop-blur-sm border-2 min-h-[44px]"
               style={{ 
-                backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                backgroundColor: isDark ? 'rgba(255, 255, 255, 0.95)' : '#FFFFFF',
                 color: '#1A2B47',
-                borderColor: 'rgba(255, 255, 255, 0.3)',
-                boxShadow: '0 10px 40px rgba(0, 0, 0, 0.1)',
+                borderColor: isDark ? 'rgba(255, 255, 255, 0.3)' : 'rgba(26, 43, 71, 0.2)',
+                boxShadow: isDark ? '0 10px 40px rgba(0, 0, 0, 0.1)' : '0 10px 40px rgba(26, 43, 71, 0.15)',
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.backgroundColor = '#FFFFFF';
                 e.currentTarget.style.transform = 'translateY(-4px) scale(1.02)';
-                e.currentTarget.style.boxShadow = '0 15px 50px rgba(0, 0, 0, 0.15)';
+                e.currentTarget.style.boxShadow = isDark ? '0 15px 50px rgba(0, 0, 0, 0.15)' : '0 15px 50px rgba(26, 43, 71, 0.2)';
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.95)';
+                e.currentTarget.style.backgroundColor = isDark ? 'rgba(255, 255, 255, 0.95)' : '#FFFFFF';
                 e.currentTarget.style.transform = 'translateY(0) scale(1)';
-                e.currentTarget.style.boxShadow = '0 10px 40px rgba(0, 0, 0, 0.1)';
+                e.currentTarget.style.boxShadow = isDark ? '0 10px 40px rgba(0, 0, 0, 0.1)' : '0 10px 40px rgba(26, 43, 71, 0.15)';
               }}
             >
               <span className="relative z-10">{t('hero.cta.strategicPlan')}</span>
@@ -218,7 +226,7 @@ export default function Hero() {
                 style={{ backgroundColor: '#FF6B00' }}
               ></div>
               <Shield 
-                className="relative text-white p-2 rounded-lg"
+                className="relative p-2 rounded-lg"
                 size={24} 
                 style={{ 
                   color: '#FF6B00',
@@ -226,7 +234,7 @@ export default function Hero() {
                 }}
               />
             </div>
-            <span className="font-medium text-lg" style={{ color: '#D1D5DB' }}>
+            <span className="font-medium text-lg" style={{ color: textSecondaryColor }}>
               {t('hero.trustSignal')}
             </span>
           </div>
@@ -237,16 +245,16 @@ export default function Hero() {
             <div 
               className="group relative p-6 rounded-2xl backdrop-blur-md border transition-all duration-300 hover:scale-105"
               style={{
-                backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                borderColor: 'rgba(255, 255, 255, 0.1)',
+                backgroundColor: cardBgColor,
+                borderColor: cardBorderColor,
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.08)';
-                e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+                e.currentTarget.style.backgroundColor = isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(255, 255, 255, 0.95)';
+                e.currentTarget.style.borderColor = isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(26, 43, 71, 0.2)';
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.05)';
-                e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+                e.currentTarget.style.backgroundColor = cardBgColor;
+                e.currentTarget.style.borderColor = cardBorderColor;
               }}
             >
               <div className="flex items-center justify-center gap-3 mb-3">
@@ -254,10 +262,12 @@ export default function Hero() {
                   {[1, 2, 3, 4].map((i) => (
                     <div
                       key={i}
-                      className="w-10 h-10 rounded-full border-2 border-white/30 flex items-center justify-center text-xs font-bold text-white shadow-lg transition-transform hover:scale-110"
+                      className="w-10 h-10 rounded-full border-2 flex items-center justify-center text-xs font-bold shadow-lg transition-transform hover:scale-110"
                       style={{ 
                         zIndex: 5 - i,
                         backgroundColor: '#3B82F6',
+                        borderColor: isDark ? 'rgba(255, 255, 255, 0.3)' : 'rgba(255, 255, 255, 0.5)',
+                        color: '#FFFFFF',
                       }}
                     >
                       {i}
@@ -265,24 +275,24 @@ export default function Hero() {
                   ))}
                 </div>
               </div>
-              <div className="text-2xl font-bold text-white mb-1">2,500+</div>
-              <div className="text-sm" style={{ color: '#9CA3AF' }}>{t('hero.socialProof.plansCreated')}</div>
+              <div className="text-2xl font-bold mb-1" style={{ color: textColor }}>2,500+</div>
+              <div className="text-sm" style={{ color: textSecondaryColor }}>{t('hero.socialProof.plansCreated')}</div>
             </div>
 
             {/* Rating Card */}
             <div 
               className="group relative p-6 rounded-2xl backdrop-blur-md border transition-all duration-300 hover:scale-105"
               style={{
-                backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                borderColor: 'rgba(255, 255, 255, 0.1)',
+                backgroundColor: cardBgColor,
+                borderColor: cardBorderColor,
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.08)';
-                e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+                e.currentTarget.style.backgroundColor = isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(255, 255, 255, 0.95)';
+                e.currentTarget.style.borderColor = isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(26, 43, 71, 0.2)';
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.05)';
-                e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+                e.currentTarget.style.backgroundColor = cardBgColor;
+                e.currentTarget.style.borderColor = cardBorderColor;
               }}
             >
               <div className="flex items-center justify-center gap-2 mb-3">
@@ -295,24 +305,24 @@ export default function Hero() {
                   />
                 ))}
               </div>
-              <div className="text-2xl font-bold text-white mb-1">4.9/5</div>
-              <div className="text-sm" style={{ color: '#9CA3AF' }}>{t('hero.socialProof.averageRating')}</div>
+              <div className="text-2xl font-bold mb-1" style={{ color: textColor }}>4.9/5</div>
+              <div className="text-sm" style={{ color: textSecondaryColor }}>{t('hero.socialProof.averageRating')}</div>
             </div>
 
             {/* No Credit Card Card */}
             <div 
               className="group relative p-6 rounded-2xl backdrop-blur-md border transition-all duration-300 hover:scale-105"
               style={{
-                backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                borderColor: 'rgba(255, 255, 255, 0.1)',
+                backgroundColor: cardBgColor,
+                borderColor: cardBorderColor,
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.08)';
-                e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+                e.currentTarget.style.backgroundColor = isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(255, 255, 255, 0.95)';
+                e.currentTarget.style.borderColor = isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(26, 43, 71, 0.2)';
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.05)';
-                e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+                e.currentTarget.style.backgroundColor = cardBgColor;
+                e.currentTarget.style.borderColor = cardBorderColor;
               }}
             >
               <div className="flex items-center justify-center mb-3">
@@ -323,8 +333,8 @@ export default function Hero() {
                   <Check className="text-white" size={24} />
                 </div>
               </div>
-              <div className="text-2xl font-bold text-white mb-1">{t('hero.socialProof.free')}</div>
-              <div className="text-sm" style={{ color: '#9CA3AF' }}>{t('hero.socialProof.noCreditCard')}</div>
+              <div className="text-2xl font-bold mb-1" style={{ color: textColor }}>{t('hero.socialProof.free')}</div>
+              <div className="text-sm" style={{ color: textSecondaryColor }}>{t('hero.socialProof.noCreditCard')}</div>
             </div>
           </div>
         </div>

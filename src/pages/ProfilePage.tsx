@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { User, Mail, Building2, Phone, MapPin, Save, ArrowLeft, Shield, Lock, Key, AlertCircle, Upload, Image as ImageIcon, X } from 'lucide-react';
+import { User, Mail, Building2, Phone, MapPin, Save, ArrowLeft, Shield, Lock, Key, AlertCircle, Upload, Image as ImageIcon, X, Rocket, Briefcase, Heart, ExternalLink } from 'lucide-react';
 import { authService } from '../lib/auth-service';
 import { profileService } from '../lib/profile-service';
 import { securityService } from '../lib/security-service';
 import { useTheme } from '../contexts/ThemeContext';
+import { PersonaType } from '../lib/types';
 import SEO from '../components/SEO';
 
 export default function ProfilePage() {
@@ -44,6 +45,7 @@ export default function ProfilePage() {
 
   const [sessions, setSessions] = useState<any[]>([]);
   const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
+  const [userPersona, setUserPersona] = useState<PersonaType | null>(null);
 
   useEffect(() => {
     loadProfile();
@@ -73,6 +75,11 @@ export default function ProfilePage() {
       });
       setProfilePicturePreview(data.profilePictureUrl || null);
       setProfileImageError(false); // Reset error when profile loads
+
+      // Load persona from user data or localStorage
+      const userData = await authService.getCurrentUser();
+      const persona = userData?.persona || localStorage.getItem('userPersona') as PersonaType | null;
+      setUserPersona(persona);
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -571,6 +578,64 @@ export default function ProfilePage() {
                       onBlur={(e) => e.currentTarget.style.borderColor = ''}
                     />
                   </div>
+                </div>
+
+                {/* Persona Section */}
+                <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Profile Type
+                  </label>
+                  {userPersona ? (
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div
+                          className="w-10 h-10 rounded-lg flex items-center justify-center"
+                          style={{
+                            backgroundColor: userPersona === 'Entrepreneur' ? '#FF6B00' :
+                              userPersona === 'Consultant' ? '#1A2B47' : '#10B981'
+                          }}
+                        >
+                          {userPersona === 'Entrepreneur' && <Rocket size={20} className="text-white" />}
+                          {userPersona === 'Consultant' && <Briefcase size={20} className="text-white" />}
+                          {userPersona === 'OBNL' && <Heart size={20} className="text-white" />}
+                        </div>
+                        <div>
+                          <p className="font-medium text-gray-900 dark:text-white">
+                            {userPersona === 'Entrepreneur' && 'Entrepreneur / Solopreneur'}
+                            {userPersona === 'Consultant' && 'Consultant'}
+                            {userPersona === 'OBNL' && 'OBNL / NPO'}
+                          </p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">
+                            {userPersona === 'Entrepreneur' && 'Building your own business from the ground up'}
+                            {userPersona === 'Consultant' && 'Managing multiple clients and strategic planning'}
+                            {userPersona === 'OBNL' && 'Strategic planning for non-profit organizations'}
+                          </p>
+                        </div>
+                      </div>
+                      <Link
+                        to="/persona-selection"
+                        className="flex items-center gap-1 text-sm font-medium hover:opacity-80 transition-opacity"
+                        style={{ color: momentumOrange }}
+                      >
+                        Change
+                        <ExternalLink size={14} />
+                      </Link>
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        No profile type selected
+                      </p>
+                      <Link
+                        to="/persona-selection"
+                        className="flex items-center gap-1 text-sm font-medium hover:opacity-80 transition-opacity"
+                        style={{ color: momentumOrange }}
+                      >
+                        Select profile type
+                        <ExternalLink size={14} />
+                      </Link>
+                    </div>
+                  )}
                 </div>
 
                 <div className="flex justify-end">

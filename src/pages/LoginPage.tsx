@@ -23,8 +23,14 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      await authService.login({ email, password });
-      navigate('/dashboard');
+      const response = await authService.login({ email, password });
+      // Check if user has persona set
+      const userPersona = response.user?.persona || localStorage.getItem('userPersona');
+      if (!userPersona) {
+        navigate('/persona-selection');
+      } else {
+        navigate('/dashboard');
+      }
     } catch (err: any) {
       setError(err.message || 'Login failed. Please check your credentials.');
     } finally {
@@ -42,8 +48,14 @@ export default function LoginPage() {
         idToken: googleUser.idToken,
         accessToken: googleUser.accessToken
       };
-      await authService.googleAuth(tokens);
-      navigate('/dashboard');
+      const response = await authService.googleAuth(tokens);
+      // Check if user has persona set
+      const userPersona = response.user?.persona || localStorage.getItem('userPersona');
+      if (!userPersona) {
+        navigate('/persona-selection');
+      } else {
+        navigate('/dashboard');
+      }
     } catch (err: any) {
       setError(err.message || 'Google sign-in failed. Please try again.');
     } finally {

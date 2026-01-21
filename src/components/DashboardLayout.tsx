@@ -18,44 +18,85 @@ import {
   ChevronLeft,
   ChevronRight,
   Globe,
-  ChevronDown
+  ChevronDown,
+  Rocket,
+  Briefcase,
+  Heart
 } from 'lucide-react';
 import { authService } from '../lib/auth-service';
 import { User as UserType } from '../lib/types';
 import { useTheme } from '../contexts/ThemeContext';
+import CA from 'country-flag-icons/react/3x2/CA';
 
-// UK Flag Icon Component
-const UKFlag = ({ size = 20, className = '' }: { size?: number; className?: string }) => (
-  <svg
+// Quebec Flag Component - using local SVG file
+const QuebecFlag = ({ size = 20, className = '' }: { size?: number; className?: string }) => (
+  <img
+    src="/quebec-flag.svg"
+    alt="Quebec Flag"
     width={size}
-    height={size * 0.6}
-    viewBox="0 0 60 36"
+    height={size * 0.67}
     className={className}
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <rect width="60" height="36" fill="#012169" />
-    <path d="M0 0 L60 36 M60 0 L0 36" stroke="#FFFFFF" strokeWidth="4" />
-    <path d="M0 0 L60 36 M60 0 L0 36" stroke="#C8102E" strokeWidth="2.4" />
-    <path d="M30 0 L30 36 M0 18 L60 18" stroke="#FFFFFF" strokeWidth="6" />
-    <path d="M30 0 L30 36 M0 18 L60 18" stroke="#C8102E" strokeWidth="4" />
-    <path d="M0 0 L60 0 L60 36 L0 36 Z" stroke="#FFFFFF" strokeWidth="2" fill="none" />
-  </svg>
+    style={{ objectFit: 'contain', display: 'block' }}
+  />
 );
 
-// France Flag Icon Component
-const FranceFlag = ({ size = 20, className = '' }: { size?: number; className?: string }) => (
-  <svg
-    width={size}
-    height={size * 0.6}
-    viewBox="0 0 60 40"
-    className={className}
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <rect width="20" height="40" x="0" y="0" fill="#002654" />
-    <rect width="20" height="40" x="20" y="0" fill="#FFFFFF" />
-    <rect width="20" height="40" x="40" y="0" fill="#ED2939" />
-  </svg>
+// Flag Icon Wrapper Component
+const FlagIcon = ({
+  FlagComponent,
+  size = 20,
+  className = ''
+}: {
+  FlagComponent: React.ComponentType<any>;
+  size?: number;
+  className?: string;
+}) => (
+  <div style={{ width: size, height: size * 0.67, display: 'inline-block', lineHeight: 0 }}>
+    <FlagComponent
+      className={className}
+      style={{ width: '100%', height: '100%', display: 'block' }}
+      title=""
+    />
+  </div>
 );
+
+// Persona Badge Component
+const PersonaBadge = ({ persona, compact = false, language = 'en' }: { persona?: string | null; compact?: boolean; language?: string }) => {
+  if (!persona) return null;
+
+  const personaConfig: Record<string, { icon: React.ElementType; color: string; label: string; labelFr: string }> = {
+    'Entrepreneur': { icon: Rocket, color: '#FF6B00', label: 'Entrepreneur', labelFr: 'Entrepreneur' },
+    'Consultant': { icon: Briefcase, color: '#1A2B47', label: 'Consultant', labelFr: 'Consultant' },
+    'OBNL': { icon: Heart, color: '#10B981', label: 'NPO', labelFr: 'OBNL' }
+  };
+
+  const config = personaConfig[persona];
+  if (!config) return null;
+
+  const Icon = config.icon;
+  const label = language === 'fr' ? config.labelFr : config.label;
+
+  if (compact) {
+    return (
+      <div
+        className="flex items-center justify-center w-6 h-6 rounded-full"
+        style={{ backgroundColor: config.color }}
+        title={label}
+      >
+        <Icon size={12} className="text-white" />
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className="flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium text-white"
+      style={{ backgroundColor: config.color }}
+    >
+      <Icon size={10} />
+      <span>{label}</span>
+    </div>
+  );
+};
 
 export default function DashboardLayout() {
   const location = useLocation();
@@ -78,6 +119,36 @@ export default function DashboardLayout() {
     localStorage.setItem('dashboardSidebarOpen', sidebarOpen.toString());
   }, [sidebarOpen]);
 
+  // Scroll to top when route changes
+  useEffect(() => {
+    const scrollToTop = () => {
+      window.scrollTo({ top: 0, left: 0, behavior: 'instant' as ScrollBehavior });
+      if (document.documentElement) {
+        document.documentElement.scrollTop = 0;
+      }
+      if (document.body) {
+        document.body.scrollTop = 0;
+      }
+      // Also scroll main content area if it exists
+      const mainContent = document.querySelector('main');
+      if (mainContent) {
+        mainContent.scrollTop = 0;
+      }
+    };
+
+    // Scroll immediately
+    scrollToTop();
+    
+    // Also scroll after a brief delay to catch any late DOM updates
+    const timeoutId = setTimeout(scrollToTop, 0);
+    const timeoutId2 = setTimeout(scrollToTop, 100);
+
+    return () => {
+      clearTimeout(timeoutId);
+      clearTimeout(timeoutId2);
+    };
+  }, [location.pathname]);
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as HTMLElement;
@@ -95,6 +166,12 @@ export default function DashboardLayout() {
       const userData = await authService.getCurrentUser();
       setUser(userData);
       setProfileImageError(false); // Reset error when user changes
+      
+      // Check if user has persona set, redirect if not
+      const userPersona = userData.persona || localStorage.getItem('userPersona');
+      if (!userPersona && location.pathname !== '/persona-selection') {
+        navigate('/persona-selection');
+      }
     } catch (error) {
       console.error('Failed to load user:', error);
     }
@@ -106,8 +183,8 @@ export default function DashboardLayout() {
   };
 
   const languages = [
-    { code: 'en', label: 'English', displayCode: 'EN', FlagIcon: UKFlag },
-    { code: 'fr', label: 'Français', displayCode: 'FR', FlagIcon: FranceFlag },
+    { code: 'en', label: 'English', displayCode: 'EN', FlagComponent: CA },
+    { code: 'fr', label: 'Français', displayCode: 'FR', FlagComponent: QuebecFlag },
   ];
 
   const currentLang = languages.find(l => l.code === language);
@@ -158,7 +235,9 @@ export default function DashboardLayout() {
                 className="flex items-center gap-2 px-3 py-2 text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-all"
               >
                 <div className="w-6 h-4 rounded overflow-hidden flex items-center justify-center">
-                  {currentLang?.FlagIcon && <currentLang.FlagIcon size={24} />}
+                  {currentLang?.FlagComponent && (
+                    <FlagIcon FlagComponent={currentLang.FlagComponent} size={24} />
+                  )}
                 </div>
                 <span className="text-sm font-semibold">{currentLang?.displayCode}</span>
                 <ChevronDown size={16} className={`transition-transform ${isLangOpen ? 'rotate-180' : ''}`} />
@@ -180,7 +259,9 @@ export default function DashboardLayout() {
                       }`}
                     >
                       <div className="w-8 h-5 rounded overflow-hidden flex items-center justify-center flex-shrink-0">
-                        {lang.FlagIcon && <lang.FlagIcon size={32} />}
+                        {lang.FlagComponent && (
+                          <FlagIcon FlagComponent={lang.FlagComponent} size={32} />
+                        )}
                       </div>
                       <span className={`font-medium ${language === lang.code ? '' : 'dark:text-gray-100'}`}>{lang.label}</span>
                       {language === lang.code && (
@@ -269,7 +350,7 @@ export default function DashboardLayout() {
                     <User size={20} className="dark:text-gray-300" style={{ color: strategyBlue }} />
                   </div>
                 )}
-                {sidebarOpen && (
+                {sidebarOpen ? (
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">
                       {user?.firstName} {user?.lastName}
@@ -277,7 +358,16 @@ export default function DashboardLayout() {
                     <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
                       {user?.email}
                     </p>
+                    {user?.persona && (
+                      <div className="mt-1.5">
+                        <PersonaBadge persona={user.persona} language={language} />
+                      </div>
+                    )}
                   </div>
+                ) : (
+                  user?.persona && (
+                    <PersonaBadge persona={user.persona} compact language={language} />
+                  )
                 )}
               </div>
             </div>
@@ -359,7 +449,9 @@ export default function DashboardLayout() {
                   title={!sidebarOpen ? currentLang?.label : undefined}
                 >
                   <div className="w-6 h-4 rounded overflow-hidden flex items-center justify-center flex-shrink-0">
-                    {currentLang?.FlagIcon && <currentLang.FlagIcon size={24} />}
+                    {currentLang?.FlagComponent && (
+                    <FlagIcon FlagComponent={currentLang.FlagComponent} size={24} />
+                  )}
                   </div>
                   {sidebarOpen && (
                     <>
@@ -391,7 +483,9 @@ export default function DashboardLayout() {
                         }}
                       >
                         <div className="w-8 h-5 rounded overflow-hidden flex items-center justify-center flex-shrink-0">
-                          {lang.FlagIcon && <lang.FlagIcon size={32} />}
+                          {lang.FlagComponent && (
+                          <FlagIcon FlagComponent={lang.FlagComponent} size={32} />
+                        )}
                         </div>
                         <span className="font-medium">{lang.label}</span>
                         {language === lang.code && (

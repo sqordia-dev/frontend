@@ -105,12 +105,16 @@ export default function CreatePlanPage() {
     setLoading(true);
     setError(null);
     try {
+      // Get user's persona from localStorage (set during PersonaSelectionPage)
+      const userPersona = localStorage.getItem('userPersona') as 'Entrepreneur' | 'Consultant' | 'OBNL' | null;
+
       const requestData: any = {
         title: planTitle,
         description: planDescription || undefined,
         planType: selectedType === 'business' ? 'BusinessPlan' : 'StrategicPlan',
         organizationId: organizationId,
-        templateId: undefined // Template selection disabled - always start from scratch
+        templateId: undefined, // Template selection disabled - always start from scratch
+        persona: userPersona || (selectedType === 'obnl' ? 'OBNL' : 'Entrepreneur') // Fallback based on plan type
       };
 
       const plan = await businessPlanService.createBusinessPlan(requestData);

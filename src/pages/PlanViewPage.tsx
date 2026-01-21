@@ -579,11 +579,43 @@ export default function PlanViewPage() {
 
   useEffect(() => {
     if (id) {
+      checkPlanCompletion();
+    }
+  }, [id]);
+
+  const checkPlanCompletion = async () => {
+    if (!id) return;
+
+    try {
+      // Check questionnaire completion status
+      const progress = await businessPlanService.getQuestionnaireProgress(id);
+      const progressData = progress?.value || progress;
+      const isComplete = progressData?.isComplete || progressData?.status === 'Completed';
+
+      // Also check plan status
+      const planData = await businessPlanService.getBusinessPlan(id);
+      const planStatus = planData.status;
+
+      // If plan is Draft or questionnaire is incomplete, redirect to wizard
+      if ((planStatus === 'Draft' || planStatus === 'draft' || !isComplete) && planStatus !== 'Completed') {
+        const nextQuestionId = progressData?.unansweredQuestionIds?.[0];
+        const wizardUrl = `/questionnaire/${id}${nextQuestionId ? `#question-${nextQuestionId}` : ''}`;
+        navigate(wizardUrl);
+        return;
+      }
+
+      // Plan is complete, proceed to load
+      loadPlan();
+      loadSections();
+      loadFinancialData();
+    } catch (error) {
+      console.error('Failed to check plan completion:', error);
+      // On error, try to load plan anyway (might be a network issue)
       loadPlan();
       loadSections();
       loadFinancialData();
     }
-  }, [id]);
+  };
 
   const loadFinancialData = async () => {
     if (!id) return;

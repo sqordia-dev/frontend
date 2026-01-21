@@ -19,3 +19,6 @@ docs/LOGIN_TROUBLESHOOTING.md
 docs/TEMPLATE_STRUCTURE.md
 .env.example
 squelette plan stratégique.md
+
+# NSwag generated swagger specs (downloaded from backend)
+swagger-specs/

@@ -2,38 +2,37 @@ import { useState, useEffect, useRef } from 'react';
 import { Menu, X, Brain, Sun, Moon, ChevronDown } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { useTheme } from '../contexts/ThemeContext';
+import CA from 'country-flag-icons/react/3x2/CA';
 
-// UK Flag Icon Component
-const UKFlag = ({ size = 20, className = '' }: { size?: number; className?: string }) => (
-  <svg
+// Quebec Flag Component - using local SVG file
+const QuebecFlag = ({ size = 20, className = '' }: { size?: number; className?: string }) => (
+  <img
+    src="/quebec-flag.svg"
+    alt="Quebec Flag"
     width={size}
-    height={size * 0.6}
-    viewBox="0 0 60 36"
+    height={size * 0.67}
     className={className}
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <rect width="60" height="36" fill="#012169" />
-    <path d="M0 0 L60 36 M60 0 L0 36" stroke="#FFFFFF" strokeWidth="4" />
-    <path d="M0 0 L60 36 M60 0 L0 36" stroke="#C8102E" strokeWidth="2.4" />
-    <path d="M30 0 L30 36 M0 18 L60 18" stroke="#FFFFFF" strokeWidth="6" />
-    <path d="M30 0 L30 36 M0 18 L60 18" stroke="#C8102E" strokeWidth="4" />
-    <path d="M0 0 L60 0 L60 36 L0 36 Z" stroke="#FFFFFF" strokeWidth="2" fill="none" />
-  </svg>
+    style={{ objectFit: 'contain', display: 'block' }}
+  />
 );
 
-// France Flag Icon Component
-const FranceFlag = ({ size = 20, className = '' }: { size?: number; className?: string }) => (
-  <svg
-    width={size}
-    height={size * 0.6}
-    viewBox="0 0 60 40"
-    className={className}
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <rect width="20" height="40" x="0" y="0" fill="#002654" />
-    <rect width="20" height="40" x="20" y="0" fill="#FFFFFF" />
-    <rect width="20" height="40" x="40" y="0" fill="#ED2939" />
-  </svg>
+// Flag Icon Wrapper Component
+const FlagIcon = ({ 
+  FlagComponent, 
+  size = 20, 
+  className = '' 
+}: { 
+  FlagComponent: React.ComponentType<any>; 
+  size?: number; 
+  className?: string;
+}) => (
+  <div style={{ width: size, height: size * 0.67, display: 'inline-block', lineHeight: 0 }}>
+    <FlagComponent 
+      className={className}
+      style={{ width: '100%', height: '100%', display: 'block' }}
+      title=""
+    />
+  </div>
 );
 
 export default function Header() {
@@ -86,8 +85,8 @@ export default function Header() {
   }, [isLangOpen]);
 
   const languages = [
-    { code: 'en', label: 'English', displayCode: 'EN', FlagIcon: UKFlag },
-    { code: 'fr', label: 'Français', displayCode: 'FR', FlagIcon: FranceFlag }
+    { code: 'en', label: 'English', displayCode: 'EN', FlagComponent: CA },
+    { code: 'fr', label: 'Français', displayCode: 'FR', FlagComponent: QuebecFlag }
   ];
 
   const currentLang = languages.find(l => l.code === language);
@@ -109,17 +108,31 @@ export default function Header() {
   };
 
   const getTextColor = () => {
+    // If header is scrolled or we're on a page without dark hero
     if (isScrolled || !hasDarkHero) {
       return theme === 'dark' ? '#F3F4F6' : strategyBlue;
     }
+    
+    // Header is transparent (not scrolled, on landing page with hero)
+    // Check theme: in light mode, hero is light, so use dark text
+    if (theme === 'light') {
+      return strategyBlue;
+    }
+    
+    // Dark mode with transparent header over dark hero - use white
     return '#FFFFFF';
   };
 
   const getLogoColor = () => {
     const headerBg = getHeaderBg();
     
-    // If header background is transparent, we're on dark hero - ALWAYS use white
+    // If header background is transparent, check theme
     if (headerBg === 'transparent') {
+      // In light mode, hero is light, so use dark text
+      if (theme === 'light') {
+        return strategyBlue;
+      }
+      // In dark mode, hero is dark, so use white
       return '#FFFFFF';
     }
     
@@ -356,7 +369,9 @@ export default function Header() {
                       : 'rgba(255, 255, 255, 0.2)',
                   }}
                 >
-                  {currentLang?.FlagIcon && <currentLang.FlagIcon size={20} />}
+                  {currentLang?.FlagComponent && (
+                    <FlagIcon FlagComponent={currentLang.FlagComponent} size={20} />
+                  )}
                 </div>
                 <span className="text-sm font-semibold font-heading">{currentLang?.displayCode}</span>
                 <ChevronDown 
@@ -415,7 +430,9 @@ export default function Header() {
                             : 'rgba(26, 43, 71, 0.05)',
                         }}
                       >
-                        {lang.FlagIcon && <lang.FlagIcon size={28} />}
+                        {lang.FlagComponent && (
+                          <FlagIcon FlagComponent={lang.FlagComponent} size={28} />
+                        )}
                       </div>
                       <span className="font-medium flex-1">{lang.label}</span>
                       {language === lang.code && (
@@ -675,7 +692,9 @@ export default function Header() {
                         : 'rgba(26, 43, 71, 0.05)',
                     }}
                   >
-                    {lang.FlagIcon && <lang.FlagIcon size={32} />}
+                    {lang.FlagComponent && (
+                      <FlagIcon FlagComponent={lang.FlagComponent} size={32} />
+                    )}
                   </div>
                   <span className="font-medium flex-1">{lang.label}</span>
                   {language === lang.code && (

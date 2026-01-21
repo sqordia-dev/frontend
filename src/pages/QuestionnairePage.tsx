@@ -114,6 +114,57 @@ export default function QuestionnairePage() {
     }
   }, [planId, language]);
 
+  // Navigate to next unanswered question when questions are first loaded (resume from last position)
+  const hasNavigatedToUnanswered = useRef(false);
+  useEffect(() => {
+    if (questions.length > 0 && sections.length > 0 && !loading && !hasNavigatedToUnanswered.current) {
+      hasNavigatedToUnanswered.current = true;
+      
+      // Find the first unanswered required question
+      const firstUnansweredQuestion = questions.find(q => !q.isAnswered && q.isRequired);
+      
+      if (firstUnansweredQuestion) {
+        // Find which section this question belongs to
+        const questionSectionIndex = sections.findIndex(section => section === firstUnansweredQuestion.section);
+        
+        if (questionSectionIndex !== -1) {
+          // Navigate to the section containing the first unanswered question
+          if (questionSectionIndex !== currentSection) {
+            setCurrentSection(questionSectionIndex);
+          }
+          
+          // Scroll to the question after a short delay to ensure DOM is ready
+          setTimeout(() => {
+            const questionElement = document.querySelector(`[data-question-id="${firstUnansweredQuestion.questionId}"]`);
+            if (questionElement) {
+              questionElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              // Focus the textarea
+              const textarea = questionElement.querySelector('textarea');
+              if (textarea) {
+                setTimeout(() => {
+                  textarea.focus();
+                  setFocusedQuestion(firstUnansweredQuestion.questionId);
+                }, 300);
+              }
+            }
+          }, 500);
+        }
+      } else {
+        // All required questions answered, go to last section
+        if (currentSection !== sections.length - 1) {
+          setCurrentSection(sections.length - 1);
+        }
+      }
+    }
+    
+    // Reset flag when planId changes
+    return () => {
+      if (!planId) {
+        hasNavigatedToUnanswered.current = false;
+      }
+    };
+  }, [questions.length, sections.length, loading, planId]);
+
   const fetchPlanType = async () => {
     if (!planId) return;
     
@@ -197,17 +248,64 @@ export default function QuestionnairePage() {
     setSaving(questionId);
 
     try {
+      // Persist answer to backend
       await businessPlanService.submitQuestionnaireResponses(planId, {
         questionTemplateId: questionId,
         responseText: answer
       });
 
-      setQuestions(prev => prev.map(q => {
-        const qId = q.questionId || (q as any).id || (q as any).Id;
-        return qId === questionId
-          ? { ...q, isAnswered: true, responseText: answer }
-          : q;
-      }));
+      // Update local state and find next unanswered question
+      setQuestions(prev => {
+        const updatedQuestions = prev.map(q => {
+          const qId = q.questionId || (q as any).id || (q as any).Id;
+          return qId === questionId
+            ? { ...q, isAnswered: true, responseText: answer }
+            : q;
+        });
+        
+        // Find next unanswered required question after current one
+        const currentQuestionIndex = updatedQuestions.findIndex(q => {
+          const qId = q.questionId || (q as any).id || (q as any).Id;
+          return qId === questionId;
+        });
+        
+        const nextUnansweredQuestion = updatedQuestions.slice(currentQuestionIndex + 1).find(q => !q.isAnswered && q.isRequired);
+        
+        if (nextUnansweredQuestion) {
+          // Calculate sections from updated questions
+          const questionsBySection = updatedQuestions.reduce((acc, q) => {
+            if (!acc[q.section]) acc[q.section] = [];
+            acc[q.section].push(q);
+            return acc;
+          }, {} as Record<string, QuestionnaireQuestion[]>);
+          
+          const updatedSections = SECTION_ORDER.filter(section => questionsBySection[section]);
+          const nextSectionIndex = updatedSections.findIndex(section => section === nextUnansweredQuestion.section);
+          
+          // Navigate to next question after a delay
+          setTimeout(() => {
+            if (nextSectionIndex !== -1 && nextSectionIndex !== currentSection) {
+              setCurrentSection(nextSectionIndex);
+            }
+            
+            setTimeout(() => {
+              const questionElement = document.querySelector(`[data-question-id="${nextUnansweredQuestion.questionId}"]`);
+              if (questionElement) {
+                questionElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                const textarea = questionElement.querySelector('textarea');
+                if (textarea) {
+                  setTimeout(() => {
+                    textarea.focus();
+                    setFocusedQuestion(nextUnansweredQuestion.questionId);
+                  }, 300);
+                }
+              }
+            }, nextSectionIndex !== currentSection ? 300 : 0);
+          }, 500);
+        }
+        
+        return updatedQuestions;
+      });
 
       await fetchProgress();
     } catch (err: any) {
@@ -792,12 +890,13 @@ export default function QuestionnairePage() {
 
           {questions.length > 0 && (
             <div className="relative">
-              <div className="w-full rounded-full h-2 overflow-hidden dark:bg-gray-700" style={{ backgroundColor: lightAIGrey }}>
+              <div className="w-full rounded-full h-3 overflow-hidden dark:bg-gray-700 shadow-inner" style={{ backgroundColor: lightAIGrey }}>
                 <div
                   className="h-full rounded-full transition-all duration-700 ease-out relative overflow-hidden"
                   style={{ 
                     width: `${calculatedProgress.completionPercentage}%`,
-                    backgroundColor: momentumOrange
+                    backgroundColor: momentumOrange,
+                    minWidth: '2%'
                   }}
                 >
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shimmer"></div>
@@ -852,12 +951,13 @@ export default function QuestionnairePage() {
                 {getSectionProgress(sections[currentSection]).answered}/{getSectionProgress(sections[currentSection]).total}
               </div>
             </div>
-            <div className="flex-1 h-1.5 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-600">
+            <div className="flex-1 h-2 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-600 shadow-inner">
               <div 
                 className="h-full rounded-full transition-all duration-300"
                 style={{ 
                   width: `${getSectionProgress(sections[currentSection]).percentage}%`,
-                  backgroundColor: momentumOrange
+                  backgroundColor: momentumOrange,
+                  minWidth: '2%'
                 }}
               />
             </div>
@@ -907,23 +1007,51 @@ export default function QuestionnairePage() {
                         backgroundColor: theme === 'dark' ? '#1F2937' : '#FFFFFF'
                       }}
                     >
-                      <div className="flex items-start gap-3">
-                        <div className={`mt-0.5 p-2 rounded-lg ${
-                          isCurrent 
-                            ? '' 
-                            : isComplete 
-                            ? 'bg-orange-100 dark:bg-orange-900/50' 
-                            : 'bg-gray-100 dark:bg-gray-700'
-                        }`}
-                        style={isCurrent ? {
-                          backgroundColor: momentumOrange
-                        } : {}}
-                        >
-                          {isComplete ? (
-                            <CheckCircle2 size={16} className={isCurrent ? 'text-white' : 'text-orange-600 dark:text-orange-400'} />
-                          ) : (
-                            <Icon size={16} className={isCurrent ? 'text-white' : (theme === 'dark' ? '#9CA3AF' : '#6B7280')} />
-                          )}
+                      <div className="flex items-start gap-4">
+                        {/* Progress Ring */}
+                        <div className="relative w-12 h-12 flex-shrink-0 mt-0.5">
+                          <svg className="w-full h-full transform -rotate-90">
+                            <circle
+                              cx="24"
+                              cy="24"
+                              r="20"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="3"
+                              className={isCurrent 
+                                ? 'text-gray-300 dark:text-gray-600' 
+                                : 'text-gray-200 dark:text-gray-700'
+                              }
+                            />
+                            <circle
+                              cx="24"
+                              cy="24"
+                              r="20"
+                              fill="none"
+                              stroke={isComplete ? '#10B981' : momentumOrange}
+                              strokeWidth="3"
+                              strokeDasharray={`${percentage * 1.26} 126`}
+                              className="transition-all duration-500"
+                              strokeLinecap="round"
+                            />
+                          </svg>
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            {isComplete ? (
+                              <CheckCircle2 size={18} className={isCurrent ? 'text-white' : 'text-green-600 dark:text-green-400'} />
+                            ) : (
+                              <div className={`p-1.5 rounded-lg ${
+                                isCurrent 
+                                  ? '' 
+                                  : 'bg-gray-100 dark:bg-gray-700'
+                              }`}
+                              style={isCurrent ? {
+                                backgroundColor: momentumOrange
+                              } : {}}
+                              >
+                                <Icon size={14} className={isCurrent ? 'text-white' : (theme === 'dark' ? '#9CA3AF' : '#6B7280')} />
+                              </div>
+                            )}
+                          </div>
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className={`text-sm font-bold mb-1 ${
@@ -996,33 +1124,73 @@ export default function QuestionnairePage() {
 
           {/* Main Content Area */}
           <div className="lg:col-span-9 space-y-6">
-            {/* Section Header */}
-            <div className="rounded-xl shadow-sm p-8 relative overflow-hidden border-2" style={{ 
+            {/* Section Header - Modern Design */}
+            <div className="rounded-2xl shadow-xl p-8 relative overflow-hidden border-2" style={{ 
               backgroundColor: strategyBlue,
               borderColor: momentumOrange
             }}>
+              {/* Subtle Background Pattern */}
+              <div className="absolute inset-0 opacity-5">
+                <div className="absolute inset-0" style={{
+                  backgroundImage: 'radial-gradient(circle at 2px 2px, rgba(255,255,255,0.15) 1px, transparent 0)',
+                  backgroundSize: '40px 40px'
+                }} />
+              </div>
+              
               <div className="relative z-10">
-                <div className="flex items-center gap-4 mb-4">
-                  {SECTION_ICONS[currentSection] && (
-                    <div className="p-3 rounded-lg" style={{ backgroundColor: momentumOrange }}>
-                      {(() => {
-                        const Icon = SECTION_ICONS[currentSection];
-                        return <Icon size={24} className="text-white" />;
-                      })()}
-                    </div>
-                  )}
-                  <div>
-                    <div className="text-sm font-semibold text-white/90 mb-1 uppercase tracking-wide">
+                <div className="flex items-start gap-6 mb-6">
+                  {/* Section Icon with Progress Ring */}
+                  {SECTION_ICONS[currentSection] && (() => {
+                    const Icon = SECTION_ICONS[currentSection];
+                    const sectionProgress = getSectionProgress(sections[currentSection]);
+                    const progressPercentage = sectionProgress.percentage;
+                    const circumference = 2 * Math.PI * 36; // radius = 36
+                    const strokeDasharray = `${(progressPercentage / 100) * circumference} ${circumference}`;
+                    
+                    return (
+                      <div className="relative w-20 h-20 flex-shrink-0">
+                        <svg className="w-full h-full transform -rotate-90">
+                          <circle
+                            cx="40"
+                            cy="40"
+                            r="36"
+                            fill="none"
+                            stroke="rgba(255,255,255,0.2)"
+                            strokeWidth="4"
+                          />
+                          <circle
+                            cx="40"
+                            cy="40"
+                            r="36"
+                            fill="none"
+                            stroke={momentumOrange}
+                            strokeWidth="4"
+                            strokeDasharray={strokeDasharray}
+                            className="transition-all duration-500"
+                            strokeLinecap="round"
+                          />
+                        </svg>
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <div className="p-3 rounded-xl" style={{ backgroundColor: momentumOrange }}>
+                            <Icon size={24} className="text-white" />
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })()}
+                  
+                  <div className="flex-1">
+                    <div className="text-sm font-semibold text-white/90 mb-2 uppercase tracking-wide">
                       {t('questionnaire.sectionOf').replace('{current}', String(currentSection + 1)).replace('{total}', String(sections.length))}
                     </div>
-                    <h2 className="text-2xl sm:text-3xl font-bold text-white">
+                    <h2 className="text-3xl sm:text-4xl font-bold text-white mb-3">
                       {sections[currentSection]}
                     </h2>
+                    <p className="text-white/80 text-lg">
+                      {t('questionnaire.questionsCompleted').replace('{answered}', String(getSectionProgress(sections[currentSection]).answered)).replace('{total}', String(getSectionProgress(sections[currentSection]).total))}
+                    </p>
                   </div>
                 </div>
-                <p className="text-white/80 text-base">
-                  {t('questionnaire.questionsCompleted').replace('{answered}', String(getSectionProgress(sections[currentSection]).answered)).replace('{total}', String(getSectionProgress(sections[currentSection]).total))}
-                </p>
               </div>
             </div>
 
@@ -1035,12 +1203,13 @@ export default function QuestionnairePage() {
                 return (
                   <div
                     key={question.questionId}
-                    className={`group relative bg-white dark:bg-gray-800 rounded-xl shadow-sm border-2 transition-all duration-300 overflow-hidden ${
+                    data-question-id={question.questionId}
+                    className={`group relative bg-white dark:bg-gray-800 rounded-2xl shadow-lg border-2 transition-all duration-300 overflow-hidden ${
                       question.isAnswered
-                        ? 'border-orange-300 dark:border-orange-700'
+                        ? 'border-green-300 dark:border-green-700'
                         : isFocused
-                        ? 'shadow-lg scale-[1.01]'
-                        : 'border-gray-200 dark:border-gray-700 hover:shadow-md'
+                        ? 'shadow-xl scale-[1.02] border-orange-400'
+                        : 'border-gray-200 dark:border-gray-700 hover:shadow-xl hover:-translate-y-1'
                     }`}
                     style={isFocused && !question.isAnswered ? {
                       borderColor: momentumOrange
@@ -1048,127 +1217,276 @@ export default function QuestionnairePage() {
                     onFocus={() => setFocusedQuestion(question.questionId)}
                     onBlur={() => setFocusedQuestion(null)}
                   >
-                    {/* Question Header */}
+                    {/* Question Number Indicator Bar */}
+                    <div className="absolute left-0 top-0 bottom-0 w-1 rounded-l-2xl transition-all duration-300"
+                      style={{
+                        backgroundColor: question.isAnswered 
+                          ? '#10B981' 
+                          : isFocused 
+                          ? momentumOrange 
+                          : 'transparent'
+                      }}
+                    />
+                    {/* Completion Accent Bar */}
+                    {question.isAnswered && (
+                      <div className="absolute top-0 left-0 right-0 h-1" style={{ backgroundColor: '#10B981' }} />
+                    )}
+                    
+                    {/* Question Header - Prominent Display */}
                     <div className="p-6 pb-4">
-                      <div className="flex items-start justify-between gap-4 mb-3">
-                        <div className="flex items-start gap-4 flex-1">
-                          <div className={`flex items-center justify-center w-12 h-12 rounded-xl font-bold text-base transition-all ${
+                      {/* Question Text - Highly Visible Container */}
+                      <div className="mb-6 p-6 sm:p-8 rounded-xl border-2 shadow-xl" style={{ 
+                        backgroundColor: theme === 'dark' ? '#111827' : '#FFFFFF',
+                        borderColor: theme === 'dark' ? '#4B5563' : '#D1D5DB',
+                        borderWidth: '3px',
+                        boxShadow: theme === 'dark' 
+                          ? '0 10px 25px -5px rgba(0, 0, 0, 0.3)' 
+                          : '0 10px 25px -5px rgba(0, 0, 0, 0.1)'
+                      }}>
+                        <div className="flex items-start gap-4">
+                          {/* Question Number Badge */}
+                          <div className={`flex items-center justify-center w-14 h-14 rounded-xl font-bold text-lg flex-shrink-0 transition-all duration-300 ${
                             question.isAnswered
-                              ? 'text-white'
+                              ? 'text-white shadow-lg'
                               : isFocused
-                              ? 'text-white'
-                              : ''
+                              ? 'text-white shadow-lg scale-110'
+                              : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
                           }`}
                           style={question.isAnswered ? {
-                            backgroundColor: '#FF6B00'
+                            backgroundColor: '#10B981'
                           } : isFocused ? {
                             backgroundColor: momentumOrange
-                          } : {
-                            backgroundColor: theme === 'dark' ? '#374151' : lightAIGrey,
-                            color: theme === 'dark' ? '#F3F4F6' : strategyBlue
-                          }}
+                          } : {}}
                           >
                             {question.order}
                           </div>
+                          
+                          {/* Question Text */}
                           <div className="flex-1">
-                            <h3 className={`text-lg font-bold mb-2 transition-colors ${
+                            <h3 className={`text-3xl sm:text-4xl md:text-5xl font-black mb-4 transition-colors leading-tight ${
                               question.isAnswered
                                 ? ''
                                 : ''
                             }`}
                             style={question.isAnswered ? {
-                              color: theme === 'dark' ? '#FF8C42' : '#FF6B00'
+                              color: theme === 'dark' ? '#34D399' : '#10B981',
+                              fontWeight: 900,
+                              fontSize: 'clamp(24px, 5vw, 48px)'
                             } : {
-                              color: theme === 'dark' ? '#F9FAFB' : strategyBlue
+                              color: theme === 'dark' ? '#FFFFFF' : strategyBlue,
+                              fontWeight: 900,
+                              letterSpacing: '-0.02em',
+                              fontSize: 'clamp(24px, 5vw, 48px)',
+                              lineHeight: '1.2'
                             }}
                             >
                               {question.questionText}
+                              {question.isRequired && (
+                                <span className="ml-2 text-red-500 dark:text-red-400 font-black" aria-label="Required" style={{ fontSize: '1.1em' }}>*</span>
+                              )}
                             </h3>
-                            {question.helpText && (
-                              <div className="flex items-start gap-2 mt-3 p-3 rounded-lg border dark:bg-gray-700 dark:border-gray-600" style={{ 
-                                backgroundColor: lightAIGrey,
-                                borderColor: theme === 'dark' ? '#374151' : '#E5E7EB'
+                            
+                            {/* Question Metadata */}
+                            <div className="flex items-center gap-3 flex-wrap">
+                              <span className="text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded-md" style={{ 
+                                color: momentumOrange,
+                                backgroundColor: theme === 'dark' ? '#1F2937' : '#FFE4CC',
+                                border: `1px solid ${momentumOrange}`
                               }}>
-                                <Lightbulb size={16} style={{ color: momentumOrange }} className="flex-shrink-0 mt-0.5" />
-                                <p className="text-sm" style={{ color: theme === 'dark' ? '#D1D5DB' : '#374151' }}>{question.helpText}</p>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                        {question.isAnswered && (
-                          <div className="flex-shrink-0">
-                            <div className="p-2 rounded-full dark:bg-orange-900/50" style={{ backgroundColor: '#FFE4CC' }}>
-                              <CheckCircle2 size={20} className="text-orange-600 dark:text-orange-400" />
+                                Question {question.order}
+                              </span>
+                              {question.isRequired && (
+                                <span className="text-xs font-semibold px-3 py-1.5 rounded-md" style={{ 
+                                  color: '#DC2626',
+                                  backgroundColor: theme === 'dark' ? '#7F1D1D' : '#FEE2E2'
+                                }}>
+                                  Required Field
+                                </span>
+                              )}
                             </div>
                           </div>
-                        )}
+                          
+                          {/* Completion Badge */}
+                          {question.isAnswered && (
+                            <div className="flex-shrink-0">
+                              <div className="w-12 h-12 rounded-full flex items-center justify-center shadow-lg" style={{ backgroundColor: '#10B981' }}>
+                                <CheckCircle2 size={24} className="text-white" />
+                              </div>
+                            </div>
+                          )}
+                        </div>
                       </div>
+                      
+                      {/* Help Text */}
+                      {question.helpText && (
+                        <div className="flex items-start gap-3 p-4 rounded-xl border-2 mb-4" style={{ 
+                          backgroundColor: theme === 'dark' ? '#1F2937' : lightAIGrey,
+                          borderColor: theme === 'dark' ? '#4B5563' : '#D1D5DB'
+                        }}>
+                          <div className="flex-shrink-0 mt-0.5 p-1.5 rounded-lg" style={{ backgroundColor: theme === 'dark' ? '#374151' : '#FFE4CC' }}>
+                            <Lightbulb size={16} style={{ color: momentumOrange }} />
+                          </div>
+                          <p className="text-sm font-medium leading-relaxed" style={{ color: theme === 'dark' ? '#E5E7EB' : '#1F2937' }}>{question.helpText}</p>
+                        </div>
+                      )}
                     </div>
 
-                    {/* Answer Input */}
+                    {/* Answer Input - Modern Design */}
                     <div className="px-6 pb-6">
                       <div className="relative">
-                        <textarea
-                          value={answers[question.questionId] || ''}
-                          onChange={(e) => handleAnswerChange(question.questionId, e.target.value)}
-                          placeholder={t('questionnaire.placeholder')}
-                          rows={8}
-                          className="w-full px-5 py-4 md:py-3 border-2 rounded-xl transition-all duration-200 resize-none focus:outline-none text-base min-h-[120px]"
-                          style={{
-                            backgroundColor: theme === 'dark' ? '#111827' : '#F9FAFB',
-                            borderColor: isFocused ? momentumOrange : (theme === 'dark' ? '#374151' : '#E5E7EB'),
-                            color: theme === 'dark' ? '#F9FAFB' : strategyBlue
-                          }}
-                          onFocus={(e) => {
-                            setFocusedQuestion(question.questionId);
-                            e.currentTarget.style.borderColor = momentumOrange;
-                            e.currentTarget.style.backgroundColor = theme === 'dark' ? '#1F2937' : '#FFFFFF';
-                          }}
-                          onBlur={(e) => {
-                            setFocusedQuestion(null);
-                            e.currentTarget.style.borderColor = '';
-                            e.currentTarget.style.backgroundColor = theme === 'dark' ? '#111827' : '#F9FAFB';
-                          }}
-                        />
-                        {hasAnswer && (
-                          <div className="absolute bottom-3 right-3 flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
-                            {saving === question.questionId ? (
-                              <>
-                                <Loader2 size={14} className="animate-spin text-blue-600 dark:text-blue-400" />
-                                <span>{t('questionnaire.saving')}</span>
-                              </>
-                            ) : (
-                              <span className="flex items-center gap-1">
-                                <Check size={14} className="text-orange-600 dark:text-orange-400" />
-                                {t('questionnaire.autoSaved')}
-                              </span>
-                            )}
+                        {/* Floating Label (appears on focus) */}
+                        {isFocused && (
+                          <div className="absolute -top-2 left-4 px-2 py-0.5 rounded-md z-10 transition-all duration-200" style={{ 
+                            backgroundColor: theme === 'dark' ? '#1F2937' : '#FFFFFF',
+                            border: `1px solid ${momentumOrange}`
+                          }}>
+                            <span className="text-xs font-semibold" style={{ color: momentumOrange }}>
+                              Question {question.order}
+                            </span>
+                          </div>
+                        )}
+                        
+                        {/* Textarea Container */}
+                        <div className="relative">
+                          <textarea
+                            value={answers[question.questionId] || ''}
+                            onChange={(e) => {
+                              const textarea = e.target;
+                              handleAnswerChange(question.questionId, textarea.value);
+                              
+                              // Auto-resize functionality
+                              textarea.style.height = 'auto';
+                              const newHeight = Math.min(Math.max(textarea.scrollHeight, 150), 400);
+                              textarea.style.height = `${newHeight}px`;
+                            }}
+                            placeholder={t('questionnaire.placeholder') || 'Share your thoughts here... Be as detailed as you\'d like.'}
+                            rows={6}
+                            className={`w-full px-5 py-4 border-2 rounded-xl transition-all duration-200 resize-none focus:outline-none focus:ring-4 text-base ${
+                              isFocused 
+                                ? 'focus:ring-orange-200 dark:focus:ring-orange-900 shadow-lg' 
+                                : question.isAnswered
+                                ? 'shadow-sm'
+                                : 'shadow-sm'
+                            }`}
+                            style={{
+                              backgroundColor: isFocused 
+                                ? (theme === 'dark' ? '#1F2937' : '#FFFFFF')
+                                : question.isAnswered
+                                ? (theme === 'dark' ? '#064E3B' : '#F0FDF4')
+                                : (theme === 'dark' ? '#111827' : '#F9FAFB'),
+                              borderColor: isFocused 
+                                ? momentumOrange 
+                                : question.isAnswered
+                                ? '#10B981'
+                                : (theme === 'dark' ? '#374151' : '#E5E7EB'),
+                              color: theme === 'dark' ? '#F9FAFB' : strategyBlue,
+                              fontSize: '16px',
+                              lineHeight: '1.7',
+                              minHeight: '150px',
+                              maxHeight: '400px',
+                              fontFamily: 'system-ui, -apple-system, sans-serif'
+                            }}
+                            onFocus={(e) => {
+                              setFocusedQuestion(question.questionId);
+                            }}
+                            onBlur={(e) => {
+                              setFocusedQuestion(null);
+                            }}
+                          />
+                          
+                          {/* Character Counter - Modern Floating Badge (Always Visible) */}
+                          <div className={`
+                            absolute bottom-3 right-3
+                            px-2.5 py-1
+                            rounded-full
+                            text-xs font-medium
+                            transition-all duration-200
+                            ${hasAnswer || isFocused
+                              ? 'bg-white/90 dark:bg-gray-800/90 shadow-md border border-gray-200 dark:border-gray-700 backdrop-blur-sm' 
+                              : 'bg-transparent'
+                            }
+                          `}>
+                            <span className={`
+                              ${(answers[question.questionId] || '').length > 0 
+                                ? 'text-gray-600 dark:text-gray-400' 
+                                : 'text-gray-400 dark:text-gray-500'
+                              }
+                            `}>
+                              {(answers[question.questionId] || '').length} {(answers[question.questionId] || '').length === 1 ? 'character' : 'characters'}
+                            </span>
+                          </div>
+                          
+                          {/* Save Status Indicator - Top Right */}
+                          {hasAnswer && (
+                            <div className={`
+                              absolute top-3 right-3
+                              px-3 py-1.5
+                              rounded-full
+                              flex items-center gap-1.5
+                              text-xs font-medium
+                              shadow-lg
+                              transition-all duration-300
+                              ${saving === question.questionId
+                                ? 'bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300'
+                                : 'bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-300'
+                              }
+                            `}>
+                              {saving === question.questionId ? (
+                                <>
+                                  <Loader2 size={12} className="animate-spin" />
+                                  <span>{t('questionnaire.saving')}</span>
+                                </>
+                              ) : (
+                                <>
+                                  <Check size={12} />
+                                  <span>Saved</span>
+                                </>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                        
+                        {/* Helper Text Below Textarea */}
+                        {question.helpText && !isFocused && (
+                          <div className="mt-2 flex items-start gap-2 text-xs" style={{ color: theme === 'dark' ? '#9CA3AF' : '#6B7280' }}>
+                            <Lightbulb size={14} style={{ color: momentumOrange }} className="flex-shrink-0 mt-0.5" />
+                            <span>{question.helpText}</span>
                           </div>
                         )}
                       </div>
 
                       {/* Action Buttons */}
-                      <div className="flex items-center gap-3 mt-4">
+                      <div className="flex items-center gap-3 mt-6">
                         <button
                           onClick={() => handleManualSave(question.questionId)}
                           disabled={saving === question.questionId || !hasAnswer}
-                          className="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105 active:scale-95 border-2"
+                          className={`flex items-center gap-2 px-6 py-3 text-sm font-semibold rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105 active:scale-95 border-2 ${
+                            hasAnswer ? 'hover:shadow-md' : ''
+                          }`}
                           style={{
-                            color: momentumOrange,
-                            borderColor: momentumOrange,
+                            color: hasAnswer ? '#10B981' : '#9CA3AF',
+                            borderColor: hasAnswer ? '#10B981' : '#D1D5DB',
                             backgroundColor: 'transparent'
                           }}
-                          onMouseEnter={(e) => !saving && !hasAnswer && (e.currentTarget.style.backgroundColor = lightAIGrey)}
-                          onMouseLeave={(e) => !saving && !hasAnswer && (e.currentTarget.style.backgroundColor = 'transparent')}
+                          onMouseEnter={(e) => {
+                            if (hasAnswer && !saving) {
+                              e.currentTarget.style.backgroundColor = theme === 'dark' ? '#064E3B' : '#F0FDF4';
+                            }
+                          }}
+                          onMouseLeave={(e) => {
+                            if (hasAnswer && !saving) {
+                              e.currentTarget.style.backgroundColor = 'transparent';
+                            }
+                          }}
                         >
                           {saving === question.questionId ? (
                             <>
-                              <Loader2 size={16} className="animate-spin" />
+                              <Loader2 size={18} className="animate-spin" />
                               <span>{t('questionnaire.saving')}</span>
                             </>
                           ) : (
                             <>
-                              <Save size={16} />
+                              <Save size={18} />
                               <span>{t('questionnaire.saveNow')}</span>
                             </>
                           )}
@@ -1177,22 +1495,30 @@ export default function QuestionnairePage() {
                         <button
                           onClick={() => handleGetSuggestion(question.questionId)}
                           disabled={suggestingQuestionId === question.questionId}
-                          className="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold rounded-lg transition-all hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="flex items-center gap-2 px-6 py-3 text-sm font-semibold rounded-xl transition-all duration-200 hover:scale-105 active:scale-95 disabled:opacity-75 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
                           style={{
                             backgroundColor: momentumOrange,
                             color: '#FFFFFF'
                           }}
-                          onMouseEnter={(e) => !(suggestingQuestionId === question.questionId) && (e.currentTarget.style.backgroundColor = momentumOrangeHover)}
-                          onMouseLeave={(e) => !(suggestingQuestionId === question.questionId) && (e.currentTarget.style.backgroundColor = momentumOrange)}
+                          onMouseEnter={(e) => {
+                            if (!(suggestingQuestionId === question.questionId)) {
+                              e.currentTarget.style.backgroundColor = momentumOrangeHover;
+                            }
+                          }}
+                          onMouseLeave={(e) => {
+                            if (!(suggestingQuestionId === question.questionId)) {
+                              e.currentTarget.style.backgroundColor = momentumOrange;
+                            }
+                          }}
                         >
                           {suggestingQuestionId === question.questionId ? (
                             <>
-                              <Loader2 size={16} className="animate-spin" />
+                              <Loader2 size={18} className="animate-spin" />
                               <span>{t('questionnaire.generating')}</span>
                             </>
                           ) : (
                             <>
-                              <Sparkles size={16} />
+                              <Sparkles size={18} />
                               <span>{t('questionnaire.aiSuggestion')}</span>
                             </>
                           )}
@@ -1520,6 +1846,31 @@ export default function QuestionnairePage() {
         }
         .animate-shimmer {
           animation: shimmer 2s infinite;
+        }
+        
+        /* Textarea Focus Animation */
+        @keyframes focus-pulse {
+          0%, 100% {
+            box-shadow: 0 0 0 0 rgba(255, 107, 0, 0);
+          }
+          50% {
+            box-shadow: 0 0 0 4px rgba(255, 107, 0, 0.1);
+          }
+        }
+        
+        /* Smooth textarea resize */
+        textarea {
+          transition: height 0.2s ease-out;
+        }
+        
+        /* Placeholder animation */
+        textarea::placeholder {
+          transition: opacity 0.2s ease-out;
+          opacity: 0.6;
+        }
+        
+        textarea:focus::placeholder {
+          opacity: 0.4;
         }
         @keyframes slide-in {
           from {

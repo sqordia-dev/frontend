@@ -17,36 +17,37 @@ import {
 } from 'lucide-react';
 import { authService } from '../lib/auth-service';
 import { useTheme } from '../contexts/ThemeContext';
+import CA from 'country-flag-icons/react/3x2/CA';
 
-// Flag Icons
-const UKFlag = ({ size = 20, className = '' }: { size?: number; className?: string }) => (
-  <svg
+// Quebec Flag Component - using local SVG file
+const QuebecFlag = ({ size = 20, className = '' }: { size?: number; className?: string }) => (
+  <img
+    src="/quebec-flag.svg"
+    alt="Quebec Flag"
     width={size}
-    height={size * 0.6}
-    viewBox="0 0 60 40"
+    height={size * 0.67}
     className={className}
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <rect width="60" height="40" fill="#012169" />
-    <path d="M0 0 L60 40 M60 0 L0 40" stroke="#FFFFFF" strokeWidth="4" />
-    <path d="M0 0 L60 40 M60 0 L0 40" stroke="#C8102E" strokeWidth="2.5" />
-    <path d="M30 0 L30 40 M0 20 L60 20" stroke="#FFFFFF" strokeWidth="6" />
-    <path d="M30 0 L30 40 M0 20 L60 20" stroke="#C8102E" strokeWidth="4" />
-  </svg>
+    style={{ objectFit: 'contain', display: 'block' }}
+  />
 );
 
-const FranceFlag = ({ size = 20, className = '' }: { size?: number; className?: string }) => (
-  <svg
-    width={size}
-    height={size * 0.6}
-    viewBox="0 0 60 40"
-    className={className}
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <rect width="20" height="40" x="0" y="0" fill="#002654" />
-    <rect width="20" height="40" x="20" y="0" fill="#FFFFFF" />
-    <rect width="20" height="40" x="40" y="0" fill="#ED2939" />
-  </svg>
+// Flag Icon Wrapper Component
+const FlagIcon = ({ 
+  FlagComponent, 
+  size = 20, 
+  className = '' 
+}: { 
+  FlagComponent: React.ComponentType<any>; 
+  size?: number; 
+  className?: string;
+}) => (
+  <div style={{ width: size, height: size * 0.67, display: 'inline-block', lineHeight: 0 }}>
+    <FlagComponent 
+      className={className}
+      style={{ width: '100%', height: '100%', display: 'block' }}
+      title=""
+    />
+  </div>
 );
 
 export default function AdminLayout() {
@@ -61,8 +62,8 @@ export default function AdminLayout() {
   const [isLangOpen, setIsLangOpen] = useState(false);
 
   const languages = [
-    { code: 'en', label: 'English', displayCode: 'EN', FlagIcon: UKFlag },
-    { code: 'fr', label: 'Français', displayCode: 'FR', FlagIcon: FranceFlag },
+    { code: 'en', label: 'English', displayCode: 'EN', FlagComponent: CA },
+    { code: 'fr', label: 'Français', displayCode: 'FR', FlagComponent: QuebecFlag },
   ];
 
   const currentLang = languages.find(l => l.code === language);
@@ -94,6 +95,7 @@ export default function AdminLayout() {
     { name: t('admin.nav.businessPlans'), href: '/admin/business-plans', icon: FileText },
     { name: t('admin.nav.templates'), href: '/admin/templates', icon: FileText },
     { name: 'Prompts Studio', href: '/admin/prompts-studio', icon: Brain },
+    { name: 'AI Configuration', href: '/admin/ai-config', icon: Brain },
     { name: 'Settings', href: '/admin/settings', icon: Settings },
   ];
 
@@ -193,7 +195,9 @@ export default function AdminLayout() {
                 title={!sidebarOpen ? currentLang?.label : undefined}
               >
                 <div className="w-6 h-4 rounded overflow-hidden flex items-center justify-center flex-shrink-0">
-                  {currentLang?.FlagIcon && <currentLang.FlagIcon size={24} />}
+                  {currentLang?.FlagComponent && (
+                    <FlagIcon FlagComponent={currentLang.FlagComponent} size={24} />
+                  )}
                 </div>
                 {sidebarOpen && (
                   <>
@@ -219,7 +223,9 @@ export default function AdminLayout() {
                       }`}
                     >
                       <div className="w-8 h-5 rounded overflow-hidden flex items-center justify-center flex-shrink-0">
-                        {lang.FlagIcon && <lang.FlagIcon size={32} />}
+                        {lang.FlagComponent && (
+                          <FlagIcon FlagComponent={lang.FlagComponent} size={32} />
+                        )}
                       </div>
                       <span className="font-medium text-gray-900 dark:text-white">{lang.label}</span>
                       {language === lang.code && (

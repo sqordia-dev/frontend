@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import SEO from '../components/SEO';
 import {
   Plus,
@@ -23,6 +23,7 @@ import DashboardTour from '../components/DashboardTour';
 
 export default function DashboardPage() {
   const { t, theme } = useTheme();
+  const navigate = useNavigate();
   const [plans, setPlans] = useState<BusinessPlan[]>([]);
   const [loading, setLoading] = useState(true);
   const [deletingPlanId, setDeletingPlanId] = useState<string | null>(null);
@@ -30,6 +31,7 @@ export default function DashboardPage() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [planToDelete, setPlanToDelete] = useState<BusinessPlan | null>(null);
   const [hoveredPlanId, setHoveredPlanId] = useState<string | null>(null);
+  const [planProgress, setPlanProgress] = useState<Record<string, { isComplete: boolean; nextQuestionId?: string }>>({});
 
   // Landing page color theme
   const strategyBlue = '#1A2B47';
@@ -47,6 +49,25 @@ export default function DashboardPage() {
       const plansData = await businessPlanService.getBusinessPlans();
       const activePlans = plansData.filter((plan: any) => !plan.isDeleted);
       setPlans(activePlans);
+
+      // Load progress for each plan to determine completion status
+      const progressMap: Record<string, { isComplete: boolean; nextQuestionId?: string }> = {};
+      for (const plan of activePlans) {
+        try {
+          const progress = await businessPlanService.getQuestionnaireProgress(plan.id);
+          const progressData = progress?.value || progress;
+          progressMap[plan.id] = {
+            isComplete: progressData?.isComplete || progressData?.status === 'Completed' || plan.status === 'Completed',
+            nextQuestionId: progressData?.unansweredQuestionIds?.[0] // First unanswered question
+          };
+        } catch (error) {
+          // If progress endpoint fails, assume incomplete if status is Draft
+          progressMap[plan.id] = {
+            isComplete: plan.status !== 'Draft' && plan.status !== 'draft'
+          };
+        }
+      }
+      setPlanProgress(progressMap);
     } catch (error) {
       console.error('Failed to load dashboard data:', error);
     } finally {
@@ -378,16 +399,45 @@ export default function DashboardPage() {
                     <div className={`flex items-center gap-2 transition-all duration-300 ${
                       hoveredPlanId === plan.id ? 'opacity-100 translate-x-0' : 'opacity-0 lg:opacity-100 translate-x-2 lg:translate-x-0'
                     }`}>
-                      <Link
-                        to={`/plans/${plan.id}`}
-                        className="inline-flex items-center gap-2 px-5 py-3 md:py-2.5 text-white text-sm rounded-lg font-semibold shadow-md hover:shadow-lg transition-all duration-200 min-h-[44px]"
-                        style={{ backgroundColor: momentumOrange }}
-                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = momentumOrangeHover}
-                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = momentumOrange}
-                      >
-                        <span>{t('dashboard.view')}</span>
-                        <ArrowRight size={16} />
-                      </Link>
+                      {(() => {
+                        const progress = planProgress[plan.id];
+                        const isDraft = plan.status === 'Draft' || plan.status === 'draft' || !progress?.isComplete;
+                        const nextQuestionId = progress?.nextQuestionId;
+
+                        if (isDraft) {
+                          // Show Resume button for draft/incomplete plans
+                          return (
+                            <button
+                              onClick={() => {
+                                // Navigate to wizard, optionally with question ID hash
+                                const url = `/questionnaire/${plan.id}${nextQuestionId ? `#question-${nextQuestionId}` : ''}`;
+                                navigate(url);
+                              }}
+                              className="inline-flex items-center gap-2 px-5 py-3 md:py-2.5 text-white text-sm rounded-lg font-semibold shadow-md hover:shadow-lg transition-all duration-200 min-h-[44px]"
+                              style={{ backgroundColor: momentumOrange }}
+                              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = momentumOrangeHover}
+                              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = momentumOrange}
+                            >
+                              <span>{t('dashboard.resume') || 'Resume'}</span>
+                              <ArrowRight size={16} />
+                            </button>
+                          );
+                        } else {
+                          // Show View button for completed plans
+                          return (
+                            <Link
+                              to={`/plans/${plan.id}`}
+                              className="inline-flex items-center gap-2 px-5 py-3 md:py-2.5 text-white text-sm rounded-lg font-semibold shadow-md hover:shadow-lg transition-all duration-200 min-h-[44px]"
+                              style={{ backgroundColor: momentumOrange }}
+                              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = momentumOrangeHover}
+                              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = momentumOrange}
+                            >
+                              <span>{t('dashboard.view')}</span>
+                              <ArrowRight size={16} />
+                            </Link>
+                          );
+                        }
+                      })()}
                       <div className="relative flex items-center gap-2">
                         <button
                           onClick={(e) => {
