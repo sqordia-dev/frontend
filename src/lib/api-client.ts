@@ -6,30 +6,23 @@ import axios, { AxiosInstance, AxiosResponse, InternalAxiosRequestConfig } from 
 const getApiBaseUrl = (): string => {
   const mode = import.meta.env.MODE;
   const envUrl = import.meta.env.VITE_API_URL;
-  
-  // Debug logging
-  console.log('[API Config] VITE_API_URL from env:', envUrl);
-  console.log('[API Config] import.meta.env.MODE:', mode);
-  
+
   // In development mode, ALWAYS use relative URLs to leverage Vite proxy
   // This avoids CORS issues since the proxy forwards requests to the backend
   if (mode === 'development') {
-    // Always use relative URL to go through Vite proxy in development
-    // The proxy is configured in vite.config.ts to forward /api requests to http://localhost:5241
-    console.log('[API Config] Using relative URL for Vite proxy in development (ignoring VITE_API_URL to avoid CORS)');
+    if (typeof console !== 'undefined' && console.log) {
+      console.log('[API Config] Using relative URL for Vite proxy (development)');
+    }
     return '';
   }
-  
+
   // Production mode: use environment variable or default
   if (envUrl && envUrl.trim() !== '') {
-    console.log('[API Config] Using environment variable:', envUrl);
     return envUrl;
   }
-  
-  // Default to production API
-  const productionUrl = 'https://sqordia-production-api.proudwater-90136d2c.canadacentral.azurecontainerapps.io';
-  console.log('[API Config] No VITE_API_URL found, using production default:', productionUrl);
-  return productionUrl;
+
+  // Default to production API when VITE_API_URL is not set at build time
+  return 'https://sqordia-production-api.proudwater-90136d2c.canadacentral.azurecontainerapps.io';
 };
 
 const API_BASE_URL = getApiBaseUrl();
@@ -39,7 +32,9 @@ class ApiClient {
 
   constructor() {
     const mode = import.meta.env.MODE;
-    console.log(`[${mode.toUpperCase()}] API Client initialized with base URL:`, API_BASE_URL);
+    if (mode === 'development' && typeof console !== 'undefined' && console.log) {
+      console.log('[API Client] Initialized with base URL:', API_BASE_URL || '(relative)');
+    }
 
     this.client = axios.create({
       baseURL: API_BASE_URL,
