@@ -110,8 +110,19 @@ export default function PersonaSelectionPage() {
       // Navigate to dashboard
       navigate('/dashboard');
     } catch (err: any) {
-      console.error('Failed to set persona:', err);
-      setError(err.response?.data?.errorMessage || err.message || 'Failed to set persona. Please try again.');
+      const status = err.response?.status;
+      // 401 or 404 from persona endpoint usually means user not in DB (session invalid or not synced)
+      if (status === 401 || status === 404) {
+        setError(
+          language === 'fr'
+            ? 'Votre session a peut-être expiré ou votre profil n\'est pas encore synchronisé. Veuillez vous reconnecter.'
+            : 'Your session may have expired or your profile is not yet synced. Please sign in again.'
+        );
+        // Redirect to login after a short delay so the user sees the message
+        setTimeout(() => navigate('/login', { replace: true }), 2500);
+      } else {
+        setError(err.response?.data?.message || err.response?.data?.errorMessage || err.message || 'Failed to set persona. Please try again.');
+      }
       setLoading(false);
     }
   };
