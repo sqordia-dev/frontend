@@ -18,7 +18,6 @@ export { FloatingActions, SimpleFAB } from './FloatingActions';
 export { SectionSkeleton, DocumentSkeleton, InlineSkeleton, CardSkeleton } from './SectionSkeleton';
 
 // Legacy components (kept for backwards compatibility)
-export { default as PreviewSidebarNew } from './PreviewSidebarNew';
 export { default as SectionPreview } from './SectionPreview';
 
 // Mobile components

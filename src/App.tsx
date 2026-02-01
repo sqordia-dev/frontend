@@ -3,12 +3,7 @@ import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-route
 import { ToastProvider } from './contexts/ToastContext';
 import { SkipLink } from '@/components/ui/skip-link';
 import LandingPage from './pages/LandingPageNew';
-// Legacy auth pages (kept for backward compatibility)
-import LoginPageLegacy from './pages/LoginPage';
-import RegisterPageLegacy from './pages/RegisterPage';
-import ForgotPasswordPageLegacy from './pages/ForgotPasswordPage';
-import ResetPasswordPageLegacy from './pages/ResetPasswordPage';
-// New auth pages
+// Auth pages
 import {
   SignupPage,
   LoginPage,
@@ -22,7 +17,6 @@ import OnboardingPage from './pages/onboarding';
 import DashboardPage from './pages/DashboardPage';
 import ProfilePage from './pages/ProfilePage';
 import CreatePlanPage from './pages/CreatePlanPage';
-import QuestionnairePage from './pages/QuestionnairePage';
 import WizardQuestionnairePage from './pages/WizardQuestionnairePage';
 import { QuestionnairePage as NewQuestionnairePage } from './pages/questionnaire';
 import PlanViewPage from './pages/PlanViewPage';
@@ -109,11 +103,6 @@ function App() {
         <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/verify-email" element={<VerifyEmailPage />} />
         <Route path="/auth/microsoft/callback" element={<MicrosoftCallbackPage />} />
-        {/* Legacy auth pages (for backward compatibility, redirect to new pages) */}
-        <Route path="/login-legacy" element={<LoginPageLegacy />} />
-        <Route path="/register-legacy" element={<RegisterPageLegacy />} />
-        <Route path="/forgot-password-legacy" element={<ForgotPasswordPageLegacy />} />
-        <Route path="/reset-password-legacy" element={<ResetPasswordPageLegacy />} />
         <Route
           path="/onboarding"
           element={
@@ -179,16 +168,6 @@ function App() {
           }
         >
           <Route index element={<WizardQuestionnairePage />} />
-        </Route>
-        <Route
-          path="/questionnaire-legacy/:planId"
-          element={
-            <ProtectedRoute>
-              <DashboardLayout />
-            </ProtectedRoute>
-          }
-        >
-          <Route index element={<QuestionnairePage />} />
         </Route>
         {/* New questionnaire flow (card-based) */}
         <Route
