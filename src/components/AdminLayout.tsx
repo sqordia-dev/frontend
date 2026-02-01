@@ -125,7 +125,7 @@ export default function AdminLayout() {
           <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200 dark:border-gray-800">
             {sidebarOpen && (
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#FF6B00' }}>
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-[#FF6B00]">
                   <Brain className="w-5 h-5 text-white" />
                 </div>
                 <h1 className="text-lg font-semibold text-gray-900 dark:text-white">
@@ -134,7 +134,7 @@ export default function AdminLayout() {
               </div>
             )}
             {!sidebarOpen && (
-              <div className="w-10 h-10 rounded-lg flex items-center justify-center mx-auto" style={{ backgroundColor: '#FF6B00' }}>
+              <div className="w-10 h-10 rounded-lg flex items-center justify-center mx-auto bg-[#FF6B00]">
                 <Brain className="w-6 h-6 text-white" />
               </div>
             )}
@@ -170,10 +170,9 @@ export default function AdminLayout() {
                   onClick={() => setMobileMenuOpen(false)}
                   className={`flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 ${
                     isActive
-                      ? 'text-white shadow-sm'
+                      ? 'text-white shadow-sm bg-[#FF6B00]'
                       : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
                   } ${!sidebarOpen ? 'justify-center' : ''}`}
-                  style={isActive ? { backgroundColor: '#FF6B00' } : {}}
                   title={!sidebarOpen ? item.name : undefined}
                 >
                   <Icon className={`w-5 h-5 ${sidebarOpen ? 'mr-3' : ''} flex-shrink-0`} />
@@ -229,7 +228,7 @@ export default function AdminLayout() {
                       </div>
                       <span className="font-medium text-gray-900 dark:text-white">{lang.label}</span>
                       {language === lang.code && (
-                        <div className="ml-auto w-2 h-2 rounded-full" style={{ backgroundColor: '#FF6B00' }}></div>
+                        <div className="ml-auto w-2 h-2 rounded-full bg-[#FF6B00]"></div>
                       )}
                     </button>
                   ))}

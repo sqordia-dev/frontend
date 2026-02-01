@@ -123,10 +123,7 @@ export default function ResetPasswordPage() {
         <div className="relative z-10 flex flex-col justify-center px-16 text-white">
           <div className="mb-8">
             <Link to="/" className="inline-flex items-center gap-3 mb-8 group">
-              <div 
-                className="p-3 rounded-xl transition-transform group-hover:scale-105"
-                style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)' }}
-              >
+              <div className="p-3 rounded-xl transition-transform group-hover:scale-105 bg-white/10">
                 <Brain className="text-white w-7 h-7" />
               </div>
               <span className="text-2xl font-bold font-heading text-white">

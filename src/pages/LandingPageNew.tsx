@@ -15,8 +15,10 @@ import CookieConsent from '../components/CookieConsent';
 import SEO from '../components/SEO';
 import { useTheme } from '../contexts/ThemeContext';
 
+const FAQ_COUNT = 8;
+
 export default function LandingPageNew() {
-  const { language, setLanguage } = useTheme();
+  const { language, setLanguage, t } = useTheme();
   const location = useLocation();
 
   // Sync language with URL locale: /fr shows French, / shows English
@@ -117,10 +119,28 @@ export default function LandingPageNew() {
         email: 'support@sqordia.com',
       },
     },
+    // FAQPage schema for Google rich snippets
+    {
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: Array.from({ length: FAQ_COUNT }, (_, i) => ({
+        '@type': 'Question',
+        name: t(`landing.faq.q${i + 1}.question`),
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: t(`landing.faq.q${i + 1}.answer`),
+        },
+      })),
+    },
   ];
 
   return (
-    <div className="min-h-screen" id="main-content">
+    <>
+      {/* Skip navigation for accessibility */}
+      <a href="#main-content" className="skip-to-main">
+        {language === 'fr' ? 'Aller au contenu principal' : 'Skip to main content'}
+      </a>
+
       <SEO
         title={
           language === 'fr'
@@ -144,26 +164,28 @@ export default function LandingPageNew() {
       {/* Header */}
       <Header />
 
-      {/* Hero Section */}
-      <Hero />
+      <main id="main-content" className="min-h-screen">
+        {/* Hero Section */}
+        <Hero />
 
-      {/* Logo Cloud - Social Proof */}
-      <LogoCloud />
+        {/* Logo Cloud - Social Proof */}
+        <LogoCloud />
 
-      {/* Value Propositions */}
-      <ValueProps />
+        {/* Value Propositions */}
+        <ValueProps />
 
-      {/* Features - How It Works */}
-      <Features />
+        {/* Features - How It Works */}
+        <Features />
 
-      {/* Testimonials */}
-      <Testimonials />
+        {/* Testimonials */}
+        <Testimonials />
 
-      {/* Final CTA */}
-      <FinalCTA />
+        {/* Final CTA */}
+        <FinalCTA />
 
-      {/* FAQ */}
-      <FAQ />
+        {/* FAQ */}
+        <FAQ />
+      </main>
 
       {/* Footer */}
       <Footer />
@@ -173,6 +195,6 @@ export default function LandingPageNew() {
 
       {/* Cookie Consent */}
       <CookieConsent />
-    </div>
+    </>
   );
 }

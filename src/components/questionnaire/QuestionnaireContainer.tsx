@@ -187,8 +187,7 @@ export default function QuestionnaireContainer({
         <div className="text-center">
           <Loader2
             size={48}
-            className="animate-spin mx-auto mb-4"
-            style={{ color: '#FF6B00' }}
+            className="animate-spin mx-auto mb-4 text-[#FF6B00]"
           />
           <p className="text-gray-600 dark:text-gray-400">
             Loading your questionnaire...
@@ -370,8 +369,7 @@ export default function QuestionnaireContainer({
             >
               <Loader2
                 size={48}
-                className="animate-spin mx-auto mb-4"
-                style={{ color: '#FF6B00' }}
+                className="animate-spin mx-auto mb-4 text-[#FF6B00]"
               />
               <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
                 Submitting your responses...

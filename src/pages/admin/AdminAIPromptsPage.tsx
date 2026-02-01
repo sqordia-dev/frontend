@@ -328,7 +328,7 @@ export default function AdminAIPromptsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{ borderColor: '#FF6B00' }}></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FF6B00]"></div>
       </div>
     );
   }
@@ -363,10 +363,7 @@ export default function AdminAIPromptsPage() {
           </button>
           <button
             onClick={openCreateModal}
-            className="flex items-center px-4 py-2 text-white rounded-lg transition-colors shadow-sm hover:shadow-md"
-            style={{ backgroundColor: '#FF6B00' }}
-            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#E55F00'}
-            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#FF6B00'}
+            className="flex items-center px-4 py-2 text-white rounded-lg transition-colors shadow-sm hover:shadow-md bg-[#FF6B00] hover:bg-[#E55F00]"
           >
             <Plus className="w-4 h-4 mr-2" />
             {t('admin.aiPrompts.newPrompt')}
@@ -448,10 +445,9 @@ export default function AdminAIPromptsPage() {
             onClick={() => setActiveTab('all')}
             className={`px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-colors ${
               activeTab === 'all'
-                ? 'text-white'
+                ? 'text-white bg-[#FF6B00]'
                 : 'text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600'
             }`}
-            style={activeTab === 'all' ? { backgroundColor: '#FF6B00' } : {}}
           >
             {t('admin.promptsStudio.allSections')}
           </button>
@@ -461,10 +457,9 @@ export default function AdminAIPromptsPage() {
               onClick={() => setActiveTab(category)}
               className={`px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-colors ${
                 activeTab === category
-                  ? 'text-white'
+                  ? 'text-white bg-[#FF6B00]'
                   : 'text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600'
               }`}
-              style={activeTab === category ? { backgroundColor: '#FF6B00' } : {}}
             >
               {category}
             </button>
@@ -475,10 +470,9 @@ export default function AdminAIPromptsPage() {
             onClick={() => setViewMode('card')}
             className={`p-2 rounded transition-colors ${
               viewMode === 'card'
-                ? 'text-white'
+                ? 'text-white bg-[#FF6B00]'
                 : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
             }`}
-            style={viewMode === 'card' ? { backgroundColor: '#FF6B00' } : {}}
             title={t('admin.promptsStudio.cardView')}
           >
             <LayoutGrid className="w-5 h-5" />
@@ -487,10 +481,9 @@ export default function AdminAIPromptsPage() {
             onClick={() => setViewMode('list')}
             className={`p-2 rounded transition-colors ${
               viewMode === 'list'
-                ? 'text-white'
+                ? 'text-white bg-[#FF6B00]'
                 : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
             }`}
-            style={viewMode === 'list' ? { backgroundColor: '#FF6B00' } : {}}
             title={t('admin.promptsStudio.listView')}
           >
             <List className="w-5 h-5" />
@@ -518,7 +511,7 @@ export default function AdminAIPromptsPage() {
               <div key={section} className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden">
                 <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                    <FileText className="w-5 h-5" style={{ color: '#FF6B00' }} />
+                    <FileText className="w-5 h-5 text-[#FF6B00]" />
                     {displayName}
                     <span className="text-sm font-normal text-gray-500 dark:text-gray-400">
                       ({sectionPrompts.length} {sectionPrompts.length !== 1 ? t('admin.promptsStudio.prompts') : t('admin.promptsStudio.prompt')})
@@ -544,17 +537,16 @@ export default function AdminAIPromptsPage() {
                                 title={prompt.isActive ? t('admin.aiPrompts.deactivate') : t('admin.aiPrompts.activate')}
                               >
                                 {prompt.isActive ? (
-                                  <ToggleRight className="w-5 h-5" style={{ color: '#FF6B00' }} />
+                                  <ToggleRight className="w-5 h-5 text-[#FF6B00]" />
                                 ) : (
                                   <ToggleLeft className="w-5 h-5 text-gray-400" />
                                 )}
                               </button>
                               <span className={`px-2 py-1 rounded text-xs font-medium ${
-                                prompt.isActive 
-                                  ? 'text-white' 
+                                prompt.isActive
+                                  ? 'text-white bg-[#FF6B00]'
                                   : 'text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-700'
-                              }`}
-                              style={prompt.isActive ? { backgroundColor: '#FF6B00' } : {}}>
+                              }`}>
                                 {prompt.isActive ? t('admin.aiPrompts.status.active') : t('admin.aiPrompts.status.inactive')}
                               </span>
                             </div>
@@ -625,17 +617,16 @@ export default function AdminAIPromptsPage() {
                                 title={prompt.isActive ? t('admin.aiPrompts.deactivate') : t('admin.aiPrompts.activate')}
                               >
                                 {prompt.isActive ? (
-                                  <ToggleRight className="w-5 h-5" style={{ color: '#FF6B00' }} />
+                                  <ToggleRight className="w-5 h-5 text-[#FF6B00]" />
                                 ) : (
                                   <ToggleLeft className="w-5 h-5 text-gray-400" />
                                 )}
                               </button>
                               <span className={`px-2 py-1 rounded text-xs font-medium flex-shrink-0 ${
-                                prompt.isActive 
-                                  ? 'text-white' 
+                                prompt.isActive
+                                  ? 'text-white bg-[#FF6B00]'
                                   : 'text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-700'
-                              }`}
-                              style={prompt.isActive ? { backgroundColor: '#FF6B00' } : {}}>
+                              }`}>
                                 {prompt.isActive ? t('admin.aiPrompts.status.active') : t('admin.aiPrompts.status.inactive')}
                               </span>
                             </div>
@@ -674,10 +665,7 @@ export default function AdminAIPromptsPage() {
                           <div className="flex items-center gap-2 flex-shrink-0">
                             <button
                               onClick={() => openEditModal(prompt)}
-                              className="p-2 rounded transition-colors"
-                              style={{ color: '#FF6B00' }}
-                              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#FF6B0015'}
-                              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                              className="p-2 rounded transition-colors text-[#FF6B00] hover:bg-[#FF6B00]/[0.08]"
                               title={t('admin.aiPrompts.edit')}
                             >
                               <Edit className="w-4 h-4" />
@@ -715,7 +703,7 @@ export default function AdminAIPromptsPage() {
             {/* Header */}
             <div className="p-6 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#FF6B00' }}>
+                <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-[#FF6B00]">
                   <Brain className="w-6 h-6 text-white" />
                 </div>
                 <div>
@@ -894,7 +882,7 @@ export default function AdminAIPromptsPage() {
               {testResult && (
                 <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
                   <div className="flex items-center gap-2 mb-2">
-                    <TestTube className="w-4 h-4" style={{ color: '#FF6B00' }} />
+                    <TestTube className="w-4 h-4 text-[#FF6B00]" />
                     <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('admin.promptsStudio.testResult')}</span>
                   </div>
                   <pre className="text-xs text-gray-600 dark:text-gray-400 overflow-x-auto whitespace-pre-wrap">
@@ -911,8 +899,7 @@ export default function AdminAIPromptsPage() {
                     id="isActive"
                     checked={formData.isActive}
                     onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
-                    className="h-4 w-4 border-gray-300 rounded focus:ring-2 focus:ring-offset-0 focus:ring-orange-500"
-                    style={{ accentColor: '#FF6B00' }}
+                    className="h-4 w-4 border-gray-300 rounded focus:ring-2 focus:ring-offset-0 focus:ring-orange-500 accent-[#FF6B00]"
                   />
                   <label htmlFor="isActive" className="ml-2 block text-sm text-gray-700 dark:text-gray-300">
                     {t('admin.promptsStudio.activePrompt')}
@@ -950,10 +937,7 @@ export default function AdminAIPromptsPage() {
                 <button
                   onClick={handleSave}
                   disabled={saving || !formData.name || !formData.description || !formData.systemPrompt || !formData.userPromptTemplate}
-                  className="flex items-center px-4 py-2 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm hover:shadow-md"
-                  style={{ backgroundColor: '#FF6B00' }}
-                  onMouseEnter={(e) => !e.currentTarget.disabled && (e.currentTarget.style.backgroundColor = '#E55F00')}
-                  onMouseLeave={(e) => !e.currentTarget.disabled && (e.currentTarget.style.backgroundColor = '#FF6B00')}
+                  className="flex items-center px-4 py-2 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm hover:shadow-md bg-[#FF6B00] hover:bg-[#E55F00]"
                 >
                   <Save className="w-4 h-4 mr-2" />
                   {saving ? t('admin.aiPrompts.saving') : (editingPrompt ? t('admin.promptsStudio.updatePrompt') : t('admin.promptsStudio.createPrompt'))}

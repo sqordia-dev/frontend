@@ -268,27 +268,20 @@ export default function DashboardPage() {
 
           {/* Create New Plan Card - dark navy + orange accent */}
           <Card
-            className="overflow-hidden dashboard-create-card group hover:shadow-lg transition-shadow border-2 rounded-xl"
-            style={{
-              backgroundColor: '#1A2B47',
-              borderColor: '#FF6B00',
-            }}
+            className="overflow-hidden dashboard-create-card group hover:shadow-lg transition-shadow border-2 rounded-xl bg-[#1A2B47] border-[#FF6B00]"
           >
             <Link to="/create-plan" className="block">
               <CardContent className="p-8 lg:p-12">
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
                   <div className="flex items-center gap-6">
-                    <div
-                      className="flex h-16 w-16 items-center justify-center rounded-lg shrink-0"
-                      style={{ backgroundColor: '#FF6B00' }}
-                    >
+                    <div className="flex h-16 w-16 items-center justify-center rounded-lg shrink-0 bg-[#FF6B00]">
                       <Sparkles className="h-8 w-8 text-white" />
                     </div>
                     <div>
-                      <h3 className="text-2xl lg:text-3xl font-bold mb-2 text-white">
+                      <h3 className="text-2xl lg:text-3xl font-bold mb-2 text-white font-heading">
                         {t('dashboard.createNextPlan')}
                       </h3>
-                      <p className="text-lg" style={{ color: '#E0E0E0' }}>
+                      <p className="text-lg text-gray-300">
                         {t('dashboard.createNextPlanDesc')}
                       </p>
                     </div>
@@ -297,10 +290,7 @@ export default function DashboardPage() {
                     <span className="font-semibold hidden sm:inline text-white">
                       {t('dashboard.getStarted')}
                     </span>
-                    <div
-                      className="flex h-12 w-12 items-center justify-center rounded-lg shrink-0 transition-opacity group-hover:opacity-90"
-                      style={{ backgroundColor: '#FF6B00' }}
-                    >
+                    <div className="flex h-12 w-12 items-center justify-center rounded-lg shrink-0 transition-opacity group-hover:opacity-90 bg-[#FF6B00]">
                       <ArrowRight className="h-6 w-6 text-white" />
                     </div>
                   </div>

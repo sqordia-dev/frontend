@@ -71,17 +71,11 @@ export default function LoginPage() {
         url={getCanonicalUrl('/login')}
       />
       {/* Left Panel - Branding */}
-      <div 
-        className="hidden lg:flex lg:w-[40%] flex-col justify-between p-12"
-        style={{ backgroundColor: '#1A2B47' }}
-      >
+      <div className="hidden lg:flex lg:w-[40%] flex-col justify-between p-12 bg-[#1A2B47]">
         <div>
           {/* Logo */}
           <Link to="/" className="inline-flex items-center gap-3 mb-12 group">
-            <div 
-              className="p-3 rounded-xl transition-transform group-hover:scale-105"
-              style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)' }}
-            >
+            <div className="p-3 rounded-xl transition-transform group-hover:scale-105 bg-white/10">
               <Brain className="text-white w-7 h-7" />
             </div>
             <span className="text-2xl font-bold font-heading text-white">
@@ -93,52 +87,43 @@ export default function LoginPage() {
           <h2 className="text-4xl font-bold font-heading text-white mb-4 leading-tight">
             {t('login.panel.tagline')}
           </h2>
-          <p className="text-lg mb-12" style={{ color: '#D1D5DB' }}>
+          <p className="text-lg mb-12 text-gray-300">
             {t('login.panel.subtitle')}
           </p>
 
           {/* Key Benefits */}
           <div className="space-y-6 mb-12">
             <div className="flex items-start gap-4">
-              <div 
-                className="p-2.5 rounded-lg flex-shrink-0"
-                style={{ backgroundColor: 'rgba(255, 107, 0, 0.15)' }}
-              >
-                <Clock className="w-5 h-5" style={{ color: '#FF6B00' }} />
+              <div className="p-2.5 rounded-lg flex-shrink-0 bg-[#FF6B00]/15">
+                <Clock className="w-5 h-5 text-[#FF6B00]" />
               </div>
               <div>
                 <h3 className="text-white font-semibold mb-1">{t('login.panel.benefit1.title')}</h3>
-                <p className="text-sm" style={{ color: '#9CA3AF' }}>
+                <p className="text-sm text-gray-400">
                   {t('login.panel.benefit1.desc')}
                 </p>
               </div>
             </div>
 
             <div className="flex items-start gap-4">
-              <div 
-                className="p-2.5 rounded-lg flex-shrink-0"
-                style={{ backgroundColor: 'rgba(255, 107, 0, 0.15)' }}
-              >
-                <Zap className="w-5 h-5" style={{ color: '#FF6B00' }} />
+              <div className="p-2.5 rounded-lg flex-shrink-0 bg-[#FF6B00]/15">
+                <Zap className="w-5 h-5 text-[#FF6B00]" />
               </div>
               <div>
                 <h3 className="text-white font-semibold mb-1">{t('login.panel.benefit2.title')}</h3>
-                <p className="text-sm" style={{ color: '#9CA3AF' }}>
+                <p className="text-sm text-gray-400">
                   {t('login.panel.benefit2.desc')}
                 </p>
               </div>
             </div>
 
             <div className="flex items-start gap-4">
-              <div 
-                className="p-2.5 rounded-lg flex-shrink-0"
-                style={{ backgroundColor: 'rgba(255, 107, 0, 0.15)' }}
-              >
-                <Shield className="w-5 h-5" style={{ color: '#FF6B00' }} />
+              <div className="p-2.5 rounded-lg flex-shrink-0 bg-[#FF6B00]/15">
+                <Shield className="w-5 h-5 text-[#FF6B00]" />
               </div>
               <div>
                 <h3 className="text-white font-semibold mb-1">{t('login.panel.benefit3.title')}</h3>
-                <p className="text-sm" style={{ color: '#9CA3AF' }}>
+                <p className="text-sm text-gray-400">
                   {t('login.panel.benefit3.desc')}
                 </p>
               </div>
@@ -149,53 +134,47 @@ export default function LoginPage() {
         {/* Trust Indicators */}
         <div className="space-y-4">
           <div className="flex items-center gap-3">
-            <Users className="w-5 h-5" style={{ color: '#FF6B00' }} />
+            <Users className="w-5 h-5 text-[#FF6B00]" />
             <span className="text-white font-semibold">{t('login.panel.trust.plans')}</span>
           </div>
           <div className="flex items-center gap-3">
-            <Star className="w-5 h-5 fill-current" style={{ color: '#FF6B00' }} />
+            <Star className="w-5 h-5 fill-current text-[#FF6B00]" />
             <span className="text-white font-semibold">{t('login.panel.trust.rating')}</span>
           </div>
           <div className="flex items-center gap-3">
-            <CheckCircle className="w-5 h-5" style={{ color: '#FF6B00' }} />
+            <CheckCircle className="w-5 h-5 text-[#FF6B00]" />
             <span className="text-white font-semibold">{t('login.panel.trust.nocard')}</span>
           </div>
         </div>
       </div>
 
       {/* Right Panel - Form */}
-      <div 
-        className="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-12 py-12"
-        style={{ backgroundColor: '#FFFFFF' }}
-      >
+      <div className="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-12 py-12 bg-white">
         <div className="w-full max-w-[480px]">
           {/* Mobile Logo */}
           <div className="lg:hidden text-center mb-8">
             <Link to="/" className="inline-flex items-center gap-3 mb-6 group">
-              <div 
-                className="p-3 rounded-xl transition-transform group-hover:scale-105"
-                style={{ backgroundColor: '#1A2B47' }}
-              >
+              <div className="p-3 rounded-xl transition-transform group-hover:scale-105 bg-[#1A2B47]">
                 <Brain className="text-white w-6 h-6" />
               </div>
-              <span className="text-2xl font-bold font-heading" style={{ color: '#1A2B47' }}>
+              <span className="text-2xl font-bold font-heading text-[#1A2B47]">
                 Sqordia
               </span>
             </Link>
-            <h1 className="text-3xl font-bold font-heading mb-2" style={{ color: '#1A2B47' }}>
+            <h1 className="text-3xl font-bold font-heading mb-2 text-[#1A2B47]">
               {t('login.title')}
             </h1>
-            <p className="text-base" style={{ color: '#6B7280' }}>
+            <p className="text-base text-gray-500">
               {t('login.subtitle')}
             </p>
           </div>
 
           {/* Desktop Title */}
           <div className="hidden lg:block mb-8">
-            <h1 className="text-3xl font-bold font-heading mb-2" style={{ color: '#1A2B47' }}>
+            <h1 className="text-3xl font-bold font-heading mb-2 text-[#1A2B47]">
               {t('login.title')}
             </h1>
-            <p className="text-base" style={{ color: '#6B7280' }}>
+            <p className="text-base text-gray-500">
               {t('login.subtitle')}
             </p>
           </div>
@@ -203,14 +182,8 @@ export default function LoginPage() {
           {/* Login Form */}
           <div>
             {error && (
-              <div 
-                className="mb-6 p-4 rounded-lg border"
-                style={{
-                  backgroundColor: '#FEF2F2',
-                  borderColor: '#FECACA',
-                }}
-              >
-                <p className="text-sm font-medium" style={{ color: '#DC2626' }}>{error}</p>
+              <div className="mb-6 p-4 rounded-lg border bg-red-50 border-red-200">
+                <p className="text-sm font-medium text-red-600">{error}</p>
               </div>
             )}
 
@@ -219,24 +192,7 @@ export default function LoginPage() {
               type="button"
               onClick={handleGoogleSignIn}
               disabled={googleLoading || loading}
-              className="w-full mb-6 py-3.5 px-4 rounded-lg font-semibold text-sm transition-all duration-200 flex items-center justify-center gap-3 border disabled:opacity-50 disabled:cursor-not-allowed"
-              style={{
-                backgroundColor: '#FFFFFF',
-                borderColor: '#E5E7EB',
-                color: '#374151',
-              }}
-              onMouseEnter={(e) => {
-                if (!googleLoading && !loading) {
-                  e.currentTarget.style.borderColor = '#D1D5DB';
-                  e.currentTarget.style.backgroundColor = '#F9FAFB';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!googleLoading && !loading) {
-                  e.currentTarget.style.borderColor = '#E5E7EB';
-                  e.currentTarget.style.backgroundColor = '#FFFFFF';
-                }
-              }}
+              className="w-full mb-6 py-3.5 px-4 rounded-lg font-semibold text-sm transition-all duration-200 flex items-center justify-center gap-3 border disabled:opacity-50 disabled:cursor-not-allowed bg-white border-gray-200 text-gray-700 hover:border-gray-300 hover:bg-gray-50"
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24">
                 <path
@@ -262,10 +218,10 @@ export default function LoginPage() {
             {/* Divider */}
             <div className="relative mb-6">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t" style={{ borderColor: '#E5E7EB' }}></div>
+                <div className="w-full border-t border-gray-200"></div>
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-3" style={{ color: '#6B7280', backgroundColor: '#FFFFFF' }}>
+                <span className="px-3 text-gray-500 bg-white">
                   {t('login.divider')}
                 </span>
               </div>
@@ -274,12 +230,12 @@ export default function LoginPage() {
             {/* Email/Password Form */}
             <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label htmlFor="email" className="block text-sm font-semibold mb-2.5" style={{ color: '#1A2B47' }}>
+              <label htmlFor="email" className="block text-sm font-semibold mb-2.5 text-[#1A2B47]">
                 {t('login.email')}
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                  <Mail className="h-5 w-5" style={{ color: '#9CA3AF' }} />
+                  <Mail className="h-5 w-5 text-gray-400" />
                 </div>
                 <input
                   id="email"
@@ -287,32 +243,19 @@ export default function LoginPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                    className="w-full pl-12 pr-4 py-4 md:py-3.5 rounded-lg border text-base md:text-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-0 min-h-[44px]"
-                  style={{
-                    backgroundColor: '#FFFFFF',
-                    borderColor: '#E5E7EB',
-                    color: '#111827',
-                  }}
-                  onFocus={(e) => {
-                    e.currentTarget.style.borderColor = '#FF6B00';
-                    e.currentTarget.style.boxShadow = '0 0 0 3px rgba(255, 107, 0, 0.1)';
-                  }}
-                  onBlur={(e) => {
-                    e.currentTarget.style.borderColor = '#E5E7EB';
-                    e.currentTarget.style.boxShadow = 'none';
-                  }}
+                  className="w-full pl-12 pr-4 py-4 md:py-3.5 rounded-lg border text-base md:text-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-0 min-h-[44px] bg-white border-gray-200 text-gray-900 focus:border-[#FF6B00] focus:ring-[#FF6B00]/10"
                   placeholder={t('login.email.placeholder')}
                 />
               </div>
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-semibold mb-2.5" style={{ color: '#1A2B47' }}>
+              <label htmlFor="password" className="block text-sm font-semibold mb-2.5 text-[#1A2B47]">
                 {t('login.password')}
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                  <Lock className="h-5 w-5" style={{ color: '#9CA3AF' }} />
+                  <Lock className="h-5 w-5 text-gray-400" />
                 </div>
                 <input
                   id="password"
@@ -320,29 +263,13 @@ export default function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="w-full pl-12 pr-12 py-4 md:py-3.5 rounded-lg border text-base md:text-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-0 min-h-[44px]"
-                  style={{
-                    backgroundColor: '#FFFFFF',
-                    borderColor: '#E5E7EB',
-                    color: '#111827',
-                  }}
-                  onFocus={(e) => {
-                    e.currentTarget.style.borderColor = '#FF6B00';
-                    e.currentTarget.style.boxShadow = '0 0 0 3px rgba(255, 107, 0, 0.1)';
-                  }}
-                  onBlur={(e) => {
-                    e.currentTarget.style.borderColor = '#E5E7EB';
-                    e.currentTarget.style.boxShadow = 'none';
-                  }}
+                  className="w-full pl-12 pr-12 py-4 md:py-3.5 rounded-lg border text-base md:text-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-0 min-h-[44px] bg-white border-gray-200 text-gray-900 focus:border-[#FF6B00] focus:ring-[#FF6B00]/10"
                   placeholder={t('login.password.placeholder')}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 pr-4 flex items-center transition-colors"
-                  style={{ color: '#9CA3AF' }}
-                  onMouseEnter={(e) => e.currentTarget.style.color = '#6B7280'}
-                  onMouseLeave={(e) => e.currentTarget.style.color = '#9CA3AF'}
+                  className="absolute inset-y-0 right-0 pr-4 flex items-center transition-colors text-gray-400 hover:text-gray-600"
                 >
                   {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                 </button>
@@ -351,21 +278,15 @@ export default function LoginPage() {
 
             <div className="flex items-center justify-between text-sm">
               <label className="flex items-center cursor-pointer">
-                <input 
-                  type="checkbox" 
-                  className="w-4 h-4 rounded border-gray-300 focus:ring-2 focus:ring-offset-0 focus:ring-orange-500"
-                  style={{ 
-                    accentColor: '#FF6B00',
-                  }}
+                <input
+                  type="checkbox"
+                  className="w-4 h-4 rounded border-gray-300 focus:ring-2 focus:ring-offset-0 focus:ring-orange-500 accent-[#FF6B00]"
                 />
-                <span className="ml-2.5" style={{ color: '#6B7280' }}>{t('login.remember')}</span>
+                <span className="ml-2.5 text-gray-500">{t('login.remember')}</span>
               </label>
-              <Link 
-                to="/forgot-password" 
-                className="font-semibold transition-colors text-sm"
-                style={{ color: '#FF6B00' }}
-                onMouseEnter={(e) => e.currentTarget.style.color = '#E55F00'}
-                onMouseLeave={(e) => e.currentTarget.style.color = '#FF6B00'}
+              <Link
+                to="/forgot-password"
+                className="font-semibold transition-colors text-sm text-[#FF6B00] hover:text-[#E55F00]"
               >
                 {t('login.forgot')}
               </Link>
@@ -374,20 +295,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading || googleLoading}
-              className="w-full py-4 md:py-3.5 rounded-lg font-semibold text-white text-base md:text-sm transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 group min-h-[44px]"
-              style={{ 
-                backgroundColor: '#FF6B00',
-              }}
-              onMouseEnter={(e) => {
-                if (!loading && !googleLoading) {
-                  e.currentTarget.style.backgroundColor = '#E55F00';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!loading && !googleLoading) {
-                  e.currentTarget.style.backgroundColor = '#FF6B00';
-                }
-              }}
+              className="w-full py-4 md:py-3.5 rounded-lg font-semibold text-white text-base md:text-sm transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 group min-h-[44px] bg-[#FF6B00] hover:bg-[#E55F00]"
             >
               {loading ? (
                 <span>{t('login.signing')}</span>
@@ -400,28 +308,22 @@ export default function LoginPage() {
             </button>
           </form>
 
-          <div className="mt-8 pt-6 border-t" style={{ borderColor: '#E5E7EB' }}>
-            <p className="text-center text-sm" style={{ color: '#6B7280' }}>
+          <div className="mt-8 pt-6 border-t border-gray-200">
+            <p className="text-center text-sm text-gray-500">
               {t('login.noaccount')}{' '}
-              <Link 
-                to="/register" 
-                className="font-semibold transition-colors"
-                style={{ color: '#FF6B00' }}
-                onMouseEnter={(e) => e.currentTarget.style.color = '#E55F00'}
-                onMouseLeave={(e) => e.currentTarget.style.color = '#FF6B00'}
+              <Link
+                to="/register"
+                className="font-semibold transition-colors text-[#FF6B00] hover:text-[#E55F00]"
               >
                 {t('login.create')}
               </Link>
             </p>
           </div>
 
-          <p className="mt-6 text-center text-sm" style={{ color: '#9CA3AF' }}>
-            <Link 
-              to="/" 
-              className="transition-colors hover:underline"
-              style={{ color: '#6B7280' }}
-              onMouseEnter={(e) => e.currentTarget.style.color = '#374151'}
-              onMouseLeave={(e) => e.currentTarget.style.color = '#6B7280'}
+          <p className="mt-6 text-center text-sm text-gray-400">
+            <Link
+              to="/"
+              className="transition-colors hover:underline text-gray-500 hover:text-gray-700"
             >
               {t('login.back')}
             </Link>

@@ -44,7 +44,7 @@ export default function AdminOrganizationsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{ borderColor: '#FF6B00' }}></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FF6B00]"></div>
       </div>
     );
   }
@@ -92,8 +92,8 @@ export default function AdminOrganizationsPage() {
               >
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center space-x-3">
-                    <div className="p-3 rounded-lg" style={{ backgroundColor: '#FF6B0015' }}>
-                      <Building2 className="w-6 h-6" style={{ color: '#FF6B00' }} />
+                    <div className="p-3 rounded-lg bg-[#FF6B00]/[0.08]">
+                      <Building2 className="w-6 h-6 text-[#FF6B00]" />
                     </div>
                     <div>
                       <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
@@ -103,7 +103,7 @@ export default function AdminOrganizationsPage() {
                     </div>
                   </div>
                   {org.isActive ? (
-                    <CheckCircle className="w-5 h-5" style={{ color: '#FF6B00' }} />
+                    <CheckCircle className="w-5 h-5 text-[#FF6B00]" />
                   ) : (
                     <XCircle className="w-5 h-5 text-red-600 dark:text-red-400" />
                   )}
@@ -142,18 +142,12 @@ export default function AdminOrganizationsPage() {
                   ) : (
                     <button
                       onClick={() => handleStatusChange(org.id, 'Active')}
-                      className="flex-1 px-3 py-2 text-sm border rounded-lg transition-colors"
-                      style={{ borderColor: '#FF6B00', color: '#FF6B00' }}
-                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#FF6B0015'}
-                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                      className="flex-1 px-3 py-2 text-sm border rounded-lg transition-colors border-[#FF6B00] text-[#FF6B00] hover:bg-[#FF6B00]/[0.08]"
                     >
                       {t('admin.organizations.activate')}
                     </button>
                   )}
-                  <button className="flex-1 px-3 py-2 text-sm text-white rounded-lg transition-colors"
-                  style={{ backgroundColor: '#FF6B00' }}
-                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#E55F00'}
-                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#FF6B00'}>
+                  <button className="flex-1 px-3 py-2 text-sm text-white rounded-lg transition-colors bg-[#FF6B00] hover:bg-[#E55F00]">
                     {t('admin.organizations.viewDetails')}
                   </button>
                 </div>

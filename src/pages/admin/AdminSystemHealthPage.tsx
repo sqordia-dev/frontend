@@ -31,7 +31,7 @@ export default function AdminSystemHealthPage() {
   if (loading && !health) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{ borderColor: '#FF6B00' }}></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FF6B00]"></div>
       </div>
     );
   }
@@ -94,18 +94,18 @@ export default function AdminSystemHealthPage() {
               className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6 hover:shadow-md transition-shadow"
             >
               <div className="flex items-start justify-between mb-4">
-                <div className="p-3 rounded-lg" style={{ backgroundColor: isHealthy ? '#FF6B0015' : '#F59E0B15' }}>
-                  <Icon className="w-6 h-6" style={{ color: isHealthy ? '#FF6B00' : '#F59E0B' }} />
+                <div className={`p-3 rounded-lg ${isHealthy ? 'bg-[#FF6B00]/[0.08]' : 'bg-amber-500/[0.08]'}`}>
+                  <Icon className={`w-6 h-6 ${isHealthy ? 'text-[#FF6B00]' : 'text-amber-500'}`} />
                 </div>
                 {isHealthy ? (
-                  <CheckCircle className="w-5 h-5" style={{ color: '#FF6B00' }} />
+                  <CheckCircle className="w-5 h-5 text-[#FF6B00]" />
                 ) : (
-                  <AlertCircle className="w-5 h-5" style={{ color: '#F59E0B' }} />
+                  <AlertCircle className="w-5 h-5 text-amber-500" />
                 )}
               </div>
               <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400">{service.name}</h3>
               <p className="mt-2 text-2xl font-bold text-gray-900 dark:text-white">{service.metric}</p>
-              <p className="mt-2 text-sm font-medium" style={{ color: isHealthy ? '#FF6B00' : '#F59E0B' }}>
+              <p className={`mt-2 text-sm font-medium ${isHealthy ? 'text-[#FF6B00]' : 'text-amber-500'}`}>
                 {service.status}
               </p>
             </div>

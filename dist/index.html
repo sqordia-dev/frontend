@@ -57,11 +57,13 @@
     <!-- Preconnect for Performance -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="preconnect" href="https://accounts.google.com" />
-    
+
+    <!-- Font Loading (non-render-blocking via link instead of CSS @import) -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;500;600;700;800&display=swap" />
+
     <!-- DNS Prefetch -->
     <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
-    <link rel="dns-prefetch" href="https://accounts.google.com" />
     
     <!-- Structured Data (JSON-LD) -->
     <script type="application/ld+json">
@@ -117,10 +119,9 @@
     }
     </script>
     
-    <!-- Google Sign-In -->
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <script type="module" crossorigin src="/assets/index-D08tsc_h.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-BVe7W8Bq.css">
+    <!-- Google Sign-In: loaded dynamically on auth pages only (see google-auth.ts) -->
+    <script type="module" crossorigin src="/assets/index-C4iaBLto.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-B76-yE9V.css">
   </head>
   <body>
     <div id="root"></div>

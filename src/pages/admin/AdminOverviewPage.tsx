@@ -31,7 +31,7 @@ export default function AdminOverviewPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{ borderColor: '#FF6B00' }}></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FF6B00]"></div>
       </div>
     );
   }
@@ -120,7 +120,7 @@ export default function AdminOverviewPage() {
                 <div className="space-y-3">
                   {overview?.recentActivities?.slice(0, 5).map((activity: any, index: number) => (
                     <div key={index} className="flex items-start gap-3 pb-3 border-b border-gray-100 dark:border-gray-800 last:border-0 last:pb-0">
-                      <div className="flex-shrink-0 w-2 h-2 mt-2 rounded-full" style={{ backgroundColor: '#FF6B00' }}></div>
+                      <div className="flex-shrink-0 w-2 h-2 mt-2 rounded-full bg-[#FF6B00]"></div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-gray-900 dark:text-white">{activity.activity || activity.description || 'System activity'}</p>
                         <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
@@ -139,25 +139,25 @@ export default function AdminOverviewPage() {
                 <div className="space-y-4">
                   <div className="flex items-center justify-between py-2">
                     <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('admin.overview.apiStatus')}</span>
-                    <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold" style={{ backgroundColor: '#FF6B00', color: '#FFFFFF' }}>
+                    <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-[#FF6B00] text-white">
                       {t('admin.overview.operational')}
                     </span>
                   </div>
                   <div className="flex items-center justify-between py-2">
                     <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('admin.overview.database')}</span>
-                    <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold" style={{ backgroundColor: '#FF6B00', color: '#FFFFFF' }}>
+                    <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-[#FF6B00] text-white">
                       {t('admin.overview.healthy')}
                     </span>
                   </div>
                   <div className="flex items-center justify-between py-2">
                     <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('admin.overview.aiServices')}</span>
-                    <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold" style={{ backgroundColor: '#FF6B00', color: '#FFFFFF' }}>
+                    <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-[#FF6B00] text-white">
                       {t('admin.overview.active')}
                     </span>
                   </div>
                   <div className="flex items-center justify-between py-2">
                     <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('admin.overview.storage')}</span>
-                    <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold" style={{ backgroundColor: '#F59E0B', color: '#FFFFFF' }}>
+                    <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-amber-500 text-white">
                       {overview?.storageUsage || '75%'} {t('admin.overview.used')}
                     </span>
                   </div>

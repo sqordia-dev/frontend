@@ -1,5 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+/* Fonts loaded via <link> in index.html for performance (no render-blocking @import) */
 
 @tailwind base;
 @tailwind components;
@@ -503,7 +502,7 @@
   }
 
   body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     /* Safe area insets for devices with notches */
     padding-top: env(safe-area-inset-top);
     padding-bottom: env(safe-area-inset-bottom);
@@ -649,6 +648,189 @@
 }
 
 /* =============================================================
+   Sqordia Design System Utilities
+   Dark-mode-aware color utilities to replace inline style={{}}
+   ============================================================= */
+
+/* --- Brand text colors (dark-mode-aware) --- */
+.text-brand-heading {
+  color: #1A2B47;
+}
+.dark .text-brand-heading {
+  color: #FFFFFF;
+}
+
+.text-brand-body {
+  color: #374151;
+}
+.dark .text-brand-body {
+  color: #D1D5DB;
+}
+
+.text-brand-muted {
+  color: #6B7280;
+}
+.dark .text-brand-muted {
+  color: #9CA3AF;
+}
+
+.text-brand-orange {
+  color: #FF6B00;
+}
+
+.text-brand-blue {
+  color: #1A2B47;
+}
+.dark .text-brand-blue {
+  color: #F3F4F6;
+}
+
+/* --- Brand background colors (dark-mode-aware) --- */
+.bg-brand-surface {
+  background-color: #FFFFFF;
+}
+.dark .bg-brand-surface {
+  background-color: #1F2937;
+}
+
+.bg-brand-page {
+  background-color: #F9FAFB;
+}
+.dark .bg-brand-page {
+  background-color: #111827;
+}
+
+.bg-brand-page-alt {
+  background-color: #FFFFFF;
+}
+.dark .bg-brand-page-alt {
+  background-color: #0F172A;
+}
+
+.bg-brand-input {
+  background-color: #FFFFFF;
+}
+.dark .bg-brand-input {
+  background-color: #1F2937;
+}
+
+.bg-brand-hover {
+  background-color: #F3F4F6;
+}
+.dark .bg-brand-hover {
+  background-color: #374151;
+}
+
+/* --- Brand border colors (dark-mode-aware) --- */
+.border-brand {
+  border-color: rgba(229, 231, 235, 0.8);
+}
+.dark .border-brand {
+  border-color: rgba(75, 85, 99, 0.3);
+}
+
+.border-brand-subtle {
+  border-color: #E5E7EB;
+}
+.dark .border-brand-subtle {
+  border-color: #374151;
+}
+
+/* --- Interactive states --- */
+.hover-brand-orange:hover {
+  background-color: #FF6B00;
+  color: #FFFFFF;
+}
+
+.focus-brand-orange:focus-visible {
+  outline: 2px solid #FF6B00;
+  outline-offset: 2px;
+}
+
+/* --- Button utilities --- */
+.btn-brand-primary {
+  background-color: #FF6B00;
+  color: #FFFFFF;
+  transition: all 0.3s ease;
+}
+.btn-brand-primary:hover {
+  background-color: #E55F00;
+  transform: translateY(-1px);
+  box-shadow: 0 10px 30px rgba(255, 107, 0, 0.3);
+}
+
+.btn-brand-secondary {
+  background-color: transparent;
+  border: 2px solid #E5E7EB;
+  color: #374151;
+  transition: all 0.3s ease;
+}
+.dark .btn-brand-secondary {
+  border-color: rgba(255, 255, 255, 0.2);
+  color: #FFFFFF;
+  background-color: rgba(255, 255, 255, 0.05);
+}
+.btn-brand-secondary:hover {
+  background-color: #F9FAFB;
+  transform: translateY(-1px);
+}
+.dark .btn-brand-secondary:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* --- Card variants --- */
+.card-brand {
+  background-color: #FFFFFF;
+  border: 2px solid rgba(229, 231, 235, 0.8);
+  border-radius: 1rem;
+  transition: all 0.3s ease;
+}
+.dark .card-brand {
+  background-color: #1F2937;
+  border-color: rgba(75, 85, 99, 0.3);
+}
+.card-brand:hover {
+  border-color: rgba(26, 43, 71, 0.2);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
+}
+.dark .card-brand:hover {
+  border-color: rgba(75, 85, 99, 0.6);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+/* --- Section backgrounds --- */
+.section-brand-primary {
+  background-color: #FFFFFF;
+}
+.dark .section-brand-primary {
+  background-color: #111827;
+}
+
+.section-brand-alt {
+  background-color: #F9FAFB;
+}
+.dark .section-brand-alt {
+  background-color: #0F172A;
+}
+
+/* --- Status colors --- */
+.text-status-success { color: #10B981; }
+.text-status-warning { color: #F59E0B; }
+.text-status-error { color: #EF4444; }
+.text-status-info { color: #3B82F6; }
+
+.bg-status-success-subtle { background-color: rgba(16, 185, 129, 0.1); }
+.bg-status-warning-subtle { background-color: rgba(245, 158, 11, 0.1); }
+.bg-status-error-subtle { background-color: rgba(239, 68, 68, 0.1); }
+.bg-status-info-subtle { background-color: rgba(59, 130, 246, 0.1); }
+
+.dark .bg-status-success-subtle { background-color: rgba(16, 185, 129, 0.2); }
+.dark .bg-status-warning-subtle { background-color: rgba(245, 158, 11, 0.2); }
+.dark .bg-status-error-subtle { background-color: rgba(239, 68, 68, 0.2); }
+.dark .bg-status-info-subtle { background-color: rgba(59, 130, 246, 0.2); }
+
+/* =============================================================
    Modern Hero & Landing Page Gradients (Vercel/Stripe inspired)
    ============================================================= */
 
@@ -663,19 +845,6 @@
 
 .dark .hero-gradient-light {
   background: #1A2B47;
-}
-
-/* Text color utilities */
-.text-orange {
-  color: #FF6B00;
-}
-
-.text-blue {
-  color: #1A2B47;
-}
-
-.dark .text-blue {
-  color: #F3F4F6;
 }
 
 /* Clean card styling */

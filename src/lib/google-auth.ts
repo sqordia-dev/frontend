@@ -134,10 +134,41 @@ const getGoogleClientId = (): string => {
 };
 
 /**
+ * Dynamically load the Google Identity Services script on demand.
+ * Called lazily so the landing page doesn't pay the cost.
+ */
+let googleScriptLoaded = false;
+const loadGoogleScript = (): Promise<void> => {
+  return new Promise((resolve) => {
+    if (googleScriptLoaded || document.querySelector('script[src*="accounts.google.com/gsi/client"]')) {
+      googleScriptLoaded = true;
+      resolve();
+      return;
+    }
+    const script = document.createElement('script');
+    script.src = 'https://accounts.google.com/gsi/client';
+    script.async = true;
+    script.defer = true;
+    script.onload = () => {
+      googleScriptLoaded = true;
+      resolve();
+    };
+    script.onerror = () => {
+      console.error('Failed to load Google Identity Services script');
+      resolve();
+    };
+    document.head.appendChild(script);
+  });
+};
+
+/**
  * Wait for Google Identity Services to load
  */
 const waitForGoogle = (): Promise<void> => {
-  return new Promise((resolve) => {
+  return new Promise(async (resolve) => {
+    // Ensure the script is loaded first
+    await loadGoogleScript();
+
     if (window.google?.accounts?.id) {
       resolve();
       return;

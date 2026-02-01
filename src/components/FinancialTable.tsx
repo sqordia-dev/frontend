@@ -41,8 +41,6 @@ const FinancialTable: React.FC<FinancialTableProps> = ({
   showNegativeInRed = true,
   className = ''
 }) => {
-  const strategyBlue = '#1A2B47';
-  const lightGray = '#F3F4F6';
   const categoryHeaderGray = '#9CA3AF';
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [showLeftIndicator, setShowLeftIndicator] = useState(false);
@@ -72,9 +70,9 @@ const FinancialTable: React.FC<FinancialTableProps> = ({
   return (
     <div className={`w-full ${className}`}>
       {/* Title */}
-      <h3 
-        className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6"
-        style={{ color: strategyBlue, fontFamily: 'system-ui, -apple-system, sans-serif' }}
+      <h3
+        className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-[#1A2B47]"
+        style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}
       >
         {title}
       </h3>
@@ -104,8 +102,7 @@ const FinancialTable: React.FC<FinancialTableProps> = ({
           <thead>
             <tr className="border-b border-gray-200 dark:border-gray-700">
               <th 
-                className="text-left py-2 sm:py-3 px-3 sm:px-4 font-semibold text-xs sm:text-sm sticky left-0 z-20 bg-white dark:bg-gray-900"
-                style={{ color: strategyBlue }}
+                className="text-left py-2 sm:py-3 px-3 sm:px-4 font-semibold text-xs sm:text-sm sticky left-0 z-20 bg-white dark:bg-gray-900 text-[#1A2B47]"
                 scope="col"
                 aria-label="Row label"
               >
@@ -117,8 +114,7 @@ const FinancialTable: React.FC<FinancialTableProps> = ({
                   className={`py-2 sm:py-3 px-3 sm:px-4 font-semibold text-xs sm:text-sm whitespace-nowrap ${
                     col.align === 'right' ? 'text-right' : 
                     col.align === 'center' ? 'text-center' : 'text-left'
-                  }`}
-                  style={{ color: strategyBlue }}
+                  } text-[#1A2B47]`}
                   scope="col"
                 >
                   {col.header}
@@ -202,7 +198,7 @@ const FinancialTable: React.FC<FinancialTableProps> = ({
       </div>
 
       {/* Bottom border line */}
-      <div className="mt-4 h-0.5" style={{ backgroundColor: strategyBlue }}></div>
+      <div className="mt-4 h-0.5 bg-[#1A2B47]"></div>
     </div>
   );
 };

@@ -21,11 +21,6 @@ export default function CreatePlanPage() {
   const navigate = useNavigate();
   const { t, theme, language } = useTheme();
   
-  // Landing page color theme
-  const strategyBlue = '#1A2B47';
-  const momentumOrange = '#FF6B00';
-  const momentumOrangeHover = '#E55F00';
-  const lightAIGrey = '#F4F7FA';
   const [step, setStep] = useState<'type' | 'organization' | 'details'>('type');
   const [selectedType, setSelectedType] = useState<'business' | 'obnl' | null>(null);
   // Template selection disabled - all template-related state removed
@@ -145,28 +140,21 @@ export default function CreatePlanPage() {
             <div className="flex flex-col items-center gap-2">
               <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
                 index < currentIndex
-                  ? 'text-white'
+                  ? 'text-white bg-[#FF6B00]'
                   : index === currentIndex
-                  ? 'text-white ring-4 ring-opacity-30'
+                  ? 'text-white bg-[#FF6B00] ring-4 ring-[#FF6B00]/30'
                   : 'bg-gray-200 dark:bg-gray-700 text-gray-400 dark:text-gray-500'
-              }`}
-              style={index < currentIndex ? {
-                backgroundColor: momentumOrange
-              } : index === currentIndex ? {
-                backgroundColor: momentumOrange,
-                ringColor: momentumOrange
-              } : {}}
-              >
+              }`}>
                 {index < currentIndex ? <CheckCircle size={14} /> : index + 1}
               </div>
-              <span className="text-xs font-medium hidden sm:block whitespace-nowrap" style={{ 
-                color: index <= currentIndex 
-                  ? (theme === 'dark' ? '#F9FAFB' : strategyBlue)
-                  : (theme === 'dark' ? '#6B7280' : '#9CA3AF')
-              }}>{step.label}</span>
+              <span className={`text-xs font-medium hidden sm:block whitespace-nowrap ${
+                index <= currentIndex
+                  ? 'text-[#1A2B47] dark:text-gray-100'
+                  : 'text-gray-400 dark:text-gray-500'
+              }`}>{step.label}</span>
             </div>
             {index < steps.length - 1 && (
-              <div className={`w-20 h-0.5 mx-3 transition-all ${index < currentIndex ? '' : 'bg-gray-200 dark:bg-gray-700'}`} style={index < currentIndex ? { backgroundColor: momentumOrange } : {}} />
+              <div className={`w-20 h-0.5 mx-3 transition-all ${index < currentIndex ? 'bg-[#FF6B00]' : 'bg-gray-200 dark:bg-gray-700'}`} />
             )}
           </div>
         ))}
@@ -192,20 +180,16 @@ export default function CreatePlanPage() {
         <div className="mb-12">
           <button
             onClick={() => navigate('/dashboard')}
-            className="flex items-center gap-2 mb-10 hover:opacity-70 transition-opacity text-sm font-medium"
-            style={{ color: theme === 'dark' ? '#9CA3AF' : '#6B7280' }}
+            className="flex items-center gap-2 mb-10 hover:opacity-70 transition-opacity text-sm font-medium text-gray-500 dark:text-gray-400"
           >
             <ArrowLeft size={18} />
             <span>{t('createPlan.back')}</span>
           </button>
 
           <div className="text-center mb-12">
-            <div className="inline-flex items-center gap-3 px-6 py-3 rounded-full text-sm font-bold tracking-wide mb-6 shadow-lg relative overflow-hidden group" style={{ backgroundColor: momentumOrange, color: '#FFFFFF' }}>
+            <div className="inline-flex items-center gap-3 px-6 py-3 rounded-full text-sm font-bold tracking-wide mb-6 shadow-lg relative overflow-hidden group bg-[#FF6B00] text-white">
               {/* Glow effect */}
-              <div 
-                className="absolute inset-0 rounded-full opacity-50 blur-xl group-hover:opacity-75 transition-opacity"
-                style={{ backgroundColor: momentumOrange }}
-              />
+              <div className="absolute inset-0 rounded-full opacity-50 blur-xl group-hover:opacity-75 transition-opacity bg-[#FF6B00]" />
               {/* Shine effect */}
               <div 
                 className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-30 transition-opacity shimmer-shine"
@@ -213,14 +197,13 @@ export default function CreatePlanPage() {
                   background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent)',
                 }}
               />
-              <Sparkles 
-                size={18} 
-                className="relative z-10 animate-pulse"
-                style={{ color: '#FFFFFF' }}
+              <Sparkles
+                size={18}
+                className="relative z-10 animate-pulse text-white"
               />
               <span className="relative z-10">{t('createPlan.aiBadge')}</span>
             </div>
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold mb-6 tracking-tight" style={{ color: theme === 'dark' ? '#F9FAFB' : strategyBlue }}>
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold mb-6 tracking-tight text-[#1A2B47] dark:text-gray-50 font-heading">
               {t('createPlan.title')}
             </h1>
             <p className="text-lg text-gray-500 dark:text-gray-400 max-w-3xl mx-auto">
@@ -236,24 +219,15 @@ export default function CreatePlanPage() {
           <div className="grid sm:grid-cols-2 gap-8 max-w-5xl mx-auto">
             <button
               onClick={() => handleSelectType('business')}
-              className="group relative bg-white dark:bg-gray-800 rounded-2xl p-10 text-left transition-all duration-300 hover:scale-[1.02]"
-              style={{
-                boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.boxShadow = '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.boxShadow = '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)';
-              }}
+              className="group relative bg-white dark:bg-gray-800 rounded-2xl p-10 text-left transition-all duration-300 hover:scale-[1.02] shadow-sm hover:shadow-xl"
             >
-              <div className="absolute top-0 right-0 w-32 h-32 opacity-5 group-hover:opacity-10 transition-opacity dark:opacity-10 dark:group-hover:opacity-20 rounded-bl-full" style={{ backgroundColor: strategyBlue }}></div>
-              
+              <div className="absolute top-0 right-0 w-32 h-32 opacity-5 group-hover:opacity-10 transition-opacity dark:opacity-10 dark:group-hover:opacity-20 rounded-bl-full bg-[#1A2B47]"></div>
+
               <div className="relative">
-                <div className="w-20 h-20 rounded-2xl flex items-center justify-center mb-6 transition-transform group-hover:rotate-6" style={{ backgroundColor: strategyBlue }}>
+                <div className="w-20 h-20 rounded-2xl flex items-center justify-center mb-6 transition-transform group-hover:rotate-6 bg-[#1A2B47]">
                   <Building2 size={36} className="text-white" />
                 </div>
-                <h3 className="text-2xl font-bold mb-4" style={{ color: theme === 'dark' ? '#F9FAFB' : strategyBlue }}>
+                <h3 className="text-2xl font-bold mb-4 text-[#1A2B47] dark:text-gray-50 font-heading">
                   {t('createPlan.businessPlan')}
                 </h3>
                 <p className="text-gray-500 dark:text-gray-400 mb-8 text-base leading-relaxed">
@@ -262,14 +236,14 @@ export default function CreatePlanPage() {
                 <ul className="space-y-4 mb-8">
                   {[t('createPlan.businessFeatures1'), t('createPlan.businessFeatures2'), t('createPlan.businessFeatures3')].map((item, idx) => (
                     <li key={idx} className="flex items-start gap-3">
-                      <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5" style={{ backgroundColor: momentumOrange }}>
+                      <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 bg-[#FF6B00]">
                         <CheckCircle size={14} className="text-white" />
                       </div>
                       <span className="text-gray-700 dark:text-gray-300 text-base">{item}</span>
                     </li>
                   ))}
                 </ul>
-                <div className="flex items-center gap-2 font-bold text-base group-hover:gap-3 transition-all" style={{ color: momentumOrange }}>
+                <div className="flex items-center gap-2 font-bold text-base group-hover:gap-3 transition-all text-[#FF6B00]">
                   <span>{t('createPlan.getStarted')}</span>
                   <ArrowRight size={20} />
                 </div>
@@ -278,24 +252,15 @@ export default function CreatePlanPage() {
 
             <button
               onClick={() => handleSelectType('obnl')}
-              className="group relative bg-white dark:bg-gray-800 rounded-2xl p-10 text-left transition-all duration-300 hover:scale-[1.02]"
-              style={{
-                boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.boxShadow = '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.boxShadow = '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)';
-              }}
+              className="group relative bg-white dark:bg-gray-800 rounded-2xl p-10 text-left transition-all duration-300 hover:scale-[1.02] shadow-sm hover:shadow-xl"
             >
-              <div className="absolute top-0 right-0 w-32 h-32 opacity-5 group-hover:opacity-10 transition-opacity dark:opacity-10 dark:group-hover:opacity-20 rounded-bl-full" style={{ backgroundColor: momentumOrange }}></div>
-              
+              <div className="absolute top-0 right-0 w-32 h-32 opacity-5 group-hover:opacity-10 transition-opacity dark:opacity-10 dark:group-hover:opacity-20 rounded-bl-full bg-[#FF6B00]"></div>
+
               <div className="relative">
-                <div className="w-20 h-20 rounded-2xl flex items-center justify-center mb-6 transition-transform group-hover:rotate-6" style={{ backgroundColor: momentumOrange }}>
+                <div className="w-20 h-20 rounded-2xl flex items-center justify-center mb-6 transition-transform group-hover:rotate-6 bg-[#FF6B00]">
                   <Heart size={36} className="text-white" />
                 </div>
-                <h3 className="text-2xl font-bold mb-4" style={{ color: theme === 'dark' ? '#F9FAFB' : strategyBlue }}>
+                <h3 className="text-2xl font-bold mb-4 text-[#1A2B47] dark:text-gray-50 font-heading">
                   {t('createPlan.obnlPlan')}
                 </h3>
                 <p className="text-gray-500 dark:text-gray-400 mb-8 text-base leading-relaxed">
@@ -304,14 +269,14 @@ export default function CreatePlanPage() {
                 <ul className="space-y-4 mb-8">
                   {[t('createPlan.obnlFeatures1'), t('createPlan.obnlFeatures2'), t('createPlan.obnlFeatures3')].map((item, idx) => (
                     <li key={idx} className="flex items-start gap-3">
-                      <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5" style={{ backgroundColor: momentumOrange }}>
+                      <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 bg-[#FF6B00]">
                         <CheckCircle size={14} className="text-white" />
                       </div>
                       <span className="text-gray-700 dark:text-gray-300 text-base">{item}</span>
                     </li>
                   ))}
                 </ul>
-                <div className="flex items-center gap-2 font-bold text-base group-hover:gap-3 transition-all" style={{ color: momentumOrange }}>
+                <div className="flex items-center gap-2 font-bold text-base group-hover:gap-3 transition-all text-[#FF6B00]">
                   <span>{t('createPlan.getStarted')}</span>
                   <ArrowRight size={20} />
                 </div>
@@ -325,7 +290,7 @@ export default function CreatePlanPage() {
           <div className="max-w-3xl mx-auto">
             <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden">
               <div className="p-10 border-b border-gray-100 dark:border-gray-700">
-                <h2 className="text-2xl font-bold mb-3" style={{ color: theme === 'dark' ? '#F9FAFB' : strategyBlue }}>
+                <h2 className="text-2xl font-bold mb-3 text-[#1A2B47] dark:text-gray-50 font-heading">
                   {t('createPlan.createOrganization')}
                 </h2>
                 <p className="text-gray-500 dark:text-gray-400 text-lg">
@@ -345,7 +310,7 @@ export default function CreatePlanPage() {
                 )}
 
                 <div>
-                  <label className="block text-base font-bold mb-4" style={{ color: theme === 'dark' ? '#F9FAFB' : strategyBlue }}>
+                  <label className="block text-base font-bold mb-4 text-[#1A2B47] dark:text-gray-50">
                     {t('createPlan.organizationName')} <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -353,22 +318,12 @@ export default function CreatePlanPage() {
                     value={orgName}
                     onChange={(e) => setOrgName(e.target.value)}
                     placeholder={t('createPlan.orgNamePlaceholder')}
-                    className="w-full px-5 py-4 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 text-base transition-all"
-                    style={{ 
-                      '--tw-ring-color': momentumOrange
-                    } as React.CSSProperties}
-                    onFocus={(e) => {
-                      e.currentTarget.style.borderColor = momentumOrange;
-                      e.currentTarget.style.ringColor = momentumOrange;
-                    }}
-                    onBlur={(e) => {
-                      e.currentTarget.style.borderColor = '';
-                    }}
+                    className="w-full px-5 py-4 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#FF6B00] focus:border-[#FF6B00] text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 text-base transition-all"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-base font-bold mb-4" style={{ color: theme === 'dark' ? '#F9FAFB' : strategyBlue }}>
+                  <label className="block text-base font-bold mb-4 text-[#1A2B47] dark:text-gray-50">
                     {t('createPlan.organizationDesc')} <span className="text-gray-400 dark:text-gray-500 font-normal text-sm">{t('createPlan.optional')}</span>
                   </label>
                   <textarea
@@ -376,14 +331,7 @@ export default function CreatePlanPage() {
                     onChange={(e) => setOrgDescription(e.target.value)}
                     placeholder={t('createPlan.orgDescPlaceholder')}
                     rows={5}
-                    className="w-full px-5 py-4 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 resize-none text-base transition-all"
-                    onFocus={(e) => {
-                      e.currentTarget.style.borderColor = momentumOrange;
-                      e.currentTarget.style.ringColor = momentumOrange;
-                    }}
-                    onBlur={(e) => {
-                      e.currentTarget.style.borderColor = '';
-                    }}
+                    className="w-full px-5 py-4 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#FF6B00] focus:border-[#FF6B00] text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 resize-none text-base transition-all"
                   />
                 </div>
 
@@ -397,10 +345,7 @@ export default function CreatePlanPage() {
                   <button
                     onClick={handleCreateOrganization}
                     disabled={!orgName.trim() || loading}
-                    className="flex-1 px-4 py-2.5 text-white rounded-lg font-medium shadow-md hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm"
-                    style={{ backgroundColor: momentumOrange }}
-                    onMouseEnter={(e) => !loading && (e.currentTarget.style.backgroundColor = momentumOrangeHover)}
-                    onMouseLeave={(e) => !loading && (e.currentTarget.style.backgroundColor = momentumOrange)}
+                    className="flex-1 px-4 py-2.5 text-white rounded-lg font-medium shadow-md hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm bg-[#FF6B00] hover:bg-[#E55F00]"
                   >
                     {loading ? t('createPlan.creating') : t('createPlan.createOrgButton')}
                     {!loading && <ArrowRight size={18} />}
@@ -418,8 +363,7 @@ export default function CreatePlanPage() {
               <div className="p-10 border-b border-gray-100 dark:border-gray-700">
                 <button
                   onClick={() => setStep('type')}
-                  className="flex items-center gap-2 mb-8 hover:opacity-70 transition-opacity text-sm font-medium"
-                  style={{ color: theme === 'dark' ? '#9CA3AF' : '#6B7280' }}
+                  className="flex items-center gap-2 mb-8 hover:opacity-70 transition-opacity text-sm font-medium text-gray-500 dark:text-gray-400"
                 >
                   <ArrowLeft size={16} />
                   <span>{t('createPlan.changePlanType')}</span>
@@ -428,15 +372,9 @@ export default function CreatePlanPage() {
                 <div className="flex items-center gap-5">
                   <div className={`w-16 h-16 rounded-2xl flex items-center justify-center ${
                     selectedType === 'business'
-                      ? ''
-                      : 'dark:bg-gray-700'
-                  }`}
-                  style={selectedType === 'business' ? {
-                    backgroundColor: strategyBlue
-                  } : {
-                    backgroundColor: momentumOrange
-                  }}
-                  >
+                      ? 'bg-[#1A2B47]'
+                      : 'bg-[#FF6B00]'
+                  }`}>
                     {selectedType === 'business' ? (
                       <Building2 size={32} className="text-white" />
                     ) : (
@@ -444,7 +382,7 @@ export default function CreatePlanPage() {
                     )}
                   </div>
                   <div>
-                    <h2 className="text-2xl font-bold mb-2" style={{ color: theme === 'dark' ? '#F9FAFB' : strategyBlue }}>
+                    <h2 className="text-2xl font-bold mb-2 text-[#1A2B47] dark:text-gray-50 font-heading">
                       {selectedType === 'business' ? t('createPlan.businessPlan') : t('createPlan.obnlPlan')}
                     </h2>
                     <p className="text-base text-gray-500 dark:text-gray-400">
@@ -466,7 +404,7 @@ export default function CreatePlanPage() {
                 )}
 
                 <div>
-                  <label className="block text-base font-bold mb-4" style={{ color: theme === 'dark' ? '#F9FAFB' : strategyBlue }}>
+                  <label className="block text-base font-bold mb-4 text-[#1A2B47] dark:text-gray-50">
                     {t('createPlan.planTitle')} <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -474,19 +412,12 @@ export default function CreatePlanPage() {
                     value={planTitle}
                     onChange={(e) => setPlanTitle(e.target.value)}
                     placeholder={t('createPlan.planTitlePlaceholder')}
-                    className="w-full px-5 py-4 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 text-base transition-all"
-                    onFocus={(e) => {
-                      e.currentTarget.style.borderColor = momentumOrange;
-                      e.currentTarget.style.ringColor = momentumOrange;
-                    }}
-                    onBlur={(e) => {
-                      e.currentTarget.style.borderColor = '';
-                    }}
+                    className="w-full px-5 py-4 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#FF6B00] focus:border-[#FF6B00] text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 text-base transition-all"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-base font-bold mb-4" style={{ color: theme === 'dark' ? '#F9FAFB' : strategyBlue }}>
+                  <label className="block text-base font-bold mb-4 text-[#1A2B47] dark:text-gray-50">
                     {t('createPlan.planDescription')} <span className="text-gray-400 dark:text-gray-500 font-normal text-sm">{t('createPlan.optional')}</span>
                   </label>
                   <textarea
@@ -494,24 +425,14 @@ export default function CreatePlanPage() {
                     onChange={(e) => setPlanDescription(e.target.value)}
                     placeholder={t('createPlan.planDescPlaceholder')}
                     rows={5}
-                    className="w-full px-5 py-4 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 resize-none text-base transition-all"
-                    onFocus={(e) => {
-                      e.currentTarget.style.borderColor = momentumOrange;
-                      e.currentTarget.style.ringColor = momentumOrange;
-                    }}
-                    onBlur={(e) => {
-                      e.currentTarget.style.borderColor = '';
-                    }}
+                    className="w-full px-5 py-4 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#FF6B00] focus:border-[#FF6B00] text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 resize-none text-base transition-all"
                   />
                 </div>
 
                 <button
                   onClick={handleCreatePlan}
                   disabled={!planTitle || loading}
-                  className="w-full py-3 rounded-lg font-medium shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 text-sm text-white disabled:opacity-50 disabled:cursor-not-allowed"
-                  style={{ backgroundColor: momentumOrange }}
-                  onMouseEnter={(e) => !loading && !planTitle && (e.currentTarget.style.backgroundColor = momentumOrangeHover)}
-                  onMouseLeave={(e) => !loading && !planTitle && (e.currentTarget.style.backgroundColor = momentumOrange)}
+                  className="w-full py-3 rounded-lg font-medium shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 text-sm text-white disabled:opacity-50 disabled:cursor-not-allowed bg-[#FF6B00] hover:bg-[#E55F00]"
                 >
                   {loading ? (
                     <>
@@ -537,23 +458,6 @@ export default function CreatePlanPage() {
         {/* Template Customization Modal - Disabled */}
       </div>
 
-      {/* Shimmer animation */}
-      <style>{`
-        @keyframes shimmer {
-          0% {
-            transform: translateX(-100%);
-          }
-          100% {
-            transform: translateX(100%);
-          }
-        }
-        .shimmer-shine {
-          animation: shimmer 3s infinite;
-        }
-        .group:hover .shimmer-shine {
-          opacity: 0.3 !important;
-        }
-      `}</style>
     </div>
   );
 }

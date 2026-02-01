@@ -29,7 +29,7 @@ export default function AdminActivityLogsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{ borderColor: '#FF6B00' }}></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FF6B00]"></div>
       </div>
     );
   }
@@ -57,16 +57,15 @@ export default function AdminActivityLogsPage() {
             logs.map((log, index) => (
               <div key={log.id || index} className="p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50">
                 <div className="flex items-start space-x-3">
-                  <div className="flex-shrink-0 w-2 h-2 mt-2 rounded-full" style={{ backgroundColor: log.isSuccess !== false ? '#FF6B00' : '#EF4444' }}></div>
+                  <div className={`flex-shrink-0 w-2 h-2 mt-2 rounded-full ${log.isSuccess !== false ? 'bg-[#FF6B00]' : 'bg-red-500'}`}></div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
                       <p className="text-sm font-medium text-gray-900 dark:text-white">
                         {log.action || t('admin.activityLogs.systemActivity')}
                       </p>
                       {log.isSuccess !== undefined && (
-                        <span 
-                          className="px-2 py-0.5 rounded text-xs"
-                          style={log.isSuccess ? { backgroundColor: '#FF6B00', color: '#FFFFFF' } : { backgroundColor: '#EF444415', color: '#EF4444' }}
+                        <span
+                          className={`px-2 py-0.5 rounded text-xs ${log.isSuccess ? 'bg-[#FF6B00] text-white' : 'bg-red-500/[0.08] text-red-500'}`}
                         >
                           {log.isSuccess ? t('admin.activityLogs.success') : t('admin.activityLogs.failed')}
                         </span>

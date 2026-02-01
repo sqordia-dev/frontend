@@ -101,7 +101,7 @@ export default function AdminUsersPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{ borderColor: '#FF6B00' }}></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FF6B00]"></div>
       </div>
     );
   }
@@ -128,9 +128,7 @@ export default function AdminUsersPage() {
                 placeholder={t('admin.users.search')}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-colors"
-                onFocus={(e) => e.currentTarget.style.borderColor = '#FF6B00'}
-                onBlur={(e) => e.currentTarget.style.borderColor = ''}
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500 focus:border-[#FF6B00] transition-colors"
               />
             </div>
             <button className="flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
@@ -142,10 +140,9 @@ export default function AdminUsersPage() {
                 onClick={() => setViewMode('list')}
                 className={`p-2 rounded transition-colors ${
                   viewMode === 'list'
-                    ? 'text-white'
+                    ? 'text-white bg-[#FF6B00]'
                     : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-600'
                 }`}
-                style={viewMode === 'list' ? { backgroundColor: '#FF6B00' } : {}}
                 title="List View"
               >
                 <List className="w-5 h-5" />
@@ -154,10 +151,9 @@ export default function AdminUsersPage() {
                 onClick={() => setViewMode('card')}
                 className={`p-2 rounded transition-colors ${
                   viewMode === 'card'
-                    ? 'text-white'
+                    ? 'text-white bg-[#FF6B00]'
                     : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-600'
                 }`}
-                style={viewMode === 'card' ? { backgroundColor: '#FF6B00' } : {}}
                 title="Card View"
               >
                 <LayoutGrid className="w-5 h-5" />
@@ -203,8 +199,8 @@ export default function AdminUsersPage() {
                     <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
-                          <div className="flex-shrink-0 h-10 w-10 rounded-full flex items-center justify-center" style={{ backgroundColor: '#FF6B0015' }}>
-                            <span className="font-medium" style={{ color: '#FF6B00' }}>
+                          <div className="flex-shrink-0 h-10 w-10 rounded-full flex items-center justify-center bg-[#FF6B00]/[0.08]">
+                            <span className="font-medium text-[#FF6B00]">
                               {user.email?.[0]?.toUpperCase() || 'U'}
                             </span>
                           </div>
@@ -217,10 +213,11 @@ export default function AdminUsersPage() {
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
-                        style={user.status === 'Active' || user.isActive 
-                          ? { backgroundColor: '#FF6B00', color: '#FFFFFF' } 
-                          : { backgroundColor: '#EF444415', color: '#EF4444' }}>
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          user.status === 'Active' || user.isActive
+                            ? 'bg-[#FF6B00] text-white'
+                            : 'bg-red-500/[0.08] text-red-500'
+                        }`}>
                           {user.status || (user.isActive ? t('admin.users.active') : t('admin.users.inactive'))}
                         </span>
                       </td>
@@ -292,8 +289,8 @@ export default function AdminUsersPage() {
                   >
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex items-center gap-3 flex-1 min-w-0">
-                        <div className="flex-shrink-0 h-12 w-12 rounded-full flex items-center justify-center" style={{ backgroundColor: '#FF6B0015' }}>
-                          <span className="font-medium text-lg" style={{ color: '#FF6B00' }}>
+                        <div className="flex-shrink-0 h-12 w-12 rounded-full flex items-center justify-center bg-[#FF6B00]/[0.08]">
+                          <span className="font-medium text-lg text-[#FF6B00]">
                             {user.email?.[0]?.toUpperCase() || 'U'}
                           </span>
                         </div>
@@ -345,10 +342,11 @@ export default function AdminUsersPage() {
                     <div className="space-y-2 mb-3">
                       <div className="flex items-center justify-between text-xs">
                         <span className="text-gray-500 dark:text-gray-400">Status:</span>
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
-                        style={user.status === 'Active' || user.isActive 
-                          ? { backgroundColor: '#FF6B00', color: '#FFFFFF' } 
-                          : { backgroundColor: '#EF444415', color: '#EF4444' }}>
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          user.status === 'Active' || user.isActive
+                            ? 'bg-[#FF6B00] text-white'
+                            : 'bg-red-500/[0.08] text-red-500'
+                        }`}>
                           {user.status || (user.isActive ? t('admin.users.active') : t('admin.users.inactive'))}
                         </span>
                       </div>
@@ -407,7 +405,7 @@ export default function AdminUsersPage() {
             <div className="p-6">
               {loadingRoles ? (
                 <div className="flex items-center justify-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{ borderColor: '#FF6B00' }}></div>
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#FF6B00]"></div>
                 </div>
               ) : (
                 <>
@@ -473,10 +471,7 @@ export default function AdminUsersPage() {
                               </div>
                               <button
                                 onClick={() => handleAssignRole(role.id)}
-                                className="px-4 py-2 text-sm font-medium text-white rounded-lg transition-colors"
-                                style={{ backgroundColor: '#FF6B00' }}
-                                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#E55F00'}
-                                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#FF6B00'}
+                                className="px-4 py-2 text-sm font-medium text-white rounded-lg transition-colors bg-[#FF6B00] hover:bg-[#E55F00]"
                               >
                                 Assign
                               </button>

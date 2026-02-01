@@ -52,8 +52,7 @@ export default function QuestionnaireProgress({
           initial={{ width: 0 }}
           animate={{ width: `${progressPercentage}%` }}
           transition={{ duration: 0.5, ease: 'easeOut' }}
-          className="absolute top-0 left-0 h-full rounded-full"
-          style={{ backgroundColor: '#FF6B00' }}
+          className="absolute top-0 left-0 h-full rounded-full bg-[#FF6B00]"
         >
           {/* Shimmer effect */}
           <div

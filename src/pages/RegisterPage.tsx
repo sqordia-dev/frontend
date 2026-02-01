@@ -92,17 +92,11 @@ export default function RegisterPage() {
         url={getCanonicalUrl('/register')}
       />
       {/* Left Panel - Branding */}
-      <div 
-        className="hidden lg:flex lg:w-[40%] flex-col justify-between p-12"
-        style={{ backgroundColor: '#1A2B47' }}
-      >
+      <div className="hidden lg:flex lg:w-[40%] flex-col justify-between p-12 bg-[#1A2B47]">
         <div>
           {/* Logo */}
           <Link to="/" className="inline-flex items-center gap-3 mb-12 group">
-            <div 
-              className="p-3 rounded-xl transition-transform group-hover:scale-105"
-              style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)' }}
-            >
+            <div className="p-3 rounded-xl transition-transform group-hover:scale-105 bg-white/10">
               <Brain className="text-white w-7 h-7" />
             </div>
             <span className="text-2xl font-bold font-heading text-white">
@@ -114,52 +108,43 @@ export default function RegisterPage() {
           <h2 className="text-4xl font-bold font-heading text-white mb-4 leading-tight">
             {t('register.panel.tagline')}
           </h2>
-          <p className="text-lg mb-12" style={{ color: '#D1D5DB' }}>
+          <p className="text-lg mb-12 text-gray-300">
             {t('register.panel.subtitle')}
           </p>
 
           {/* Key Benefits */}
           <div className="space-y-6 mb-12">
             <div className="flex items-start gap-4">
-              <div 
-                className="p-2.5 rounded-lg flex-shrink-0"
-                style={{ backgroundColor: 'rgba(255, 107, 0, 0.15)' }}
-              >
-                <Clock className="w-5 h-5" style={{ color: '#FF6B00' }} />
+              <div className="p-2.5 rounded-lg flex-shrink-0 bg-[#FF6B00]/15">
+                <Clock className="w-5 h-5 text-[#FF6B00]" />
               </div>
               <div>
                 <h3 className="text-white font-semibold mb-1">{t('register.panel.benefit1.title')}</h3>
-                <p className="text-sm" style={{ color: '#9CA3AF' }}>
+                <p className="text-sm text-gray-400">
                   {t('register.panel.benefit1.desc')}
                 </p>
               </div>
             </div>
 
             <div className="flex items-start gap-4">
-              <div 
-                className="p-2.5 rounded-lg flex-shrink-0"
-                style={{ backgroundColor: 'rgba(255, 107, 0, 0.15)' }}
-              >
-                <Zap className="w-5 h-5" style={{ color: '#FF6B00' }} />
+              <div className="p-2.5 rounded-lg flex-shrink-0 bg-[#FF6B00]/15">
+                <Zap className="w-5 h-5 text-[#FF6B00]" />
               </div>
               <div>
                 <h3 className="text-white font-semibold mb-1">{t('register.panel.benefit2.title')}</h3>
-                <p className="text-sm" style={{ color: '#9CA3AF' }}>
+                <p className="text-sm text-gray-400">
                   {t('register.panel.benefit2.desc')}
                 </p>
               </div>
             </div>
 
             <div className="flex items-start gap-4">
-              <div 
-                className="p-2.5 rounded-lg flex-shrink-0"
-                style={{ backgroundColor: 'rgba(255, 107, 0, 0.15)' }}
-              >
-                <Shield className="w-5 h-5" style={{ color: '#FF6B00' }} />
+              <div className="p-2.5 rounded-lg flex-shrink-0 bg-[#FF6B00]/15">
+                <Shield className="w-5 h-5 text-[#FF6B00]" />
               </div>
               <div>
                 <h3 className="text-white font-semibold mb-1">{t('register.panel.benefit3.title')}</h3>
-                <p className="text-sm" style={{ color: '#9CA3AF' }}>
+                <p className="text-sm text-gray-400">
                   {t('register.panel.benefit3.desc')}
                 </p>
               </div>
@@ -170,53 +155,47 @@ export default function RegisterPage() {
         {/* Trust Indicators */}
         <div className="space-y-4">
           <div className="flex items-center gap-3">
-            <Users className="w-5 h-5" style={{ color: '#FF6B00' }} />
+            <Users className="w-5 h-5 text-[#FF6B00]" />
             <span className="text-white font-semibold">{t('register.panel.trust.plans')}</span>
           </div>
           <div className="flex items-center gap-3">
-            <Star className="w-5 h-5 fill-current" style={{ color: '#FF6B00' }} />
+            <Star className="w-5 h-5 fill-current text-[#FF6B00]" />
             <span className="text-white font-semibold">{t('register.panel.trust.rating')}</span>
           </div>
           <div className="flex items-center gap-3">
-            <CheckCircle className="w-5 h-5" style={{ color: '#FF6B00' }} />
+            <CheckCircle className="w-5 h-5 text-[#FF6B00]" />
             <span className="text-white font-semibold">{t('register.panel.trust.nocard')}</span>
           </div>
         </div>
       </div>
 
       {/* Right Panel - Form */}
-      <div 
-        className="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-12 py-12 overflow-y-auto"
-        style={{ backgroundColor: '#FFFFFF' }}
-      >
+      <div className="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-12 py-12 overflow-y-auto bg-white">
         <div className="w-full max-w-[520px]">
           {/* Mobile Logo */}
           <div className="lg:hidden text-center mb-8">
             <Link to="/" className="inline-flex items-center gap-3 mb-6 group">
-              <div 
-                className="p-3 rounded-xl transition-transform group-hover:scale-105"
-                style={{ backgroundColor: '#1A2B47' }}
-              >
+              <div className="p-3 rounded-xl transition-transform group-hover:scale-105 bg-[#1A2B47]">
                 <Brain className="text-white w-6 h-6" />
               </div>
-              <span className="text-2xl font-bold font-heading" style={{ color: '#1A2B47' }}>
+              <span className="text-2xl font-bold font-heading text-[#1A2B47]">
                 Sqordia
               </span>
             </Link>
-            <h1 className="text-3xl font-bold font-heading mb-2" style={{ color: '#1A2B47' }}>
+            <h1 className="text-3xl font-bold font-heading mb-2 text-[#1A2B47]">
               {t('register.title')}
             </h1>
-            <p className="text-base" style={{ color: '#6B7280' }}>
+            <p className="text-base text-gray-500">
               {t('register.subtitle')}
             </p>
           </div>
 
           {/* Desktop Title */}
           <div className="hidden lg:block mb-8">
-            <h1 className="text-3xl font-bold font-heading mb-2" style={{ color: '#1A2B47' }}>
+            <h1 className="text-3xl font-bold font-heading mb-2 text-[#1A2B47]">
               {t('register.title')}
             </h1>
-            <p className="text-base" style={{ color: '#6B7280' }}>
+            <p className="text-base text-gray-500">
               {t('register.subtitle')}
             </p>
           </div>
@@ -224,14 +203,8 @@ export default function RegisterPage() {
           {/* Register Form */}
           <div>
           {error && (
-            <div 
-              className="mb-6 p-4 rounded-lg border"
-              style={{
-                backgroundColor: '#FEF2F2',
-                borderColor: '#FECACA',
-              }}
-            >
-              <p className="text-sm font-medium" style={{ color: '#DC2626' }}>{error}</p>
+            <div className="mb-6 p-4 rounded-lg border bg-red-50 border-red-200">
+              <p className="text-sm font-medium text-red-600">{error}</p>
             </div>
           )}
 
@@ -240,24 +213,7 @@ export default function RegisterPage() {
             type="button"
             onClick={handleGoogleSignUp}
             disabled={googleLoading || loading}
-            className="w-full mb-6 py-3.5 px-4 rounded-lg font-semibold text-sm transition-all duration-200 flex items-center justify-center gap-3 border disabled:opacity-50 disabled:cursor-not-allowed"
-            style={{
-              backgroundColor: '#FFFFFF',
-              borderColor: '#E5E7EB',
-              color: '#374151',
-            }}
-            onMouseEnter={(e) => {
-              if (!googleLoading && !loading) {
-                e.currentTarget.style.borderColor = '#D1D5DB';
-                e.currentTarget.style.backgroundColor = '#F9FAFB';
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (!googleLoading && !loading) {
-                e.currentTarget.style.borderColor = '#E5E7EB';
-                e.currentTarget.style.backgroundColor = '#FFFFFF';
-              }
-            }}
+            className="w-full mb-6 py-3.5 px-4 rounded-lg font-semibold text-sm transition-all duration-200 flex items-center justify-center gap-3 border disabled:opacity-50 disabled:cursor-not-allowed bg-white border-gray-200 text-gray-700 hover:border-gray-300 hover:bg-gray-50"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path
@@ -283,10 +239,10 @@ export default function RegisterPage() {
           {/* Divider */}
           <div className="relative mb-6">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t" style={{ borderColor: '#E5E7EB' }}></div>
+              <div className="w-full border-t border-gray-200"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-3" style={{ color: '#6B7280', backgroundColor: '#FFFFFF' }}>
+              <span className="px-3 text-gray-500 bg-white">
                 {t('register.divider')}
               </span>
             </div>
@@ -296,12 +252,12 @@ export default function RegisterPage() {
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label htmlFor="firstName" className="block text-sm font-semibold mb-2.5" style={{ color: '#1A2B47' }}>
+                <label htmlFor="firstName" className="block text-sm font-semibold mb-2.5 text-[#1A2B47]">
                   {t('register.firstname')}
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <User className="h-4 w-4" style={{ color: '#9CA3AF' }} />
+                    <User className="h-4 w-4 text-gray-400" />
                   </div>
                   <input
                     id="firstName"
@@ -310,32 +266,19 @@ export default function RegisterPage() {
                     value={formData.firstName}
                     onChange={handleChange}
                     required
-                    className="w-full pl-11 pr-4 py-4 md:py-3.5 rounded-lg border text-base md:text-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-0 min-h-[44px]"
-                    style={{
-                      backgroundColor: '#FFFFFF',
-                      borderColor: '#E5E7EB',
-                      color: '#111827',
-                    }}
-                    onFocus={(e) => {
-                      e.currentTarget.style.borderColor = '#FF6B00';
-                      e.currentTarget.style.boxShadow = '0 0 0 3px rgba(255, 107, 0, 0.1)';
-                    }}
-                    onBlur={(e) => {
-                      e.currentTarget.style.borderColor = '#E5E7EB';
-                      e.currentTarget.style.boxShadow = 'none';
-                    }}
+                    className="w-full pl-11 pr-4 py-4 md:py-3.5 rounded-lg border text-base md:text-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-0 min-h-[44px] bg-white border-gray-200 text-gray-900 focus:border-[#FF6B00] focus:ring-[#FF6B00]/10"
                     placeholder={t('register.firstname.placeholder')}
                   />
                 </div>
               </div>
 
               <div>
-                <label htmlFor="lastName" className="block text-sm font-semibold mb-2.5" style={{ color: '#1A2B47' }}>
+                <label htmlFor="lastName" className="block text-sm font-semibold mb-2.5 text-[#1A2B47]">
                   {t('register.lastname')}
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <User className="h-4 w-4" style={{ color: '#9CA3AF' }} />
+                    <User className="h-4 w-4 text-gray-400" />
                   </div>
                   <input
                     id="lastName"
@@ -344,20 +287,7 @@ export default function RegisterPage() {
                     value={formData.lastName}
                     onChange={handleChange}
                     required
-                    className="w-full pl-11 pr-4 py-4 md:py-3.5 rounded-lg border text-base md:text-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-0 min-h-[44px]"
-                    style={{
-                      backgroundColor: '#FFFFFF',
-                      borderColor: '#E5E7EB',
-                      color: '#111827',
-                    }}
-                    onFocus={(e) => {
-                      e.currentTarget.style.borderColor = '#FF6B00';
-                      e.currentTarget.style.boxShadow = '0 0 0 3px rgba(255, 107, 0, 0.1)';
-                    }}
-                    onBlur={(e) => {
-                      e.currentTarget.style.borderColor = '#E5E7EB';
-                      e.currentTarget.style.boxShadow = 'none';
-                    }}
+                    className="w-full pl-11 pr-4 py-4 md:py-3.5 rounded-lg border text-base md:text-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-0 min-h-[44px] bg-white border-gray-200 text-gray-900 focus:border-[#FF6B00] focus:ring-[#FF6B00]/10"
                     placeholder={t('register.lastname.placeholder')}
                   />
                 </div>
@@ -365,12 +295,12 @@ export default function RegisterPage() {
             </div>
 
             <div>
-              <label htmlFor="email" className="block text-sm font-semibold mb-2.5" style={{ color: '#1A2B47' }}>
+              <label htmlFor="email" className="block text-sm font-semibold mb-2.5 text-[#1A2B47]">
                 {t('register.email')}
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                  <Mail className="h-5 w-5" style={{ color: '#9CA3AF' }} />
+                  <Mail className="h-5 w-5 text-gray-400" />
                 </div>
                 <input
                   id="email"
@@ -379,32 +309,19 @@ export default function RegisterPage() {
                   value={formData.email}
                   onChange={handleChange}
                   required
-                  className="w-full pl-12 pr-4 py-4 md:py-3.5 rounded-lg border text-base md:text-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-0 min-h-[44px]"
-                  style={{
-                    backgroundColor: '#FFFFFF',
-                    borderColor: '#E5E7EB',
-                    color: '#111827',
-                  }}
-                  onFocus={(e) => {
-                    e.currentTarget.style.borderColor = '#FF6B00';
-                    e.currentTarget.style.boxShadow = '0 0 0 3px rgba(255, 107, 0, 0.1)';
-                  }}
-                  onBlur={(e) => {
-                    e.currentTarget.style.borderColor = '#E5E7EB';
-                    e.currentTarget.style.boxShadow = 'none';
-                  }}
+                  className="w-full pl-12 pr-4 py-4 md:py-3.5 rounded-lg border text-base md:text-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-0 min-h-[44px] bg-white border-gray-200 text-gray-900 focus:border-[#FF6B00] focus:ring-[#FF6B00]/10"
                   placeholder={t('register.email.placeholder')}
                 />
               </div>
             </div>
 
             <div>
-              <label htmlFor="organizationName" className="block text-sm font-semibold mb-2.5" style={{ color: '#1A2B47' }}>
-                {t('register.organization')} <span style={{ color: '#9CA3AF', fontWeight: 'normal' }}>{t('register.optional')}</span>
+              <label htmlFor="organizationName" className="block text-sm font-semibold mb-2.5 text-[#1A2B47]">
+                {t('register.organization')} <span className="text-gray-400 font-normal">{t('register.optional')}</span>
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                  <Building2 className="h-5 w-5" style={{ color: '#9CA3AF' }} />
+                  <Building2 className="h-5 w-5 text-gray-400" />
                 </div>
                 <input
                   id="organizationName"
@@ -412,32 +329,19 @@ export default function RegisterPage() {
                   type="text"
                   value={formData.organizationName}
                   onChange={handleChange}
-                  className="w-full pl-12 pr-4 py-4 md:py-3.5 rounded-lg border text-base md:text-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-0 min-h-[44px]"
-                  style={{
-                    backgroundColor: '#FFFFFF',
-                    borderColor: '#E5E7EB',
-                    color: '#111827',
-                  }}
-                  onFocus={(e) => {
-                    e.currentTarget.style.borderColor = '#FF6B00';
-                    e.currentTarget.style.boxShadow = '0 0 0 3px rgba(255, 107, 0, 0.1)';
-                  }}
-                  onBlur={(e) => {
-                    e.currentTarget.style.borderColor = '#E5E7EB';
-                    e.currentTarget.style.boxShadow = 'none';
-                  }}
+                  className="w-full pl-12 pr-4 py-4 md:py-3.5 rounded-lg border text-base md:text-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-0 min-h-[44px] bg-white border-gray-200 text-gray-900 focus:border-[#FF6B00] focus:ring-[#FF6B00]/10"
                   placeholder={t('register.organization.placeholder')}
                 />
               </div>
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-semibold mb-2.5" style={{ color: '#1A2B47' }}>
+              <label htmlFor="password" className="block text-sm font-semibold mb-2.5 text-[#1A2B47]">
                 {t('register.password')}
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                  <Lock className="h-5 w-5" style={{ color: '#9CA3AF' }} />
+                  <Lock className="h-5 w-5 text-gray-400" />
                 </div>
                 <input
                   id="password"
@@ -447,29 +351,13 @@ export default function RegisterPage() {
                   onChange={handleChange}
                   required
                   minLength={8}
-                  className="w-full pl-12 pr-12 py-4 md:py-3.5 rounded-lg border text-base md:text-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-0 min-h-[44px]"
-                  style={{
-                    backgroundColor: '#FFFFFF',
-                    borderColor: '#E5E7EB',
-                    color: '#111827',
-                  }}
-                  onFocus={(e) => {
-                    e.currentTarget.style.borderColor = '#FF6B00';
-                    e.currentTarget.style.boxShadow = '0 0 0 3px rgba(255, 107, 0, 0.1)';
-                  }}
-                  onBlur={(e) => {
-                    e.currentTarget.style.borderColor = '#E5E7EB';
-                    e.currentTarget.style.boxShadow = 'none';
-                  }}
+                  className="w-full pl-12 pr-12 py-4 md:py-3.5 rounded-lg border text-base md:text-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-0 min-h-[44px] bg-white border-gray-200 text-gray-900 focus:border-[#FF6B00] focus:ring-[#FF6B00]/10"
                   placeholder={t('register.password.placeholder')}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 pr-4 flex items-center transition-colors"
-                  style={{ color: '#9CA3AF' }}
-                  onMouseEnter={(e) => e.currentTarget.style.color = '#6B7280'}
-                  onMouseLeave={(e) => e.currentTarget.style.color = '#9CA3AF'}
+                  className="absolute inset-y-0 right-0 pr-4 flex items-center transition-colors text-gray-400 hover:text-gray-600"
                 >
                   {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                 </button>
@@ -478,16 +366,14 @@ export default function RegisterPage() {
                 <div className="mt-3 space-y-2">
                   {passwordRequirements.map((req, index) => (
                     <div key={index} className="flex items-center gap-2.5 text-xs">
-                      <div 
-                        className={`w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0`}
-                        style={{
-                          backgroundColor: req.met ? '#FFF4E6' : '#F3F4F6',
-                          border: `1px solid ${req.met ? '#FF6B00' : '#E5E7EB'}`,
-                        }}
+                      <div
+                        className={`w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 border ${
+                          req.met ? 'bg-orange-50 border-[#FF6B00]' : 'bg-gray-100 border-gray-200'
+                        }`}
                       >
-                        {req.met && <CheckCircle size={10} style={{ color: '#FF6B00' }} />}
+                        {req.met && <CheckCircle size={10} className="text-[#FF6B00]" />}
                       </div>
-                      <span style={{ color: req.met ? '#1A2B47' : '#6B7280' }}>
+                      <span className={req.met ? 'text-[#1A2B47]' : 'text-gray-500'}>
                         {req.label}
                       </span>
                     </div>
@@ -497,12 +383,12 @@ export default function RegisterPage() {
             </div>
 
             <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-semibold mb-2.5" style={{ color: '#1A2B47' }}>
+              <label htmlFor="confirmPassword" className="block text-sm font-semibold mb-2.5 text-[#1A2B47]">
                 {t('register.confirm')}
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                  <Lock className="h-5 w-5" style={{ color: '#9CA3AF' }} />
+                  <Lock className="h-5 w-5 text-gray-400" />
                 </div>
                 <input
                   id="confirmPassword"
@@ -512,29 +398,13 @@ export default function RegisterPage() {
                   onChange={handleChange}
                   required
                   minLength={8}
-                  className="w-full pl-12 pr-12 py-4 md:py-3.5 rounded-lg border text-base md:text-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-0 min-h-[44px]"
-                  style={{
-                    backgroundColor: '#FFFFFF',
-                    borderColor: '#E5E7EB',
-                    color: '#111827',
-                  }}
-                  onFocus={(e) => {
-                    e.currentTarget.style.borderColor = '#FF6B00';
-                    e.currentTarget.style.boxShadow = '0 0 0 3px rgba(255, 107, 0, 0.1)';
-                  }}
-                  onBlur={(e) => {
-                    e.currentTarget.style.borderColor = '#E5E7EB';
-                    e.currentTarget.style.boxShadow = 'none';
-                  }}
+                  className="w-full pl-12 pr-12 py-4 md:py-3.5 rounded-lg border text-base md:text-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-0 min-h-[44px] bg-white border-gray-200 text-gray-900 focus:border-[#FF6B00] focus:ring-[#FF6B00]/10"
                   placeholder={t('register.confirm.placeholder')}
                 />
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute inset-y-0 right-0 pr-4 flex items-center transition-colors"
-                  style={{ color: '#9CA3AF' }}
-                  onMouseEnter={(e) => e.currentTarget.style.color = '#6B7280'}
-                  onMouseLeave={(e) => e.currentTarget.style.color = '#9CA3AF'}
+                  className="absolute inset-y-0 right-0 pr-4 flex items-center transition-colors text-gray-400 hover:text-gray-600"
                 >
                   {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                 </button>
@@ -543,15 +413,14 @@ export default function RegisterPage() {
 
             <div className="pt-1">
               <label className="flex items-start gap-3">
-                <input 
-                  type="checkbox" 
-                  required 
-                  className="w-4 h-4 mt-1 rounded border-gray-300 focus:ring-2 focus:ring-offset-0 focus:ring-orange-500"
-                  style={{ accentColor: '#FF6B00' }}
+                <input
+                  type="checkbox"
+                  required
+                  className="w-4 h-4 mt-1 rounded border-gray-300 focus:ring-2 focus:ring-offset-0 focus:ring-orange-500 accent-[#FF6B00]"
                 />
-                <span className="text-sm leading-relaxed" style={{ color: '#6B7280' }}>
-                  {t('register.terms')} <a href="#" className="font-semibold transition-colors" style={{ color: '#FF6B00' }} onMouseEnter={(e) => e.currentTarget.style.color = '#E55F00'} onMouseLeave={(e) => e.currentTarget.style.color = '#FF6B00'}>{t('register.termslink')}</a> {t('register.and')}{' '}
-                  <a href="#" className="font-semibold transition-colors" style={{ color: '#FF6B00' }} onMouseEnter={(e) => e.currentTarget.style.color = '#E55F00'} onMouseLeave={(e) => e.currentTarget.style.color = '#FF6B00'}>{t('register.privacy')}</a>
+                <span className="text-sm leading-relaxed text-gray-500">
+                  {t('register.terms')} <a href="#" className="font-semibold transition-colors text-[#FF6B00] hover:text-[#E55F00]">{t('register.termslink')}</a> {t('register.and')}{' '}
+                  <a href="#" className="font-semibold transition-colors text-[#FF6B00] hover:text-[#E55F00]">{t('register.privacy')}</a>
                 </span>
               </label>
             </div>
@@ -559,20 +428,7 @@ export default function RegisterPage() {
             <button
               type="submit"
               disabled={loading || googleLoading}
-              className="w-full py-4 md:py-3.5 rounded-lg font-semibold text-white text-base md:text-sm transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 group min-h-[44px]"
-              style={{ 
-                backgroundColor: '#FF6B00',
-              }}
-              onMouseEnter={(e) => {
-                if (!loading && !googleLoading) {
-                  e.currentTarget.style.backgroundColor = '#E55F00';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!loading && !googleLoading) {
-                  e.currentTarget.style.backgroundColor = '#FF6B00';
-                }
-              }}
+              className="w-full py-4 md:py-3.5 rounded-lg font-semibold text-white text-base md:text-sm transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 group min-h-[44px] bg-[#FF6B00] hover:bg-[#E55F00]"
             >
               {loading ? (
                 <span>{t('register.creating')}</span>
@@ -585,28 +441,22 @@ export default function RegisterPage() {
             </button>
           </form>
 
-          <div className="mt-8 pt-6 border-t" style={{ borderColor: '#E5E7EB' }}>
-            <p className="text-center text-sm" style={{ color: '#6B7280' }}>
+          <div className="mt-8 pt-6 border-t border-gray-200">
+            <p className="text-center text-sm text-gray-500">
               {t('register.hasaccount')}{' '}
-              <Link 
-                to="/login" 
-                className="font-semibold transition-colors"
-                style={{ color: '#FF6B00' }}
-                onMouseEnter={(e) => e.currentTarget.style.color = '#E55F00'}
-                onMouseLeave={(e) => e.currentTarget.style.color = '#FF6B00'}
+              <Link
+                to="/login"
+                className="font-semibold transition-colors text-[#FF6B00] hover:text-[#E55F00]"
               >
                 {t('register.signin')}
               </Link>
             </p>
           </div>
 
-          <p className="mt-6 text-center text-sm" style={{ color: '#9CA3AF' }}>
-            <Link 
-              to="/" 
-              className="transition-colors hover:underline"
-              style={{ color: '#6B7280' }}
-              onMouseEnter={(e) => e.currentTarget.style.color = '#374151'}
-              onMouseLeave={(e) => e.currentTarget.style.color = '#6B7280'}
+          <p className="mt-6 text-center text-sm text-gray-400">
+            <Link
+              to="/"
+              className="transition-colors hover:underline text-gray-500 hover:text-gray-700"
             >
               {t('register.back')}
             </Link>

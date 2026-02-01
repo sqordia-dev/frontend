@@ -7,8 +7,8 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Inter', 'sans-serif'],
-        heading: ['Plus Jakarta Sans', 'sans-serif'],
+        sans: ['DM Sans', 'sans-serif'],
+        heading: ['Bricolage Grotesque', 'sans-serif'],
       },
       // Typography scale (Stripe/Linear inspired)
       fontSize: {

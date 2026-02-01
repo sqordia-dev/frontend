@@ -78,12 +78,9 @@ export default function RichTextEditor({
     <div className="space-y-4">
       {/* Instructions Section */}
       {instructions && showInstructions && (
-        <div className="border-2 rounded-xl p-4 dark:bg-gray-800" style={{ 
-          borderColor: '#1A2B47',
-          backgroundColor: '#F4F7FA'
-        }}>
+        <div className="border-2 rounded-xl p-4 border-[#1A2B47] bg-[#F4F7FA] dark:bg-gray-800">
           <div className="flex items-start justify-between mb-3">
-            <h4 className="text-sm font-bold dark:text-white" style={{ color: '#1A2B47' }}>{t('richTextEditor.instructions')}</h4>
+            <h4 className="text-sm font-bold text-[#1A2B47] dark:text-white">{t('richTextEditor.instructions')}</h4>
             <button
               onClick={() => setShowInstructions(false)}
               className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 p-1 rounded transition-colors"
@@ -93,7 +90,7 @@ export default function RichTextEditor({
               </svg>
             </button>
           </div>
-          <div className="text-sm leading-relaxed whitespace-pre-wrap dark:text-gray-300" style={{ color: '#1A2B47' }}>
+          <div className="text-sm leading-relaxed whitespace-pre-wrap text-[#1A2B47] dark:text-gray-300">
             {instructions}
           </div>
         </div>
@@ -101,38 +98,21 @@ export default function RichTextEditor({
 
       {/* AI Assistant Card */}
       {onHelpMeWrite && (
-        <div className="border-2 rounded-xl p-4 transition-all hover:shadow-lg" style={{ 
-          borderColor: '#FF6B00',
-          backgroundColor: '#F4F7FA'
-        }}>
+        <div className="border-2 rounded-xl p-4 transition-all hover:shadow-lg border-[#FF6B00] bg-[#F4F7FA]">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg" style={{ backgroundColor: '#FF6B00' }}>
+              <div className="p-2 rounded-lg bg-[#FF6B00]">
                 <Sparkles size={20} className="text-white" />
               </div>
               <div>
-                <h4 className="font-bold text-sm" style={{ color: '#1A2B47' }}>{t('richTextEditor.aiAssistant')}</h4>
+                <h4 className="font-bold text-sm text-[#1A2B47]">{t('richTextEditor.aiAssistant')}</h4>
                 <p className="text-xs text-gray-600 dark:text-gray-400">{t('richTextEditor.aiAssistantDesc')}</p>
               </div>
             </div>
             <button
               onClick={onHelpMeWrite}
               disabled={helpMeWriteLoading || disabled}
-              className="px-4 sm:px-5 py-3 sm:py-2.5 rounded-lg font-semibold text-xs sm:text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shadow-sm hover:shadow-md min-h-[44px] sm:min-h-0"
-              style={{ 
-                backgroundColor: helpMeWriteLoading ? '#E55F00' : '#FF6B00',
-                color: 'white'
-              }}
-              onMouseEnter={(e) => {
-                if (!helpMeWriteLoading && !disabled) {
-                  e.currentTarget.style.backgroundColor = '#E55F00';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!helpMeWriteLoading && !disabled) {
-                  e.currentTarget.style.backgroundColor = '#FF6B00';
-                }
-              }}
+              className="px-4 sm:px-5 py-3 sm:py-2.5 rounded-lg font-semibold text-xs sm:text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shadow-sm hover:shadow-md min-h-[44px] sm:min-h-0 bg-[#FF6B00] hover:bg-[#E55F00] text-white"
             >
               {helpMeWriteLoading ? (
                 <>

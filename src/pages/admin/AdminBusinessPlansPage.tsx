@@ -49,7 +49,7 @@ export default function AdminBusinessPlansPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{ borderColor: '#FF6B00' }}></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FF6B00]"></div>
       </div>
     );
   }
@@ -88,10 +88,9 @@ export default function AdminBusinessPlansPage() {
                 onClick={() => setViewMode('list')}
                 className={`p-2 rounded transition-colors ${
                   viewMode === 'list'
-                    ? 'text-white'
+                    ? 'text-white bg-[#FF6B00]'
                     : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-600'
                 }`}
-                style={viewMode === 'list' ? { backgroundColor: '#FF6B00' } : {}}
                 title="List View"
               >
                 <List className="w-5 h-5" />
@@ -100,10 +99,9 @@ export default function AdminBusinessPlansPage() {
                 onClick={() => setViewMode('card')}
                 className={`p-2 rounded transition-colors ${
                   viewMode === 'card'
-                    ? 'text-white'
+                    ? 'text-white bg-[#FF6B00]'
                     : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-600'
                 }`}
-                style={viewMode === 'card' ? { backgroundColor: '#FF6B00' } : {}}
                 title="Card View"
               >
                 <LayoutGrid className="w-5 h-5" />
@@ -168,14 +166,15 @@ export default function AdminBusinessPlansPage() {
                         {plan.organizationName || '-'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
-                        style={plan.status === 'Completed' || plan.status === 'completed' 
-                          ? { backgroundColor: '#FF6B00', color: '#FFFFFF' } 
-                          : plan.status === 'In Progress' || plan.status === 'inProgress'
-                          ? { backgroundColor: '#3B82F615', color: '#3B82F6' }
-                          : { backgroundColor: '#6B728015', color: '#6B7280' }}>
-                          {plan.status === 'Completed' ? t('admin.businessPlans.completed') : 
-                           plan.status === 'InProgress' ? t('admin.businessPlans.inProgress') : 
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          plan.status === 'Completed' || plan.status === 'completed'
+                            ? 'bg-[#FF6B00] text-white'
+                            : plan.status === 'In Progress' || plan.status === 'inProgress'
+                            ? 'bg-blue-500/[0.08] text-blue-500'
+                            : 'bg-gray-500/[0.08] text-gray-500'
+                        }`}>
+                          {plan.status === 'Completed' ? t('admin.businessPlans.completed') :
+                           plan.status === 'InProgress' ? t('admin.businessPlans.inProgress') :
                            t('admin.businessPlans.draft')}
                         </span>
                       </td>
@@ -189,10 +188,7 @@ export default function AdminBusinessPlansPage() {
                         <button
                           onClick={() => handleRegenerate(plan.id)}
                           disabled={regenerating === plan.id}
-                          className="inline-flex items-center transition-colors disabled:opacity-50"
-                          style={{ color: '#FF6B00' }}
-                          onMouseEnter={(e) => !e.currentTarget.disabled && (e.currentTarget.style.color = '#E55F00')}
-                          onMouseLeave={(e) => !e.currentTarget.disabled && (e.currentTarget.style.color = '#FF6B00')}
+                          className="inline-flex items-center transition-colors disabled:opacity-50 text-[#FF6B00] hover:text-[#E55F00]"
                         >
                           <RefreshCw className={`w-4 h-4 mr-1 ${regenerating === plan.id ? 'animate-spin' : ''}`} />
                           {t('admin.businessPlans.regenerate')}
@@ -251,23 +247,21 @@ export default function AdminBusinessPlansPage() {
                       </div>
                     </div>
                     <div className="flex items-center justify-between pt-3 border-t border-gray-200 dark:border-gray-700">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
-                      style={plan.status === 'Completed' || plan.status === 'completed' 
-                        ? { backgroundColor: '#FF6B00', color: '#FFFFFF' } 
-                        : plan.status === 'In Progress' || plan.status === 'inProgress'
-                        ? { backgroundColor: '#3B82F615', color: '#3B82F6' }
-                        : { backgroundColor: '#6B728015', color: '#6B7280' }}>
-                        {plan.status === 'Completed' ? t('admin.businessPlans.completed') : 
-                         plan.status === 'InProgress' ? t('admin.businessPlans.inProgress') : 
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        plan.status === 'Completed' || plan.status === 'completed'
+                          ? 'bg-[#FF6B00] text-white'
+                          : plan.status === 'In Progress' || plan.status === 'inProgress'
+                          ? 'bg-blue-500/[0.08] text-blue-500'
+                          : 'bg-gray-500/[0.08] text-gray-500'
+                      }`}>
+                        {plan.status === 'Completed' ? t('admin.businessPlans.completed') :
+                         plan.status === 'InProgress' ? t('admin.businessPlans.inProgress') :
                          t('admin.businessPlans.draft')}
                       </span>
                       <button
                         onClick={() => handleRegenerate(plan.id)}
                         disabled={regenerating === plan.id}
-                        className="inline-flex items-center text-xs transition-colors disabled:opacity-50"
-                        style={{ color: '#FF6B00' }}
-                        onMouseEnter={(e) => !e.currentTarget.disabled && (e.currentTarget.style.color = '#E55F00')}
-                        onMouseLeave={(e) => !e.currentTarget.disabled && (e.currentTarget.style.color = '#FF6B00')}
+                        className="inline-flex items-center text-xs transition-colors disabled:opacity-50 text-[#FF6B00] hover:text-[#E55F00]"
                       >
                         <RefreshCw className={`w-4 h-4 mr-1 ${regenerating === plan.id ? 'animate-spin' : ''}`} />
                         {t('admin.businessPlans.regenerate')}

@@ -1,22 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { User, Mail, Building2, Phone, MapPin, Save, ArrowLeft, Shield, Lock, Key, AlertCircle, Upload, Image as ImageIcon, X, Rocket, Briefcase, Heart, ExternalLink } from 'lucide-react';
 import { authService } from '../lib/auth-service';
 import { profileService } from '../lib/profile-service';
 import { securityService } from '../lib/security-service';
-import { useTheme } from '../contexts/ThemeContext';
 import { PersonaType } from '../lib/types';
 import SEO from '../components/SEO';
 
 export default function ProfilePage() {
-  const navigate = useNavigate();
-  const { theme } = useTheme();
-  
-  // Landing page color theme
-  const strategyBlue = '#1A2B47';
-  const momentumOrange = '#FF6B00';
-  const momentumOrangeHover = '#E55F00';
-  const lightAIGrey = '#F4F7FA';
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -250,8 +241,8 @@ export default function ProfilePage() {
     return (
       <div className="min-h-screen bg-white dark:bg-gray-900 flex items-center justify-center">
         <div className="relative w-16 h-16">
-          <div className="absolute inset-0 border-4 rounded-full dark:border-gray-700" style={{ borderColor: theme === 'dark' ? undefined : lightAIGrey }}></div>
-          <div className="absolute inset-0 border-4 border-t-transparent rounded-full animate-spin" style={{ borderColor: momentumOrange }}></div>
+          <div className="absolute inset-0 border-4 rounded-full border-[#F4F7FA] dark:border-gray-700"></div>
+          <div className="absolute inset-0 border-4 border-[#FF6B00] border-t-transparent rounded-full animate-spin"></div>
         </div>
       </div>
     );
@@ -269,8 +260,7 @@ export default function ProfilePage() {
         <div className="mb-6">
           <Link
             to="/dashboard"
-            className="inline-flex items-center dark:text-gray-300 hover:opacity-80 transition-opacity"
-            style={{ color: strategyBlue }}
+            className="inline-flex items-center text-[#1A2B47] dark:text-gray-300 hover:opacity-80 transition-opacity"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Dashboard
@@ -278,7 +268,7 @@ export default function ProfilePage() {
         </div>
 
         <div className="mb-8">
-          <h1 className="text-3xl font-bold dark:text-white" style={{ color: theme === 'dark' ? undefined : strategyBlue }}>Profile Settings</h1>
+          <h1 className="text-3xl font-bold text-[#1A2B47] dark:text-white font-heading">Profile Settings</h1>
           <p className="mt-2 text-gray-600 dark:text-gray-400">Manage your account settings and preferences</p>
         </div>
 
@@ -307,13 +297,9 @@ export default function ProfilePage() {
                 onClick={() => setActiveTab('profile')}
                 className={`py-4 px-2 border-b-2 font-medium text-sm transition-colors ${
                   activeTab === 'profile'
-                    ? 'dark:text-white'
+                    ? 'border-[#FF6B00] text-[#1A2B47] dark:text-white'
                     : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
                 }`}
-                style={activeTab === 'profile' ? {
-                  borderBottomColor: momentumOrange,
-                  color: theme === 'dark' ? undefined : strategyBlue
-                } : {}}
               >
                 <User className="w-4 h-4 inline mr-2" />
                 Profile
@@ -322,13 +308,9 @@ export default function ProfilePage() {
                 onClick={() => setActiveTab('security')}
                 className={`py-4 px-2 border-b-2 font-medium text-sm transition-colors ${
                   activeTab === 'security'
-                    ? 'dark:text-white'
+                    ? 'border-[#FF6B00] text-[#1A2B47] dark:text-white'
                     : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
                 }`}
-                style={activeTab === 'security' ? {
-                  borderBottomColor: momentumOrange,
-                  color: theme === 'dark' ? undefined : strategyBlue
-                } : {}}
               >
                 <Lock className="w-4 h-4 inline mr-2" />
                 Security
@@ -337,13 +319,9 @@ export default function ProfilePage() {
                 onClick={() => setActiveTab('sessions')}
                 className={`py-4 px-2 border-b-2 font-medium text-sm transition-colors ${
                   activeTab === 'sessions'
-                    ? 'dark:text-white'
+                    ? 'border-[#FF6B00] text-[#1A2B47] dark:text-white'
                     : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
                 }`}
-                style={activeTab === 'sessions' ? {
-                  borderBottomColor: momentumOrange,
-                  color: theme === 'dark' ? undefined : strategyBlue
-                } : {}}
               >
                 <Key className="w-4 h-4 inline mr-2" />
                 Sessions
@@ -385,8 +363,8 @@ export default function ProfilePage() {
                           </button>
                         </div>
                       ) : (
-                        <div className="w-24 h-24 rounded-full flex items-center justify-center border-2 border-gray-200 dark:border-gray-700" style={{ backgroundColor: lightAIGrey }}>
-                          <User size={40} className="dark:text-gray-300" style={{ color: strategyBlue }} />
+                        <div className="w-24 h-24 rounded-full flex items-center justify-center border-2 border-gray-200 dark:border-gray-700 bg-[#F4F7FA] dark:bg-gray-700">
+                          <User size={40} className="text-[#1A2B47] dark:text-gray-300" />
                         </div>
                       )}
                     </div>
@@ -447,8 +425,6 @@ export default function ProfilePage() {
                             }
                           }}
                           onBlur={(e) => {
-                            // Reset border color
-                            e.currentTarget.style.borderColor = '';
                             // Validate URL format
                             const url = e.target.value.trim();
                             if (url) {
@@ -462,12 +438,7 @@ export default function ProfilePage() {
                             }
                           }}
                           placeholder="Or enter a URL to your profile picture"
-                          className="w-full pl-10 pr-4 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-transparent text-sm transition-colors"
-                          style={{ 
-                            focusRingColor: momentumOrange,
-                            '--tw-ring-color': momentumOrange
-                          } as React.CSSProperties & { focusRingColor?: string }}
-                          onFocus={(e) => e.currentTarget.style.borderColor = momentumOrange}
+                          className="w-full pl-10 pr-4 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-[#FF6B00] text-sm transition-colors"
                         />
                       </div>
                       <p className="text-xs text-gray-500 dark:text-gray-400">
@@ -488,9 +459,7 @@ export default function ProfilePage() {
                         type="text"
                         value={profile.firstName}
                         onChange={(e) => setProfile({ ...profile, firstName: e.target.value })}
-                        className="w-full pl-10 pr-4 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-transparent transition-colors"
-                        onFocus={(e) => e.currentTarget.style.borderColor = momentumOrange}
-                        onBlur={(e) => e.currentTarget.style.borderColor = ''}
+                        className="w-full pl-10 pr-4 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-[#FF6B00] transition-colors"
                       />
                     </div>
                   </div>
@@ -505,9 +474,7 @@ export default function ProfilePage() {
                         type="text"
                         value={profile.lastName}
                         onChange={(e) => setProfile({ ...profile, lastName: e.target.value })}
-                        className="w-full pl-10 pr-4 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-transparent transition-colors"
-                        onFocus={(e) => e.currentTarget.style.borderColor = momentumOrange}
-                        onBlur={(e) => e.currentTarget.style.borderColor = ''}
+                        className="w-full pl-10 pr-4 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-[#FF6B00] transition-colors"
                       />
                     </div>
                   </div>
@@ -539,9 +506,7 @@ export default function ProfilePage() {
                       type="tel"
                       value={profile.phoneNumber}
                       onChange={(e) => setProfile({ ...profile, phoneNumber: e.target.value })}
-                      className="w-full pl-10 pr-4 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-transparent transition-colors"
-                      onFocus={(e) => e.currentTarget.style.borderColor = momentumOrange}
-                      onBlur={(e) => e.currentTarget.style.borderColor = ''}
+                      className="w-full pl-10 pr-4 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-[#FF6B00] transition-colors"
                     />
                   </div>
                 </div>
@@ -556,9 +521,7 @@ export default function ProfilePage() {
                       type="text"
                       value={profile.company}
                       onChange={(e) => setProfile({ ...profile, company: e.target.value })}
-                      className="w-full pl-10 pr-4 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-transparent transition-colors"
-                      onFocus={(e) => e.currentTarget.style.borderColor = momentumOrange}
-                      onBlur={(e) => e.currentTarget.style.borderColor = ''}
+                      className="w-full pl-10 pr-4 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-[#FF6B00] transition-colors"
                     />
                   </div>
                 </div>
@@ -573,9 +536,7 @@ export default function ProfilePage() {
                       value={profile.address}
                       onChange={(e) => setProfile({ ...profile, address: e.target.value })}
                       rows={3}
-                      className="w-full pl-10 pr-4 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-transparent transition-colors"
-                      onFocus={(e) => e.currentTarget.style.borderColor = momentumOrange}
-                      onBlur={(e) => e.currentTarget.style.borderColor = ''}
+                      className="w-full pl-10 pr-4 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-[#FF6B00] transition-colors"
                     />
                   </div>
                 </div>
@@ -589,11 +550,10 @@ export default function ProfilePage() {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <div
-                          className="w-10 h-10 rounded-lg flex items-center justify-center"
-                          style={{
-                            backgroundColor: userPersona === 'Entrepreneur' ? '#FF6B00' :
-                              userPersona === 'Consultant' ? '#1A2B47' : '#10B981'
-                          }}
+                          className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                            userPersona === 'Entrepreneur' ? 'bg-[#FF6B00]' :
+                            userPersona === 'Consultant' ? 'bg-[#1A2B47]' : 'bg-emerald-500'
+                          }`}
                         >
                           {userPersona === 'Entrepreneur' && <Rocket size={20} className="text-white" />}
                           {userPersona === 'Consultant' && <Briefcase size={20} className="text-white" />}
@@ -614,8 +574,7 @@ export default function ProfilePage() {
                       </div>
                       <Link
                         to="/persona-selection"
-                        className="flex items-center gap-1 text-sm font-medium hover:opacity-80 transition-opacity"
-                        style={{ color: momentumOrange }}
+                        className="flex items-center gap-1 text-sm font-medium text-[#FF6B00] hover:opacity-80 transition-opacity"
                       >
                         Change
                         <ExternalLink size={14} />
@@ -628,8 +587,7 @@ export default function ProfilePage() {
                       </p>
                       <Link
                         to="/persona-selection"
-                        className="flex items-center gap-1 text-sm font-medium hover:opacity-80 transition-opacity"
-                        style={{ color: momentumOrange }}
+                        className="flex items-center gap-1 text-sm font-medium text-[#FF6B00] hover:opacity-80 transition-opacity"
                       >
                         Select profile type
                         <ExternalLink size={14} />
@@ -642,10 +600,7 @@ export default function ProfilePage() {
                   <button
                     type="submit"
                     disabled={saving}
-                    className="flex items-center px-6 py-2 text-white rounded-lg shadow-md hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                    style={{ backgroundColor: momentumOrange }}
-                    onMouseEnter={(e) => !saving && (e.currentTarget.style.backgroundColor = momentumOrangeHover)}
-                    onMouseLeave={(e) => !saving && (e.currentTarget.style.backgroundColor = momentumOrange)}
+                    className="flex items-center px-6 py-2 text-white rounded-lg shadow-md hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed bg-[#FF6B00] hover:bg-[#E55F00]"
                   >
                     <Save className="w-4 h-4 mr-2" />
                     {saving ? 'Saving...' : 'Save Changes'}
@@ -667,9 +622,7 @@ export default function ProfilePage() {
                         type="password"
                         value={passwordForm.currentPassword}
                         onChange={(e) => setPasswordForm({ ...passwordForm, currentPassword: e.target.value })}
-                        className="w-full px-4 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-transparent transition-colors"
-                        onFocus={(e) => e.currentTarget.style.borderColor = momentumOrange}
-                        onBlur={(e) => e.currentTarget.style.borderColor = ''}
+                        className="w-full px-4 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-[#FF6B00] transition-colors"
                         required
                       />
                     </div>
@@ -682,9 +635,7 @@ export default function ProfilePage() {
                         type="password"
                         value={passwordForm.newPassword}
                         onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
-                        className="w-full px-4 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-transparent transition-colors"
-                        onFocus={(e) => e.currentTarget.style.borderColor = momentumOrange}
-                        onBlur={(e) => e.currentTarget.style.borderColor = ''}
+                        className="w-full px-4 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-[#FF6B00] transition-colors"
                         required
                       />
                     </div>
@@ -697,9 +648,7 @@ export default function ProfilePage() {
                         type="password"
                         value={passwordForm.confirmPassword}
                         onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
-                        className="w-full px-4 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-transparent transition-colors"
-                        onFocus={(e) => e.currentTarget.style.borderColor = momentumOrange}
-                        onBlur={(e) => e.currentTarget.style.borderColor = ''}
+                        className="w-full px-4 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-[#FF6B00] transition-colors"
                         required
                       />
                     </div>
@@ -707,10 +656,7 @@ export default function ProfilePage() {
                     <button
                       type="submit"
                       disabled={saving}
-                      className="px-6 py-2 text-white rounded-lg shadow-md hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                      style={{ backgroundColor: momentumOrange }}
-                      onMouseEnter={(e) => !saving && (e.currentTarget.style.backgroundColor = momentumOrangeHover)}
-                      onMouseLeave={(e) => !saving && (e.currentTarget.style.backgroundColor = momentumOrange)}
+                      className="px-6 py-2 text-white rounded-lg shadow-md hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed bg-[#FF6B00] hover:bg-[#E55F00]"
                     >
                       {saving ? 'Updating...' : 'Update Password'}
                     </button>

@@ -4,7 +4,7 @@
   <!-- Homepage -->
   <url>
     <loc>https://sqordia.com/</loc>
-    <lastmod>2024-01-15</lastmod>
+    <lastmod>2026-02-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://sqordia.com/" />
@@ -14,7 +14,7 @@
   <!-- Public Pages -->
   <url>
     <loc>https://sqordia.com/login</loc>
-    <lastmod>2024-01-15</lastmod>
+    <lastmod>2026-02-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://sqordia.com/login" />
@@ -23,7 +23,7 @@
 
   <url>
     <loc>https://sqordia.com/register</loc>
-    <lastmod>2024-01-15</lastmod>
+    <lastmod>2026-02-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://sqordia.com/register" />
@@ -32,7 +32,7 @@
 
   <url>
     <loc>https://sqordia.com/example-plans</loc>
-    <lastmod>2024-01-15</lastmod>
+    <lastmod>2026-02-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://sqordia.com/example-plans" />
@@ -42,7 +42,7 @@
   <!-- Example Plans Detail Pages -->
   <url>
     <loc>https://sqordia.com/example-plans/tech-startup</loc>
-    <lastmod>2024-01-15</lastmod>
+    <lastmod>2026-02-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://sqordia.com/example-plans/tech-startup" />
@@ -51,7 +51,7 @@
 
   <url>
     <loc>https://sqordia.com/example-plans/restaurant</loc>
-    <lastmod>2024-01-15</lastmod>
+    <lastmod>2026-02-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://sqordia.com/example-plans/restaurant" />
@@ -60,7 +60,7 @@
 
   <url>
     <loc>https://sqordia.com/example-plans/nonprofit</loc>
-    <lastmod>2024-01-15</lastmod>
+    <lastmod>2026-02-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://sqordia.com/example-plans/nonprofit" />
@@ -70,7 +70,7 @@
   <!-- Blog Posts -->
   <url>
     <loc>https://sqordia.com/blog/how-to-write-a-business-plan-that-gets-funded</loc>
-    <lastmod>2024-01-14</lastmod>
+    <lastmod>2026-02-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://sqordia.com/blog/how-to-write-a-business-plan-that-gets-funded" />
@@ -79,7 +79,7 @@
 
   <url>
     <loc>https://sqordia.com/blog/financial-projections-a-complete-guide</loc>
-    <lastmod>2024-01-09</lastmod>
+    <lastmod>2026-02-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://sqordia.com/blog/financial-projections-a-complete-guide" />
@@ -88,7 +88,7 @@
 
   <url>
     <loc>https://sqordia.com/blog/strategic-planning-for-nonprofits</loc>
-    <lastmod>2024-01-04</lastmod>
+    <lastmod>2026-02-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://sqordia.com/blog/strategic-planning-for-nonprofits" />
@@ -98,7 +98,7 @@
   <!-- Legal Pages -->
   <url>
     <loc>https://sqordia.com/privacy</loc>
-    <lastmod>2024-01-15</lastmod>
+    <lastmod>2026-02-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://sqordia.com/privacy" />
@@ -107,7 +107,7 @@
 
   <url>
     <loc>https://sqordia.com/terms</loc>
-    <lastmod>2024-01-15</lastmod>
+    <lastmod>2026-02-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://sqordia.com/terms" />
@@ -116,7 +116,7 @@
 
   <url>
     <loc>https://sqordia.com/security</loc>
-    <lastmod>2024-01-15</lastmod>
+    <lastmod>2026-02-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://sqordia.com/security" />
@@ -125,7 +125,7 @@
 
   <url>
     <loc>https://sqordia.com/compliance</loc>
-    <lastmod>2024-01-15</lastmod>
+    <lastmod>2026-02-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://sqordia.com/compliance" />

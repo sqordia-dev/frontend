@@ -206,17 +206,20 @@ export default function DashboardLayout() {
     { name: t('nav.adminPanel'), href: '/admin', icon: Shield },
   ];
 
-  const isActive = (href: string) => {
+  const isActive = (href: string, index: number, items: { href: string }[]) => {
     if (href === '/dashboard') {
       return location.pathname === '/dashboard';
     }
-    return location.pathname.startsWith(href);
+    if (!location.pathname.startsWith(href)) return false;
+    // When multiple nav items share the same href (e.g. Profile and Settings -> /profile),
+    // only the first one should show as active so we don't highlight both.
+    const firstIndexWithHref = items.findIndex((n) => n.href === href);
+    return firstIndexWithHref === index;
   };
 
-  // Landing page color theme
+  // Brand colors as Tailwind-compatible tokens
   const strategyBlue = '#1A2B47';
   const momentumOrange = '#FF6B00';
-  const lightAIGrey = '#F4F7FA';
 
   return (
     <TooltipProvider>
@@ -228,10 +231,10 @@ export default function DashboardLayout() {
       <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-white dark:bg-gray-800 border-b-2 border-gray-200 dark:border-gray-700 shadow-sm">
         <div className="flex items-center justify-between px-4 h-16">
           <Link to="/dashboard" className="flex items-center gap-2">
-            <div className="relative p-1.5 rounded-lg" style={{ backgroundColor: strategyBlue }}>
+            <div className="relative p-1.5 rounded-lg bg-[#1A2B47]">
               <Brain className="text-white" size={20} />
             </div>
-            <span className="text-lg font-bold dark:text-white" style={{ color: strategyBlue }}>Sqordia</span>
+            <span className="text-lg font-bold text-[#1A2B47] dark:text-white font-heading">Sqordia</span>
           </Link>
           <div className="flex items-center gap-2">
             {/* Language Selector */}
@@ -312,25 +315,24 @@ export default function DashboardLayout() {
                   to="/dashboard"
                   className="flex items-center gap-3 group flex-1"
                 >
-                  <div className="relative p-2 rounded-lg" style={{ backgroundColor: strategyBlue }}>
+                  <div className="relative p-2 rounded-lg bg-[#1A2B47]">
                     <Brain className="text-white" size={24} />
                   </div>
-                  <span className="text-xl font-bold dark:text-white" style={{ color: strategyBlue }}>Sqordia</span>
+                  <span className="text-xl font-bold text-[#1A2B47] dark:text-white font-heading">Sqordia</span>
                 </Link>
               ) : (
                 <Link
                   to="/dashboard"
                   className="flex items-center justify-center w-full"
                 >
-                  <div className="relative p-2 rounded-lg" style={{ backgroundColor: strategyBlue }}>
+                  <div className="relative p-2 rounded-lg bg-[#1A2B47]">
                     <Brain className="text-white" size={24} />
                   </div>
                 </Link>
               )}
               <button
                 onClick={() => setSidebarOpen(!sidebarOpen)}
-                className="hidden lg:flex items-center justify-center w-8 h-8 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-300 transition-colors"
-                style={{ color: strategyBlue }}
+                className="hidden lg:flex items-center justify-center w-8 h-8 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-[#1A2B47] dark:text-gray-300 transition-colors"
                 aria-label="Toggle sidebar"
               >
                 {sidebarOpen ? (
@@ -352,8 +354,8 @@ export default function DashboardLayout() {
                     onError={() => setProfileImageError(true)}
                   />
                 ) : (
-                  <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 dark:bg-gray-700" style={{ backgroundColor: lightAIGrey }}>
-                    <User size={20} className="dark:text-gray-300" style={{ color: strategyBlue }} />
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 bg-[#F4F7FA] dark:bg-gray-700">
+                    <User size={20} className="text-[#1A2B47] dark:text-gray-300" />
                   </div>
                 )}
                 {sidebarOpen ? (
@@ -380,9 +382,9 @@ export default function DashboardLayout() {
 
             {/* Navigation */}
             <nav className="flex-1 px-2 py-6 space-y-1 overflow-y-auto">
-              {navigation.map((item) => {
+              {navigation.map((item, index) => {
                 const Icon = item.icon;
-                const active = isActive(item.href);
+                const active = isActive(item.href, index, navigation);
 
                 return (
                   <Link
@@ -391,16 +393,9 @@ export default function DashboardLayout() {
                     onClick={() => setIsMobileMenuOpen(false)}
                     className={`flex items-center ${sidebarOpen ? 'gap-3 px-4' : 'justify-center px-2'} py-3 text-sm font-medium rounded-lg transition-all ${
                       active
-                        ? 'font-semibold dark:bg-gray-700 dark:text-white'
-                        : 'dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'
+                        ? 'font-semibold bg-[#F4F7FA] dark:bg-gray-700 text-[#1A2B47] dark:text-white border-l-4 border-[#FF6B00]'
+                        : 'text-[#1A2B47] dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'
                     }`}
-                    style={active ? {
-                      backgroundColor: theme === 'dark' ? undefined : lightAIGrey,
-                      color: theme === 'dark' ? undefined : strategyBlue,
-                      borderLeft: `4px solid ${momentumOrange}`
-                    } : {
-                      color: theme === 'dark' ? undefined : strategyBlue
-                    }}
                     title={!sidebarOpen ? item.name : undefined}
                   >
                     <Icon className="w-5 h-5 flex-shrink-0" />
@@ -412,9 +407,9 @@ export default function DashboardLayout() {
               {/* Admin Link - if user is admin */}
               {user?.roles?.includes('Admin') && (
                 <div className="pt-4 mt-4 border-t border-gray-200 dark:border-gray-700">
-                  {adminNavigation.map((item) => {
+                  {adminNavigation.map((item, index) => {
                     const Icon = item.icon;
-                    const active = isActive(item.href);
+                    const active = isActive(item.href, index, adminNavigation);
 
                     return (
                       <Link
@@ -423,16 +418,9 @@ export default function DashboardLayout() {
                         onClick={() => setIsMobileMenuOpen(false)}
                         className={`flex items-center ${sidebarOpen ? 'gap-3 px-4' : 'justify-center px-2'} py-3 text-sm font-medium rounded-lg transition-all ${
                           active
-                            ? 'font-semibold dark:bg-gray-700 dark:text-white'
-                            : 'dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'
+                            ? 'font-semibold bg-[#F4F7FA] dark:bg-gray-700 text-[#1A2B47] dark:text-white border-l-4 border-[#FF6B00]'
+                            : 'text-[#1A2B47] dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'
                         }`}
-                        style={active ? {
-                          backgroundColor: theme === 'dark' ? undefined : lightAIGrey,
-                          color: theme === 'dark' ? undefined : strategyBlue,
-                          borderLeft: `4px solid ${momentumOrange}`
-                        } : {
-                          color: theme === 'dark' ? undefined : strategyBlue
-                        }}
                         title={!sidebarOpen ? item.name : undefined}
                       >
                         <Icon className="w-5 h-5 flex-shrink-0" />
@@ -450,8 +438,7 @@ export default function DashboardLayout() {
               <div className="relative language-selector">
                 <button
                   onClick={() => setIsLangOpen(!isLangOpen)}
-                  className={`flex items-center ${sidebarOpen ? 'gap-3' : 'justify-center'} w-full ${sidebarOpen ? 'px-4' : 'px-2'} py-3 text-sm font-medium rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-200 transition-colors`}
-                  style={{ color: theme === 'dark' ? undefined : strategyBlue }}
+                  className={`flex items-center ${sidebarOpen ? 'gap-3' : 'justify-center'} w-full ${sidebarOpen ? 'px-4' : 'px-2'} py-3 text-sm font-medium rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-[#1A2B47] dark:text-gray-200 transition-colors`}
                   title={!sidebarOpen ? currentLang?.label : undefined}
                 >
                   <div className="w-6 h-4 rounded overflow-hidden flex items-center justify-center flex-shrink-0">
@@ -477,16 +464,10 @@ export default function DashboardLayout() {
                           setIsLangOpen(false);
                         }}
                         className={`w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${
-                          language === lang.code 
-                            ? 'font-semibold dark:bg-gray-700 dark:text-white' 
-                            : 'dark:text-gray-200'
+                          language === lang.code
+                            ? 'font-semibold bg-[#F4F7FA] dark:bg-gray-700 text-[#1A2B47] dark:text-white'
+                            : 'text-[#1A2B47] dark:text-gray-200'
                         }`}
-                        style={language === lang.code ? {
-                          backgroundColor: theme === 'dark' ? undefined : lightAIGrey,
-                          color: theme === 'dark' ? undefined : strategyBlue
-                        } : {
-                          color: theme === 'dark' ? undefined : strategyBlue
-                        }}
                       >
                         <div className="w-8 h-5 rounded overflow-hidden flex items-center justify-center flex-shrink-0">
                           {lang.FlagComponent && (
@@ -495,7 +476,7 @@ export default function DashboardLayout() {
                         </div>
                         <span className="font-medium">{lang.label}</span>
                         {language === lang.code && (
-                          <div className="ml-auto w-2 h-2 rounded-full" style={{ backgroundColor: momentumOrange }}></div>
+                          <div className="ml-auto w-2 h-2 rounded-full bg-[#FF6B00]"></div>
                         )}
                       </button>
                     ))}
@@ -504,8 +485,7 @@ export default function DashboardLayout() {
               </div>
               <button
                 onClick={toggleTheme}
-                className={`flex items-center ${sidebarOpen ? 'gap-3' : 'justify-center'} w-full ${sidebarOpen ? 'px-4' : 'px-2'} py-3 text-sm font-medium rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-200 transition-colors`}
-                style={{ color: theme === 'dark' ? undefined : strategyBlue }}
+                className={`flex items-center ${sidebarOpen ? 'gap-3' : 'justify-center'} w-full ${sidebarOpen ? 'px-4' : 'px-2'} py-3 text-sm font-medium rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-[#1A2B47] dark:text-gray-200 transition-colors`}
                 aria-label="Toggle theme"
                 title={!sidebarOpen ? (theme === 'light' ? t('nav.darkMode') : t('nav.lightMode')) : undefined}
               >
@@ -518,8 +498,7 @@ export default function DashboardLayout() {
               </button>
               <button
                 onClick={handleLogout}
-                className={`flex items-center ${sidebarOpen ? 'gap-3' : 'justify-center'} w-full ${sidebarOpen ? 'px-4' : 'px-2'} py-3 text-sm font-medium rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-200 transition-colors`}
-                style={{ color: theme === 'dark' ? undefined : strategyBlue }}
+                className={`flex items-center ${sidebarOpen ? 'gap-3' : 'justify-center'} w-full ${sidebarOpen ? 'px-4' : 'px-2'} py-3 text-sm font-medium rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-[#1A2B47] dark:text-gray-200 transition-colors`}
                 title={!sidebarOpen ? t('nav.logout') : undefined}
               >
                 <LogOut className="w-5 h-5 flex-shrink-0" />

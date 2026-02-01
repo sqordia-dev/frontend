@@ -187,7 +187,7 @@ export default function AdminTemplatesPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{ borderColor: '#FF6B00' }}></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FF6B00]"></div>
       </div>
     );
   }
@@ -215,10 +215,7 @@ export default function AdminTemplatesPage() {
             });
             setShowCreateModal(true);
           }}
-          className="flex items-center gap-2 px-4 py-2 text-white rounded-lg transition-colors"
-          style={{ backgroundColor: '#FF6B00' }}
-          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#E55F00'}
-          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#FF6B00'}
+          className="flex items-center gap-2 px-4 py-2 text-white rounded-lg transition-colors bg-[#FF6B00] hover:bg-[#E55F00]"
         >
           <Plus size={18} />
           {t('admin.templates.create')}
@@ -297,7 +294,7 @@ export default function AdminTemplatesPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       {template.isPublic ? (
-                        <span className="flex items-center gap-1" style={{ color: '#FF6B00' }}>
+                        <span className="flex items-center gap-1 text-[#FF6B00]">
                           <CheckCircle size={16} />
                           <span className="text-sm">{t('admin.templates.public')}</span>
                         </span>
@@ -318,27 +315,21 @@ export default function AdminTemplatesPage() {
                       <div className="flex items-center justify-end gap-2">
                         <button
                           onClick={() => window.open(`/template/${template.id}`, '_blank')}
-                          className="p-2 text-gray-600 dark:text-gray-400 transition-colors"
-                          onMouseEnter={(e) => e.currentTarget.style.color = '#FF6B00'}
-                          onMouseLeave={(e) => e.currentTarget.style.color = ''}
+                          className="p-2 text-gray-600 dark:text-gray-400 transition-colors hover:text-[#FF6B00]"
                           title={t('admin.templates.preview')}
                         >
                           <Eye size={18} />
                         </button>
                         <button
                           onClick={() => openEditModal(template)}
-                          className="p-2 text-gray-600 dark:text-gray-400 transition-colors"
-                          onMouseEnter={(e) => e.currentTarget.style.color = '#FF6B00'}
-                          onMouseLeave={(e) => e.currentTarget.style.color = ''}
+                          className="p-2 text-gray-600 dark:text-gray-400 transition-colors hover:text-[#FF6B00]"
                           title={t('admin.templates.edit')}
                         >
                           <Edit size={18} />
                         </button>
                         <button
                           onClick={() => handleClone(template.id)}
-                          className="p-2 text-gray-600 dark:text-gray-400 transition-colors"
-                          onMouseEnter={(e) => e.currentTarget.style.color = '#FF6B00'}
-                          onMouseLeave={(e) => e.currentTarget.style.color = ''}
+                          className="p-2 text-gray-600 dark:text-gray-400 transition-colors hover:text-[#FF6B00]"
                           title={t('admin.templates.clone')}
                         >
                           <Copy size={18} />
@@ -346,10 +337,7 @@ export default function AdminTemplatesPage() {
                         {!template.isPublic && (
                           <button
                             onClick={() => handlePublish(template.id)}
-                            className="p-2 transition-colors"
-                            style={{ color: '#FF6B00' }}
-                            onMouseEnter={(e) => e.currentTarget.style.color = '#E55F00'}
-                            onMouseLeave={(e) => e.currentTarget.style.color = '#FF6B00'}
+                            className="p-2 transition-colors text-[#FF6B00] hover:text-[#E55F00]"
                             title={t('admin.templates.publish')}
                           >
                             <CheckCircle size={18} />
@@ -546,8 +534,7 @@ export default function AdminTemplatesPage() {
                   id="isPublic"
                   checked={formData.isPublic}
                   onChange={(e) => setFormData({ ...formData, isPublic: e.target.checked })}
-                  className="h-4 w-4 border-gray-300 rounded focus:ring-2 focus:ring-offset-0 focus:ring-orange-500"
-                  style={{ accentColor: '#FF6B00' }}
+                  className="h-4 w-4 border-gray-300 rounded focus:ring-2 focus:ring-offset-0 focus:ring-orange-500 accent-[#FF6B00]"
                 />
                 <label htmlFor="isPublic" className="ml-2 block text-sm text-gray-700 dark:text-gray-300">
                   {t('admin.templates.makePublic')}
@@ -566,10 +553,7 @@ export default function AdminTemplatesPage() {
                 <button
                   onClick={handleSave}
                   disabled={saving || !formData.name || !formData.description || !formData.category || !formData.type || !formData.language}
-                  className="px-4 py-2 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                  style={{ backgroundColor: '#FF6B00' }}
-                  onMouseEnter={(e) => !e.currentTarget.disabled && (e.currentTarget.style.backgroundColor = '#E55F00')}
-                  onMouseLeave={(e) => !e.currentTarget.disabled && (e.currentTarget.style.backgroundColor = '#FF6B00')}
+                  className="px-4 py-2 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors bg-[#FF6B00] hover:bg-[#E55F00]"
                 >
                   {saving ? t('admin.templates.saving') : (editingTemplate ? t('admin.templates.update') : t('admin.templates.create'))}
                 </button>

@@ -33,12 +33,12 @@ export default function FinalCTA() {
   ];
 
   return (
-    <section ref={sectionRef} className="relative py-40 overflow-hidden" style={{ backgroundColor: '#1A2B47' }}>
+    <section ref={sectionRef} className="relative py-40 overflow-hidden bg-[#1A2B47]">
       {/* Background decorative elements - animated gradient */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 right-10 w-96 h-96 rounded-full mix-blend-multiply filter blur-3xl opacity-40 animate-blob" style={{ backgroundColor: 'rgba(26, 43, 71, 0.5)' }}></div>
-        <div className="absolute top-40 left-10 w-96 h-96 rounded-full mix-blend-multiply filter blur-3xl opacity-40 animate-blob animation-delay-2000" style={{ backgroundColor: 'rgba(26, 43, 71, 0.5)' }}></div>
-        <div className="absolute -bottom-8 left-1/2 w-96 h-96 rounded-full mix-blend-multiply filter blur-3xl opacity-40 animate-blob animation-delay-4000" style={{ backgroundColor: 'rgba(26, 43, 71, 0.5)' }}></div>
+        <div className="absolute top-20 right-10 w-96 h-96 rounded-full mix-blend-multiply filter blur-3xl opacity-40 animate-blob bg-[#1A2B47]/50"></div>
+        <div className="absolute top-40 left-10 w-96 h-96 rounded-full mix-blend-multiply filter blur-3xl opacity-40 animate-blob animation-delay-2000 bg-[#1A2B47]/50"></div>
+        <div className="absolute -bottom-8 left-1/2 w-96 h-96 rounded-full mix-blend-multiply filter blur-3xl opacity-40 animate-blob animation-delay-4000 bg-[#1A2B47]/50"></div>
       </div>
 
       <div className="container mx-auto px-6 relative z-10">
@@ -54,7 +54,7 @@ export default function FinalCTA() {
           </h2>
 
           {/* Sub-headline */}
-          <p className="fade-in-element text-xl md:text-2xl mb-10 leading-relaxed" style={{ color: '#D1D5DB' }}>
+          <p className="fade-in-element text-xl md:text-2xl mb-10 leading-relaxed text-gray-300">
             {t('finalCTA.subtitle')}
           </p>
 
@@ -62,10 +62,7 @@ export default function FinalCTA() {
           <div className="fade-in-element mb-10">
             <Link
               to="/register"
-              className="group inline-flex items-center gap-3 px-12 py-6 text-white text-xl font-bold font-heading rounded-lg hover:shadow-2xl hover:scale-105 transition-all duration-300"
-              style={{ backgroundColor: '#FF6B00' }}
-              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#E55F00'}
-              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#FF6B00'}
+              className="group inline-flex items-center gap-3 px-12 py-6 text-white text-xl font-bold font-heading rounded-lg hover:shadow-2xl hover:scale-105 transition-all duration-300 bg-[#FF6B00] hover:bg-[#E55F00]"
             >
               {t('finalCTA.button')}
               <ArrowRight size={24} className="group-hover:translate-x-1 transition-transform" />
@@ -73,10 +70,10 @@ export default function FinalCTA() {
           </div>
 
           {/* Benefit Checklist */}
-          <div className="fade-in-element flex flex-wrap items-center justify-center gap-6" style={{ color: 'rgba(255, 255, 255, 0.9)' }}>
+          <div className="fade-in-element flex flex-wrap items-center justify-center gap-6 text-white/90">
             {benefits.map((benefitKey, index) => (
               <div key={index} className="flex items-center gap-2">
-                <Check className="flex-shrink-0" size={20} style={{ color: '#FF6B00' }} />
+                <Check className="flex-shrink-0 text-[#FF6B00]" size={20} />
                 <span className="text-lg font-medium">{t(benefitKey)}</span>
               </div>
             ))}

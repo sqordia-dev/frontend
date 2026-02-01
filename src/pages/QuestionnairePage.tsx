@@ -67,12 +67,6 @@ export default function QuestionnairePage() {
   const navigate = useNavigate();
   const { theme, t, language: contextLanguage } = useTheme();
 
-  // Landing page color theme
-  const strategyBlue = '#1A2B47';
-  const momentumOrange = '#FF6B00';
-  const momentumOrangeHover = '#E55F00';
-  const lightAIGrey = '#F4F7FA';
-
   const [questions, setQuestions] = useState<QuestionnaireQuestion[]>([]);
   const [currentSection, setCurrentSection] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -823,10 +817,10 @@ export default function QuestionnairePage() {
       <div className="min-h-screen bg-white dark:bg-gray-900 flex items-center justify-center">
         <div className="text-center">
           <div className="relative w-16 h-16 mx-auto mb-6">
-            <div className="absolute inset-0 border-4 rounded-full dark:border-gray-700" style={{ borderColor: theme === 'dark' ? undefined : lightAIGrey }}></div>
-            <div className="absolute inset-0 border-4 border-t-transparent rounded-full animate-spin" style={{ borderColor: momentumOrange }}></div>
+            <div className="absolute inset-0 border-4 rounded-full border-[#F4F7FA] dark:border-gray-700"></div>
+            <div className="absolute inset-0 border-4 border-[#FF6B00] border-t-transparent rounded-full animate-spin"></div>
           </div>
-          <p className="text-lg font-semibold mb-2" style={{ color: theme === 'dark' ? '#F9FAFB' : strategyBlue }}>{t('questionnaire.loading')}</p>
+          <p className="text-lg font-semibold mb-2 text-[#1A2B47] dark:text-gray-50">{t('questionnaire.loading')}</p>
           <p className="text-sm text-gray-500 dark:text-gray-400">{t('questionnaire.loadingSubtitle')}</p>
         </div>
       </div>
@@ -847,8 +841,7 @@ export default function QuestionnairePage() {
           <div className="flex items-center justify-between mb-5">
             <button
               onClick={() => navigate('/dashboard')}
-              className="group flex items-center gap-2 px-3 sm:px-4 py-2.5 sm:py-2 hover:opacity-80 transition-opacity font-medium text-sm min-h-[44px] sm:min-h-0"
-              style={{ color: theme === 'dark' ? '#9CA3AF' : '#6B7280' }}
+              className="group flex items-center gap-2 px-3 sm:px-4 py-2.5 sm:py-2 hover:opacity-80 transition-opacity font-medium text-sm min-h-[44px] sm:min-h-0 text-gray-500 dark:text-gray-400"
             >
               <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
               <span className="hidden sm:inline">{t('questionnaire.backToDashboard')}</span>
@@ -861,26 +854,22 @@ export default function QuestionnairePage() {
                   setLanguage(newLang);
                   setContextLanguage(newLang);
                 }}
-                className="flex items-center gap-2 px-3 sm:px-4 py-2.5 sm:py-2 text-sm font-semibold bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 transition-all min-h-[44px] sm:min-h-0"
-                style={{ color: theme === 'dark' ? '#F3F4F6' : strategyBlue }}
+                className="flex items-center gap-2 px-3 sm:px-4 py-2.5 sm:py-2 text-sm font-semibold bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 transition-all min-h-[44px] sm:min-h-0 text-[#1A2B47] dark:text-gray-100"
               >
                 <Languages size={16} />
                 <span>{language === 'en' ? 'FR' : 'EN'}</span>
               </button>
 
               {questions.length > 0 && (
-                <div className="flex items-center gap-3 px-5 py-2.5 rounded-lg border-2 dark:bg-gray-800 dark:border-gray-700" style={{ 
-                  backgroundColor: lightAIGrey,
-                  borderColor: theme === 'dark' ? '#374151' : '#E5E7EB'
-                }}>
+                <div className="flex items-center gap-3 px-5 py-2.5 rounded-lg border-2 bg-[#F4F7FA] dark:bg-gray-800 border-gray-200 dark:border-gray-700">
                   <div className="flex items-center gap-2">
-                    <div className="w-2.5 h-2.5 rounded-full animate-pulse" style={{ backgroundColor: momentumOrange }}></div>
-                    <span className="text-sm font-bold" style={{ color: theme === 'dark' ? '#F9FAFB' : strategyBlue }}>
+                    <div className="w-2.5 h-2.5 rounded-full animate-pulse bg-[#FF6B00]"></div>
+                    <span className="text-sm font-bold text-[#1A2B47] dark:text-gray-50">
                       {calculatedProgress.completedQuestions}/{calculatedProgress.totalQuestions}
                     </span>
                   </div>
                   <div className="h-5 w-px bg-gray-300 dark:bg-gray-600"></div>
-                  <span className="text-sm font-bold" style={{ color: momentumOrange }}>
+                  <span className="text-sm font-bold text-[#FF6B00]">
                     {Math.round(calculatedProgress.completionPercentage)}%
                   </span>
                 </div>
@@ -890,12 +879,11 @@ export default function QuestionnairePage() {
 
           {questions.length > 0 && (
             <div className="relative">
-              <div className="w-full rounded-full h-3 overflow-hidden dark:bg-gray-700 shadow-inner" style={{ backgroundColor: lightAIGrey }}>
+              <div className="w-full rounded-full h-3 overflow-hidden bg-[#F4F7FA] dark:bg-gray-700 shadow-inner">
                 <div
-                  className="h-full rounded-full transition-all duration-700 ease-out relative overflow-hidden"
-                  style={{ 
+                  className="h-full rounded-full transition-all duration-700 ease-out relative overflow-hidden bg-[#FF6B00]"
+                  style={{
                     width: `${calculatedProgress.completionPercentage}%`,
-                    backgroundColor: momentumOrange,
                     minWidth: '2%'
                   }}
                 >
@@ -931,7 +919,7 @@ export default function QuestionnairePage() {
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
                 {SECTION_ICONS[currentSection] && (
-                  <div className="p-2 rounded-lg" style={{ backgroundColor: momentumOrange }}>
+                  <div className="p-2 rounded-lg bg-[#FF6B00]">
                     {(() => {
                       const Icon = SECTION_ICONS[currentSection];
                       return <Icon size={18} className="text-white" />;
@@ -947,16 +935,15 @@ export default function QuestionnairePage() {
                   </div>
                 </div>
               </div>
-              <div className="text-xs font-bold" style={{ color: momentumOrange }}>
+              <div className="text-xs font-bold text-[#FF6B00]">
                 {getSectionProgress(sections[currentSection]).answered}/{getSectionProgress(sections[currentSection]).total}
               </div>
             </div>
             <div className="flex-1 h-2 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-600 shadow-inner">
-              <div 
-                className="h-full rounded-full transition-all duration-300"
-                style={{ 
+              <div
+                className="h-full rounded-full transition-all duration-300 bg-[#FF6B00]"
+                style={{
                   width: `${getSectionProgress(sections[currentSection]).percentage}%`,
-                  backgroundColor: momentumOrange,
                   minWidth: '2%'
                 }}
               />
@@ -969,10 +956,10 @@ export default function QuestionnairePage() {
           <div className="hidden lg:block lg:col-span-3">
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border-2 border-gray-200 dark:border-gray-700 p-4 sm:p-6 sticky top-32">
               <div className="flex items-center gap-3 mb-6">
-                <div className="p-2.5 rounded-lg" style={{ backgroundColor: strategyBlue }}>
+                <div className="p-2.5 rounded-lg bg-[#1A2B47]">
                   <Target className="text-white" size={20} />
                 </div>
-                <h3 className="text-xl font-bold" style={{ color: theme === 'dark' ? '#F9FAFB' : strategyBlue }}>{t('questionnaire.sections')}</h3>
+                <h3 className="text-xl font-bold text-[#1A2B47] dark:text-gray-50">{t('questionnaire.sections')}</h3>
               </div>
               
               <nav className="space-y-2">
@@ -997,8 +984,8 @@ export default function QuestionnairePage() {
                           : 'border-2 border-transparent hover:border-gray-300 dark:hover:border-gray-600'
                       }`}
                       style={isCurrent ? {
-                        backgroundColor: theme === 'dark' ? '#1F2937' : lightAIGrey,
-                        borderColor: momentumOrange,
+                        backgroundColor: theme === 'dark' ? '#1F2937' : '#F4F7FA',
+                        borderColor: '#FF6B00',
                         borderWidth: '2px'
                       } : isComplete ? {
                         backgroundColor: theme === 'dark' ? '#064E3B' : '#F0FDF4',
@@ -1028,7 +1015,7 @@ export default function QuestionnairePage() {
                               cy="24"
                               r="20"
                               fill="none"
-                              stroke={isComplete ? '#10B981' : momentumOrange}
+                              stroke={isComplete ? '#10B981' : '#FF6B00'}
                               strokeWidth="3"
                               strokeDasharray={`${percentage * 1.26} 126`}
                               className="transition-all duration-500"
@@ -1045,74 +1032,54 @@ export default function QuestionnairePage() {
                                   : 'bg-gray-100 dark:bg-gray-700'
                               }`}
                               style={isCurrent ? {
-                                backgroundColor: momentumOrange
+                                backgroundColor: '#FF6B00'
                               } : {}}
                               >
-                                <Icon size={14} className={isCurrent ? 'text-white' : (theme === 'dark' ? '#9CA3AF' : '#6B7280')} />
+                                <Icon size={14} className={isCurrent ? 'text-white' : 'text-gray-500 dark:text-gray-400'} />
                               </div>
                             )}
                           </div>
                         </div>
                         <div className="flex-1 min-w-0">
-                          <div className={`text-sm font-bold mb-1 ${
-                            isCurrent 
-                              ? '' 
+                          <div className={`text-sm font-bold mb-1 text-[#1A2B47] dark:text-gray-50 ${
+                            isCurrent
+                              ? ''
                               : ''
                           }`}
-                          style={isCurrent ? {
-                            color: theme === 'dark' ? '#F9FAFB' : strategyBlue
-                          } : {
-                            color: theme === 'dark' ? '#F9FAFB' : strategyBlue
-                          }}
                           >
                             {t('questionnaire.section')} {index + 1}
                           </div>
                           <div className={`text-xs mb-2 line-clamp-2 ${
-                            isCurrent 
-                              ? '' 
-                              : ''
+                            isCurrent
+                              ? 'text-gray-500 dark:text-gray-300'
+                              : 'text-gray-500 dark:text-gray-400'
                           }`}
-                          style={isCurrent ? {
-                            color: theme === 'dark' ? '#D1D5DB' : '#6B7280'
-                          } : {
-                            color: theme === 'dark' ? '#9CA3AF' : '#6B7280'
-                          }}
                           >
                             {section}
                           </div>
                           <div className="flex items-center gap-2">
                             <div className={`flex-1 h-1.5 rounded-full overflow-hidden ${
-                              isCurrent 
-                                ? '' 
+                              isCurrent
+                                ? 'bg-gray-200 dark:bg-gray-700'
                                 : 'bg-gray-200 dark:bg-gray-600'
                             }`}
-                            style={isCurrent ? {
-                              backgroundColor: theme === 'dark' ? '#374151' : '#E5E7EB'
-                            } : {}}
                             >
-                              <div 
-                                className="h-full rounded-full transition-all duration-300"
-                                style={{ 
-                                  width: `${percentage}%`,
-                                  backgroundColor: isCurrent 
-                                    ? momentumOrange
-                                    : isComplete 
-                                    ? '#FF6B00' 
-                                    : momentumOrange
-                                }}
+                              <div
+                                className="h-full rounded-full transition-all duration-300 bg-[#FF6B00]"
+                                style={{ width: `${percentage}%` }}
                               />
                             </div>
-                            <span className="text-xs font-semibold" style={{ 
-                              color: isCurrent 
-                                ? (theme === 'dark' ? '#D1D5DB' : '#6B7280')
-                                : (theme === 'dark' ? '#6B7280' : '#9CA3AF')
-                            }}>
+                            <span className={`text-xs font-semibold ${
+                              isCurrent
+                                ? 'text-gray-500 dark:text-gray-300'
+                                : 'text-gray-400 dark:text-gray-500'
+                            }`}>
                               {answered}/{total}
                             </span>
                           </div>
                         </div>
                         {isCurrent && (
-                          <ChevronRight size={16} className="flex-shrink-0 mt-1" style={{ color: momentumOrange }} />
+                          <ChevronRight size={16} className="flex-shrink-0 mt-1 text-[#FF6B00]" />
                         )}
                       </div>
                     </button>
@@ -1125,10 +1092,7 @@ export default function QuestionnairePage() {
           {/* Main Content Area */}
           <div className="lg:col-span-9 space-y-6">
             {/* Section Header - Modern Design */}
-            <div className="rounded-2xl shadow-xl p-8 relative overflow-hidden border-2" style={{ 
-              backgroundColor: strategyBlue,
-              borderColor: momentumOrange
-            }}>
+            <div className="rounded-2xl shadow-xl p-8 relative overflow-hidden border-2 bg-[#1A2B47] border-[#FF6B00]">
               {/* Subtle Background Pattern */}
               <div className="absolute inset-0 opacity-5">
                 <div className="absolute inset-0" style={{
@@ -1163,7 +1127,7 @@ export default function QuestionnairePage() {
                             cy="40"
                             r="36"
                             fill="none"
-                            stroke={momentumOrange}
+                            stroke="#FF6B00"
                             strokeWidth="4"
                             strokeDasharray={strokeDasharray}
                             className="transition-all duration-500"
@@ -1171,7 +1135,7 @@ export default function QuestionnairePage() {
                           />
                         </svg>
                         <div className="absolute inset-0 flex items-center justify-center">
-                          <div className="p-3 rounded-xl" style={{ backgroundColor: momentumOrange }}>
+                          <div className="p-3 rounded-xl bg-[#FF6B00]">
                             <Icon size={24} className="text-white" />
                           </div>
                         </div>
@@ -1212,7 +1176,7 @@ export default function QuestionnairePage() {
                         : 'border-gray-200 dark:border-gray-700 hover:shadow-xl hover:-translate-y-1'
                     }`}
                     style={isFocused && !question.isAnswered ? {
-                      borderColor: momentumOrange
+                      borderColor: '#FF6B00'
                     } : {}}
                     onFocus={() => setFocusedQuestion(question.questionId)}
                     onBlur={() => setFocusedQuestion(null)}
@@ -1220,27 +1184,24 @@ export default function QuestionnairePage() {
                     {/* Question Number Indicator Bar */}
                     <div className="absolute left-0 top-0 bottom-0 w-1 rounded-l-2xl transition-all duration-300"
                       style={{
-                        backgroundColor: question.isAnswered 
-                          ? '#10B981' 
-                          : isFocused 
-                          ? momentumOrange 
+                        backgroundColor: question.isAnswered
+                          ? '#10B981'
+                          : isFocused
+                          ? '#FF6B00'
                           : 'transparent'
                       }}
                     />
                     {/* Completion Accent Bar */}
                     {question.isAnswered && (
-                      <div className="absolute top-0 left-0 right-0 h-1" style={{ backgroundColor: '#10B981' }} />
+                      <div className="absolute top-0 left-0 right-0 h-1 bg-emerald-500" />
                     )}
                     
                     {/* Question Header - Prominent Display */}
                     <div className="p-6 pb-4">
                       {/* Question Text - Highly Visible Container */}
-                      <div className="mb-6 p-6 sm:p-8 rounded-xl border-2 shadow-xl" style={{ 
-                        backgroundColor: theme === 'dark' ? '#111827' : '#FFFFFF',
-                        borderColor: theme === 'dark' ? '#4B5563' : '#D1D5DB',
-                        borderWidth: '3px',
-                        boxShadow: theme === 'dark' 
-                          ? '0 10px 25px -5px rgba(0, 0, 0, 0.3)' 
+                      <div className="mb-6 p-6 sm:p-8 rounded-xl border-[3px] bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-600" style={{
+                        boxShadow: theme === 'dark'
+                          ? '0 10px 25px -5px rgba(0, 0, 0, 0.3)'
                           : '0 10px 25px -5px rgba(0, 0, 0, 0.1)'
                       }}>
                         <div className="flex items-start gap-4">
@@ -1255,7 +1216,7 @@ export default function QuestionnairePage() {
                           style={question.isAnswered ? {
                             backgroundColor: '#10B981'
                           } : isFocused ? {
-                            backgroundColor: momentumOrange
+                            backgroundColor: '#FF6B00'
                           } : {}}
                           >
                             {question.order}
@@ -1273,7 +1234,7 @@ export default function QuestionnairePage() {
                               fontWeight: 900,
                               fontSize: 'clamp(24px, 5vw, 48px)'
                             } : {
-                              color: theme === 'dark' ? '#FFFFFF' : strategyBlue,
+                              color: theme === 'dark' ? '#FFFFFF' : '#1A2B47',
                               fontWeight: 900,
                               letterSpacing: '-0.02em',
                               fontSize: 'clamp(24px, 5vw, 48px)',
@@ -1288,10 +1249,8 @@ export default function QuestionnairePage() {
                             
                             {/* Question Metadata */}
                             <div className="flex items-center gap-3 flex-wrap">
-                              <span className="text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded-md" style={{ 
-                                color: momentumOrange,
-                                backgroundColor: theme === 'dark' ? '#1F2937' : '#FFE4CC',
-                                border: `1px solid ${momentumOrange}`
+                              <span className="text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded-md text-[#FF6B00] border border-[#FF6B00]" style={{
+                                backgroundColor: theme === 'dark' ? '#1F2937' : '#FFE4CC'
                               }}>
                                 Question {question.order}
                               </span>
@@ -1309,7 +1268,7 @@ export default function QuestionnairePage() {
                           {/* Completion Badge */}
                           {question.isAnswered && (
                             <div className="flex-shrink-0">
-                              <div className="w-12 h-12 rounded-full flex items-center justify-center shadow-lg" style={{ backgroundColor: '#10B981' }}>
+                              <div className="w-12 h-12 rounded-full flex items-center justify-center shadow-lg bg-emerald-500">
                                 <CheckCircle2 size={24} className="text-white" />
                               </div>
                             </div>
@@ -1319,14 +1278,11 @@ export default function QuestionnairePage() {
                       
                       {/* Help Text */}
                       {question.helpText && (
-                        <div className="flex items-start gap-3 p-4 rounded-xl border-2 mb-4" style={{ 
-                          backgroundColor: theme === 'dark' ? '#1F2937' : lightAIGrey,
-                          borderColor: theme === 'dark' ? '#4B5563' : '#D1D5DB'
-                        }}>
+                        <div className="flex items-start gap-3 p-4 rounded-xl border-2 mb-4 bg-[#F4F7FA] dark:bg-gray-800 border-gray-300 dark:border-gray-600">
                           <div className="flex-shrink-0 mt-0.5 p-1.5 rounded-lg" style={{ backgroundColor: theme === 'dark' ? '#374151' : '#FFE4CC' }}>
-                            <Lightbulb size={16} style={{ color: momentumOrange }} />
+                            <Lightbulb size={16} className="text-[#FF6B00]" />
                           </div>
-                          <p className="text-sm font-medium leading-relaxed" style={{ color: theme === 'dark' ? '#E5E7EB' : '#1F2937' }}>{question.helpText}</p>
+                          <p className="text-sm font-medium leading-relaxed text-gray-900 dark:text-gray-200">{question.helpText}</p>
                         </div>
                       )}
                     </div>
@@ -1336,11 +1292,8 @@ export default function QuestionnairePage() {
                       <div className="relative">
                         {/* Floating Label (appears on focus) */}
                         {isFocused && (
-                          <div className="absolute -top-2 left-4 px-2 py-0.5 rounded-md z-10 transition-all duration-200" style={{ 
-                            backgroundColor: theme === 'dark' ? '#1F2937' : '#FFFFFF',
-                            border: `1px solid ${momentumOrange}`
-                          }}>
-                            <span className="text-xs font-semibold" style={{ color: momentumOrange }}>
+                          <div className="absolute -top-2 left-4 px-2 py-0.5 rounded-md z-10 transition-all duration-200 bg-white dark:bg-gray-800 border border-[#FF6B00]">
+                            <span className="text-xs font-semibold text-[#FF6B00]">
                               Question {question.order}
                             </span>
                           </div>
@@ -1361,30 +1314,25 @@ export default function QuestionnairePage() {
                             }}
                             placeholder={t('questionnaire.placeholder') || 'Share your thoughts here... Be as detailed as you\'d like.'}
                             rows={6}
-                            className={`w-full px-5 py-4 border-2 rounded-xl transition-all duration-200 resize-none focus:outline-none focus:ring-4 text-base ${
-                              isFocused 
-                                ? 'focus:ring-orange-200 dark:focus:ring-orange-900 shadow-lg' 
+                            className={`w-full px-5 py-4 border-2 rounded-xl transition-all duration-200 resize-none focus:outline-none focus:ring-4 text-base text-[#1A2B47] dark:text-gray-50 leading-[1.7] min-h-[150px] max-h-[400px] font-sans ${
+                              isFocused
+                                ? 'focus:ring-orange-200 dark:focus:ring-orange-900 shadow-lg'
                                 : question.isAnswered
                                 ? 'shadow-sm'
                                 : 'shadow-sm'
                             }`}
                             style={{
-                              backgroundColor: isFocused 
+                              backgroundColor: isFocused
                                 ? (theme === 'dark' ? '#1F2937' : '#FFFFFF')
                                 : question.isAnswered
                                 ? (theme === 'dark' ? '#064E3B' : '#F0FDF4')
                                 : (theme === 'dark' ? '#111827' : '#F9FAFB'),
-                              borderColor: isFocused 
-                                ? momentumOrange 
+                              borderColor: isFocused
+                                ? '#FF6B00'
                                 : question.isAnswered
                                 ? '#10B981'
                                 : (theme === 'dark' ? '#374151' : '#E5E7EB'),
-                              color: theme === 'dark' ? '#F9FAFB' : strategyBlue,
-                              fontSize: '16px',
-                              lineHeight: '1.7',
-                              minHeight: '150px',
-                              maxHeight: '400px',
-                              fontFamily: 'system-ui, -apple-system, sans-serif'
+                              fontSize: '16px'
                             }}
                             onFocus={(e) => {
                               setFocusedQuestion(question.questionId);
@@ -1448,8 +1396,8 @@ export default function QuestionnairePage() {
                         
                         {/* Helper Text Below Textarea */}
                         {question.helpText && !isFocused && (
-                          <div className="mt-2 flex items-start gap-2 text-xs" style={{ color: theme === 'dark' ? '#9CA3AF' : '#6B7280' }}>
-                            <Lightbulb size={14} style={{ color: momentumOrange }} className="flex-shrink-0 mt-0.5" />
+                          <div className="mt-2 flex items-start gap-2 text-xs text-gray-500 dark:text-gray-400">
+                            <Lightbulb size={14} className="text-[#FF6B00] flex-shrink-0 mt-0.5" />
                             <span>{question.helpText}</span>
                           </div>
                         )}
@@ -1469,12 +1417,12 @@ export default function QuestionnairePage() {
                             backgroundColor: 'transparent'
                           }}
                           onMouseEnter={(e) => {
-                            if (hasAnswer && !saving) {
+                            if (hasAnswer && !(saving === question.questionId)) {
                               e.currentTarget.style.backgroundColor = theme === 'dark' ? '#064E3B' : '#F0FDF4';
                             }
                           }}
                           onMouseLeave={(e) => {
-                            if (hasAnswer && !saving) {
+                            if (hasAnswer && !(saving === question.questionId)) {
                               e.currentTarget.style.backgroundColor = 'transparent';
                             }
                           }}
@@ -1495,21 +1443,7 @@ export default function QuestionnairePage() {
                         <button
                           onClick={() => handleGetSuggestion(question.questionId)}
                           disabled={suggestingQuestionId === question.questionId}
-                          className="flex items-center gap-2 px-6 py-3 text-sm font-semibold rounded-xl transition-all duration-200 hover:scale-105 active:scale-95 disabled:opacity-75 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
-                          style={{
-                            backgroundColor: momentumOrange,
-                            color: '#FFFFFF'
-                          }}
-                          onMouseEnter={(e) => {
-                            if (!(suggestingQuestionId === question.questionId)) {
-                              e.currentTarget.style.backgroundColor = momentumOrangeHover;
-                            }
-                          }}
-                          onMouseLeave={(e) => {
-                            if (!(suggestingQuestionId === question.questionId)) {
-                              e.currentTarget.style.backgroundColor = momentumOrange;
-                            }
-                          }}
+                          className="flex items-center gap-2 px-6 py-3 text-sm font-semibold rounded-xl transition-all duration-200 hover:scale-105 active:scale-95 disabled:opacity-75 disabled:cursor-not-allowed shadow-lg hover:shadow-xl bg-[#FF6B00] hover:bg-[#E55F00] text-white"
                         >
                           {suggestingQuestionId === question.questionId ? (
                             <>
@@ -1535,14 +1469,7 @@ export default function QuestionnairePage() {
               <button
                 onClick={() => handleSectionNavigation(Math.max(0, currentSection - 1))}
                 disabled={currentSection === 0}
-                className="flex items-center gap-2 px-4 sm:px-6 py-3 rounded-lg border-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed font-semibold min-h-[44px] text-sm sm:text-base"
-                style={{
-                  color: theme === 'dark' ? '#9CA3AF' : '#6B7280',
-                  borderColor: theme === 'dark' ? '#374151' : '#E5E7EB',
-                  backgroundColor: 'transparent'
-                }}
-                onMouseEnter={(e) => !(currentSection === 0) && (e.currentTarget.style.borderColor = momentumOrange)}
-                onMouseLeave={(e) => !(currentSection === 0) && (e.currentTarget.style.borderColor = '')}
+                className="flex items-center gap-2 px-4 sm:px-6 py-3 rounded-lg border-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed font-semibold min-h-[44px] text-sm sm:text-base text-gray-500 dark:text-gray-400 border-gray-200 dark:border-gray-700 bg-transparent hover:border-[#FF6B00]"
               >
                 <ArrowLeft size={20} />
                 <span>{t('questionnaire.previousSection')}</span>
@@ -1552,12 +1479,7 @@ export default function QuestionnairePage() {
                 <button
                   onClick={handleGeneratePlan}
                   disabled={!allAnswered || generating}
-                  className="flex items-center gap-3 px-8 py-4 text-white rounded-lg font-bold shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105 active:scale-95"
-                  style={{
-                    backgroundColor: momentumOrange
-                  }}
-                  onMouseEnter={(e) => !generating && !allAnswered && (e.currentTarget.style.backgroundColor = momentumOrangeHover)}
-                  onMouseLeave={(e) => !generating && !allAnswered && (e.currentTarget.style.backgroundColor = momentumOrange)}
+                  className="flex items-center gap-3 px-8 py-4 text-white rounded-lg font-bold shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105 active:scale-95 bg-[#FF6B00] hover:bg-[#E55F00]"
                 >
                   {generating ? (
                     <>
@@ -1582,20 +1504,7 @@ export default function QuestionnairePage() {
                     }
                   }}
                   disabled={!isSectionComplete(sections[currentSection])}
-                  className="flex items-center gap-2 sm:gap-3 px-6 sm:px-8 py-3 sm:py-4 text-white rounded-lg font-bold shadow-lg hover:shadow-xl transition-all hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 min-h-[44px] text-sm sm:text-base"
-                  style={{
-                    backgroundColor: momentumOrange
-                  }}
-                  onMouseEnter={(e) => {
-                    if (isSectionComplete(sections[currentSection])) {
-                      e.currentTarget.style.backgroundColor = momentumOrangeHover;
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (isSectionComplete(sections[currentSection])) {
-                      e.currentTarget.style.backgroundColor = momentumOrange;
-                    }
-                  }}
+                  className="flex items-center gap-2 sm:gap-3 px-6 sm:px-8 py-3 sm:py-4 text-white rounded-lg font-bold shadow-lg hover:shadow-xl transition-all hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 min-h-[44px] text-sm sm:text-base bg-[#FF6B00] hover:bg-[#E55F00]"
                 >
                   <span>{t('questionnaire.nextSection')}</span>
                   <ArrowRight size={20} />
@@ -1609,27 +1518,27 @@ export default function QuestionnairePage() {
       {/* Generation Progress Modal */}
       {generating && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-3xl w-full p-8 relative border-2" style={{ borderColor: momentumOrange }}>
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-3xl w-full p-8 relative border-2 border-[#FF6B00]">
             {/* Animated Business Plan Illustration */}
             <div className="flex justify-center mb-4">
               <div className="relative w-40 h-40">
                 {/* Animated documents being built */}
                 <svg className="w-full h-full" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
                   {/* Background circle with pulse animation */}
-                  <circle cx="100" cy="100" r="80" fill="none" stroke={momentumOrange} strokeWidth="2" opacity="0.2" className="animate-pulse" />
+                  <circle cx="100" cy="100" r="80" fill="none" stroke="#FF6B00" strokeWidth="2" opacity="0.2" className="animate-pulse" />
                   
                   {/* Document 1 - sliding in from left */}
                   <g className="animate-document-slide-1">
-                    <rect x="30" y="60" width="40" height="50" rx="2" fill={strategyBlue} opacity="0.9" />
+                    <rect x="30" y="60" width="40" height="50" rx="2" fill="#1A2B47" opacity="0.9" />
                     <line x1="35" y1="75" x2="65" y2="75" stroke="white" strokeWidth="1.5" />
                     <line x1="35" y1="85" x2="60" y2="85" stroke="white" strokeWidth="1.5" />
                     <line x1="35" y1="95" x2="55" y2="95" stroke="white" strokeWidth="1.5" />
-                    <circle cx="50" cy="105" r="3" fill={momentumOrange} />
+                    <circle cx="50" cy="105" r="3" fill="#FF6B00" />
                   </g>
                   
                   {/* Document 2 - center, being written */}
                   <g className="animate-document-write">
-                    <rect x="80" y="50" width="40" height="60" rx="2" fill={momentumOrange} opacity="0.95" />
+                    <rect x="80" y="50" width="40" height="60" rx="2" fill="#FF6B00" opacity="0.95" />
                     <line x1="85" y1="65" x2="115" y2="65" stroke="white" strokeWidth="1.5" />
                     <line x1="85" y1="75" x2="110" y2="75" stroke="white" strokeWidth="1.5" />
                     <line x1="85" y1="85" x2="105" y2="85" stroke="white" strokeWidth="1.5" />
@@ -1640,32 +1549,32 @@ export default function QuestionnairePage() {
                   
                   {/* Document 3 - sliding in from right */}
                   <g className="animate-document-slide-2">
-                    <rect x="130" y="70" width="40" height="50" rx="2" fill={strategyBlue} opacity="0.9" />
+                    <rect x="130" y="70" width="40" height="50" rx="2" fill="#1A2B47" opacity="0.9" />
                     <line x1="135" y1="85" x2="165" y2="85" stroke="white" strokeWidth="1.5" />
                     <line x1="135" y1="95" x2="160" y2="95" stroke="white" strokeWidth="1.5" />
                     <line x1="135" y1="105" x2="155" y2="105" stroke="white" strokeWidth="1.5" />
-                    <circle cx="150" cy="110" r="3" fill={momentumOrange} />
+                    <circle cx="150" cy="110" r="3" fill="#FF6B00" />
                   </g>
                   
                   {/* Chart/Graph icon - floating */}
                   <g className="animate-float">
-                    <rect x="85" y="120" width="30" height="20" rx="2" fill="white" opacity="0.9" stroke={momentumOrange} strokeWidth="1.5" />
+                    <rect x="85" y="120" width="30" height="20" rx="2" fill="white" opacity="0.9" stroke="#FF6B00" strokeWidth="1.5" />
                     {/* Bar chart */}
-                    <rect x="90" y="135" width="4" height="3" fill={momentumOrange} />
-                    <rect x="96" y="132" width="4" height="6" fill={strategyBlue} />
-                    <rect x="102" y="130" width="4" height="8" fill={momentumOrange} />
-                    <rect x="108" y="133" width="4" height="5" fill={strategyBlue} />
+                    <rect x="90" y="135" width="4" height="3" fill="#FF6B00" />
+                    <rect x="96" y="132" width="4" height="6" fill="#1A2B47" />
+                    <rect x="102" y="130" width="4" height="8" fill="#FF6B00" />
+                    <rect x="108" y="133" width="4" height="5" fill="#1A2B47" />
                   </g>
                   
                   {/* Sparkles/Stars - rotating */}
                   <g className="animate-sparkle-1">
-                    <circle cx="50" cy="40" r="2" fill={momentumOrange} opacity="0.8" />
+                    <circle cx="50" cy="40" r="2" fill="#FF6B00" opacity="0.8" />
                   </g>
                   <g className="animate-sparkle-2">
-                    <circle cx="150" cy="50" r="2" fill={momentumOrange} opacity="0.8" />
+                    <circle cx="150" cy="50" r="2" fill="#FF6B00" opacity="0.8" />
                   </g>
                   <g className="animate-sparkle-3">
-                    <circle cx="160" cy="130" r="2" fill={strategyBlue} opacity="0.8" />
+                    <circle cx="160" cy="130" r="2" fill="#1A2B47" opacity="0.8" />
                   </g>
                 </svg>
               </div>
@@ -1673,7 +1582,7 @@ export default function QuestionnairePage() {
 
             <div className="flex items-start justify-between mb-6">
               <div className="flex-1">
-                <h3 className="text-2xl font-bold mb-2 text-center" style={{ color: theme === 'dark' ? '#F9FAFB' : strategyBlue }}>
+                <h3 className="text-2xl font-bold mb-2 text-center text-[#1A2B47] dark:text-gray-50">
                   {t('questionnaire.generation.title')}
                 </h3>
                 <p className="text-sm text-gray-600 dark:text-gray-400 text-center">
@@ -1704,19 +1613,18 @@ export default function QuestionnairePage() {
             {/* Progress Bar */}
             <div className="mb-6">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-semibold" style={{ color: theme === 'dark' ? '#D1D5DB' : '#6B7280' }}>
+                <span className="text-sm font-semibold text-gray-500 dark:text-gray-300">
                   {generationStatus?.currentStep || t('questionnaire.generation.step.initializing')}
                 </span>
-                <span className="text-sm font-bold" style={{ color: momentumOrange }}>
+                <span className="text-sm font-bold text-[#FF6B00]">
                   {Math.round(generationStatus?.progress || 5)}%
                 </span>
               </div>
-              <div className="w-full h-3 rounded-full overflow-hidden dark:bg-gray-700" style={{ backgroundColor: lightAIGrey }}>
+              <div className="w-full h-3 rounded-full overflow-hidden bg-[#F4F7FA] dark:bg-gray-700">
                 <div
-                  className="h-full rounded-full transition-all duration-500 ease-out relative overflow-hidden"
-                  style={{ 
+                  className="h-full rounded-full transition-all duration-500 ease-out relative overflow-hidden bg-[#FF6B00]"
+                  style={{
                     width: `${Math.max(2, generationStatus?.progress || 5)}%`,
-                    backgroundColor: momentumOrange,
                     minWidth: '2%'
                   }}
                 >
@@ -1769,7 +1677,7 @@ export default function QuestionnairePage() {
                     style={isCompleted ? {
                       borderColor: '#10B981'
                     } : isActive ? {
-                      borderColor: momentumOrange
+                      borderColor: '#FF6B00'
                     } : {}}
                   >
                     <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center transition-all ${
@@ -1830,7 +1738,7 @@ export default function QuestionnairePage() {
             )}
 
             {generationStatus?.status === 'Completed' && (
-              <div className="flex items-center justify-center gap-2 text-sm font-semibold" style={{ color: '#10B981' }}>
+              <div className="flex items-center justify-center gap-2 text-sm font-semibold text-emerald-500">
                 <CheckCircle2 size={20} />
                 <span>{t('questionnaire.generation.redirecting')}</span>
               </div>

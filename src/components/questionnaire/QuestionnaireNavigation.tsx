@@ -185,15 +185,10 @@ export default function QuestionnaireNavigation({
                 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2
                 ${
                   canGoNext
-                    ? 'text-white shadow-lg shadow-orange-500/25'
+                    ? 'text-white shadow-lg shadow-orange-500/25 bg-[#FF6B00]'
                     : 'bg-gray-200 dark:bg-gray-800 text-gray-400 dark:text-gray-600 cursor-not-allowed'
                 }
               `}
-              style={
-                canGoNext
-                  ? { backgroundColor: '#FF6B00' }
-                  : undefined
-              }
               aria-label="Go to next question"
             >
               <span>Next</span>
