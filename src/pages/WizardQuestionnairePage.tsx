@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
   ArrowLeft,
@@ -16,7 +16,10 @@ import {
   Briefcase,
   Target,
   DollarSign,
-  X
+  X,
+  RefreshCw,
+  Lightbulb,
+  XCircle
 } from 'lucide-react';
 import { businessPlanService } from '../lib/business-plan-service';
 import { useTheme } from '../contexts/ThemeContext';
@@ -111,6 +114,157 @@ export default function WizardQuestionnairePage() {
   const [showSectionReview, setShowSectionReview] = useState(false);
   const [sectionReviewLoading, setSectionReviewLoading] = useState(false);
 
+  // Generation state
+  const [generating, setGenerating] = useState(false);
+  const [generationStatus, setGenerationStatus] = useState<{
+    status?: string;
+    progress?: number;
+    currentStep?: string;
+    completedSections?: number;
+    totalSections?: number;
+  } | null>(null);
+  const generationPollRef = useRef<NodeJS.Timeout | null>(null);
+  const [generationError, setGenerationError] = useState<string | null>(null);
+  const [currentTipIndex, setCurrentTipIndex] = useState(0);
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+  const generationModalRef = useRef<HTMLDivElement>(null);
+  const previousFocusRef = useRef<HTMLElement | null>(null);
+  const cancelButtonRef = useRef<HTMLButtonElement>(null);
+
+  // Rotating tips for generation progress
+  const generationTips = useMemo(() => [
+    {
+      en: "The best business plans are clear and concise - typically 15-25 pages.",
+      fr: "Les meilleurs plans d'affaires sont clairs et concis - généralement 15-25 pages."
+    },
+    {
+      en: "Investors spend an average of 3 minutes reviewing a business plan.",
+      fr: "Les investisseurs passent en moyenne 3 minutes à examiner un plan d'affaires."
+    },
+    {
+      en: "A strong executive summary can make or break your pitch.",
+      fr: "Un résumé exécutif solide peut faire ou défaire votre présentation."
+    },
+    {
+      en: "Include realistic financial projections - overly optimistic numbers raise red flags.",
+      fr: "Incluez des projections financières réalistes - des chiffres trop optimistes soulèvent des inquiétudes."
+    },
+    {
+      en: "Your competitive advantage should be clear within the first few pages.",
+      fr: "Votre avantage concurrentiel doit être clair dès les premières pages."
+    },
+    {
+      en: "Market research strengthens credibility - cite your sources when possible.",
+      fr: "L'étude de marché renforce la crédibilité - citez vos sources lorsque possible."
+    },
+    {
+      en: "A well-defined target audience shows you understand your market.",
+      fr: "Un public cible bien défini montre que vous comprenez votre marché."
+    },
+    {
+      en: "Risk assessment demonstrates maturity and thorough planning.",
+      fr: "L'évaluation des risques démontre de la maturité et une planification approfondie."
+    }
+  ], []);
+
+  // Check for reduced motion preference
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setPrefersReducedMotion(mediaQuery.matches);
+
+    const handleChange = (e: MediaQueryListEvent) => {
+      setPrefersReducedMotion(e.matches);
+    };
+
+    mediaQuery.addEventListener('change', handleChange);
+    return () => mediaQuery.removeEventListener('change', handleChange);
+  }, []);
+
+  // Rotate tips during generation
+  useEffect(() => {
+    if (!generating) return;
+
+    const interval = setInterval(() => {
+      setCurrentTipIndex(prev => (prev + 1) % generationTips.length);
+    }, 5000); // Rotate every 5 seconds
+
+    return () => clearInterval(interval);
+  }, [generating, generationTips.length]);
+
+  // Focus management for generation modal
+  useEffect(() => {
+    if (generating) {
+      // Save current focus
+      previousFocusRef.current = document.activeElement as HTMLElement;
+
+      // Focus the modal or cancel button after a short delay
+      setTimeout(() => {
+        if (cancelButtonRef.current) {
+          cancelButtonRef.current.focus();
+        } else if (generationModalRef.current) {
+          generationModalRef.current.focus();
+        }
+      }, 100);
+    } else {
+      // Restore focus when modal closes
+      if (previousFocusRef.current) {
+        previousFocusRef.current.focus();
+      }
+    }
+  }, [generating]);
+
+  // Trap focus within generation modal
+  useEffect(() => {
+    if (!generating || !generationModalRef.current) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && !generationError) {
+        // Allow escape to cancel if there's no error
+        handleCancelGeneration();
+      }
+
+      // Trap focus within modal
+      if (e.key === 'Tab') {
+        const focusableElements = generationModalRef.current?.querySelectorAll(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        );
+
+        if (focusableElements && focusableElements.length > 0) {
+          const firstElement = focusableElements[0] as HTMLElement;
+          const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement;
+
+          if (e.shiftKey && document.activeElement === firstElement) {
+            e.preventDefault();
+            lastElement.focus();
+          } else if (!e.shiftKey && document.activeElement === lastElement) {
+            e.preventDefault();
+            firstElement.focus();
+          }
+        }
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [generating, generationError]);
+
+  // Cancel generation handler
+  const handleCancelGeneration = useCallback(() => {
+    // Clear polling interval
+    if (generationPollRef.current) {
+      clearInterval(generationPollRef.current);
+      generationPollRef.current = null;
+    }
+
+    setGenerating(false);
+    setGenerationStatus(null);
+    setGenerationError(null);
+    setCurrentTipIndex(0);
+
+    // TODO: Optionally call backend to cancel generation
+    // await businessPlanService.cancelGeneration(planId);
+  }, []);
+
   // Get persona from localStorage or user profile
   useEffect(() => {
     const storedPersona = localStorage.getItem('userPersona') as PersonaType | null;
@@ -202,14 +356,15 @@ export default function WizardQuestionnairePage() {
       const response = await apiClient.get(`/api/v1/questionnaire/templates/${persona}?language=${language}`);
 
       // Also fetch existing responses for this business plan
+      // Use the dedicated responses endpoint which properly returns V2 template question IDs
       let existingResponses: Record<string, string> = {};
       try {
-        const responsesResponse = await businessPlanService.getQuestionnaire(planId, language);
-        const responsesData = responsesResponse?.value || responsesResponse;
-        if (responsesData?.questions && Array.isArray(responsesData.questions)) {
-          responsesData.questions.forEach((q: any) => {
-            const questionId = q.questionId || q.QuestionId || q.id || q.Id;
-            const responseText = q.responseText || q.ResponseText || q.userResponse || q.UserResponse;
+        const responsesData = await businessPlanService.getQuestionnaireResponses(planId, language);
+        if (Array.isArray(responsesData)) {
+          responsesData.forEach((r: any) => {
+            // The response contains the question ID and userResponse
+            const questionId = r.id || r.Id || r.questionId || r.QuestionId;
+            const responseText = r.userResponse || r.UserResponse || r.responseText || r.ResponseText;
             if (questionId && responseText) {
               existingResponses[questionId] = responseText;
             }
@@ -327,6 +482,12 @@ export default function WizardQuestionnairePage() {
         }
       }
       setCompletedSteps(completed);
+
+      // Scroll to top after questions load to ensure user starts at the top
+      // Use requestAnimationFrame to ensure DOM has updated
+      requestAnimationFrame(() => {
+        window.scrollTo({ top: 0, behavior: 'instant' });
+      });
     } catch (err: any) {
       console.error('Failed to fetch questions:', err);
       console.error('Response data:', err.response?.data);
@@ -776,6 +937,95 @@ export default function WizardQuestionnairePage() {
     return currentStep > 1;
   };
 
+  // Poll generation status
+  const pollGenerationStatus = useCallback(async () => {
+    if (!planId) return;
+
+    try {
+      const status = await businessPlanService.getGenerationStatus(planId);
+      const normalizedStatus = {
+        status: status.status || status.Status,
+        progress: status.completionPercentage || status.CompletionPercentage || status.progress || 0,
+        currentStep: status.currentSection || status.CurrentSection || status.currentStep,
+        completedSections: status.completedSections || status.CompletedSections || 0,
+        totalSections: status.totalSections || status.TotalSections || 0
+      };
+
+      setGenerationStatus(normalizedStatus);
+
+      // Check if generation is complete
+      const statusLower = (normalizedStatus.status || '').toLowerCase();
+      if (statusLower === 'completed' || statusLower === 'generated' || normalizedStatus.progress >= 100) {
+        // Clear polling interval
+        if (generationPollRef.current) {
+          clearInterval(generationPollRef.current);
+          generationPollRef.current = null;
+        }
+
+        // Update status to show completion before redirect
+        setGenerationStatus(prev => ({ ...prev, status: 'completed', progress: 100 }));
+
+        // Wait a moment then navigate (automatic redirect)
+        setTimeout(() => {
+          setGenerating(false);
+          setGenerationStatus(null);
+          setGenerationError(null);
+          localStorage.removeItem(`questionnaire_step_${planId}`);
+          navigate(`/plans/${planId}`);
+        }, 2000);
+        return;
+      }
+
+      // Check if generation failed
+      if (statusLower === 'failed' || statusLower === 'error') {
+        if (generationPollRef.current) {
+          clearInterval(generationPollRef.current);
+          generationPollRef.current = null;
+        }
+        // Keep modal open but show error with retry option
+        setGenerationError(status.errorMessage || (language === 'fr'
+          ? 'La génération du plan d\'affaires a échoué. Veuillez réessayer.'
+          : 'Business plan generation failed. Please try again.'));
+        return;
+      }
+    } catch (err) {
+      console.error('Failed to poll generation status:', err);
+    }
+  }, [planId, navigate, language]);
+
+  // Retry generation handler
+  const handleRetryGeneration = useCallback(async () => {
+    if (!planId) return;
+
+    setGenerationError(null);
+    setGenerationStatus({ status: 'Starting', progress: 0 });
+    setCurrentTipIndex(0);
+
+    try {
+      // Trigger generation
+      await businessPlanService.generateBusinessPlan(planId);
+
+      // Start polling for status
+      generationPollRef.current = setInterval(pollGenerationStatus, 2000);
+      // Initial poll
+      pollGenerationStatus();
+    } catch (err: any) {
+      console.error('Failed to retry generation:', err);
+      setGenerationError(err.message || (language === 'fr'
+        ? 'Impossible de démarrer la génération du plan d\'affaires. Veuillez réessayer.'
+        : 'Failed to start business plan generation. Please try again.'));
+    }
+  }, [planId, pollGenerationStatus, language]);
+
+  // Cleanup polling on unmount
+  useEffect(() => {
+    return () => {
+      if (generationPollRef.current) {
+        clearInterval(generationPollRef.current);
+      }
+    };
+  }, []);
+
   const handleNext = async () => {
     if (canGoNext() && currentStep < 5) {
       // Check if step is being completed for the first time
@@ -796,11 +1046,11 @@ export default function WizardQuestionnairePage() {
       }
       setError(null);
     } else if (currentStep === 5 && canGoNext()) {
-      // All steps complete, clear saved step and navigate to plan view
+      // All steps complete - redirect to generation page
       if (planId) {
         localStorage.removeItem(`questionnaire_step_${planId}`);
+        navigate(`/generation/${planId}`);
       }
-      navigate(`/plans/${planId}`);
     }
   };
 
@@ -858,7 +1108,7 @@ export default function WizardQuestionnairePage() {
   return (
     <div className="min-h-screen" style={{ backgroundColor: theme === 'dark' ? '#111827' : '#F9FAFB' }}>
       <SEO
-        title={language === 'fr' 
+        title={language === 'fr'
           ? "Questionnaire | Sqordia"
           : "Questionnaire | Sqordia"}
         description={language === 'fr'
@@ -868,6 +1118,275 @@ export default function WizardQuestionnairePage() {
         noindex={true}
         nofollow={true}
       />
+
+      {/* Generation Progress Modal - WCAG 2.0 AA Compliant */}
+      {generating && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="generation-modal-title"
+          aria-describedby="generation-modal-description"
+        >
+          <div
+            ref={generationModalRef}
+            className="bg-white dark:bg-gray-800 rounded-2xl p-8 max-w-lg w-full mx-4 shadow-2xl"
+            tabIndex={-1}
+          >
+            {/* Screen reader live region for progress updates */}
+            <div
+              aria-live="polite"
+              aria-atomic="true"
+              className="sr-only"
+            >
+              {generationError
+                ? (language === 'fr' ? 'Erreur de génération' : 'Generation error')
+                : generationStatus?.status === 'completed'
+                ? (language === 'fr' ? 'Génération terminée, redirection en cours' : 'Generation complete, redirecting')
+                : `${language === 'fr' ? 'Progression' : 'Progress'}: ${Math.round(generationStatus?.progress || 0)}%. ${
+                    generationStatus?.currentStep || (language === 'fr' ? 'Traitement en cours' : 'Processing')
+                  }`
+              }
+            </div>
+
+            <div className="text-center">
+              {/* Animated Progress Indicator */}
+              <div className="w-20 h-20 mx-auto mb-6 relative">
+                {generationError ? (
+                  /* Error state icon */
+                  <div className="w-full h-full rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+                    <XCircle
+                      className="text-red-500 dark:text-red-400"
+                      size={40}
+                      aria-hidden="true"
+                    />
+                  </div>
+                ) : generationStatus?.status === 'completed' ? (
+                  /* Completion state icon */
+                  <div
+                    className={`w-full h-full rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center ${
+                      !prefersReducedMotion ? 'animate-pulse' : ''
+                    }`}
+                  >
+                    <CheckCircle2
+                      className="text-green-500 dark:text-green-400"
+                      size={40}
+                      aria-hidden="true"
+                    />
+                  </div>
+                ) : (
+                  /* Progress state - animated spinner */
+                  <>
+                    {/* Background circle */}
+                    <svg
+                      className="w-full h-full"
+                      viewBox="0 0 100 100"
+                      aria-hidden="true"
+                    >
+                      <circle
+                        cx="50"
+                        cy="50"
+                        r="42"
+                        fill="none"
+                        stroke={theme === 'dark' ? '#374151' : '#E5E7EB'}
+                        strokeWidth="8"
+                      />
+                      {/* Progress arc with smooth transition */}
+                      <circle
+                        cx="50"
+                        cy="50"
+                        r="42"
+                        fill="none"
+                        stroke={momentumOrange}
+                        strokeWidth="8"
+                        strokeLinecap="round"
+                        strokeDasharray={`${(generationStatus?.progress || 0) * 2.64} 264`}
+                        transform="rotate(-90 50 50)"
+                        className={prefersReducedMotion ? '' : 'transition-all duration-700 ease-out'}
+                      />
+                    </svg>
+                    {/* Center icon */}
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <Sparkles
+                        className={`text-orange-500 ${!prefersReducedMotion ? 'animate-pulse' : ''}`}
+                        size={28}
+                        aria-hidden="true"
+                      />
+                    </div>
+                    {/* Rotating outer ring (if motion allowed) */}
+                    {!prefersReducedMotion && (
+                      <div
+                        className="absolute inset-0 rounded-full border-2 border-transparent border-t-orange-300 dark:border-t-orange-600 animate-spin"
+                        style={{ animationDuration: '3s' }}
+                        aria-hidden="true"
+                      />
+                    )}
+                  </>
+                )}
+              </div>
+
+              {/* Title */}
+              <h3
+                id="generation-modal-title"
+                className={`text-xl font-bold mb-2 ${
+                  generationError
+                    ? 'text-red-600 dark:text-red-400'
+                    : generationStatus?.status === 'completed'
+                    ? 'text-green-600 dark:text-green-400'
+                    : 'text-gray-900 dark:text-white'
+                }`}
+              >
+                {generationError
+                  ? (language === 'fr' ? 'Erreur de génération' : 'Generation Error')
+                  : generationStatus?.status === 'completed'
+                  ? (language === 'fr' ? 'Génération terminée!' : 'Generation Complete!')
+                  : (language === 'fr' ? 'Génération en cours...' : 'Generating Your Business Plan...')}
+              </h3>
+
+              {/* Current Section / Status Description */}
+              <p
+                id="generation-modal-description"
+                className={`mb-6 ${
+                  generationError
+                    ? 'text-red-600 dark:text-red-400'
+                    : 'text-gray-600 dark:text-gray-400'
+                }`}
+              >
+                {generationError
+                  ? generationError
+                  : generationStatus?.status === 'completed'
+                  ? (language === 'fr'
+                    ? 'Redirection vers votre plan d\'affaires...'
+                    : 'Redirecting to your business plan...')
+                  : generationStatus?.currentStep || (language === 'fr'
+                    ? 'Préparation de votre plan d\'affaires personnalisé'
+                    : 'Preparing your personalized business plan')}
+              </p>
+
+              {/* Progress Bar - only show if not error */}
+              {!generationError && (
+                <>
+                  <div
+                    className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 mb-4 overflow-hidden"
+                    role="progressbar"
+                    aria-valuenow={Math.round(generationStatus?.progress || 0)}
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                    aria-label={language === 'fr' ? 'Progression de la génération' : 'Generation progress'}
+                  >
+                    <div
+                      className={`h-full rounded-full ${
+                        generationStatus?.status === 'completed'
+                          ? 'bg-green-500'
+                          : ''
+                      } ${prefersReducedMotion ? '' : 'transition-all duration-700 ease-out'}`}
+                      style={{
+                        width: `${generationStatus?.progress || 0}%`,
+                        backgroundColor: generationStatus?.status === 'completed' ? undefined : momentumOrange
+                      }}
+                    />
+                  </div>
+
+                  <div className="flex justify-between text-sm text-gray-500 dark:text-gray-400 mb-6">
+                    <span>
+                      {generationStatus?.completedSections || 0} / {generationStatus?.totalSections || 8} {language === 'fr' ? 'sections' : 'sections'}
+                    </span>
+                    <span>{Math.round(generationStatus?.progress || 0)}%</span>
+                  </div>
+                </>
+              )}
+
+              {/* Rotating Tips - only show during generation (not error or complete) */}
+              {!generationError && generationStatus?.status !== 'completed' && (
+                <div
+                  className={`bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4 mb-6 ${
+                    !prefersReducedMotion ? 'transition-all duration-500 ease-in-out' : ''
+                  }`}
+                  aria-live="polite"
+                  aria-atomic="true"
+                >
+                  <div className="flex items-start gap-3">
+                    <Lightbulb
+                      className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5"
+                      aria-hidden="true"
+                    />
+                    <div className="text-left">
+                      <span className="text-xs font-semibold text-blue-700 dark:text-blue-300 uppercase tracking-wide">
+                        {language === 'fr' ? 'Le saviez-vous?' : 'Did you know?'}
+                      </span>
+                      <p
+                        className={`text-sm text-blue-800 dark:text-blue-200 mt-1 ${
+                          !prefersReducedMotion ? 'animate-fadeIn' : ''
+                        }`}
+                        key={currentTipIndex}
+                      >
+                        {language === 'fr'
+                          ? generationTips[currentTipIndex].fr
+                          : generationTips[currentTipIndex].en}
+                      </p>
+                    </div>
+                  </div>
+                  {/* Tip indicator dots */}
+                  <div className="flex justify-center gap-1.5 mt-3" aria-hidden="true">
+                    {generationTips.map((_, index) => (
+                      <div
+                        key={index}
+                        className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${
+                          index === currentTipIndex
+                            ? 'bg-blue-600 dark:bg-blue-400 w-3'
+                            : 'bg-blue-300 dark:bg-blue-700'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Action Buttons */}
+              <div className="flex gap-3 justify-center">
+                {generationError ? (
+                  /* Error state buttons */
+                  <>
+                    <button
+                      onClick={handleCancelGeneration}
+                      className="px-6 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+                    >
+                      {language === 'fr' ? 'Annuler' : 'Cancel'}
+                    </button>
+                    <button
+                      ref={cancelButtonRef}
+                      onClick={handleRetryGeneration}
+                      className="px-6 py-2.5 rounded-lg text-white font-medium hover:opacity-90 transition-colors flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
+                      style={{ backgroundColor: momentumOrange }}
+                    >
+                      <RefreshCw size={18} aria-hidden="true" />
+                      {language === 'fr' ? 'Réessayer' : 'Retry'}
+                    </button>
+                  </>
+                ) : generationStatus?.status !== 'completed' ? (
+                  /* In progress - show cancel button */
+                  <button
+                    ref={cancelButtonRef}
+                    onClick={handleCancelGeneration}
+                    className="px-6 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+                  >
+                    {language === 'fr' ? 'Annuler' : 'Cancel'}
+                  </button>
+                ) : null}
+              </div>
+
+              {/* Estimated time remaining (when in progress) */}
+              {!generationError && generationStatus?.status !== 'completed' && (
+                <p className="text-xs text-gray-400 dark:text-gray-500 mt-4">
+                  {language === 'fr'
+                    ? 'Estimation: 1-2 minutes restantes'
+                    : 'Estimated: 1-2 minutes remaining'}
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Header */}
       <div className="border-b" style={{ 

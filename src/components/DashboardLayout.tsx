@@ -17,7 +17,6 @@ import {
   Moon,
   ChevronLeft,
   ChevronRight,
-  Globe,
   ChevronDown,
   Rocket,
   Briefcase,
@@ -27,6 +26,10 @@ import { authService } from '../lib/auth-service';
 import { User as UserType } from '../lib/types';
 import { useTheme } from '../contexts/ThemeContext';
 import CA from 'country-flag-icons/react/3x2/CA';
+
+// shadcn/ui components
+import { SkipLink } from '@/components/ui/skip-link';
+import { TooltipProvider } from '@/components/ui/tooltip';
 
 // Quebec Flag Component - using local SVG file
 const QuebecFlag = ({ size = 20, className = '' }: { size?: number; className?: string }) => (
@@ -213,12 +216,15 @@ export default function DashboardLayout() {
   // Landing page color theme
   const strategyBlue = '#1A2B47';
   const momentumOrange = '#FF6B00';
-  const momentumOrangeHover = '#E55F00';
   const lightAIGrey = '#F4F7FA';
 
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-900">
-      {/* Mobile Header */}
+    <TooltipProvider>
+      <div className="min-h-screen bg-white dark:bg-gray-900">
+        {/* Skip Link for Accessibility */}
+        <SkipLink targetId="main-content" />
+
+        {/* Mobile Header */}
       <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-white dark:bg-gray-800 border-b-2 border-gray-200 dark:border-gray-700 shadow-sm">
         <div className="flex items-center justify-between px-4 h-16">
           <Link to="/dashboard" className="flex items-center gap-2">
@@ -532,13 +538,18 @@ export default function DashboardLayout() {
         )}
 
         {/* Main Content */}
-        <main className={`flex-1 min-h-screen transition-all duration-300 ${sidebarOpen ? 'lg:ml-64' : 'lg:ml-20'}`}>
+        <main
+          id="main-content"
+          className={`flex-1 min-h-screen transition-all duration-300 ${sidebarOpen ? 'lg:ml-64' : 'lg:ml-20'}`}
+          tabIndex={-1}
+        >
           <div className="p-4 sm:p-6 lg:p-8">
             <Outlet />
           </div>
         </main>
       </div>
     </div>
+    </TooltipProvider>
   );
 }
 

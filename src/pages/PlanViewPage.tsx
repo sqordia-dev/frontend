@@ -29,12 +29,14 @@ import {
   Rocket,
   Heart,
   BarChart3,
-  Settings
+  Settings,
+  RefreshCw
 } from 'lucide-react';
 import { businessPlanService } from '../lib/business-plan-service';
 import type { BusinessPlan } from '../lib/types';
 import RichTextEditor from '../components/RichTextEditor';
 import { useTheme } from '../contexts/ThemeContext';
+import { useToast } from '../contexts/ToastContext';
 import { financialService } from '../lib/financial-service';
 import BalanceSheetTable, { BalanceSheetData } from '../components/BalanceSheetTable';
 import CashFlowTable, { CashFlowData } from '../components/CashFlowTable';
@@ -535,10 +537,14 @@ export default function PlanViewPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { t, language } = useTheme();
+  const toast = useToast();
   const strategyBlue = '#1A2B47';
   const momentumOrange = '#FF6B00';
   const momentumOrangeHover = '#E55F00';
   const lightAIGrey = '#F4F7FA';
+
+  // Accessibility: Status message for screen readers
+  const [statusMessage, setStatusMessage] = useState<string>('');
 
   const [plan, setPlan] = useState<BusinessPlan | null>(null);
   const [sections, setSections] = useState<Section[]>([]);
@@ -918,12 +924,14 @@ export default function PlanViewPage() {
         content: editingContent
       });
       setLastSaved({ ...lastSaved, [sectionName]: new Date().toLocaleString() });
+      setStatusMessage(t('planView.sectionSaved') || 'Section saved successfully');
       await loadSections();
       setEditingSection(null);
       setEditingContent('');
     } catch (err: any) {
       console.error('Failed to save section:', err);
-      alert(`Failed to save: ${err.message || 'Unknown error'}`);
+      setStatusMessage(t('planView.saveError') || 'Failed to save section');
+      toast.error(t('planView.saveError') || 'Failed to save', err.message || 'Unknown error');
     } finally {
       setSaving(null);
     }
@@ -946,7 +954,7 @@ export default function PlanViewPage() {
         setEditingContent(markdownToHTML(result.content));
       } else {
         console.warn('Unexpected AI response structure:', result);
-        alert('Received unexpected response from AI service. Please try again.');
+        toast.warning(t('planView.aiUnexpectedResponse') || 'Unexpected response', t('planView.aiTryAgain') || 'Received unexpected response from AI service. Please try again.');
       }
     } catch (err: any) {
       console.error('Failed to get AI help:', err);
@@ -964,7 +972,7 @@ export default function PlanViewPage() {
         errorMessage = err.message;
       }
 
-      alert(`Failed to get AI help: ${errorMessage}`);
+      toast.error(t('planView.aiHelpError') || 'AI help failed', errorMessage);
     } finally {
       setAiLoading({ ...aiLoading, [sectionName]: null });
     }
@@ -1071,7 +1079,7 @@ export default function PlanViewPage() {
       if (!section) return;
 
       if (!section.hasContent || !section.content) {
-        alert('Please add content to this section before using AI enhancements.');
+        toast.info(t('planView.addContentFirst') || 'Content required', t('planView.addContentFirstDesc') || 'Please add content to this section before using AI enhancements.');
         setAiLoading({ ...aiLoading, [sectionName]: null });
         return;
       }
@@ -1092,12 +1100,12 @@ export default function PlanViewPage() {
         setEditingContent(markdownToHTML(result.content));
       } else {
         console.warn('Unexpected AI response structure:', result);
-        alert('Received unexpected response from AI service. Please try again.');
+        toast.warning(t('planView.aiUnexpectedResponse') || 'Unexpected response', t('planView.aiTryAgain') || 'Received unexpected response from AI service. Please try again.');
       }
     } catch (err: any) {
       console.error(`Failed to ${action} section:`, err);
       let errorMessage = 'AI service may be unavailable';
-      
+
       if (err.response?.data) {
         if (typeof err.response.data === 'string') {
           errorMessage = err.response.data;
@@ -1110,7 +1118,58 @@ export default function PlanViewPage() {
         errorMessage = err.message;
       }
 
-      alert(`Failed to ${action} section: ${errorMessage}`);
+      toast.error(t('planView.aiActionError') || `Failed to ${action} section`, errorMessage);
+    } finally {
+      setAiLoading({ ...aiLoading, [sectionName]: null });
+    }
+  };
+
+  const handleRegenerateSection = async (sectionName: string) => {
+    if (!id) return;
+
+    const confirmed = window.confirm(
+      language === 'fr'
+        ? 'Voulez-vous vraiment regénérer cette section? Le contenu actuel sera remplacé.'
+        : 'Are you sure you want to regenerate this section? The current content will be replaced.'
+    );
+
+    if (!confirmed) return;
+
+    try {
+      setAiLoading({ ...aiLoading, [sectionName]: 'regenerate' });
+
+      await businessPlanService.regenerateSection(id, sectionName);
+
+      // Refetch sections to get the new content
+      const sectionsResponse = await businessPlanService.getSections(id);
+      if (sectionsResponse?.sections) {
+        setSections(sectionsResponse.sections);
+      }
+      setStatusMessage(language === 'fr' ? 'Section regénérée avec succès' : 'Section regenerated successfully');
+
+      // Close editing modal if open
+      if (editingSection === sectionName) {
+        setEditingSection(null);
+        setEditingContent('');
+      }
+    } catch (err: any) {
+      console.error('Failed to regenerate section:', err);
+      let errorMessage = 'Failed to regenerate section';
+
+      if (err.response?.data) {
+        if (typeof err.response.data === 'string') {
+          errorMessage = err.response.data;
+        } else if (err.response.data.error) {
+          errorMessage = err.response.data.error;
+        } else if (err.response.data.message) {
+          errorMessage = err.response.data.message;
+        }
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+
+      setStatusMessage(t('planView.regenerateError') || 'Regeneration failed');
+      toast.error(t('planView.regenerateError') || 'Regeneration failed', errorMessage);
     } finally {
       setAiLoading({ ...aiLoading, [sectionName]: null });
     }
@@ -1161,7 +1220,7 @@ export default function PlanViewPage() {
       }, 100);
     } catch (error: any) {
       console.error(`Failed to export to ${format}:`, error);
-      alert(`Failed to export to ${format.toUpperCase()}: ${error.message || 'Unknown error'}`);
+      toast.error(t('planView.exportError') || `Failed to export to ${format.toUpperCase()}`, error.message || 'Unknown error');
     } finally {
       setExporting(null);
     }
@@ -1189,7 +1248,7 @@ export default function PlanViewPage() {
       await loadShares();
     } catch (error: any) {
       console.error('Failed to create public share:', error);
-      alert(`Failed to create public share: ${error.message}`);
+      toast.error(t('planView.shareError') || 'Share failed', error.message || 'Failed to create public share');
     }
   };
 
@@ -1200,7 +1259,7 @@ export default function PlanViewPage() {
       await loadShares();
     } catch (error: any) {
       console.error('Failed to revoke share:', error);
-      alert(`Failed to revoke share: ${error.message}`);
+      toast.error(t('planView.revokeError') || 'Revoke failed', error.message || 'Failed to revoke share');
     }
   };
 
@@ -1326,9 +1385,9 @@ export default function PlanViewPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-white dark:bg-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-white dark:bg-gray-900 flex items-center justify-center" role="status" aria-live="polite">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto mb-4" style={{ borderColor: momentumOrange }}></div>
+          <div className="animate-spin motion-reduce:animate-none rounded-full h-12 w-12 border-b-2 mx-auto mb-4" style={{ borderColor: momentumOrange }} aria-hidden="true"></div>
           <p className="text-gray-600 dark:text-gray-400">{t('planView.loadingText')}</p>
         </div>
       </div>
@@ -1337,14 +1396,14 @@ export default function PlanViewPage() {
 
   if (error || !plan) {
     return (
-      <div className="min-h-screen bg-white dark:bg-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-white dark:bg-gray-900 flex items-center justify-center" role="alert">
         <div className="text-center max-w-md">
-          <AlertCircle className="mx-auto mb-4" size={48} style={{ color: momentumOrange }} />
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">{t('planView.planNotFound')}</h2>
+          <AlertCircle className="mx-auto mb-4" size={48} style={{ color: momentumOrange }} aria-hidden="true" />
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">{t('planView.planNotFound')}</h1>
           <p className="text-gray-600 dark:text-gray-400 mb-6">{error || t('planView.planNotFoundDesc')}</p>
           <Link
             to="/dashboard"
-            className="inline-block px-6 py-3 rounded-lg transition-colors text-white font-semibold"
+            className="inline-block px-6 py-3 rounded-lg transition-colors text-white font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-orange-500"
             style={{ backgroundColor: momentumOrange }}
             onMouseEnter={(e) => e.currentTarget.style.backgroundColor = momentumOrangeHover}
             onMouseLeave={(e) => e.currentTarget.style.backgroundColor = momentumOrange}
@@ -1358,6 +1417,15 @@ export default function PlanViewPage() {
 
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900">
+      {/* Accessibility: Live region for status announcements */}
+      <div
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+        className="sr-only"
+      >
+        {statusMessage}
+      </div>
       <SEO
         title={plan ? `${plan.title} | ${t('planView.title') || 'Business Plan'} | Sqordia` : `${t('planView.title') || 'Business Plan'} | Sqordia`}
         description={plan?.description || t('planView.description') || 'View and edit your business plan'}
@@ -1365,15 +1433,16 @@ export default function PlanViewPage() {
         nofollow={true}
       />
       {/* Top Navigation Bar */}
-      <nav className="plan-view-header bg-white dark:bg-gray-800 border-b-2 border-gray-200 dark:border-gray-700 sticky top-0 z-20 shadow-sm">
+      <nav className="plan-view-header bg-white dark:bg-gray-800 border-b-2 border-gray-200 dark:border-gray-700 sticky top-0 z-20 shadow-sm" aria-label={language === 'fr' ? 'Navigation principale du plan' : 'Plan main navigation'}>
         <div className="px-3 sm:px-4 md:px-6 py-2 sm:py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <Link
                 to="/dashboard"
-                className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
+                className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-orange-500 rounded-lg"
+                aria-label={language === 'fr' ? 'Retour au tableau de bord' : 'Back to dashboard'}
               >
-                <ArrowLeft size={20} />
+                <ArrowLeft size={20} aria-hidden="true" />
                 <span className="hidden sm:inline">{t('planView.dashboard')}</span>
               </Link>
             </div>
@@ -1381,48 +1450,54 @@ export default function PlanViewPage() {
               {/* Mobile Sidebar Toggle */}
               <button
                 onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
-                className="lg:hidden p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-                aria-label={language === 'fr' ? 'Menu' : 'Menu'}
+                className="lg:hidden p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-orange-500"
+                aria-label={language === 'fr' ? 'Ouvrir le menu de navigation' : 'Open navigation menu'}
+                aria-expanded={mobileSidebarOpen}
+                aria-controls="plan-sidebar"
               >
-                <Menu size={24} />
+                <Menu size={24} aria-hidden="true" />
               </button>
               <button
                 onClick={() => {
                   localStorage.removeItem('planViewTourCompleted');
                   (window as any).startPlanViewTour?.();
                 }}
-                className="hidden sm:flex items-center gap-2 px-4 py-2 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-lg font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200"
-                title={language === 'fr' ? 'Afficher la visite guidée' : 'Show tour guide'}
+                className="hidden sm:flex items-center gap-2 px-4 py-2 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-lg font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-orange-500"
+                aria-label={language === 'fr' ? 'Démarrer la visite guidée' : 'Start tour guide'}
               >
-                <Sparkles size={18} />
+                <Sparkles size={18} aria-hidden="true" />
                 <span className="text-sm">{language === 'fr' ? 'Visite guidée' : 'Show Tour'}</span>
               </button>
-              <div className="plan-export-buttons flex items-center gap-1 sm:gap-2 flex-wrap">
+              <div className="plan-export-buttons flex items-center gap-1 sm:gap-2 flex-wrap" role="group" aria-label={language === 'fr' ? 'Actions d\'exportation' : 'Export actions'}>
               <button
                 onClick={() => handleExport('pdf')}
                 disabled={exporting === 'pdf'}
-                className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1.5 text-xs sm:text-sm text-gray-700 dark:text-gray-300 border-2 border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
+                className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1.5 text-xs sm:text-sm text-gray-700 dark:text-gray-300 border-2 border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-orange-500"
+                aria-label={language === 'fr' ? 'Exporter en PDF' : 'Export as PDF'}
+                aria-busy={exporting === 'pdf'}
               >
-                {exporting === 'pdf' ? <Loader2 size={14} className="animate-spin sm:w-4 sm:h-4" /> : <Download size={14} className="sm:w-4 sm:h-4" />}
+                {exporting === 'pdf' ? <Loader2 size={14} className="animate-spin motion-reduce:animate-none sm:w-4 sm:h-4" aria-hidden="true" /> : <Download size={14} className="sm:w-4 sm:h-4" aria-hidden="true" />}
                 <span className="hidden xs:inline sm:inline">{t('planView.pdf')}</span>
               </button>
               <button
                 onClick={() => handleExport('word')}
                 disabled={exporting === 'word'}
-                className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1.5 text-xs sm:text-sm text-white rounded-lg transition-colors disabled:opacity-50"
+                className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1.5 text-xs sm:text-sm text-white rounded-lg transition-colors disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-orange-500"
                 style={{ backgroundColor: momentumOrange }}
                 onMouseEnter={(e) => !(exporting === 'word') && (e.currentTarget.style.backgroundColor = momentumOrangeHover)}
                 onMouseLeave={(e) => !(exporting === 'word') && (e.currentTarget.style.backgroundColor = momentumOrange)}
+                aria-label={language === 'fr' ? 'Exporter en Word' : 'Export as Word'}
+                aria-busy={exporting === 'word'}
               >
-                {exporting === 'word' ? <Loader2 size={14} className="animate-spin sm:w-4 sm:h-4" /> : <Download size={14} className="sm:w-4 sm:h-4" />}
+                {exporting === 'word' ? <Loader2 size={14} className="animate-spin motion-reduce:animate-none sm:w-4 sm:h-4" aria-hidden="true" /> : <Download size={14} className="sm:w-4 sm:h-4" aria-hidden="true" />}
                 <span className="hidden xs:inline sm:inline">{t('planView.word')}</span>
               </button>
               <button
                 onClick={() => setShowShareModal(true)}
-                className="p-1.5 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-                title={t('planView.share')}
+                className="p-1.5 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-orange-500"
+                aria-label={language === 'fr' ? 'Partager le plan' : 'Share plan'}
               >
-                <Share2 size={16} className="sm:w-[18px] sm:h-[18px]" />
+                <Share2 size={16} className="sm:w-[18px] sm:h-[18px]" aria-hidden="true" />
               </button>
               </div>
             </div>
@@ -1441,18 +1516,23 @@ export default function PlanViewPage() {
       {/* Main Layout */}
       <div className="flex min-h-screen overflow-x-hidden">
         {/* Sidebar Navigation - Fixed position for plan sections, positioned after Dashboard sidebar */}
-        <aside className={`plan-sidebar fixed w-64 flex-shrink-0 bg-white dark:bg-gray-800 border-r-2 border-gray-300 dark:border-gray-700 top-[57px] h-[calc(100vh-57px)] overflow-y-auto overflow-x-hidden transition-transform duration-300 ease-in-out z-30 lg:left-64 left-0 ${
+        <aside
+          id="plan-sidebar"
+          className={`plan-sidebar fixed w-64 flex-shrink-0 bg-white dark:bg-gray-800 border-r-2 border-gray-300 dark:border-gray-700 top-[57px] h-[calc(100vh-57px)] overflow-y-auto overflow-x-hidden transition-transform motion-reduce:transition-none duration-300 ease-in-out z-30 lg:left-64 left-0 ${
           mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
-        }`}>
+        }`}
+          aria-label={language === 'fr' ? 'Navigation des sections du plan' : 'Plan sections navigation'}
+          role="navigation"
+        >
           {/* Mobile Close Button */}
           <div className="lg:hidden flex items-center justify-between p-4 border-b-2 border-gray-200 dark:border-gray-700">
-            <h3 className="text-lg font-bold text-gray-900 dark:text-white">{t('planView.contents')}</h3>
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white" id="sidebar-title">{t('planView.contents')}</h3>
             <button
               onClick={() => setMobileSidebarOpen(false)}
-              className="p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-              aria-label={language === 'fr' ? 'Fermer' : 'Close'}
+              className="p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-orange-500"
+              aria-label={language === 'fr' ? 'Fermer le menu de navigation' : 'Close navigation menu'}
             >
-              <X size={20} />
+              <X size={20} aria-hidden="true" />
             </button>
           </div>
           <div className="p-6">
@@ -1461,7 +1541,7 @@ export default function PlanViewPage() {
               <div className="mb-4 pb-4 border-b-2 border-gray-200 dark:border-gray-700">
                 <button
                   onClick={toggleAllSections}
-                  className="w-full flex items-center justify-between gap-2 px-3 py-2 rounded-lg transition-all text-sm font-semibold"
+                  className="w-full flex items-center justify-between gap-2 px-3 py-2 rounded-lg transition-all text-sm font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-orange-500"
                   style={{
                     backgroundColor: sections.every(s => expandedSections.has(s.sectionName)) ? momentumOrange : lightAIGrey,
                     color: sections.every(s => expandedSections.has(s.sectionName)) ? 'white' : strategyBlue
@@ -1478,50 +1558,57 @@ export default function PlanViewPage() {
                       e.currentTarget.style.color = strategyBlue;
                     }
                   }}
+                  aria-expanded={sections.every(s => expandedSections.has(s.sectionName))}
+                  aria-label={sections.every(s => expandedSections.has(s.sectionName))
+                    ? (language === 'fr' ? 'Réduire toutes les sections' : 'Collapse all sections')
+                    : (language === 'fr' ? 'Développer toutes les sections' : 'Expand all sections')
+                  }
                 >
                   <span className="flex items-center gap-2">
                     {sections.every(s => expandedSections.has(s.sectionName)) ? (
-                      <ChevronUp size={16} />
+                      <ChevronUp size={16} aria-hidden="true" />
                     ) : (
-                      <ChevronDown size={16} />
+                      <ChevronDown size={16} aria-hidden="true" />
                     )}
                     <span>{sections.every(s => expandedSections.has(s.sectionName)) ? t('planView.collapseAll') : t('planView.expandAll')}</span>
                   </span>
                 </button>
               </div>
             )}
-            <div className="space-y-1">
+            <ul className="space-y-1" role="list">
               {/* Cover and Contents */}
               {navSections.filter(s => s.id === 'cover' || s.id === 'contents').map((section) => {
                 const isActive = activeSection === section.id || (section.id === 'cover' && !activeSection);
                 return (
-                  <button
-                    key={section.id}
-                    onClick={() => {
-                      if (section.id === 'cover') {
-                        window.scrollTo({ top: 0, behavior: 'smooth' });
-                      } else if (section.id === 'contents') {
-                        const contentsElement = sectionRefs.current['contents'];
-                        if (contentsElement) {
-                          const offset = 120;
-                          const elementPosition = contentsElement.getBoundingClientRect().top;
-                          const offsetPosition = elementPosition + window.pageYOffset - offset;
-                          window.scrollTo({ top: offsetPosition, behavior: 'smooth' });
-                          setActiveSection('contents');
+                  <li key={section.id}>
+                    <button
+                      onClick={() => {
+                        if (section.id === 'cover') {
+                          window.scrollTo({ top: 0, behavior: 'smooth' });
+                        } else if (section.id === 'contents') {
+                          const contentsElement = sectionRefs.current['contents'];
+                          if (contentsElement) {
+                            const offset = 120;
+                            const elementPosition = contentsElement.getBoundingClientRect().top;
+                            const offsetPosition = elementPosition + window.pageYOffset - offset;
+                            window.scrollTo({ top: offsetPosition, behavior: 'smooth' });
+                            setActiveSection('contents');
+                          }
                         }
-                      }
-                      setMobileSidebarOpen(false);
-                    }}
-                    className={`w-full flex items-center gap-3 px-4 py-3 rounded transition-all text-left ${
-                      isActive
-                        ? 'bg-gray-900 dark:bg-gray-700 text-white border-l-4'
-                        : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/50 border-l-4 border-transparent'
-                    }`}
-                    style={isActive ? { borderLeftColor: momentumOrange } : {}}
-                  >
-                    <section.icon size={18} className="flex-shrink-0" />
-                    <span className={`text-sm flex-1 ${isActive ? 'font-semibold' : 'font-medium'}`}>{translateSectionTitle(section.title)}</span>
-                  </button>
+                        setMobileSidebarOpen(false);
+                      }}
+                      className={`w-full flex items-center gap-3 px-4 py-3 rounded transition-all text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-orange-500 ${
+                        isActive
+                          ? 'bg-gray-900 dark:bg-gray-700 text-white border-l-4'
+                          : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/50 border-l-4 border-transparent'
+                      }`}
+                      style={isActive ? { borderLeftColor: momentumOrange } : {}}
+                      aria-current={isActive ? 'true' : undefined}
+                    >
+                      <section.icon size={18} className="flex-shrink-0" aria-hidden="true" />
+                      <span className={`text-sm flex-1 ${isActive ? 'font-semibold' : 'font-medium'}`}>{translateSectionTitle(section.title)}</span>
+                    </button>
+                  </li>
                 );
               })}
               
@@ -1531,31 +1618,34 @@ export default function PlanViewPage() {
                 .map(([category, config]) => {
                   const categorySections = groupedSections[category] || [];
                   if (categorySections.length === 0) return null;
-                  
+
                   const isCategoryExpanded = expandedCategories.has(category);
                   const CategoryIcon = config.icon;
-                  
+                  const categoryId = `category-${category.toLowerCase().replace(/\s+/g, '-')}`;
+
                   return (
-                    <div key={category} className="space-y-1">
+                    <li key={category} className="space-y-1">
                       {/* Category Header */}
                       <button
                         onClick={() => toggleCategory(category)}
-                        className="w-full flex items-center gap-3 px-4 py-2.5 rounded transition-all text-left bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-700/50 border-l-4 border-transparent"
+                        className="w-full flex items-center gap-3 px-4 py-2.5 rounded transition-all text-left bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-700/50 border-l-4 border-transparent focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-orange-500"
+                        aria-expanded={isCategoryExpanded}
+                        aria-controls={categoryId}
                       >
-                        <CategoryIcon size={16} className="flex-shrink-0 text-gray-600 dark:text-gray-400" />
+                        <CategoryIcon size={16} className="flex-shrink-0 text-gray-600 dark:text-gray-400" aria-hidden="true" />
                         <span className="text-xs font-semibold uppercase tracking-wider text-gray-600 dark:text-gray-400 flex-1">
                           {getCategoryDisplayName(category, language)}
                         </span>
                         {isCategoryExpanded ? (
-                          <ChevronUp size={14} className="text-gray-500 dark:text-gray-400" />
+                          <ChevronUp size={14} className="text-gray-500 dark:text-gray-400" aria-hidden="true" />
                         ) : (
-                          <ChevronDown size={14} className="text-gray-500 dark:text-gray-400" />
+                          <ChevronDown size={14} className="text-gray-500 dark:text-gray-400" aria-hidden="true" />
                         )}
                       </button>
-                      
+
                       {/* Category Sections */}
                       {isCategoryExpanded && (
-                        <div className="ml-4 space-y-0.5 border-l-2 border-gray-200 dark:border-gray-700 pl-2">
+                        <ul id={categoryId} className="ml-4 space-y-0.5 border-l-2 border-gray-200 dark:border-gray-700 pl-2" role="list">
                           {categorySections
                             .sort((a, b) => {
                               const aIndex = config.sections.indexOf(a.sectionName);
@@ -1565,41 +1655,44 @@ export default function PlanViewPage() {
                             .map((section) => {
                               const isActive = activeSection === section.sectionName;
                               return (
-                                <button
-                                  key={section.sectionName}
-                                  onClick={() => {
-                                    scrollToSection(section.sectionName);
-                                    setMobileSidebarOpen(false);
-                                  }}
-                                  className={`w-full flex items-center gap-3 px-3 py-2 rounded transition-all text-left ${
-                                    isActive
-                                      ? 'bg-gray-900 dark:bg-gray-700 text-white border-l-4'
-                                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/50 border-l-4 border-transparent'
-                                  }`}
-                                  style={isActive ? { borderLeftColor: momentumOrange } : {}}
-                                >
-                                  <FileText size={14} className="flex-shrink-0" />
-                                  <span className={`text-xs flex-1 ${isActive ? 'font-semibold' : 'font-medium'}`}>
-                                    {translateSectionTitle(section.title)}
-                                  </span>
-                                </button>
+                                <li key={section.sectionName}>
+                                  <button
+                                    onClick={() => {
+                                      scrollToSection(section.sectionName);
+                                      setMobileSidebarOpen(false);
+                                    }}
+                                    className={`w-full flex items-center gap-3 px-3 py-2 rounded transition-all text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-orange-500 ${
+                                      isActive
+                                        ? 'bg-gray-900 dark:bg-gray-700 text-white border-l-4'
+                                        : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/50 border-l-4 border-transparent'
+                                    }`}
+                                    style={isActive ? { borderLeftColor: momentumOrange } : {}}
+                                    aria-current={isActive ? 'true' : undefined}
+                                  >
+                                    <FileText size={14} className="flex-shrink-0" aria-hidden="true" />
+                                    <span className={`text-xs flex-1 ${isActive ? 'font-semibold' : 'font-medium'}`}>
+                                      {translateSectionTitle(section.title)}
+                                    </span>
+                                  </button>
+                                </li>
                               );
                             })}
-                        </div>
+                        </ul>
                       )}
-                    </div>
+                    </li>
                   );
                 })}
-            </div>
+            </ul>
           </div>
         </aside>
 
         {/* Main Content - offset by PlanView sidebar width (Dashboard sidebar is handled by DashboardLayout) */}
-        <main className="flex-1 min-w-0 lg:ml-64">
+        <main className="flex-1 min-w-0 lg:ml-64" id="main-content" role="main">
           {/* Cover Section */}
-          <section 
-            className="relative border-b-8 group" 
-            style={{ 
+          <section
+            className="relative border-b-8 group"
+            aria-labelledby="plan-title"
+            style={{
               backgroundColor: (coverImageUrl || plan?.coverSettings?.coverImageUrl) ? 'transparent' : (plan?.coverSettings?.backgroundColor || coverBackgroundColor || '#1A202C'),
               borderBottomColor: plan?.coverSettings?.accentColor || coverAccentColor || momentumOrange,
               backgroundImage: (coverImageUrl || plan?.coverSettings?.coverImageUrl) ? `url(${coverImageUrl || plan?.coverSettings?.coverImageUrl})` : 'none',
@@ -1609,13 +1702,13 @@ export default function PlanViewPage() {
             }}
           >
             {(coverImageUrl || plan?.coverSettings?.coverImageUrl) && (
-              <div className="absolute inset-0 bg-black bg-opacity-40"></div>
+              <div className="absolute inset-0 bg-black bg-opacity-40" aria-hidden="true"></div>
             )}
             <div className="relative py-12 sm:py-16 md:py-24 px-4 sm:px-6 md:px-8">
               <div className="max-w-5xl mx-auto">
                 <div className="flex flex-col sm:flex-row items-start justify-between gap-4 mb-6">
                   <div className="flex-1 min-w-0">
-                    <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-serif text-white mb-4 sm:mb-6 leading-tight drop-shadow-lg break-words" style={{ fontFamily: 'Georgia, serif' }}>
+                    <h1 id="plan-title" className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-serif text-white mb-4 sm:mb-6 leading-tight drop-shadow-lg break-words" style={{ fontFamily: 'Georgia, serif' }}>
                       {plan.title}
                     </h1>
                     {plan.description && (
@@ -1625,12 +1718,12 @@ export default function PlanViewPage() {
                     )}
                     <div className="flex flex-wrap items-center gap-3 sm:gap-6 text-xs sm:text-sm text-gray-300">
                       <div className="flex items-center gap-2">
-                        <Building2 size={14} className="sm:w-4 sm:h-4" />
+                        <Building2 size={14} className="sm:w-4 sm:h-4" aria-hidden="true" />
                         <span className="break-words">{plan.businessType || plan.industry || 'Business Plan'}</span>
                       </div>
                       {plan.createdAt && (
                         <div className="flex items-center gap-2">
-                          <Calendar size={14} className="sm:w-4 sm:h-4" />
+                          <Calendar size={14} className="sm:w-4 sm:h-4" aria-hidden="true" />
                           <span>{new Date(plan.createdAt).toLocaleDateString()}</span>
                         </div>
                       )}
@@ -1646,10 +1739,10 @@ export default function PlanViewPage() {
                       }
                       setShowCoverModal(true);
                     }}
-                    className="opacity-0 group-hover:opacity-100 transition-opacity p-2 text-white hover:bg-white hover:bg-opacity-20 rounded-lg"
-                    title="Customize cover"
+                    className="opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity p-2 text-white hover:bg-white hover:bg-opacity-20 rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-white"
+                    aria-label={language === 'fr' ? 'Personnaliser la couverture' : 'Customize cover'}
                   >
-                    <Pencil size={20} />
+                    <Pencil size={20} aria-hidden="true" />
                   </button>
                 </div>
               </div>
@@ -1658,51 +1751,52 @@ export default function PlanViewPage() {
 
           {/* Table of Contents Section */}
           {sections.length > 0 && (
-            <section 
+            <section
               id="contents"
               ref={(el) => (sectionRefs.current['contents'] = el as HTMLDivElement | null)}
               className="py-12 sm:py-16 md:py-20 px-4 sm:px-6 md:px-8 max-w-4xl mx-auto bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800"
+              aria-labelledby="toc-heading"
             >
               <div className="mb-12 pb-8 border-b-2 border-gray-300 dark:border-gray-700">
                 <div className="flex items-start gap-6">
-                  <div className="flex-shrink-0">
+                  <div className="flex-shrink-0" aria-hidden="true">
                     <div className="w-16 h-16 bg-gray-900 dark:bg-gray-800 rounded-lg flex items-center justify-center border-2 border-gray-300 dark:border-gray-600">
-                      <BookOpen size={24} className="text-white" />
+                      <BookOpen size={24} className="text-white" aria-hidden="true" />
                     </div>
                   </div>
                   <div className="flex-1 pt-2">
                     <div className="text-sm uppercase tracking-wider text-gray-500 dark:text-gray-400 font-semibold mb-2">
                       {t('planView.tableOfContents')}
                     </div>
-                    <h2 className="text-3xl md:text-4xl font-serif text-gray-900 dark:text-white leading-tight" style={{ fontFamily: 'Georgia, serif' }}>
+                    <h2 id="toc-heading" className="text-3xl md:text-4xl font-serif text-gray-900 dark:text-white leading-tight" style={{ fontFamily: 'Georgia, serif' }}>
                       {t('planView.tableOfContents')}
                     </h2>
                   </div>
                 </div>
               </div>
 
-              <div className="space-y-6">
+              <nav className="space-y-6" aria-label={language === 'fr' ? 'Table des matières' : 'Table of contents'}>
                 {Object.entries(SECTION_CATEGORIES)
                   .sort((a, b) => a[1].order - b[1].order)
                   .map(([category, config]) => {
                     const categorySections = groupedSections[category] || [];
                     if (categorySections.length === 0) return null;
-                    
+
                     const CategoryIcon = config.icon;
                     const categoryDisplayName = getCategoryDisplayName(category, language);
-                    
+
                     return (
                       <div key={category} className="space-y-3">
                         {/* Category Header in TOC */}
                         <div className="flex items-center gap-3 px-3 py-2 bg-gray-100 dark:bg-gray-800 rounded-lg border-2 border-gray-200 dark:border-gray-700">
-                          <CategoryIcon size={18} className="text-gray-600 dark:text-gray-400" />
+                          <CategoryIcon size={18} className="text-gray-600 dark:text-gray-400" aria-hidden="true" />
                           <h3 className="text-sm font-semibold uppercase tracking-wider text-gray-700 dark:text-gray-300">
                             {categoryDisplayName}
                           </h3>
                         </div>
-                        
+
                         {/* Category Sections in TOC */}
-                        <div className="space-y-2 ml-4">
+                        <ul className="space-y-2 ml-4" role="list">
                           {categorySections
                             .sort((a, b) => {
                               const aIndex = config.sections.indexOf(a.sectionName);
@@ -1712,35 +1806,36 @@ export default function PlanViewPage() {
                             .map((section, sectionIndex) => {
                               const globalIndex = sections.findIndex(s => s.sectionName === section.sectionName) + 1;
                               return (
-                                <button
-                                  key={section.sectionName}
-                                  onClick={() => scrollToSection(section.sectionName)}
-                                  className="w-full flex items-center justify-between gap-4 p-3 rounded-lg border-2 border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all text-left group"
-                                >
-                                  <div className="flex items-center gap-3 flex-1 min-w-0">
-                                    <div className="flex-shrink-0 w-8 h-8 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center border-2 border-gray-300 dark:border-gray-600 group-hover:border-orange-500 transition-colors">
-                                      <span className="text-sm font-serif text-gray-700 dark:text-gray-300 font-bold" style={{ fontFamily: 'Georgia, serif' }}>
-                                        {globalIndex}
-                                      </span>
+                                <li key={section.sectionName}>
+                                  <button
+                                    onClick={() => scrollToSection(section.sectionName)}
+                                    className="w-full flex items-center justify-between gap-4 p-3 rounded-lg border-2 border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all text-left group focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-orange-500"
+                                  >
+                                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                                      <div className="flex-shrink-0 w-8 h-8 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center border-2 border-gray-300 dark:border-gray-600 group-hover:border-orange-500 group-focus-visible:border-orange-500 transition-colors" aria-hidden="true">
+                                        <span className="text-sm font-serif text-gray-700 dark:text-gray-300 font-bold" style={{ fontFamily: 'Georgia, serif' }}>
+                                          {globalIndex}
+                                        </span>
+                                      </div>
+                                      <div className="flex-1 min-w-0">
+                                        <span className="text-sm font-medium text-gray-900 dark:text-white group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors">
+                                          {translateSectionTitle(section.title)}
+                                        </span>
+                                      </div>
                                     </div>
-                                    <div className="flex-1 min-w-0">
-                                      <h4 className="text-sm font-medium text-gray-900 dark:text-white group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors">
-                                        {translateSectionTitle(section.title)}
-                                      </h4>
+                                    <div className="flex-shrink-0 text-gray-400 dark:text-gray-500 group-hover:text-orange-500 transition-colors" aria-hidden="true">
+                                      <ChevronDown size={16} className="transform rotate-[-90deg]" />
                                     </div>
-                                  </div>
-                                  <div className="flex-shrink-0 text-gray-400 dark:text-gray-500 group-hover:text-orange-500 transition-colors">
-                                    <ChevronDown size={16} className="transform rotate-[-90deg]" />
-                                  </div>
-                                </button>
+                                  </button>
+                                </li>
                               );
                             })}
-                        </div>
+                        </ul>
                       </div>
                     );
                   })
                   .filter(Boolean)}
-              </div>
+              </nav>
             </section>
           )}
 
@@ -1748,7 +1843,7 @@ export default function PlanViewPage() {
           <div className="bg-white dark:bg-gray-900">
             {sections.length === 0 ? (
               <div className="text-center py-32">
-                <FileText className="mx-auto text-gray-400 mb-4" size={48} />
+                <FileText className="mx-auto text-gray-400 mb-4" size={48} aria-hidden="true" />
                 <p className="text-gray-600 dark:text-gray-400 text-lg">{t('planView.noSections')}</p>
               </div>
             ) : (
@@ -1764,11 +1859,11 @@ export default function PlanViewPage() {
                     const categoryDisplayName = getCategoryDisplayName(category, language);
                     
                     return (
-                      <div key={category} className="category-group">
+                      <div key={category} className="category-group" role="region" aria-labelledby={`category-heading-${category.toLowerCase()}`}>
                         {/* Category Header in Main Content */}
                         <div className="py-8 px-4 sm:px-6 md:px-8 max-w-4xl mx-auto border-b-2 border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
                           <div className="flex items-center gap-4">
-                            <div className="flex-shrink-0">
+                            <div className="flex-shrink-0" aria-hidden="true">
                               <div className="w-12 h-12 bg-gray-900 dark:bg-gray-700 rounded-lg flex items-center justify-center border-2 border-gray-300 dark:border-gray-600">
                                 <CategoryIcon size={20} className="text-white" />
                               </div>
@@ -1777,7 +1872,7 @@ export default function PlanViewPage() {
                               <div className="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 font-semibold mb-1">
                                 {t('planView.category') || 'Category'}
                               </div>
-                              <h2 className="text-2xl md:text-3xl font-serif text-gray-900 dark:text-white" style={{ fontFamily: 'Georgia, serif' }}>
+                              <h2 id={`category-heading-${category.toLowerCase()}`} className="text-2xl md:text-3xl font-serif text-gray-900 dark:text-white" style={{ fontFamily: 'Georgia, serif' }}>
                                 {categoryDisplayName}
                               </h2>
                             </div>
@@ -1801,6 +1896,7 @@ export default function PlanViewPage() {
                                 className="plan-content-section py-12 sm:py-16 md:py-20 px-4 sm:px-6 md:px-8 max-w-4xl mx-auto border-b border-gray-200 dark:border-gray-800 last:border-b-0 relative group"
                                 onMouseEnter={() => setHoveredSection(section.sectionName)}
                                 onMouseLeave={() => setHoveredSection(null)}
+                                aria-labelledby={`section-heading-${section.sectionName}`}
                               >
                                 {(() => {
                                   const isEditing = editingSection === section.sectionName;
@@ -1809,7 +1905,7 @@ export default function PlanViewPage() {
                                       {/* Chapter Header */}
                                       <div className={`pb-8 border-b-2 border-gray-300 dark:border-gray-700 ${expandedSections.has(section.sectionName) ? 'mb-12' : 'mb-0'}`}>
                                         <div className="flex items-start gap-6">
-                                          <div className="flex-shrink-0">
+                                          <div className="flex-shrink-0" aria-hidden="true">
                                             <div className="w-16 h-16 bg-gray-900 dark:bg-gray-800 rounded-lg flex items-center justify-center border-2 border-gray-300 dark:border-gray-600">
                                               <span className="text-2xl font-serif text-white font-bold" style={{ fontFamily: 'Georgia, serif' }}>
                                                 {sectionIndex + 1}
@@ -1822,31 +1918,36 @@ export default function PlanViewPage() {
                                                 {/* Collapse/Expand button */}
                                                 <button
                                                   onClick={() => toggleSection(section.sectionName)}
-                                                  className="flex-shrink-0 p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-                                                  title={expandedSections.has(section.sectionName) ? (t('planView.collapseAll') || 'Collapse') : (t('planView.expandAll') || 'Expand')}
+                                                  className="flex-shrink-0 p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-orange-500"
+                                                  aria-expanded={expandedSections.has(section.sectionName)}
+                                                  aria-controls={`section-content-${section.sectionName}`}
+                                                  aria-label={expandedSections.has(section.sectionName)
+                                                    ? (language === 'fr' ? `Réduire la section ${translateSectionTitle(section.title)}` : `Collapse section ${translateSectionTitle(section.title)}`)
+                                                    : (language === 'fr' ? `Développer la section ${translateSectionTitle(section.title)}` : `Expand section ${translateSectionTitle(section.title)}`)
+                                                  }
                                                 >
                                                   {expandedSections.has(section.sectionName) ? (
-                                                    <ChevronUp size={20} />
+                                                    <ChevronUp size={20} aria-hidden="true" />
                                                   ) : (
-                                                    <ChevronDown size={20} />
+                                                    <ChevronDown size={20} aria-hidden="true" />
                                                   )}
                                                 </button>
                                                 <div className="flex-1 min-w-0">
                                                   <div className="text-sm uppercase tracking-wider text-gray-500 dark:text-gray-400 font-semibold mb-2">
                                                     {t('planView.chapter')} {sectionIndex + 1}
                                                   </div>
-                                                  <h2 className="text-3xl md:text-4xl font-serif text-gray-900 dark:text-white leading-tight" style={{ fontFamily: 'Georgia, serif' }}>
+                                                  <h3 id={`section-heading-${section.sectionName}`} className="text-3xl md:text-4xl font-serif text-gray-900 dark:text-white leading-tight" style={{ fontFamily: 'Georgia, serif' }}>
                                                     {translateSectionTitle(section.title)}
-                                                  </h2>
+                                                  </h3>
                                                 </div>
                                               </div>
                                               {/* Edit button - on the right */}
                                               <button
                                                 onClick={() => startEditing(section)}
-                                                className="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-all p-2 text-gray-600 dark:text-gray-400 hover:text-white hover:bg-orange-500 dark:hover:bg-orange-500 rounded-lg"
-                                                title={t('planView.edit') || 'Edit'}
+                                                className="flex-shrink-0 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-all p-2 text-gray-600 dark:text-gray-400 hover:text-white hover:bg-orange-500 dark:hover:bg-orange-500 rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-orange-500"
+                                                aria-label={language === 'fr' ? `Modifier la section ${translateSectionTitle(section.title)}` : `Edit section ${translateSectionTitle(section.title)}`}
                                               >
-                                                <Pencil size={18} />
+                                                <Pencil size={18} aria-hidden="true" />
                                               </button>
                                             </div>
                                           </div>
@@ -1854,6 +1955,7 @@ export default function PlanViewPage() {
                                       </div>
 
                                       {/* Section Content - Only show when expanded */}
+                                      <div id={`section-content-${section.sectionName}`}>
                                       {expandedSections.has(section.sectionName) && isEditing ? (
                                         <div className="space-y-4">
                                           <RichTextEditor
@@ -1875,15 +1977,16 @@ export default function PlanViewPage() {
                                               style={{ backgroundColor: momentumOrange }}
                                               onMouseEnter={(e) => !(saving === section.sectionName) && (e.currentTarget.style.backgroundColor = momentumOrangeHover)}
                                               onMouseLeave={(e) => !(saving === section.sectionName) && (e.currentTarget.style.backgroundColor = momentumOrange)}
+                                              aria-busy={saving === section.sectionName}
                                             >
                                               {saving === section.sectionName ? (
                                                 <span className="flex items-center gap-2">
-                                                  <Loader2 size={16} className="animate-spin" />
+                                                  <Loader2 size={16} className="animate-spin motion-reduce:animate-none" aria-hidden="true" />
                                                   {t('planView.saving') || 'Saving...'}
                                                 </span>
                                               ) : (
                                                 <span className="flex items-center gap-2">
-                                                  <Save size={16} />
+                                                  <Save size={16} aria-hidden="true" />
                                                   {t('planView.save') || 'Save'}
                                                 </span>
                                               )}
@@ -1891,7 +1994,7 @@ export default function PlanViewPage() {
                                           </div>
                                         </div>
                                       ) : expandedSections.has(section.sectionName) ? (
-                                        <div className="prose prose-lg dark:prose-invert max-w-none">
+                                        <div className="prose prose-lg dark:prose-invert max-w-none" role="article">
                                           {section.content ? (
                                             <>
                                               <div
@@ -1904,8 +2007,9 @@ export default function PlanViewPage() {
                                               {section.sectionName === 'financial-projections' && (
                                                 <div className="mt-8 space-y-12">
                                                   {loadingFinancials ? (
-                                                    <div className="flex items-center justify-center py-8">
-                                                      <Loader2 size={24} className="animate-spin" style={{ color: momentumOrange }} />
+                                                    <div className="flex items-center justify-center py-8" role="status" aria-live="polite">
+                                                      <Loader2 size={24} className="animate-spin motion-reduce:animate-none" style={{ color: momentumOrange }} aria-hidden="true" />
+                                                      <span className="sr-only">{language === 'fr' ? 'Chargement des données financières...' : 'Loading financial data...'}</span>
                                                     </div>
                                                   ) : (
                                                     <>
@@ -2015,45 +2119,66 @@ export default function PlanViewPage() {
                                           )}
                                         </div>
                                       ) : null}
+                                      </div>
 
                                       {/* AI Actions */}
                                       {!isEditing && section.hasContent && expandedSections.has(section.sectionName) && (
-                                        <div className="mt-8 pt-8 border-t border-gray-200 dark:border-gray-700 flex flex-wrap items-center gap-3">
+                                        <div className="mt-8 pt-8 border-t border-gray-200 dark:border-gray-700 flex flex-wrap items-center gap-3" role="group" aria-label={language === 'fr' ? 'Actions AI pour la section' : 'AI actions for section'}>
                                           <button
                                             onClick={() => handleAISuggestion(section.sectionName, 'improve')}
                                             disabled={aiLoading[section.sectionName] === 'improve'}
-                                            className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors disabled:opacity-50"
+                                            className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-orange-500"
+                                            aria-label={language === 'fr' ? `Améliorer la section ${translateSectionTitle(section.title)} avec l'IA` : `Improve section ${translateSectionTitle(section.title)} with AI`}
+                                            aria-busy={aiLoading[section.sectionName] === 'improve'}
                                           >
                                             {aiLoading[section.sectionName] === 'improve' ? (
-                                              <Loader2 size={16} className="animate-spin" />
+                                              <Loader2 size={16} className="animate-spin motion-reduce:animate-none" aria-hidden="true" />
                                             ) : (
-                                              <Sparkles size={16} />
+                                              <Sparkles size={16} aria-hidden="true" />
                                             )}
                                             {t('planView.improve') || 'Improve'}
                                           </button>
                                           <button
                                             onClick={() => handleAISuggestion(section.sectionName, 'expand')}
                                             disabled={aiLoading[section.sectionName] === 'expand'}
-                                            className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors disabled:opacity-50"
+                                            className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-orange-500"
+                                            aria-label={language === 'fr' ? `Étendre la section ${translateSectionTitle(section.title)} avec l'IA` : `Expand section ${translateSectionTitle(section.title)} with AI`}
+                                            aria-busy={aiLoading[section.sectionName] === 'expand'}
                                           >
                                             {aiLoading[section.sectionName] === 'expand' ? (
-                                              <Loader2 size={16} className="animate-spin" />
+                                              <Loader2 size={16} className="animate-spin motion-reduce:animate-none" aria-hidden="true" />
                                             ) : (
-                                              <ArrowUpCircle size={16} />
+                                              <ArrowUpCircle size={16} aria-hidden="true" />
                                             )}
                                             {t('planView.expand') || 'Expand'}
                                           </button>
                                           <button
                                             onClick={() => handleAISuggestion(section.sectionName, 'simplify')}
                                             disabled={aiLoading[section.sectionName] === 'simplify'}
-                                            className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors disabled:opacity-50"
+                                            className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-orange-500"
+                                            aria-label={language === 'fr' ? `Simplifier la section ${translateSectionTitle(section.title)} avec l'IA` : `Simplify section ${translateSectionTitle(section.title)} with AI`}
+                                            aria-busy={aiLoading[section.sectionName] === 'simplify'}
                                           >
                                             {aiLoading[section.sectionName] === 'simplify' ? (
-                                              <Loader2 size={16} className="animate-spin" />
+                                              <Loader2 size={16} className="animate-spin motion-reduce:animate-none" aria-hidden="true" />
                                             ) : (
-                                              <Minus size={16} />
+                                              <Minus size={16} aria-hidden="true" />
                                             )}
                                             {t('planView.simplify') || 'Simplify'}
+                                          </button>
+                                          <button
+                                            onClick={() => handleRegenerateSection(section.sectionName)}
+                                            disabled={aiLoading[section.sectionName] === 'regenerate'}
+                                            className="flex items-center gap-2 px-4 py-2 text-sm text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-900/20 rounded-lg hover:bg-orange-100 dark:hover:bg-orange-900/30 transition-colors disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-orange-500"
+                                            aria-label={language === 'fr' ? `Regénérer la section ${translateSectionTitle(section.title)} avec l'IA` : `Regenerate section ${translateSectionTitle(section.title)} with AI`}
+                                            aria-busy={aiLoading[section.sectionName] === 'regenerate'}
+                                          >
+                                            {aiLoading[section.sectionName] === 'regenerate' ? (
+                                              <Loader2 size={16} className="animate-spin motion-reduce:animate-none" aria-hidden="true" />
+                                            ) : (
+                                              <RefreshCw size={16} aria-hidden="true" />
+                                            )}
+                                            {language === 'fr' ? 'Regénérer' : 'Regenerate'}
                                           </button>
                                         </div>
                                       )}
@@ -2084,23 +2209,29 @@ export default function PlanViewPage() {
 
       {/* Edit Modal */}
       {editingSection && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-0 sm:p-4">
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-0 sm:p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="edit-modal-title"
+        >
           <div className="bg-white dark:bg-gray-800 rounded-none sm:rounded-xl shadow-2xl max-w-5xl w-full h-full sm:h-auto sm:max-h-[90vh] overflow-hidden flex flex-col">
             {/* Modal Header */}
             <div className="p-4 sm:p-6 border-b-2 border-gray-200 dark:border-gray-700 flex items-center justify-between gap-4">
               <div className="flex-1 min-w-0">
-                <h3 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white break-words">
+                <h2 id="edit-modal-title" className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white break-words">
                   {sections.find(s => s.sectionName === editingSection)?.title || t('planView.editSection')}
-                </h3>
+                </h2>
                 <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1 break-words">
                   {getSectionInstructions(editingSection)}
                 </p>
               </div>
               <button
                 onClick={cancelEditing}
-                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors flex-shrink-0"
+                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors flex-shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-orange-500"
+                aria-label={language === 'fr' ? 'Fermer le modal d\'édition' : 'Close edit modal'}
               >
-                <X size={20} className="sm:w-6 sm:h-6" />
+                <X size={20} className="sm:w-6 sm:h-6" aria-hidden="true" />
               </button>
             </div>
 
@@ -2120,25 +2251,25 @@ export default function PlanViewPage() {
               {/* AI Enhancement Buttons */}
               {sections.find(s => s.sectionName === editingSection)?.hasContent && (
                 <div className="mt-6 pt-6 border-t-2 dark:border-gray-700" style={{ borderColor: lightAIGrey }}>
-                  <div className="border-2 rounded-xl p-5 dark:bg-gray-800" style={{ 
+                  <div className="border-2 rounded-xl p-5 dark:bg-gray-800" style={{
                     borderColor: momentumOrange,
                     backgroundColor: lightAIGrey
                   }}>
                     <div className="flex items-center gap-3 mb-4">
-                      <div className="p-2 rounded-lg" style={{ backgroundColor: momentumOrange }}>
+                      <div className="p-2 rounded-lg" style={{ backgroundColor: momentumOrange }} aria-hidden="true">
                         <Sparkles size={18} className="text-white" />
                       </div>
                       <div>
-                        <h4 className="font-bold text-sm dark:text-white" style={{ color: strategyBlue }}>AI Enhancements</h4>
-                        <p className="text-xs text-gray-600 dark:text-gray-400">Enhance your content with AI</p>
+                        <h3 className="font-bold text-sm dark:text-white" style={{ color: strategyBlue }}>{language === 'fr' ? 'Améliorations IA' : 'AI Enhancements'}</h3>
+                        <p className="text-xs text-gray-600 dark:text-gray-400">{language === 'fr' ? 'Améliorez votre contenu avec l\'IA' : 'Enhance your content with AI'}</p>
                       </div>
                     </div>
-                    <div className="plan-ai-buttons grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div className="plan-ai-buttons grid grid-cols-1 sm:grid-cols-3 gap-3" role="group" aria-label={language === 'fr' ? 'Boutons d\'amélioration IA' : 'AI enhancement buttons'}>
                       <button
                         onClick={() => handleAISuggestion(editingSection, 'improve')}
                         disabled={!!aiLoading[editingSection!]}
-                        className="flex items-center justify-center gap-2 px-4 py-3 rounded-lg transition-all disabled:opacity-50 text-sm font-semibold shadow-sm hover:shadow-md"
-                        style={{ 
+                        className="flex items-center justify-center gap-2 px-4 py-3 rounded-lg transition-all disabled:opacity-50 text-sm font-semibold shadow-sm hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-orange-500"
+                        style={{
                           backgroundColor: aiLoading[editingSection!] === 'improve' ? momentumOrange : 'white',
                           color: aiLoading[editingSection!] === 'improve' ? 'white' : strategyBlue,
                           border: aiLoading[editingSection!] === 'improve' ? 'none' : `2px solid ${momentumOrange}`
@@ -2157,19 +2288,21 @@ export default function PlanViewPage() {
                             e.currentTarget.style.borderColor = momentumOrange;
                           }
                         }}
+                        aria-label={language === 'fr' ? 'Améliorer le contenu avec l\'IA' : 'Improve content with AI'}
+                        aria-busy={aiLoading[editingSection!] === 'improve'}
                       >
                         {aiLoading[editingSection!] === 'improve' ? (
-                          <Loader2 size={16} className="animate-spin" />
+                          <Loader2 size={16} className="animate-spin motion-reduce:animate-none" aria-hidden="true" />
                         ) : (
-                          <ArrowUp size={16} />
+                          <ArrowUp size={16} aria-hidden="true" />
                         )}
                         {t('planView.improve')}
                       </button>
                       <button
                         onClick={() => handleAISuggestion(editingSection, 'expand')}
                         disabled={!!aiLoading[editingSection!]}
-                        className="flex items-center justify-center gap-2 px-4 py-3 rounded-lg transition-all disabled:opacity-50 text-sm font-semibold shadow-sm hover:shadow-md"
-                        style={{ 
+                        className="flex items-center justify-center gap-2 px-4 py-3 rounded-lg transition-all disabled:opacity-50 text-sm font-semibold shadow-sm hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-orange-500"
+                        style={{
                           backgroundColor: aiLoading[editingSection!] === 'expand' ? momentumOrange : 'white',
                           color: aiLoading[editingSection!] === 'expand' ? 'white' : strategyBlue,
                           border: aiLoading[editingSection!] === 'expand' ? 'none' : `2px solid ${momentumOrange}`
@@ -2188,19 +2321,21 @@ export default function PlanViewPage() {
                             e.currentTarget.style.borderColor = momentumOrange;
                           }
                         }}
+                        aria-label={language === 'fr' ? 'Étendre le contenu avec l\'IA' : 'Expand content with AI'}
+                        aria-busy={aiLoading[editingSection!] === 'expand'}
                       >
                         {aiLoading[editingSection!] === 'expand' ? (
-                          <Loader2 size={16} className="animate-spin" />
+                          <Loader2 size={16} className="animate-spin motion-reduce:animate-none" aria-hidden="true" />
                         ) : (
-                          <ArrowDown size={16} />
+                          <ArrowDown size={16} aria-hidden="true" />
                         )}
-                        Expand
+                        {language === 'fr' ? 'Étendre' : 'Expand'}
                       </button>
                       <button
                         onClick={() => handleAISuggestion(editingSection, 'simplify')}
                         disabled={!!aiLoading[editingSection!]}
-                        className="flex items-center justify-center gap-2 px-4 py-3 rounded-lg transition-all disabled:opacity-50 text-sm font-semibold shadow-sm hover:shadow-md"
-                        style={{ 
+                        className="flex items-center justify-center gap-2 px-4 py-3 rounded-lg transition-all disabled:opacity-50 text-sm font-semibold shadow-sm hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-orange-500"
+                        style={{
                           backgroundColor: aiLoading[editingSection!] === 'simplify' ? momentumOrange : 'white',
                           color: aiLoading[editingSection!] === 'simplify' ? 'white' : strategyBlue,
                           border: aiLoading[editingSection!] === 'simplify' ? 'none' : `2px solid ${momentumOrange}`
@@ -2219,11 +2354,13 @@ export default function PlanViewPage() {
                             e.currentTarget.style.borderColor = momentumOrange;
                           }
                         }}
+                        aria-label={language === 'fr' ? 'Simplifier le contenu avec l\'IA' : 'Simplify content with AI'}
+                        aria-busy={aiLoading[editingSection!] === 'simplify'}
                       >
                         {aiLoading[editingSection!] === 'simplify' ? (
-                          <Loader2 size={16} className="animate-spin" />
+                          <Loader2 size={16} className="animate-spin motion-reduce:animate-none" aria-hidden="true" />
                         ) : (
-                          <Minus size={16} />
+                          <Minus size={16} aria-hidden="true" />
                         )}
                         {t('planView.simplify')}
                       </button>
@@ -2237,26 +2374,27 @@ export default function PlanViewPage() {
             <div className="p-6 border-t-2 border-gray-200 dark:border-gray-700 flex items-center justify-between">
               <button
                 onClick={cancelEditing}
-                className="px-4 py-3 md:py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors font-semibold min-h-[44px] flex items-center justify-center"
+                className="px-4 py-3 md:py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors font-semibold min-h-[44px] flex items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-gray-500"
               >
                 {t('planView.cancel')}
               </button>
               <button
                 onClick={() => saveSection(editingSection)}
                 disabled={saving === editingSection}
-                className="flex items-center gap-2 px-6 py-3 md:py-2 text-white rounded-lg transition-colors disabled:opacity-50 font-semibold min-h-[44px]"
+                className="flex items-center gap-2 px-6 py-3 md:py-2 text-white rounded-lg transition-colors disabled:opacity-50 font-semibold min-h-[44px] focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-orange-500"
                 style={{ backgroundColor: momentumOrange }}
                 onMouseEnter={(e) => !(saving === editingSection) && (e.currentTarget.style.backgroundColor = momentumOrangeHover)}
                 onMouseLeave={(e) => !(saving === editingSection) && (e.currentTarget.style.backgroundColor = momentumOrange)}
+                aria-busy={saving === editingSection}
               >
                 {saving === editingSection ? (
                   <>
-                    <Loader2 size={18} className="animate-spin" />
+                    <Loader2 size={18} className="animate-spin motion-reduce:animate-none" aria-hidden="true" />
                     {t('planView.save')}...
                   </>
                 ) : (
                   <>
-                    <Save size={18} />
+                    <Save size={18} aria-hidden="true" />
                     {t('planView.saveChanges')}
                   </>
                 )}
@@ -2268,28 +2406,35 @@ export default function PlanViewPage() {
 
       {/* Share Modal */}
       {showShareModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-0 md:p-4">
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-0 md:p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="share-modal-title"
+        >
           <div className="bg-white dark:bg-gray-800 rounded-none md:rounded-lg shadow-xl max-w-2xl w-full h-full md:h-auto md:max-h-[90vh] overflow-y-auto">
             <div className="p-6 border-b border-gray-200 dark:border-gray-700">
               <div className="flex items-center justify-between">
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white">{t('planView.sharePlan')}</h3>
+                <h2 id="share-modal-title" className="text-xl font-bold text-gray-900 dark:text-white">{t('planView.sharePlan')}</h2>
                 <button
                   onClick={() => {
                     setShowShareModal(false);
                     setPublicShareLink(null);
                     setShareEmail('');
                   }}
-                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-orange-500 rounded-lg p-1"
+                  aria-label={language === 'fr' ? 'Fermer le modal de partage' : 'Close share modal'}
                 >
-                  <X className="w-6 h-6" />
+                  <X className="w-6 h-6" aria-hidden="true" />
                 </button>
               </div>
             </div>
 
             <div className="p-6">
               {loadingShares ? (
-                <div className="flex items-center justify-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{ borderColor: momentumOrange }}></div>
+                <div className="flex items-center justify-center py-8" role="status" aria-live="polite">
+                  <div className="animate-spin motion-reduce:animate-none rounded-full h-8 w-8 border-b-2" style={{ borderColor: momentumOrange }} aria-hidden="true"></div>
+                  <span className="sr-only">{language === 'fr' ? 'Chargement des partages...' : 'Loading shares...'}</span>
                 </div>
               ) : (
                 <>
@@ -2319,10 +2464,10 @@ export default function PlanViewPage() {
                             await businessPlanService.shareBusinessPlan(id, shareEmail, sharePermission, true);
                             setShareEmail('');
                             await loadShares();
-                            alert(t('planView.shareInvitationSent'));
+                            toast.success(t('planView.shareInvitationSent') || 'Invitation sent');
                           } catch (error: any) {
                             console.error('Failed to share:', error);
-                            alert(`Failed to share: ${error.message}`);
+                            toast.error(t('planView.shareFailed') || 'Share failed', error.message);
                           }
                         }}
                         disabled={!shareEmail.trim()}
@@ -2370,7 +2515,7 @@ export default function PlanViewPage() {
                             <button
                               onClick={() => {
                                 navigator.clipboard.writeText(publicShareLink);
-                                alert(t('planView.linkCopied'));
+                                toast.success(t('planView.linkCopied') || 'Link copied');
                               }}
                               className="px-3 py-2 bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-300 dark:hover:bg-gray-500 font-semibold"
                             >
@@ -2417,9 +2562,10 @@ export default function PlanViewPage() {
                                   try {
                                     await businessPlanService.updateSharePermission(id, share.id, e.target.value as 'ReadOnly' | 'Edit' | 'FullAccess');
                                     await loadShares();
+                                    toast.success(t('planView.permissionUpdated') || 'Permission updated');
                                   } catch (error: any) {
                                     console.error('Failed to update permission:', error);
-                                    alert(`Failed to update permission: ${error.message}`);
+                                    toast.error(t('planView.permissionError') || 'Update failed', error.message);
                                   }
                                 }}
                                 className="px-2 py-1 text-xs border-2 border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
@@ -2450,16 +2596,22 @@ export default function PlanViewPage() {
 
       {/* Cover Customization Modal */}
       {showCoverModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-0 md:p-4">
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-0 md:p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="cover-modal-title"
+        >
           <div className="bg-white dark:bg-gray-800 rounded-none md:rounded-xl shadow-2xl max-w-3xl w-full h-full md:h-auto md:max-h-[90vh] overflow-hidden flex flex-col">
             {/* Modal Header */}
             <div className="p-6 border-b-2 border-gray-200 dark:border-gray-700 flex items-center justify-between">
-              <h3 className="text-2xl font-bold text-gray-900 dark:text-white">{t('planView.customizeCover')}</h3>
+              <h2 id="cover-modal-title" className="text-2xl font-bold text-gray-900 dark:text-white">{t('planView.customizeCover')}</h2>
               <button
                 onClick={() => setShowCoverModal(false)}
-                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-orange-500"
+                aria-label={language === 'fr' ? 'Fermer le modal de personnalisation' : 'Close customization modal'}
               >
-                <X size={24} />
+                <X size={24} aria-hidden="true" />
               </button>
             </div>
 
@@ -2563,20 +2715,20 @@ export default function PlanViewPage() {
                 <div className="space-y-3">
                   {coverImageUrl && (
                     <div className="relative rounded-lg overflow-hidden border-2 border-gray-300 dark:border-gray-600">
-                      <img 
-                        src={coverImageUrl} 
+                      <img
+                        src={coverImageUrl}
                         alt={plan?.title ? `${plan.title} cover preview` : "Business plan cover preview"}
                         loading="lazy"
                         width={800}
-                        height={600} 
+                        height={600}
                         className="w-full h-48 object-cover"
                       />
                       <button
                         onClick={() => setCoverImageUrl(null)}
-                        className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
-                        title={t('planView.removeImage')}
+                        className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-red-500"
+                        aria-label={language === 'fr' ? 'Supprimer l\'image de couverture' : 'Remove cover image'}
                       >
-                        <Trash2 size={18} />
+                        <Trash2 size={18} aria-hidden="true" />
                       </button>
                     </div>
                   )}
@@ -2593,22 +2745,23 @@ export default function PlanViewPage() {
                         // Validate file type
                         const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
                         if (!allowedTypes.includes(file.type)) {
-                          alert('Please select a valid image file (JPEG, PNG, GIF, or WebP)');
+                          toast.warning(t('planView.invalidFileType') || 'Invalid file type', t('planView.validImageTypes') || 'Please select a valid image file (JPEG, PNG, GIF, or WebP)');
                           return;
                         }
 
                         // Validate file size (10MB max)
                         const maxSize = 10 * 1024 * 1024;
                         if (file.size > maxSize) {
-                          alert('File size must be less than 10MB');
+                          toast.warning(t('planView.fileTooLarge') || 'File too large', t('planView.maxFileSize') || 'File size must be less than 10MB');
                           return;
                         }
 
                         const imageUrl = await businessPlanService.uploadCoverImage(id, file);
                         setCoverImageUrl(imageUrl);
+                        toast.success(t('planView.imageUploaded') || 'Image uploaded');
                       } catch (error: any) {
                         console.error('Failed to upload cover image:', error);
-                        alert(`Failed to upload image: ${error.message || 'Unknown error'}`);
+                        toast.error(t('planView.uploadError') || 'Upload failed', error.message || 'Unknown error');
                       } finally {
                         setUploadingCoverImage(false);
                       }
@@ -2618,16 +2771,17 @@ export default function PlanViewPage() {
                   <button
                     onClick={() => coverImageInputRef.current?.click()}
                     disabled={uploadingCoverImage}
-                    className="w-full flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg hover:border-gray-400 dark:hover:border-gray-500 transition-colors disabled:opacity-50"
+                    className="w-full flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg hover:border-gray-400 dark:hover:border-gray-500 transition-colors disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-orange-500"
+                    aria-busy={uploadingCoverImage}
                   >
                     {uploadingCoverImage ? (
                       <>
-                        <Loader2 size={18} className="animate-spin" />
+                        <Loader2 size={18} className="animate-spin motion-reduce:animate-none" aria-hidden="true" />
                         <span className="text-gray-700 dark:text-gray-300">{t('planView.uploading')}...</span>
                       </>
                     ) : (
                       <>
-                        <Upload size={18} className="text-gray-600 dark:text-gray-400" />
+                        <Upload size={18} className="text-gray-600 dark:text-gray-400" aria-hidden="true" />
                         <span className="text-gray-700 dark:text-gray-300">{coverImageUrl ? t('planView.changeImage') : t('planView.uploadImage')}</span>
                       </>
                     )}
@@ -2641,7 +2795,7 @@ export default function PlanViewPage() {
             <div className="p-6 border-t-2 border-gray-200 dark:border-gray-700 flex items-center justify-between">
               <button
                 onClick={() => setShowCoverModal(false)}
-                className="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors font-semibold"
+                className="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-gray-500"
               >
                 {t('planView.cancel')}
               </button>
@@ -2655,29 +2809,33 @@ export default function PlanViewPage() {
                       accentColor: coverAccentColor,
                       coverImageUrl: coverImageUrl || undefined
                     });
+                    setStatusMessage(t('planView.coverSaved') || 'Cover saved successfully');
                     await loadPlan();
                     setShowCoverModal(false);
+                    toast.success(t('planView.coverSaved') || 'Cover saved');
                   } catch (error: any) {
                     console.error('Failed to save cover settings:', error);
-                    alert(`Failed to save cover settings: ${error.message || 'Unknown error'}`);
+                    setStatusMessage(t('planView.coverSaveError') || 'Failed to save cover');
+                    toast.error(t('planView.coverSaveError') || 'Failed to save cover', error.message || 'Unknown error');
                   } finally {
                     setSavingCover(false);
                   }
                 }}
                 disabled={savingCover}
-                className="flex items-center gap-2 px-6 py-2 text-white rounded-lg transition-colors disabled:opacity-50 font-semibold"
+                className="flex items-center gap-2 px-6 py-2 text-white rounded-lg transition-colors disabled:opacity-50 font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-orange-500"
                 style={{ backgroundColor: momentumOrange }}
                 onMouseEnter={(e) => !savingCover && (e.currentTarget.style.backgroundColor = momentumOrangeHover)}
                 onMouseLeave={(e) => !savingCover && (e.currentTarget.style.backgroundColor = momentumOrange)}
+                aria-busy={savingCover}
               >
                 {savingCover ? (
                   <>
-                    <Loader2 size={18} className="animate-spin" />
+                    <Loader2 size={18} className="animate-spin motion-reduce:animate-none" aria-hidden="true" />
                     {t('planView.saving')}...
                   </>
                 ) : (
                   <>
-                    <Save size={18} />
+                    <Save size={18} aria-hidden="true" />
                     {t('planView.saveChanges')}
                   </>
                 )}
@@ -2690,13 +2848,13 @@ export default function PlanViewPage() {
       {/* Scroll to Top Button */}
       <button
         onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-        className="fixed bottom-8 right-8 p-3 text-white rounded-full shadow-lg transition-colors z-10"
+        className="fixed bottom-8 right-8 p-3 text-white rounded-full shadow-lg transition-colors z-10 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-white"
         style={{ backgroundColor: momentumOrange }}
         onMouseEnter={(e) => e.currentTarget.style.backgroundColor = momentumOrangeHover}
         onMouseLeave={(e) => e.currentTarget.style.backgroundColor = momentumOrange}
-        title="Scroll to top"
+        aria-label={language === 'fr' ? 'Retour en haut de la page' : 'Scroll to top'}
       >
-        <ArrowUpCircle size={24} />
+        <ArrowUpCircle size={24} aria-hidden="true" />
       </button>
 
       {/* Plan View Tour */}

@@ -2,6 +2,7 @@ import { Calendar, Clock, ArrowRight, Sparkles, TrendingUp } from 'lucide-react'
 import { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useTheme } from '../contexts/ThemeContext';
+import { cn } from '@/lib/utils';
 
 interface BlogPostContent {
   title: string;
@@ -20,18 +21,7 @@ interface BlogPost {
   fr: BlogPostContent;
 }
 
-// Function to generate URL-friendly slug from title
-const generateSlug = (title: string): string => {
-  return title
-    .toLowerCase()
-    .replace(/[^\w\s-]/g, '') // Remove special characters
-    .replace(/\s+/g, '-') // Replace spaces with hyphens
-    .replace(/-+/g, '-') // Replace multiple hyphens with single hyphen
-    .trim();
-};
-
-// Import the blog posts from BlogPostPage (shared data)
-// For now, we'll define them here to match the structure
+// Blog post data for the landing page
 const blogPostsData: BlogPost[] = [
   {
     id: '1',
@@ -95,6 +85,7 @@ const blogPostsData: BlogPost[] = [
 export default function Blog() {
   const { t, theme, language } = useTheme();
   const sectionRef = useRef<HTMLElement>(null);
+  const isDark = theme === 'dark';
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -126,31 +117,43 @@ export default function Blog() {
   }));
 
   return (
-    <section ref={sectionRef} id="blog" className="py-20 md:py-28 lg:py-32 bg-gradient-to-b from-white via-gray-50/50 to-gray-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-900 relative overflow-hidden">
-      {/* Animated background elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 left-10 w-72 h-72 bg-orange-500/10 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-20 right-10 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
-      </div>
-
+    <section
+      ref={sectionRef}
+      id="blog"
+      className={cn(
+        "py-20 md:py-28 lg:py-32 relative overflow-hidden",
+        isDark ? "bg-gray-900" : "bg-light-ai-grey"
+      )}
+    >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Header */}
         <div className="text-center max-w-4xl mx-auto mb-16 md:mb-20">
           <div className="fade-in-element inline-flex items-center gap-2 mb-6">
-            <Sparkles className="w-5 h-5 text-orange-600 dark:text-orange-400" />
-            <span className="px-4 py-1.5 bg-gradient-to-r from-orange-100 to-orange-50 dark:from-orange-900/30 dark:to-orange-800/20 text-orange-700 dark:text-orange-300 rounded-full text-xs md:text-sm font-semibold">
+            <Sparkles className="w-5 h-5 text-momentum-orange" />
+            <span className={cn(
+              "px-4 py-1.5 rounded-full text-xs md:text-sm font-semibold",
+              isDark
+                ? "bg-momentum-orange/10 text-momentum-orange"
+                : "bg-momentum-orange/10 text-momentum-orange"
+            )}>
               {t('blog.badge')}
             </span>
           </div>
-          <h2 className="fade-in-element text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-6 bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 dark:from-white dark:via-gray-100 dark:to-white bg-clip-text text-transparent">
+          <h2 className={cn(
+            "fade-in-element text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-6",
+            isDark ? "text-white" : "text-gray-900"
+          )}>
             {t('blog.title')}
           </h2>
-          <p className="fade-in-element text-base sm:text-lg md:text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+          <p className={cn(
+            "fade-in-element text-base sm:text-lg md:text-xl max-w-2xl mx-auto",
+            isDark ? "text-gray-400" : "text-gray-600"
+          )}>
             {t('blog.subtitle')}
           </p>
         </div>
 
-        {/* Unified Blog Posts Grid */}
+        {/* Blog Posts Grid */}
         <div className="space-y-8 md:space-y-12 mb-12">
           {blogPosts.map((post, index) => (
             <Link
@@ -159,23 +162,28 @@ export default function Blog() {
               className="fade-in-element group block"
               style={{ animationDelay: `${index * 150}ms` }}
             >
-              <div className="relative bg-white dark:bg-gray-800 rounded-3xl md:rounded-[2rem] overflow-hidden shadow-2xl border border-gray-200/50 dark:border-gray-700/50 hover:shadow-3xl transition-all duration-700">
+              <div className={cn(
+                "relative rounded-3xl md:rounded-[2rem] overflow-hidden border-2 transition-all duration-300 hover:shadow-xl",
+                isDark
+                  ? "bg-gray-800 border-gray-700 hover:border-gray-600"
+                  : "bg-white border-gray-200 hover:border-strategy-blue/20"
+              )}>
                 <div className="grid lg:grid-cols-2 gap-0">
                   {/* Image Side */}
                   <div className="relative h-64 md:h-80 lg:h-[400px] overflow-hidden order-2 lg:order-1">
                     <img
                       src={post.image}
                       alt={post.title}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       loading="lazy"
                       width={800}
                       height={400}
                     />
-                    <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent lg:bg-gradient-to-r lg:from-black/80 lg:via-black/50 lg:to-transparent"></div>
+                    <div className="absolute inset-0 bg-black/40 lg:bg-black/30" />
                     {index === 0 && (
                       <div className="absolute top-6 left-6 flex items-center gap-2">
-                        <TrendingUp className="w-4 h-4 text-orange-400" />
-                        <span className="px-4 py-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white text-xs font-bold rounded-full backdrop-blur-sm shadow-lg">
+                        <TrendingUp className="w-4 h-4 text-white" />
+                        <span className="px-4 py-2 bg-momentum-orange text-white text-xs font-bold rounded-full shadow-sm">
                           Featured
                         </span>
                       </div>
@@ -183,21 +191,38 @@ export default function Blog() {
                   </div>
 
                   {/* Content Side */}
-                  <div className="p-8 md:p-12 lg:p-16 flex flex-col justify-center order-1 lg:order-2 bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900">
+                  <div className={cn(
+                    "p-8 md:p-12 lg:p-16 flex flex-col justify-center order-1 lg:order-2",
+                    isDark ? "bg-gray-800" : "bg-white"
+                  )}>
                     <div className="mb-4">
-                      <span className="inline-block px-4 py-2 bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 text-xs font-semibold rounded-full mb-4">
+                      <span className={cn(
+                        "inline-block px-4 py-2 text-xs font-semibold rounded-full mb-4",
+                        isDark
+                          ? "bg-momentum-orange/10 text-momentum-orange"
+                          : "bg-momentum-orange/10 text-momentum-orange"
+                      )}>
                         {post.category}
                       </span>
                     </div>
-                    <h3 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white mb-4 group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors leading-tight">
+                    <h3 className={cn(
+                      "text-3xl md:text-4xl lg:text-5xl font-bold mb-4 group-hover:text-momentum-orange transition-colors leading-tight",
+                      isDark ? "text-white" : "text-gray-900"
+                    )}>
                       {post.title}
                     </h3>
-                    <p className="text-lg md:text-xl text-gray-600 dark:text-gray-400 mb-6 leading-relaxed line-clamp-3">
+                    <p className={cn(
+                      "text-lg md:text-xl mb-6 leading-relaxed line-clamp-3",
+                      isDark ? "text-gray-400" : "text-gray-600"
+                    )}>
                       {post.excerpt}
                     </p>
 
                     {/* Meta */}
-                    <div className="flex flex-wrap items-center gap-6 text-sm text-gray-500 dark:text-gray-400 mb-6">
+                    <div className={cn(
+                      "flex flex-wrap items-center gap-6 text-sm mb-6",
+                      isDark ? "text-gray-400" : "text-gray-500"
+                    )}>
                       <div className="flex items-center gap-2">
                         <Calendar size={16} />
                         <span>{formatDate(post.date)}</span>
@@ -209,12 +234,15 @@ export default function Blog() {
                     </div>
 
                     {/* Author */}
-                    <div className="text-base text-gray-700 dark:text-gray-300 mb-6">
-                      {t('blog.by')} <span className="font-semibold text-gray-900 dark:text-white">{post.author}</span>
+                    <div className={cn(
+                      "text-base mb-6",
+                      isDark ? "text-gray-300" : "text-gray-700"
+                    )}>
+                      {t('blog.by')} <span className={cn("font-semibold", isDark ? "text-white" : "text-gray-900")}>{post.author}</span>
                     </div>
 
                     {/* Read More */}
-                    <div className="inline-flex items-center gap-3 text-orange-600 dark:text-orange-400 font-semibold text-lg group-hover:gap-4 transition-all">
+                    <div className="inline-flex items-center gap-3 text-momentum-orange font-semibold text-lg group-hover:gap-4 transition-all">
                       <span>{t('blog.readMore')}</span>
                       <ArrowRight size={20} className="group-hover:translate-x-2 transition-transform duration-300" />
                     </div>
@@ -229,7 +257,7 @@ export default function Blog() {
         <div className="text-center">
           <Link
             to="/blog"
-            className="inline-flex items-center gap-3 px-10 py-5 bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-700 hover:to-orange-600 text-white font-semibold rounded-xl transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 hover:scale-105 text-lg"
+            className="inline-flex items-center gap-3 px-10 py-5 bg-momentum-orange hover:bg-[#E55F00] text-white font-semibold rounded-xl transition-all duration-300 hover:shadow-lg hover:-translate-y-1 text-lg"
           >
             <span>{t('blog.viewAll')}</span>
             <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
@@ -247,19 +275,6 @@ export default function Blog() {
             opacity: 1;
             transform: translateY(0);
           }
-        }
-
-        @keyframes pulse {
-          0%, 100% {
-            opacity: 0.4;
-          }
-          50% {
-            opacity: 0.8;
-          }
-        }
-
-        .animate-pulse {
-          animation: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
         }
 
         .animate-fade-in {
@@ -283,12 +298,7 @@ export default function Blog() {
           -webkit-box-orient: vertical;
           overflow: hidden;
         }
-
-        .shadow-3xl {
-          box-shadow: 0 35px 60px -12px rgba(0, 0, 0, 0.25);
-        }
       `}</style>
     </section>
   );
 }
-

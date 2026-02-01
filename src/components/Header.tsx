@@ -269,10 +269,8 @@ export default function Header() {
             </div>
             <span 
               className="text-2xl font-bold font-heading transition-all duration-300 tracking-tight"
-              style={{ 
+              style={{
                 color: getLogoColor(),
-                textShadow: getHeaderBg() === 'transparent' ? '0 1px 3px rgba(0, 0, 0, 0.5)' : 'none',
-                WebkitTextShadow: getHeaderBg() === 'transparent' ? '0 1px 3px rgba(0, 0, 0, 0.5)' : 'none'
               }}
             >
               Sqordia
@@ -464,12 +462,12 @@ export default function Header() {
                 e.currentTarget.style.backgroundColor = 'transparent';
                 e.currentTarget.style.transform = 'rotate(0deg) scale(1)';
               }}
-              aria-label="Toggle theme"
+              aria-label={theme === 'light' ? t('header.switchToDark') || 'Switch to dark mode' : t('header.switchToLight') || 'Switch to light mode'}
             >
               {theme === 'light' ? (
-                <Moon size={20} className="animate-fade-in transition-transform group-hover:rotate-12" />
+                <Moon size={20} className="animate-fade-in transition-transform group-hover:rotate-12" aria-hidden="true" />
               ) : (
-                <Sun size={20} className="animate-fade-in transition-transform group-hover:rotate-90" />
+                <Sun size={20} className="animate-fade-in transition-transform group-hover:rotate-90" aria-hidden="true" />
               )}
             </button>
 
@@ -521,17 +519,10 @@ export default function Header() {
               onMouseLeave={(e) => {
                 e.currentTarget.style.backgroundColor = momentumOrange;
                 e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = '0 4px 14px rgba(34, 197, 94, 0.3)';
+                e.currentTarget.style.boxShadow = '0 4px 14px rgba(255, 107, 0, 0.3)';
               }}
             >
               <span className="relative z-10">{t('nav.getstarted')}</span>
-              {/* Shine effect on hover */}
-              <span 
-                className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700"
-                style={{
-                  background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent)',
-                }}
-              />
             </Link>
           </div>
 
@@ -551,9 +542,9 @@ export default function Header() {
               onMouseLeave={(e) => {
                 e.currentTarget.style.backgroundColor = 'transparent';
               }}
-              aria-label="Toggle theme"
+              aria-label={theme === 'light' ? t('header.switchToDark') || 'Switch to dark mode' : t('header.switchToLight') || 'Switch to light mode'}
             >
-              {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
+              {theme === 'light' ? <Moon size={20} aria-hidden="true" /> : <Sun size={20} aria-hidden="true" />}
             </button>
 
             <button
@@ -570,12 +561,13 @@ export default function Header() {
               onMouseLeave={(e) => {
                 e.currentTarget.style.backgroundColor = 'transparent';
               }}
-              aria-label="Toggle menu"
+              aria-label={isMenuOpen ? t('header.closeMenu') || 'Close menu' : t('header.openMenu') || 'Open menu'}
+              aria-expanded={isMenuOpen}
             >
               {isMenuOpen ? (
-                <X size={24} className="transition-transform rotate-90" />
+                <X size={24} className="transition-transform rotate-90" aria-hidden="true" />
               ) : (
-                <Menu size={24} />
+                <Menu size={24} aria-hidden="true" />
               )}
             </button>
           </div>
@@ -756,7 +748,7 @@ export default function Header() {
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.backgroundColor = momentumOrange;
-                  e.currentTarget.style.boxShadow = '0 4px 14px rgba(34, 197, 94, 0.3)';
+                  e.currentTarget.style.boxShadow = '0 4px 14px rgba(255, 107, 0, 0.3)';
                   e.currentTarget.style.transform = 'translateY(0)';
                 }}
                 onClick={() => setIsMenuOpen(false)}

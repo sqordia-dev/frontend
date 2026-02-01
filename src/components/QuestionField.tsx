@@ -1,8 +1,10 @@
 import { useState, useRef, useEffect } from 'react';
-import { Sparkles, Check, Loader2, MessageCircle, Send } from 'lucide-react';
+import { Check, Loader2, MessageCircle, Send } from 'lucide-react';
 import AIActionMenu from './AIActionMenu';
 import AIStrengthFeedback from './AIStrengthFeedback';
 import { useTheme } from '../contexts/ThemeContext';
+
+// Note: useTheme provides { language } which can be 'en' | 'fr'
 
 interface QuestionFieldProps {
   questionId: string;
@@ -39,8 +41,8 @@ export default function QuestionField({
   questionNumber,
   totalQuestions
 }: QuestionFieldProps) {
+  const { language } = useTheme();
   const [focused, setFocused] = useState(false);
-  const [hovered, setHovered] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [showSaveStatus, setShowSaveStatus] = useState(false);
 
@@ -242,6 +244,7 @@ export default function QuestionField({
                 <AIActionMenu
                   text={value}
                   context={context || questionText}
+                  language={language}
                   onPolished={handlePolish}
                   disabled={!value.trim() || value.trim().length < minLength}
                 />
@@ -303,6 +306,7 @@ export default function QuestionField({
           context={context || questionText}
           persona={persona}
           location={location}
+          language={language}
           triggerType="field"
           onPolishApplied={(polishedText) => {
             onChange(polishedText);

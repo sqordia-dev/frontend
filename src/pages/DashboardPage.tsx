@@ -1,43 +1,52 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import SEO from '../components/SEO';
 import {
   Plus,
   FileText,
-  Trash2,
-  Copy,
-  Calendar,
-  Clock,
-  ArrowRight,
-  AlertTriangle,
-  X,
   Sparkles,
   Zap,
   Target,
-  BarChart3
+  BarChart3,
+  ArrowRight,
 } from 'lucide-react';
 import { businessPlanService } from '../lib/business-plan-service';
 import { BusinessPlan } from '../lib/types';
 import { useTheme } from '../contexts/ThemeContext';
+import { useToast } from '../contexts/ToastContext';
 import DashboardTour from '../components/DashboardTour';
 
+// shadcn/ui components
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { Spinner } from '@/components/ui/spinner';
+import { SkeletonStatsCard, SkeletonPlanCard } from '@/components/ui/skeleton';
+import { FadeIn, StaggerContainer, StaggerItem } from '@/components/ui/page-transition';
+
+// Dashboard components
+import { StatsCard } from '@/components/dashboard/StatsCard';
+import { PlanCard } from '@/components/dashboard/PlanCard';
+
 export default function DashboardPage() {
-  const { t, theme } = useTheme();
-  const navigate = useNavigate();
+  const { t } = useTheme();
+  const toast = useToast();
   const [plans, setPlans] = useState<BusinessPlan[]>([]);
   const [loading, setLoading] = useState(true);
   const [deletingPlanId, setDeletingPlanId] = useState<string | null>(null);
   const [duplicatingPlanId, setDuplicatingPlanId] = useState<string | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [planToDelete, setPlanToDelete] = useState<BusinessPlan | null>(null);
-  const [hoveredPlanId, setHoveredPlanId] = useState<string | null>(null);
   const [planProgress, setPlanProgress] = useState<Record<string, { isComplete: boolean; nextQuestionId?: string }>>({});
-
-  // Landing page color theme
-  const strategyBlue = '#1A2B47';
-  const momentumOrange = '#FF6B00';
-  const momentumOrangeHover = '#E55F00';
-  const lightAIGrey = '#F4F7FA';
 
   useEffect(() => {
     loadDashboardData();
@@ -47,7 +56,7 @@ export default function DashboardPage() {
     try {
       setLoading(true);
       const plansData = await businessPlanService.getBusinessPlans();
-      const activePlans = plansData.filter((plan: any) => !plan.isDeleted);
+      const activePlans = plansData.filter((plan: BusinessPlan) => !plan.isDeleted);
       setPlans(activePlans);
 
       // Load progress for each plan to determine completion status
@@ -58,10 +67,9 @@ export default function DashboardPage() {
           const progressData = progress?.value || progress;
           progressMap[plan.id] = {
             isComplete: progressData?.isComplete || progressData?.status === 'Completed' || plan.status === 'Completed',
-            nextQuestionId: progressData?.unansweredQuestionIds?.[0] // First unanswered question
+            nextQuestionId: progressData?.unansweredQuestionIds?.[0]
           };
-        } catch (error) {
-          // If progress endpoint fails, assume incomplete if status is Draft
+        } catch {
           progressMap[plan.id] = {
             isComplete: plan.status !== 'Draft' && plan.status !== 'draft'
           };
@@ -75,13 +83,16 @@ export default function DashboardPage() {
     }
   };
 
-  const handleDeleteClick = (plan: BusinessPlan) => {
-    setPlanToDelete(plan);
-    setShowDeleteModal(true);
+  const handleDeleteClick = (planId: string) => {
+    const plan = plans.find(p => p.id === planId);
+    if (plan) {
+      setPlanToDelete(plan);
+      setShowDeleteModal(true);
+    }
   };
 
   const handleDeleteConfirm = async () => {
-    if (!planToDelete) return;
+    if (!planToDelete || deletingPlanId) return;
 
     try {
       setDeletingPlanId(planToDelete.id);
@@ -89,9 +100,14 @@ export default function DashboardPage() {
       await loadDashboardData();
       setShowDeleteModal(false);
       setPlanToDelete(null);
-    } catch (error: any) {
+      toast.success(
+        t('dashboard.deleteSuccess') || 'Plan deleted',
+        t('dashboard.deleteSuccessDesc') || 'Your plan has been deleted successfully'
+      );
+    } catch (error: unknown) {
       console.error('Failed to delete plan:', error);
-      alert(`Failed to delete plan: ${error.message}`);
+      const errorMessage = error instanceof Error ? error.message : 'An error occurred';
+      toast.error(t('dashboard.deleteError') || 'Failed to delete plan', errorMessage);
     } finally {
       setDeletingPlanId(null);
     }
@@ -103,27 +119,60 @@ export default function DashboardPage() {
   };
 
   const handleDuplicatePlan = async (planId: string) => {
+    if (duplicatingPlanId) return;
+
     try {
       setDuplicatingPlanId(planId);
       const duplicatedPlan = await businessPlanService.duplicateBusinessPlan(planId);
-      setPlans([...plans, duplicatedPlan]);
-    } catch (error: any) {
+      setPlans(prevPlans => [...prevPlans, duplicatedPlan]);
+      toast.success(
+        t('dashboard.duplicateSuccess') || 'Plan duplicated',
+        t('dashboard.duplicateSuccessDesc') || 'Your plan has been duplicated successfully'
+      );
+    } catch (error: unknown) {
       console.error('Failed to duplicate plan:', error);
-      alert(`Failed to duplicate plan: ${error.message}`);
+      const errorMessage = error instanceof Error ? error.message : 'An error occurred';
+      toast.error(t('dashboard.duplicateError') || 'Failed to duplicate plan', errorMessage);
     } finally {
       setDuplicatingPlanId(null);
     }
   };
 
+  // Loading state with skeletons
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="text-center">
-          <div className="relative w-16 h-16 mx-auto mb-4">
-            <div className="absolute inset-0 border-4 rounded-full dark:border-gray-700" style={{ borderColor: theme === 'dark' ? undefined : lightAIGrey }}></div>
-            <div className="absolute inset-0 border-4 border-t-transparent rounded-full animate-spin" style={{ borderColor: momentumOrange }}></div>
+      <div className="min-h-screen">
+        <SEO
+          title={t('dashboard.title') || 'Dashboard | Sqordia'}
+          description={t('dashboard.description') || 'Manage your business plans and projects'}
+          noindex={true}
+          nofollow={true}
+        />
+        <div className="space-y-8">
+          {/* Header skeleton */}
+          <div className="mb-10">
+            <div className="h-12 w-64 bg-muted animate-pulse rounded-lg mb-3" />
+            <div className="h-6 w-96 bg-muted animate-pulse rounded-lg" />
           </div>
-          <p className="font-medium dark:text-gray-200" style={{ color: theme === 'dark' ? undefined : strategyBlue }}>{t('dashboard.loading')}</p>
+
+          {/* Stats skeleton */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[1, 2, 3, 4].map((i) => (
+              <SkeletonStatsCard key={i} />
+            ))}
+          </div>
+
+          {/* Plans skeleton */}
+          <Card>
+            <CardHeader>
+              <div className="h-8 w-48 bg-muted animate-pulse rounded-lg" />
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {[1, 2, 3].map((i) => (
+                <SkeletonPlanCard key={i} />
+              ))}
+            </CardContent>
+          </Card>
         </div>
       </div>
     );
@@ -131,21 +180,17 @@ export default function DashboardPage() {
 
   const stats = [
     {
-      name: t('dashboard.totalPlans'),
+      title: t('dashboard.totalPlans'),
       value: plans.length,
-      icon: FileText,
-      iconBg: strategyBlue,
-      bgColor: lightAIGrey,
+      icon: <FileText className="h-6 w-6" />,
     },
     {
-      name: t('dashboard.activePlans'),
+      title: t('dashboard.activePlans'),
       value: plans.filter(p => p.status === 'active' || !p.status).length,
-      icon: Target,
-      iconBg: momentumOrange,
-      bgColor: lightAIGrey,
+      icon: <Target className="h-6 w-6" />,
     },
     {
-      name: t('dashboard.recentPlans'),
+      title: t('dashboard.recentPlans'),
       value: plans.filter(p => {
         if (!p.createdAt) return false;
         const created = new Date(p.createdAt);
@@ -153,402 +198,219 @@ export default function DashboardPage() {
         weekAgo.setDate(weekAgo.getDate() - 7);
         return created > weekAgo;
       }).length,
-      icon: Zap,
-      iconBg: strategyBlue,
-      bgColor: lightAIGrey,
+      icon: <Zap className="h-6 w-6" />,
     },
     {
-      name: t('dashboard.completionRate'),
-      value: plans.length > 0 ? Math.round((plans.filter(p => p.status === 'Completed').length / plans.length) * 100) : 0,
-      icon: BarChart3,
-      iconBg: momentumOrange,
-      bgColor: lightAIGrey,
-      suffix: '%'
+      title: t('dashboard.completionRate'),
+      value: plans.length > 0
+        ? `${Math.round((plans.filter(p => p.status === 'Completed').length / plans.length) * 100)}%`
+        : '0%',
+      icon: <BarChart3 className="h-6 w-6" />,
     }
   ];
 
-  const getStatusColor = (status: string | undefined) => {
-    switch (status?.toLowerCase()) {
-      case 'completed':
-      case 'active':
-        return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400';
-      case 'draft':
-        return 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400';
-      case 'inprogress':
-        return 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400';
-      default:
-        return 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-400';
-    }
-  };
-
-  const getStatusLabel = (status: string | undefined) => {
-    if (!status) return status;
-    const statusLower = status.toLowerCase();
-    switch (statusLower) {
-      case 'draft':
-        return t('dashboard.status.draft');
-      case 'completed':
-        return t('dashboard.status.completed');
-      case 'active':
-        return t('dashboard.status.active');
-      case 'inprogress':
-        return t('dashboard.status.inProgress');
-      default:
-        return status;
-    }
-  };
-
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-900">
+    <div className="min-h-screen">
       <SEO
         title={t('dashboard.title') || 'Dashboard | Sqordia'}
         description={t('dashboard.description') || 'Manage your business plans and projects'}
         noindex={true}
         nofollow={true}
       />
-      <div className="relative z-10 space-y-8 p-6 lg:p-8">
-        {/* Header Section */}
-        <div className="mb-10 dashboard-header">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h1 className="text-4xl lg:text-5xl font-bold mb-3 dark:text-white" style={{ color: theme === 'dark' ? undefined : strategyBlue }}>
-                {t('dashboard.welcome')}
-              </h1>
-              <p className="text-lg text-gray-600 dark:text-gray-400">
-                {t('dashboard.subtitle')}
-              </p>
-            </div>
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => {
-                  localStorage.removeItem('dashboardTourCompleted');
-                  (window as any).startDashboardTour?.();
-                }}
-                className="hidden sm:flex items-center gap-2 px-4 py-2 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-lg font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200"
-                title="Show tour guide"
-              >
-                <Sparkles size={18} />
-                <span className="text-sm">{t('dashboard.showTour')}</span>
-              </button>
-              <Link
-                to="/create-plan"
-                className="hidden sm:flex items-center gap-2 px-6 py-3 text-white rounded-lg font-semibold shadow-md hover:shadow-lg transition-all duration-200"
-                style={{ backgroundColor: momentumOrange }}
-                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = momentumOrangeHover}
-                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = momentumOrange}
-              >
-                <Plus size={20} />
-                <span>{t('dashboard.newPlan')}</span>
-              </Link>
+
+      <FadeIn>
+        <div className="space-y-8">
+          {/* Header Section */}
+          <div className="mb-10 dashboard-header">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+              <div>
+                <h1 className="text-3xl lg:text-4xl font-bold tracking-tight mb-2">
+                  {t('dashboard.welcome')}
+                </h1>
+                <p className="text-lg text-muted-foreground">
+                  {t('dashboard.subtitle')}
+                </p>
+              </div>
+              <div className="flex items-center gap-3">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    localStorage.removeItem('dashboardTourCompleted');
+                    (window as Window & { startDashboardTour?: () => void }).startDashboardTour?.();
+                  }}
+                  className="hidden sm:flex"
+                >
+                  <Sparkles className="mr-2 h-4 w-4" />
+                  {t('dashboard.showTour')}
+                </Button>
+                <Button asChild variant="brand">
+                  <Link to="/create-plan">
+                    <Plus className="mr-2 h-4 w-4" />
+                    {t('dashboard.newPlan')}
+                  </Link>
+                </Button>
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Stats Cards Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 dashboard-stats">
-          {stats.map((stat, index) => {
-            const Icon = stat.icon;
-            return (
-              <div
-                key={stat.name}
-                className="group relative overflow-hidden bg-white dark:bg-gray-800 rounded-lg border-2 border-gray-200 dark:border-gray-700 p-6 shadow-sm hover:shadow-md transition-all duration-300"
-              >
-                <div className="flex items-center justify-between mb-4">
-                  <div className="p-3 rounded-lg" style={{ backgroundColor: stat.iconBg }}>
-                    <Icon className="w-6 h-6 text-white" />
+          {/* Stats Cards Grid */}
+          <StaggerContainer className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 dashboard-stats">
+            {stats.map((stat) => (
+              <StaggerItem key={stat.title}>
+                <StatsCard
+                  title={stat.title}
+                  value={stat.value}
+                  icon={stat.icon}
+                />
+              </StaggerItem>
+            ))}
+          </StaggerContainer>
+
+          {/* Create New Plan Card */}
+          <Card className="bg-primary text-primary-foreground border-0 overflow-hidden dashboard-create-card group hover:shadow-lg transition-shadow">
+            <Link to="/create-plan" className="block">
+              <CardContent className="p-8 lg:p-12">
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
+                  <div className="flex items-center gap-6">
+                    <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-primary-foreground/20">
+                      <Sparkles className="h-8 w-8" />
+                    </div>
+                    <div>
+                      <h3 className="text-2xl lg:text-3xl font-bold mb-2">
+                        {t('dashboard.createNextPlan')}
+                      </h3>
+                      <p className="text-primary-foreground/80 text-lg">
+                        {t('dashboard.createNextPlanDesc')}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="font-semibold hidden sm:inline">
+                      {t('dashboard.getStarted')}
+                    </span>
+                    <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary-foreground/20 group-hover:bg-primary-foreground/30 transition-colors">
+                      <ArrowRight className="h-6 w-6" />
+                    </div>
                   </div>
                 </div>
+              </CardContent>
+            </Link>
+          </Card>
+
+          {/* Business Plans Section */}
+          <Card className="dashboard-plans">
+            <CardHeader className="border-b">
+              <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
-                    {stat.name}
-                  </p>
-                  <p className="text-3xl font-bold dark:text-white" style={{ color: theme === 'dark' ? undefined : strategyBlue }}>
-                    {stat.value}{stat.suffix || ''}
-                  </p>
+                  <CardTitle className="text-2xl">
+                    {t('dashboard.yourPlans')}
+                  </CardTitle>
+                  <CardDescription>
+                    {plans.length} {plans.length === 1 ? t('dashboard.plan') : t('dashboard.plansTotal')}
+                  </CardDescription>
                 </div>
               </div>
-            );
-          })}
+            </CardHeader>
+
+            <CardContent className="p-0">
+              {plans.length === 0 ? (
+                <div className="text-center py-16 px-6">
+                  <div className="flex h-24 w-24 items-center justify-center rounded-lg bg-muted mx-auto mb-6">
+                    <FileText className="h-10 w-10 text-muted-foreground" />
+                  </div>
+                  <h3 className="text-2xl font-bold mb-3">
+                    {t('dashboard.noPlans')}
+                  </h3>
+                  <p className="text-muted-foreground mb-8 max-w-md mx-auto text-lg">
+                    {t('dashboard.noPlansDesc')}
+                  </p>
+                  <Button asChild variant="brand" size="lg">
+                    <Link to="/create-plan">
+                      <Plus className="mr-2 h-5 w-5" />
+                      {t('dashboard.createFirstPlan')}
+                    </Link>
+                  </Button>
+                </div>
+              ) : (
+                <StaggerContainer className="divide-y">
+                  {plans.map((plan) => {
+                    const progress = planProgress[plan.id];
+                    return (
+                      <StaggerItem key={plan.id} className="p-4 lg:p-6">
+                        <PlanCard
+                          id={plan.id}
+                          title={plan.title}
+                          description={plan.description}
+                          status={plan.status}
+                          businessType={plan.businessType}
+                          createdAt={plan.createdAt}
+                          isComplete={progress?.isComplete}
+                          nextQuestionId={progress?.nextQuestionId}
+                          onDelete={handleDeleteClick}
+                          onDuplicate={handleDuplicatePlan}
+                          isDeleting={deletingPlanId === plan.id}
+                          isDuplicating={duplicatingPlanId === plan.id}
+                          translations={{
+                            resume: t('dashboard.resume'),
+                            view: t('dashboard.view'),
+                            noDescription: t('dashboard.noDescription'),
+                            delete: t('dashboard.deletePlan'),
+                            duplicate: t('dashboard.duplicatePlan'),
+                            status: {
+                              draft: t('dashboard.status.draft'),
+                              completed: t('dashboard.status.completed'),
+                              active: t('dashboard.status.active'),
+                              inProgress: t('dashboard.status.inProgress'),
+                            },
+                          }}
+                        />
+                      </StaggerItem>
+                    );
+                  })}
+                </StaggerContainer>
+              )}
+            </CardContent>
+          </Card>
         </div>
+      </FadeIn>
 
-        {/* Create New Plan Card */}
-        <Link
-          to="/create-plan"
-          className="block group relative overflow-hidden rounded-lg p-8 lg:p-12 shadow-md hover:shadow-lg transition-all duration-300 border-2 dashboard-create-card"
-          style={{ 
-            backgroundColor: strategyBlue,
-            borderColor: momentumOrange
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.transform = 'translateY(-2px)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.transform = 'translateY(0)';
-          }}
-        >
-          <div className="relative z-10 flex flex-col sm:flex-row items-center justify-between gap-6">
-            <div className="flex items-center gap-6">
-              <div className="w-16 h-16 rounded-lg flex items-center justify-center" style={{ backgroundColor: momentumOrange }}>
-                <Sparkles className="text-white" size={32} />
-              </div>
-              <div>
-                <h3 className="text-2xl lg:text-3xl font-bold text-white mb-2">
-                  {t('dashboard.createNextPlan')}
-                </h3>
-                <p className="text-gray-300 text-lg">
-                  {t('dashboard.createNextPlanDesc')}
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <span className="text-white font-semibold hidden sm:inline">{t('dashboard.getStarted')}</span>
-              <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{ backgroundColor: momentumOrange }}>
-                <ArrowRight className="text-white" size={24} />
-              </div>
-            </div>
-          </div>
-        </Link>
-
-        {/* Business Plans Section */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg border-2 border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden dashboard-plans">
-          <div className="px-6 lg:px-8 py-6 border-b-2 border-gray-200 dark:border-gray-700">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-2xl font-bold mb-1 dark:text-white" style={{ color: theme === 'dark' ? undefined : strategyBlue }}>
-                  {t('dashboard.yourPlans')}
-                </h2>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  {plans.length} {plans.length === 1 ? t('dashboard.plan') : t('dashboard.plansTotal')}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {plans.length === 0 ? (
-            <div className="text-center py-16 px-6">
-              <div className="w-24 h-24 rounded-lg flex items-center justify-center mx-auto mb-6 dark:bg-gray-700" style={{ backgroundColor: lightAIGrey }}>
-                <FileText size={40} className="dark:text-gray-300" style={{ color: strategyBlue }} />
-              </div>
-              <h3 className="text-2xl font-bold mb-3 dark:text-white" style={{ color: theme === 'dark' ? undefined : strategyBlue }}>
-                {t('dashboard.noPlans')}
-              </h3>
-              <p className="text-gray-600 dark:text-gray-400 mb-8 max-w-md mx-auto text-lg">
-                {t('dashboard.noPlansDesc')}
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={showDeleteModal} onOpenChange={setShowDeleteModal}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {t('dashboard.deletePlan')}
+            </AlertDialogTitle>
+            <AlertDialogDescription className="space-y-3">
+              <p>
+                {t('dashboard.deleteConfirm')} <strong>"{planToDelete?.title || 'Untitled Plan'}"</strong>?
               </p>
-              <Link
-                to="/create-plan"
-                className="inline-flex items-center gap-3 px-6 sm:px-8 py-4 text-white rounded-lg font-semibold shadow-md hover:shadow-lg transition-all duration-200 min-h-[44px] text-sm sm:text-base"
-                style={{ backgroundColor: momentumOrange }}
-                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = momentumOrangeHover}
-                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = momentumOrange}
-              >
-                <Plus size={22} />
-                <span>{t('dashboard.createFirstPlan')}</span>
-              </Link>
-            </div>
-          ) : (
-            <div className="divide-y-2 divide-gray-200 dark:divide-gray-700">
-              {plans.map((plan, index) => (
-                <div
-                  key={plan.id}
-                  className="group relative p-6 lg:p-8 hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-all duration-300"
-                  onMouseEnter={() => setHoveredPlanId(plan.id)}
-                  onMouseLeave={() => setHoveredPlanId(null)}
-                >
-                  <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-                    <div className="flex-1 min-w-0 flex items-start gap-6">
-                      {/* Icon */}
-                      <div className="relative flex-shrink-0 w-14 h-14 rounded-lg shadow-sm flex items-center justify-center" style={{ backgroundColor: strategyBlue }}>
-                        <FileText className="text-white" size={24} />
-                      </div>
-
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between gap-4 mb-3">
-                          <div className="flex-1 min-w-0">
-                            <h3 className="text-xl font-bold mb-2 truncate transition-colors dark:text-white group-hover:text-orange-600 dark:group-hover:text-orange-400" style={{ color: theme === 'dark' ? undefined : strategyBlue }}>
-                              {plan.title || 'Untitled Plan'}
-                            </h3>
-                            <p className="text-gray-600 dark:text-gray-400 mb-4 line-clamp-2">
-                              {plan.description || t('dashboard.noDescription')}
-                            </p>
-                          </div>
-                        </div>
-
-                        <div className="flex flex-wrap items-center gap-3">
-                          {plan.status && (
-                            <span className={`px-3 py-1.5 rounded-lg text-xs font-semibold ${getStatusColor(plan.status)}`}>
-                              {getStatusLabel(plan.status)}
-                            </span>
-                          )}
-                          {plan.businessType && (
-                            <span className="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-xs font-medium">
-                              {plan.businessType}
-                            </span>
-                          )}
-                          {plan.createdAt && (
-                            <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
-                              <Calendar size={14} />
-                              <span>{new Date(plan.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Action Buttons */}
-                    <div className={`flex items-center gap-2 transition-all duration-300 ${
-                      hoveredPlanId === plan.id ? 'opacity-100 translate-x-0' : 'opacity-0 lg:opacity-100 translate-x-2 lg:translate-x-0'
-                    }`}>
-                      {(() => {
-                        const progress = planProgress[plan.id];
-                        const isDraft = plan.status === 'Draft' || plan.status === 'draft' || !progress?.isComplete;
-                        const nextQuestionId = progress?.nextQuestionId;
-
-                        if (isDraft) {
-                          // Show Resume button for draft/incomplete plans
-                          return (
-                            <button
-                              onClick={() => {
-                                // Navigate to wizard, optionally with question ID hash
-                                const url = `/questionnaire/${plan.id}${nextQuestionId ? `#question-${nextQuestionId}` : ''}`;
-                                navigate(url);
-                              }}
-                              className="inline-flex items-center gap-2 px-5 py-3 md:py-2.5 text-white text-sm rounded-lg font-semibold shadow-md hover:shadow-lg transition-all duration-200 min-h-[44px]"
-                              style={{ backgroundColor: momentumOrange }}
-                              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = momentumOrangeHover}
-                              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = momentumOrange}
-                            >
-                              <span>{t('dashboard.resume') || 'Resume'}</span>
-                              <ArrowRight size={16} />
-                            </button>
-                          );
-                        } else {
-                          // Show View button for completed plans
-                          return (
-                            <Link
-                              to={`/plans/${plan.id}`}
-                              className="inline-flex items-center gap-2 px-5 py-3 md:py-2.5 text-white text-sm rounded-lg font-semibold shadow-md hover:shadow-lg transition-all duration-200 min-h-[44px]"
-                              style={{ backgroundColor: momentumOrange }}
-                              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = momentumOrangeHover}
-                              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = momentumOrange}
-                            >
-                              <span>{t('dashboard.view')}</span>
-                              <ArrowRight size={16} />
-                            </Link>
-                          );
-                        }
-                      })()}
-                      <div className="relative flex items-center gap-2">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDuplicatePlan(plan.id);
-                          }}
-                          disabled={duplicatingPlanId === plan.id}
-                          className="p-3 md:p-2.5 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed hover:scale-110 min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0 flex items-center justify-center"
-                          title="Duplicate plan"
-                        >
-                          <Copy size={18} />
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDeleteClick(plan);
-                          }}
-                          disabled={deletingPlanId === plan.id}
-                          className="p-3 md:p-2.5 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed hover:scale-110 min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0 flex items-center justify-center"
-                          title="Delete plan"
-                        >
-                          <Trash2 size={18} />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Hover border effect */}
-                  <div className="absolute inset-x-0 bottom-0 h-0.5 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300" style={{ backgroundColor: momentumOrange }}></div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Delete Confirmation Modal */}
-      {showDeleteModal && planToDelete && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-0 md:p-4 animate-in fade-in duration-200">
-          <div className="bg-white dark:bg-gray-800 rounded-none md:rounded-lg shadow-2xl max-w-md w-full h-full md:h-auto transform transition-all animate-in zoom-in-95 duration-200 border-2 border-gray-200 dark:border-gray-700">
-            <div className="p-6 lg:p-8">
-              {/* Header */}
-              <div className="flex items-start justify-between mb-6">
-                <div className="flex items-center gap-4">
-                  <div className="p-3 bg-red-100 dark:bg-red-900/30 rounded-xl">
-                    <AlertTriangle className="text-red-600 dark:text-red-400" size={28} />
-                  </div>
-                  <div>
-                    <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
-                      {t('dashboard.deletePlan')}
-                    </h3>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                      {t('dashboard.deleteWarning')}
-                    </p>
-                  </div>
-                </div>
-                <button
-                  onClick={handleDeleteCancel}
-                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
-                  disabled={deletingPlanId === planToDelete.id}
-                >
-                  <X size={20} />
-                </button>
-              </div>
-
-              {/* Content */}
-              <div className="mb-8">
-                <p className="text-gray-700 dark:text-gray-300 mb-2">
-                  {t('dashboard.deleteConfirm')}
-                </p>
-                <p className="text-lg font-bold text-gray-900 dark:text-white mb-4">
-                  "{planToDelete.title || 'Untitled Plan'}"?
-                </p>
-                <div className="p-4 bg-red-50 dark:bg-red-900/20 rounded-xl border border-red-200 dark:border-red-800">
-                  <p className="text-sm text-red-700 dark:text-red-400 font-medium">
-                    ⚠️ {t('dashboard.deleteWarning')}
-                  </p>
-                </div>
-              </div>
-
-              {/* Actions */}
-              <div className="flex items-center justify-end gap-3">
-                <button
-                  onClick={handleDeleteCancel}
-                  disabled={deletingPlanId === planToDelete.id}
-                  className="px-6 py-3 md:py-2.5 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-xl font-semibold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px]"
-                >
-                  {t('dashboard.cancel')}
-                </button>
-                <button
-                  onClick={handleDeleteConfirm}
-                  disabled={deletingPlanId === planToDelete.id}
-                  className="px-6 py-3 md:py-2.5 bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600 text-white rounded-lg font-semibold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shadow-md hover:shadow-lg min-h-[44px]"
-                >
-                  {deletingPlanId === planToDelete.id ? (
-                    <>
-                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                      <span>{t('dashboard.deleting')}</span>
-                    </>
-                  ) : (
-                    <>
-                      <Trash2 size={18} />
-                      <span>{t('dashboard.deletePlanButton')}</span>
-                    </>
-                  )}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+              <p className="text-destructive font-medium">
+                {t('dashboard.deleteWarning')}
+              </p>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={handleDeleteCancel} disabled={!!deletingPlanId}>
+              {t('dashboard.cancel')}
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteConfirm}
+              disabled={!!deletingPlanId}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deletingPlanId ? (
+                <>
+                  <Spinner size="sm" variant="white" className="mr-2" />
+                  {t('dashboard.deleting')}
+                </>
+              ) : (
+                t('dashboard.deletePlanButton')
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Dashboard Tour */}
       <DashboardTour />

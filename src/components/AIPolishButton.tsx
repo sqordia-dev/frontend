@@ -6,14 +6,16 @@ interface AIPolishButtonProps {
   text: string;
   onPolished: (polishedText: string) => void;
   context?: string;
+  language?: 'en' | 'fr';
   disabled?: boolean;
 }
 
-export default function AIPolishButton({ 
-  text, 
-  onPolished, 
+export default function AIPolishButton({
+  text,
+  onPolished,
   context,
-  disabled = false 
+  language = 'en',
+  disabled = false
 }: AIPolishButtonProps) {
   const [loading, setLoading] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
@@ -38,7 +40,7 @@ export default function AIPolishButton({
       const response = await apiClient.post('/api/v1/ai/polish-text', {
         text: trimmedText,  // camelCase to match JSON serialization policy
         context: context || undefined,
-        language: 'en',  // Default to English, can be made configurable
+        language,  // Use language from props (defaults to 'en')
         tone: 'professional'  // Default tone
       });
 

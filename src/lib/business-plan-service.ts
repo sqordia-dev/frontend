@@ -396,6 +396,18 @@ export const businessPlanService = {
     return response.data;
   },
 
+  async getQuestionnaireResponses(id: string, language?: 'en' | 'fr'): Promise<any[]> {
+    const config = language ? {
+      headers: { 'Accept-Language': language }
+    } : undefined;
+    const response = await apiClient.get(`/api/v1/business-plans/${id}/questionnaire/responses`, undefined, config);
+    // Handle wrapped response format
+    if (response.data?.value) {
+      return Array.isArray(response.data.value) ? response.data.value : [];
+    }
+    return Array.isArray(response.data) ? response.data : [];
+  },
+
   async getQuestionnaireProgress(id: string): Promise<any> {
     const response = await apiClient.get(`/api/v1/business-plans/${id}/questionnaire/progress`);
     return response.data;

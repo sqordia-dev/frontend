@@ -2,13 +2,36 @@ import { ArrowRight, Shield, Star, Check, Sparkles } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useEffect, useRef, useState } from 'react';
 import { useTheme } from '../contexts/ThemeContext';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 
 export default function Hero() {
   const heroRef = useRef<HTMLElement>(null);
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
   const { t, theme } = useTheme();
 
   useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setPrefersReducedMotion(mediaQuery.matches);
+
+    const handleChange = (e: MediaQueryListEvent) => {
+      setPrefersReducedMotion(e.matches);
+    };
+
+    mediaQuery.addEventListener('change', handleChange);
+    return () => mediaQuery.removeEventListener('change', handleChange);
+  }, []);
+
+  useEffect(() => {
+    if (prefersReducedMotion) {
+      const elements = heroRef.current?.querySelectorAll('.fade-in-element');
+      elements?.forEach((el) => {
+        (el as HTMLElement).style.opacity = '1';
+      });
+      return;
+    }
+
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry, index) => {
@@ -26,378 +49,258 @@ export default function Hero() {
     elements?.forEach((el) => observer.observe(el));
 
     return () => observer.disconnect();
-  }, []);
-
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      setMousePosition({
-        x: (e.clientX / window.innerWidth) * 100,
-        y: (e.clientY / window.innerHeight) * 100,
-      });
-    };
-
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, []);
+  }, [prefersReducedMotion]);
 
   const isDark = theme === 'dark';
-  const bgColor = isDark ? '#1A2B47' : '#F4F7FA';
-  const textColor = isDark ? '#FFFFFF' : '#1A2B47';
-  const textSecondaryColor = isDark ? '#D1D5DB' : '#6B7280';
-  const cardBgColor = isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(255, 255, 255, 0.8)';
-  const cardBorderColor = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(26, 43, 71, 0.1)';
-  const gridColor = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(26, 43, 71, 0.05)';
 
   return (
-    <section 
-      ref={heroRef} 
-      className="relative pt-16 pb-20 md:pt-32 md:pb-40 overflow-hidden min-h-[80vh] md:min-h-screen flex items-center"
-      style={{ backgroundColor: bgColor }}
+    <section
+      ref={heroRef}
+      className={cn(
+        "relative pt-20 pb-24 md:pt-32 md:pb-40 overflow-hidden min-h-[85vh] md:min-h-screen flex items-center",
+        isDark ? "bg-strategy-blue" : "bg-light-ai-grey"
+      )}
+      aria-labelledby="hero-heading"
     >
-      {/* Animated gradient background with parallax */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {/* Primary orbs */}
-        {/* Optimize blob sizes for mobile performance */}
-        <div 
-          className={`absolute top-20 right-10 w-[300px] h-[300px] md:w-[500px] md:h-[500px] rounded-full filter blur-[80px] md:blur-[120px] animate-blob ${isDark ? 'opacity-20 md:opacity-30' : 'opacity-10 md:opacity-15'}`}
-          style={{ 
-            backgroundColor: 'rgba(255, 107, 0, 0.3)',
-            transform: `translate(${mousePosition.x * 0.02}px, ${mousePosition.y * 0.02}px)`,
-          }}
-        ></div>
-        <div 
-          className={`absolute top-40 left-10 w-[250px] h-[250px] md:w-[400px] md:h-[400px] rounded-full filter blur-[60px] md:blur-[100px] animate-blob animation-delay-2000 ${isDark ? 'opacity-15 md:opacity-25' : 'opacity-8 md:opacity-12'}`}
-          style={{ 
-            backgroundColor: 'rgba(59, 130, 246, 0.25)',
-            transform: `translate(${mousePosition.x * -0.015}px, ${mousePosition.y * -0.015}px)`,
-          }}
-        ></div>
-        <div 
-          className={`absolute -bottom-20 left-1/2 w-[350px] h-[350px] md:w-[600px] md:h-[600px] rounded-full filter blur-[90px] md:blur-[140px] animate-blob animation-delay-4000 ${isDark ? 'opacity-10 md:opacity-20' : 'opacity-5 md:opacity-10'}`}
-          style={{ 
-            backgroundColor: 'rgba(139, 92, 246, 0.2)',
-            transform: `translate(${mousePosition.x * 0.01}px, ${mousePosition.y * 0.01}px)`,
-          }}
-        ></div>
+      {/* Clean geometric background */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
+        {/* Subtle dot pattern */}
+        <div className={cn(
+          "absolute inset-0",
+          isDark ? "opacity-[0.04]" : "opacity-[0.06]"
+        )} style={{
+          backgroundImage: `radial-gradient(circle, ${isDark ? '#FFFFFF' : '#1A2B47'} 1px, transparent 1px)`,
+          backgroundSize: '24px 24px',
+        }} />
 
-        {/* Grid pattern overlay */}
-        <div 
-          className="absolute inset-0 opacity-[0.03]"
-          style={{
-            backgroundImage: `
-              linear-gradient(${gridColor} 1px, transparent 1px),
-              linear-gradient(90deg, ${gridColor} 1px, transparent 1px)
-            `,
-            backgroundSize: '50px 50px',
-          }}
-        ></div>
-
-        {/* Floating particles */}
-        {[...Array(20)].map((_, i) => (
-          <div
-            key={i}
-            className="absolute rounded-full animate-float"
-            style={{
-              width: `${Math.random() * 4 + 2}px`,
-              height: `${Math.random() * 4 + 2}px`,
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              backgroundColor: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(26, 43, 71, 0.1)',
-              animationDelay: `${Math.random() * 5}s`,
-              animationDuration: `${Math.random() * 10 + 10}s`,
-            }}
-          />
-        ))}
+        {/* Geometric accent shapes */}
+        <div className={cn(
+          "absolute -top-32 -right-32 w-[500px] h-[500px] rounded-full",
+          isDark ? "bg-white/[0.03]" : "bg-strategy-blue/[0.03]"
+        )} />
+        <div className={cn(
+          "absolute -bottom-48 -left-24 w-[400px] h-[400px] rounded-full",
+          isDark ? "bg-white/[0.02]" : "bg-strategy-blue/[0.02]"
+        )} />
       </div>
 
       <div className="container mx-auto px-6 relative z-10">
         <div className="max-w-5xl mx-auto text-center">
-          {/* Animated Badge with glow effect */}
-          <div className="fade-in-element inline-flex items-center gap-2 px-5 py-2.5 mb-8 rounded-full text-sm font-semibold font-heading relative group overflow-hidden">
-            <div 
-              className="absolute inset-0 rounded-full opacity-50 blur-xl"
-              style={{ backgroundColor: 'rgba(34, 197, 94, 0.3)' }}
-            ></div>
-            <div 
-              className="absolute inset-0 rounded-full backdrop-blur-md border"
-              style={{ 
-                backgroundColor: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.9)',
-                borderColor: isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(26, 43, 71, 0.2)',
-              }}
-            ></div>
-            <Sparkles 
-              size={16} 
-              className="relative z-10 animate-pulse"
-              style={{ color: '#FF6B00' }}
-            />
-            <span className="relative z-10" style={{ color: textColor }}>{t('hero.badge')}</span>
+          {/* Badge */}
+          <div className="fade-in-element mb-8">
+            <Badge
+              variant="outline"
+              className={cn(
+                "px-5 py-2.5 text-sm font-semibold rounded-full",
+                "border-2",
+                isDark
+                  ? "bg-white/10 border-white/20 text-white"
+                  : "bg-white border-strategy-blue/15 text-strategy-blue",
+                "shadow-sm"
+              )}
+            >
+              <Sparkles
+                size={16}
+                className="mr-2 text-momentum-orange"
+              />
+              {t('hero.badge')}
+            </Badge>
           </div>
 
           {/* Main Headline */}
-          <h1 className="fade-in-element font-heading text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6 md:mb-8 relative">
-            <span className="block" style={{ color: textColor }}>
-              {t('hero.headline.part1')}
-            </span>
-            <span className="block mt-2" style={{ color: textColor }}>
-              {t('hero.headline.part2')} <span className="relative inline-block">
-                <span style={{ color: textColor }}>{t('hero.headline.part3')}</span>
-                <span 
-                  className="absolute -bottom-2 left-0 right-0 h-1 rounded-full opacity-50"
-                  style={{ 
-                    backgroundColor: '#FF6B00',
-                    animation: 'pulse 2s ease-in-out infinite',
-                  }}
+          <h1
+            id="hero-heading"
+            className={cn(
+              "fade-in-element font-heading mb-8",
+              "text-display-lg md:text-display-xl lg:text-display-2xl",
+              isDark ? "text-white" : "text-strategy-blue"
+            )}
+          >
+            <span className="block">{t('hero.headline.part1')}</span>
+            <span className="block mt-2">
+              {t('hero.headline.part2')}{' '}
+              <span className="relative inline-block">
+                <span className="text-momentum-orange">{t('hero.headline.part3')}</span>
+                <span
+                  className="absolute -bottom-2 left-0 right-0 h-1.5 rounded-full bg-momentum-orange/40"
                 />
               </span>
             </span>
           </h1>
 
-          {/* Sub-headline with fade-in */}
-          <p className="fade-in-element text-sm sm:text-base md:text-lg lg:text-xl leading-relaxed max-w-3xl mx-auto mb-8 md:mb-12 font-light px-4" style={{ color: textSecondaryColor }}>
+          {/* Subtitle */}
+          <p className={cn(
+            "fade-in-element text-body-lg md:text-xl max-w-3xl mx-auto mb-12 px-4",
+            isDark ? "text-gray-300" : "text-gray-600"
+          )}>
             {t('hero.subtitle')}
           </p>
 
-          {/* Enhanced CTA Buttons with modern design */}
-          <div className="fade-in-element flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center mb-12 md:mb-16 px-4">
-            <Link
-              to="/register"
-              className="group relative w-full sm:w-auto px-8 sm:px-10 py-4 sm:py-5 text-white text-base sm:text-lg font-bold font-heading rounded-xl overflow-hidden transition-all duration-500 flex items-center justify-center gap-3 shadow-2xl min-h-[44px]"
-              style={{ 
-                backgroundColor: '#FF6B00',
-                boxShadow: '0 10px 40px rgba(255, 107, 0, 0.4)',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = '#E55F00';
-                e.currentTarget.style.transform = 'translateY(-4px) scale(1.02)';
-                e.currentTarget.style.boxShadow = '0 15px 50px rgba(255, 107, 0, 0.5)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = '#FF6B00';
-                e.currentTarget.style.transform = 'translateY(0) scale(1)';
-                e.currentTarget.style.boxShadow = '0 10px 40px rgba(255, 107, 0, 0.4)';
-              }}
+          {/* CTA Buttons */}
+          <nav className="fade-in-element flex flex-col sm:flex-row gap-4 justify-center mb-16 px-4" aria-label="Primary actions">
+            <Button
+              asChild
+              variant="brand"
+              size="xl"
+              className="group shadow-lg shadow-momentum-orange/25 hover:shadow-xl hover:shadow-momentum-orange/30 transition-shadow"
             >
-              <span className="relative z-10">{t('hero.cta.businessPlan')}</span>
-              <ArrowRight 
-                size={20} 
-                className="relative z-10 transition-transform duration-300 group-hover:translate-x-2" 
-              />
-              {/* Shine effect */}
-              <div 
-                className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 opacity-30"
-                style={{
-                  backgroundColor: 'rgba(255, 255, 255, 0.3)',
-                }}
-              />
-            </Link>
-            <Link
-              to="/register"
-              className="group relative w-full sm:w-auto px-8 sm:px-10 py-4 sm:py-5 text-base sm:text-lg font-bold font-heading rounded-xl overflow-hidden transition-all duration-500 flex items-center justify-center gap-3 backdrop-blur-sm border-2 min-h-[44px]"
-              style={{ 
-                backgroundColor: isDark ? 'rgba(255, 255, 255, 0.95)' : '#FFFFFF',
-                color: '#1A2B47',
-                borderColor: isDark ? 'rgba(255, 255, 255, 0.3)' : 'rgba(26, 43, 71, 0.2)',
-                boxShadow: isDark ? '0 10px 40px rgba(0, 0, 0, 0.1)' : '0 10px 40px rgba(26, 43, 71, 0.15)',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = '#FFFFFF';
-                e.currentTarget.style.transform = 'translateY(-4px) scale(1.02)';
-                e.currentTarget.style.boxShadow = isDark ? '0 15px 50px rgba(0, 0, 0, 0.15)' : '0 15px 50px rgba(26, 43, 71, 0.2)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = isDark ? 'rgba(255, 255, 255, 0.95)' : '#FFFFFF';
-                e.currentTarget.style.transform = 'translateY(0) scale(1)';
-                e.currentTarget.style.boxShadow = isDark ? '0 10px 40px rgba(0, 0, 0, 0.1)' : '0 10px 40px rgba(26, 43, 71, 0.15)';
-              }}
+              <Link to="/register">
+                {t('hero.cta.businessPlan')}
+                <ArrowRight
+                  size={20}
+                  className={cn(
+                    !prefersReducedMotion && "transition-transform duration-300 group-hover:translate-x-1"
+                  )}
+                />
+              </Link>
+            </Button>
+            <Button
+              asChild
+              variant="outline"
+              size="xl"
+              className={cn(
+                "group border-2",
+                isDark
+                  ? "bg-white text-strategy-blue hover:bg-gray-50 border-white"
+                  : "bg-white text-strategy-blue hover:bg-gray-50 border-strategy-blue/20"
+              )}
             >
-              <span className="relative z-10">{t('hero.cta.strategicPlan')}</span>
-              <ArrowRight 
-                size={20} 
-                className="relative z-10 transition-transform duration-300 group-hover:translate-x-2" 
-              />
-            </Link>
-          </div>
+              <Link to="/register">
+                {t('hero.cta.strategicPlan')}
+                <ArrowRight
+                  size={20}
+                  className={cn(
+                    !prefersReducedMotion && "transition-transform duration-300 group-hover:translate-x-1"
+                  )}
+                />
+              </Link>
+            </Button>
+          </nav>
 
-          {/* Trust Signal with animated icon */}
+          {/* Trust Signal */}
           <div className="fade-in-element flex items-center justify-center gap-3 mb-12">
-            <div className="relative">
-              <div 
-                className="absolute inset-0 rounded-full blur-lg opacity-50 animate-pulse"
-                style={{ backgroundColor: '#FF6B00' }}
-              ></div>
-              <Shield 
-                className="relative p-2 rounded-lg"
-                size={24} 
-                style={{ 
-                  color: '#FF6B00',
-                  backgroundColor: 'rgba(255, 107, 0, 0.1)',
-                }}
-              />
+            <div className="p-2.5 rounded-xl bg-momentum-orange/10">
+              <Shield className="text-momentum-orange" size={24} />
             </div>
-            <span className="font-medium text-lg" style={{ color: textSecondaryColor }}>
+            <span className={cn(
+              "font-medium text-lg",
+              isDark ? "text-gray-300" : "text-gray-600"
+            )}>
               {t('hero.trustSignal')}
             </span>
           </div>
 
-          {/* Enhanced Social Proof Cards */}
+          {/* Social Proof Cards */}
           <div className="fade-in-element grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-            {/* Plans Created Card */}
-            <div 
-              className="group relative p-6 rounded-2xl backdrop-blur-md border transition-all duration-300 hover:scale-105"
-              style={{
-                backgroundColor: cardBgColor,
-                borderColor: cardBorderColor,
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(255, 255, 255, 0.95)';
-                e.currentTarget.style.borderColor = isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(26, 43, 71, 0.2)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = cardBgColor;
-                e.currentTarget.style.borderColor = cardBorderColor;
-              }}
-            >
-              <div className="flex items-center justify-center gap-3 mb-3">
+            {/* Plans Created */}
+            <div className={cn(
+              "group relative p-6 rounded-2xl border-2",
+              "transition-all duration-300",
+              isDark
+                ? "bg-white/5 border-white/10 hover:bg-white/[0.08] hover:border-white/20"
+                : "bg-white border-gray-200 hover:border-strategy-blue/20 hover:shadow-lg"
+            )}>
+              <div className="flex items-center justify-center gap-2 mb-4">
                 <div className="flex -space-x-2">
                   {[1, 2, 3, 4].map((i) => (
                     <div
                       key={i}
-                      className="w-10 h-10 rounded-full border-2 flex items-center justify-center text-xs font-bold shadow-lg transition-transform hover:scale-110"
-                      style={{ 
-                        zIndex: 5 - i,
-                        backgroundColor: '#3B82F6',
-                        borderColor: isDark ? 'rgba(255, 255, 255, 0.3)' : 'rgba(255, 255, 255, 0.5)',
-                        color: '#FFFFFF',
-                      }}
+                      className={cn(
+                        "w-10 h-10 rounded-full border-2 flex items-center justify-center",
+                        "text-xs font-bold bg-strategy-blue text-white shadow-sm",
+                        isDark ? "border-white/30" : "border-white"
+                      )}
+                      style={{ zIndex: 5 - i }}
                     >
                       {i}
                     </div>
                   ))}
                 </div>
               </div>
-              <div className="text-2xl font-bold mb-1" style={{ color: textColor }}>2,500+</div>
-              <div className="text-sm" style={{ color: textSecondaryColor }}>{t('hero.socialProof.plansCreated')}</div>
+              <h2 className={cn(
+                "text-3xl font-bold mb-1",
+                isDark ? "text-white" : "text-strategy-blue"
+              )}>
+                2,500+
+              </h2>
+              <p className={cn(
+                "text-sm",
+                isDark ? "text-gray-400" : "text-gray-500"
+              )}>
+                {t('hero.socialProof.plansCreated')}
+              </p>
             </div>
 
-            {/* Rating Card */}
-            <div 
-              className="group relative p-6 rounded-2xl backdrop-blur-md border transition-all duration-300 hover:scale-105"
-              style={{
-                backgroundColor: cardBgColor,
-                borderColor: cardBorderColor,
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(255, 255, 255, 0.95)';
-                e.currentTarget.style.borderColor = isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(26, 43, 71, 0.2)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = cardBgColor;
-                e.currentTarget.style.borderColor = cardBorderColor;
-              }}
-            >
-              <div className="flex items-center justify-center gap-2 mb-3">
+            {/* Rating */}
+            <div className={cn(
+              "group relative p-6 rounded-2xl border-2",
+              "transition-all duration-300",
+              isDark
+                ? "bg-white/5 border-white/10 hover:bg-white/[0.08] hover:border-white/20"
+                : "bg-white border-gray-200 hover:border-strategy-blue/20 hover:shadow-lg"
+            )}>
+              <div className="flex items-center justify-center gap-1 mb-4">
                 {[...Array(5)].map((_, i) => (
-                  <Star 
+                  <Star
                     key={i}
-                    className="text-yellow-400 fill-yellow-400 transition-transform hover:scale-125"
-                    size={20}
-                    style={{ animationDelay: `${i * 0.1}s` }}
+                    className="text-yellow-400 fill-yellow-400"
+                    size={22}
                   />
                 ))}
               </div>
-              <div className="text-2xl font-bold mb-1" style={{ color: textColor }}>4.9/5</div>
-              <div className="text-sm" style={{ color: textSecondaryColor }}>{t('hero.socialProof.averageRating')}</div>
+              <h2 className={cn(
+                "text-3xl font-bold mb-1",
+                isDark ? "text-white" : "text-strategy-blue"
+              )}>
+                4.9/5
+              </h2>
+              <p className={cn(
+                "text-sm",
+                isDark ? "text-gray-400" : "text-gray-500"
+              )}>
+                {t('hero.socialProof.averageRating')}
+              </p>
             </div>
 
-            {/* No Credit Card Card */}
-            <div 
-              className="group relative p-6 rounded-2xl backdrop-blur-md border transition-all duration-300 hover:scale-105"
-              style={{
-                backgroundColor: cardBgColor,
-                borderColor: cardBorderColor,
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(255, 255, 255, 0.95)';
-                e.currentTarget.style.borderColor = isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(26, 43, 71, 0.2)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = cardBgColor;
-                e.currentTarget.style.borderColor = cardBorderColor;
-              }}
-            >
-              <div className="flex items-center justify-center mb-3">
-                <div 
-                  className="w-12 h-12 rounded-full flex items-center justify-center shadow-lg"
-                  style={{ backgroundColor: '#FF6B00' }}
-                >
+            {/* Free Trial */}
+            <div className={cn(
+              "group relative p-6 rounded-2xl border-2",
+              "transition-all duration-300",
+              isDark
+                ? "bg-white/5 border-white/10 hover:bg-white/[0.08] hover:border-white/20"
+                : "bg-white border-gray-200 hover:border-strategy-blue/20 hover:shadow-lg"
+            )}>
+              <div className="flex items-center justify-center mb-4">
+                <div className="w-12 h-12 rounded-full flex items-center justify-center bg-momentum-orange shadow-sm">
                   <Check className="text-white" size={24} />
                 </div>
               </div>
-              <div className="text-2xl font-bold mb-1" style={{ color: textColor }}>{t('hero.socialProof.free')}</div>
-              <div className="text-sm" style={{ color: textSecondaryColor }}>{t('hero.socialProof.noCreditCard')}</div>
+              <h2 className={cn(
+                "text-3xl font-bold mb-1",
+                isDark ? "text-white" : "text-strategy-blue"
+              )}>
+                {t('hero.socialProof.free')}
+              </h2>
+              <p className={cn(
+                "text-sm",
+                isDark ? "text-gray-400" : "text-gray-500"
+              )}>
+                {t('hero.socialProof.noCreditCard')}
+              </p>
             </div>
           </div>
         </div>
       </div>
 
       <style>{`
-        @keyframes fade-in-up {
-          from {
-            opacity: 0;
-            transform: translateY(30px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        .animate-fade-in-up {
-          animation: fade-in-up 0.8s ease-out forwards;
-        }
-
         .fade-in-element {
           opacity: 0;
         }
 
-        @keyframes blob {
-          0%, 100% {
-            transform: translate(0, 0) scale(1);
+        @media (prefers-reduced-motion: reduce) {
+          .fade-in-element {
+            opacity: 1 !important;
           }
-          33% {
-            transform: translate(30px, -50px) scale(1.1);
-          }
-          66% {
-            transform: translate(-20px, 20px) scale(0.9);
-          }
-        }
-
-        .animate-blob {
-          animation: blob 8s ease-in-out infinite;
-        }
-
-        @keyframes float {
-          0%, 100% {
-            transform: translateY(0) translateX(0);
-            opacity: 0.5;
-          }
-          50% {
-            transform: translateY(-20px) translateX(10px);
-            opacity: 1;
-          }
-        }
-
-        .animate-float {
-          animation: float 6s ease-in-out infinite;
-        }
-
-
-        .animation-delay-2000 {
-          animation-delay: 2s;
-        }
-
-        .animation-delay-4000 {
-          animation-delay: 4s;
         }
       `}</style>
     </section>

@@ -6,6 +6,7 @@ import { apiClient } from '../lib/api-client';
 interface AIActionMenuProps {
   text: string;
   context?: string;
+  language?: 'en' | 'fr';
   onPolished: (polishedText: string) => void;
   disabled?: boolean;
 }
@@ -13,6 +14,7 @@ interface AIActionMenuProps {
 export default function AIActionMenu({
   text,
   context,
+  language = 'en',
   onPolished,
   disabled = false
 }: AIActionMenuProps) {
@@ -35,7 +37,8 @@ export default function AIActionMenu({
         answer: text.trim(),
         context: context || '',
         persona: 'Entrepreneur',
-        location: {}
+        location: {},
+        language
       });
 
       const data = (response.data as any)?.value || response.data;
@@ -63,7 +66,7 @@ export default function AIActionMenu({
       const response = await apiClient.post('/api/v1/ai/polish-text', {
         text: text.trim(),
         context: context || '',
-        language: 'en',
+        language,
         tone: 'professional',
         customInstructions: customPrompt.trim() // Add custom instructions
       });

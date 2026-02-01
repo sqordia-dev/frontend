@@ -577,7 +577,7 @@ export default function QuestionnairePage() {
           setGenerating(false);
           setGenerationStatus(null);
           setGenerationStartTime(null);
-          navigate(`/plan/${planId}`);
+          navigate(`/plans/${planId}`);
         }, 1500);
         return;
       }

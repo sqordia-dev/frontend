@@ -51,6 +51,11 @@ export interface LinkGoogleAccountRequest {
   accessToken: string;
 }
 
+export interface MicrosoftAuthRequest {
+  code: string;
+  redirectUri: string;
+}
+
 export interface BusinessPlan {
   id: string;
   title: string;

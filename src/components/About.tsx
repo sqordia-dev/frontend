@@ -1,10 +1,12 @@
 import { Users, Target, Award, Heart, Sparkles } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 import { useTheme } from '../contexts/ThemeContext';
+import { cn } from '@/lib/utils';
 
 export default function About() {
   const { t, theme } = useTheme();
   const sectionRef = useRef<HTMLElement>(null);
+  const isDark = theme === 'dark';
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -35,40 +37,55 @@ export default function About() {
       icon: Heart,
       title: t('about.values.innovation.title'),
       description: t('about.values.innovation.desc'),
-      color: 'from-red-500 to-pink-500',
+      iconBg: 'bg-momentum-orange',
     },
     {
       icon: Target,
       title: t('about.values.excellence.title'),
       description: t('about.values.excellence.desc'),
-      color: 'from-blue-500 to-cyan-500',
+      iconBg: 'bg-strategy-blue',
     },
     {
       icon: Users,
       title: t('about.values.collaboration.title'),
       description: t('about.values.collaboration.desc'),
-      color: 'from-green-500 to-emerald-500',
+      iconBg: 'bg-momentum-orange',
     },
   ];
 
   return (
-    <section ref={sectionRef} id="about" className="py-20 md:py-28 lg:py-32 bg-white dark:bg-gray-900 relative overflow-hidden">
-      {/* Background decoration */}
-      <div className="absolute inset-0 bg-gradient-to-b from-gray-50/50 via-transparent to-white/50 dark:from-gray-900/50 dark:via-transparent dark:to-gray-900/50"></div>
-
+    <section
+      ref={sectionRef}
+      id="about"
+      className={cn(
+        "py-20 md:py-28 lg:py-32 relative overflow-hidden",
+        isDark ? "bg-gray-900" : "bg-white"
+      )}
+    >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Header */}
         <div className="text-center max-w-4xl mx-auto mb-16 md:mb-20">
           <div className="slide-up-element inline-flex items-center gap-2 mb-6">
-            <Sparkles className="w-5 h-5 text-green-600 dark:text-green-400" />
-            <span className="px-4 py-1.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-full text-xs md:text-sm font-semibold">
+            <Sparkles className="w-5 h-5 text-momentum-orange" />
+            <span className={cn(
+              "px-4 py-1.5 rounded-full text-xs md:text-sm font-semibold",
+              isDark
+                ? "bg-momentum-orange/10 text-momentum-orange"
+                : "bg-momentum-orange/10 text-momentum-orange"
+            )}>
               {t('about.badge')}
             </span>
           </div>
-          <h2 className="slide-up-element text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-6 text-gray-900 dark:text-white">
+          <h2 className={cn(
+            "slide-up-element text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-6",
+            isDark ? "text-white" : "text-gray-900"
+          )}>
             {t('about.title')}
           </h2>
-          <p className="slide-up-element text-base sm:text-lg md:text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+          <p className={cn(
+            "slide-up-element text-base sm:text-lg md:text-xl max-w-2xl mx-auto",
+            isDark ? "text-gray-400" : "text-gray-600"
+          )}>
             {t('about.subtitle')}
           </p>
         </div>
@@ -78,19 +95,30 @@ export default function About() {
           {stats.map((stat, index) => (
             <div
               key={index}
-              className="slide-up-element bg-white dark:bg-gray-800 rounded-xl md:rounded-2xl p-5 sm:p-6 md:p-8 border-2 shadow-lg text-center transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
-              style={{
-                borderColor: theme === 'dark' ? 'rgba(75, 85, 99, 0.3)' : 'rgba(229, 231, 235, 0.8)',
-                animationDelay: `${index * 100}ms`,
-              }}
+              className={cn(
+                "slide-up-element rounded-xl md:rounded-2xl p-5 sm:p-6 md:p-8 border-2 text-center transition-all duration-300 hover:-translate-y-1",
+                isDark
+                  ? "bg-gray-800 border-gray-700 hover:border-gray-600 hover:shadow-lg"
+                  : "bg-light-ai-grey border-gray-200 hover:border-strategy-blue/20 hover:shadow-lg"
+              )}
+              style={{ animationDelay: `${index * 100}ms` }}
             >
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-2xl mb-4">
-                <stat.icon className="text-green-600 dark:text-green-400" size={32} />
+              <div className={cn(
+                "inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-4",
+                isDark ? "bg-momentum-orange/10" : "bg-momentum-orange/10"
+              )}>
+                <stat.icon className="text-momentum-orange" size={32} />
               </div>
-              <div className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-2">
+              <div className={cn(
+                "text-3xl md:text-4xl font-bold mb-2",
+                isDark ? "text-white" : "text-strategy-blue"
+              )}>
                 {stat.value}
               </div>
-              <div className="text-sm md:text-base text-gray-600 dark:text-gray-400">
+              <div className={cn(
+                "text-sm md:text-base",
+                isDark ? "text-gray-400" : "text-gray-600"
+              )}>
                 {stat.label}
               </div>
             </div>
@@ -99,11 +127,22 @@ export default function About() {
 
         {/* Mission */}
         <div className="slide-up-element max-w-4xl mx-auto mb-12 sm:mb-16 md:mb-20">
-          <div className="bg-gradient-to-br from-green-50 to-amber-50 dark:from-green-950/20 dark:to-amber-950/20 rounded-2xl md:rounded-3xl p-6 sm:p-8 md:p-12 border-2 border-green-200 dark:border-green-800">
-            <h3 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-4">
+          <div className={cn(
+            "rounded-2xl md:rounded-3xl p-6 sm:p-8 md:p-12 border-2",
+            isDark
+              ? "bg-gray-800 border-gray-700"
+              : "bg-light-ai-grey border-gray-200"
+          )}>
+            <h3 className={cn(
+              "text-2xl md:text-3xl font-bold mb-4",
+              isDark ? "text-white" : "text-gray-900"
+            )}>
               {t('about.mission.title')}
             </h3>
-            <p className="text-base md:text-lg text-gray-700 dark:text-gray-300 leading-relaxed">
+            <p className={cn(
+              "text-base md:text-lg leading-relaxed",
+              isDark ? "text-gray-300" : "text-gray-700"
+            )}>
               {t('about.mission.description')}
             </p>
           </div>
@@ -111,26 +150,40 @@ export default function About() {
 
         {/* Values */}
         <div className="mb-12">
-          <h3 className="text-2xl md:text-3xl font-bold text-center text-gray-900 dark:text-white mb-12">
+          <h3 className={cn(
+            "text-2xl md:text-3xl font-bold text-center mb-12",
+            isDark ? "text-white" : "text-gray-900"
+          )}>
             {t('about.values.title')}
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
             {values.map((value, index) => (
               <div
                 key={index}
-                className="slide-up-element bg-white dark:bg-gray-800 rounded-xl md:rounded-2xl p-5 sm:p-6 md:p-8 border-2 shadow-lg transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
-                style={{
-                  borderColor: theme === 'dark' ? 'rgba(75, 85, 99, 0.3)' : 'rgba(229, 231, 235, 0.8)',
-                  animationDelay: `${index * 100}ms`,
-                }}
+                className={cn(
+                  "slide-up-element rounded-xl md:rounded-2xl p-5 sm:p-6 md:p-8 border-2 transition-all duration-300 hover:-translate-y-1",
+                  isDark
+                    ? "bg-gray-800 border-gray-700 hover:border-gray-600 hover:shadow-lg"
+                    : "bg-light-ai-grey border-gray-200 hover:border-strategy-blue/20 hover:shadow-lg"
+                )}
+                style={{ animationDelay: `${index * 100}ms` }}
               >
-                <div className={`w-16 h-16 bg-gradient-to-br ${value.color} rounded-2xl flex items-center justify-center mb-6 shadow-lg`}>
+                <div className={cn(
+                  "w-16 h-16 rounded-2xl flex items-center justify-center mb-6 shadow-sm",
+                  value.iconBg
+                )}>
                   <value.icon className="text-white" size={32} />
                 </div>
-                <h4 className="text-xl font-bold text-gray-900 dark:text-white mb-3">
+                <h4 className={cn(
+                  "text-xl font-bold mb-3",
+                  isDark ? "text-white" : "text-gray-900"
+                )}>
                   {value.title}
                 </h4>
-                <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
+                <p className={cn(
+                  "leading-relaxed",
+                  isDark ? "text-gray-400" : "text-gray-600"
+                )}>
                   {value.description}
                 </p>
               </div>
@@ -162,4 +215,3 @@ export default function About() {
     </section>
   );
 }
-

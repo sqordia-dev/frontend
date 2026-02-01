@@ -1,17 +1,34 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
-import LandingPage from './pages/LandingPage';
-import LoginPage from './pages/LoginPage';
-import RegisterPage from './pages/RegisterPage';
+import { ToastProvider } from './contexts/ToastContext';
+import { SkipLink } from '@/components/ui/skip-link';
+import LandingPage from './pages/LandingPageNew';
+// Legacy auth pages (kept for backward compatibility)
+import LoginPageLegacy from './pages/LoginPage';
+import RegisterPageLegacy from './pages/RegisterPage';
+import ForgotPasswordPageLegacy from './pages/ForgotPasswordPage';
+import ResetPasswordPageLegacy from './pages/ResetPasswordPage';
+// New auth pages
+import {
+  SignupPage,
+  LoginPage,
+  ForgotPasswordPage,
+  ResetPasswordPage,
+  VerifyEmailPage,
+  MicrosoftCallbackPage,
+} from './pages/auth';
 import PersonaSelectionPage from './pages/PersonaSelectionPage';
-import ForgotPasswordPage from './pages/ForgotPasswordPage';
-import ResetPasswordPage from './pages/ResetPasswordPage';
+import OnboardingPage from './pages/onboarding';
 import DashboardPage from './pages/DashboardPage';
 import ProfilePage from './pages/ProfilePage';
 import CreatePlanPage from './pages/CreatePlanPage';
 import QuestionnairePage from './pages/QuestionnairePage';
 import WizardQuestionnairePage from './pages/WizardQuestionnairePage';
+import { QuestionnairePage as NewQuestionnairePage } from './pages/questionnaire';
 import PlanViewPage from './pages/PlanViewPage';
+// Generation and Preview pages
+import { GenerationPage } from './pages/generation';
+import { BusinessPlanPreviewPage } from './pages/business-plan';
 import TemplateDetailPage from './pages/TemplateDetailPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import AdminLayout from './components/AdminLayout';
@@ -74,18 +91,37 @@ function App() {
   }, []);
 
   return (
-    <Router>
-      {/* Prevent browser from restoring scroll position */}
-      <ScrollRestorationHandler />
-      <ScrollToTop />
-      {/* Skip to main content link for accessibility */}
-      <a href="#main-content" className="skip-to-main">
-        Skip to main content
-      </a>
-      <Routes>
+    <ToastProvider>
+      <Router>
+        {/* Prevent browser from restoring scroll position */}
+        <ScrollRestorationHandler />
+        <ScrollToTop />
+        {/* Skip to main content link for accessibility */}
+        <SkipLink targetId="main-content" />
+        <Routes>
         <Route path="/" element={<LandingPage />} />
+        <Route path="/fr" element={<LandingPage />} />
+        {/* New auth pages */}
         <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
+        <Route path="/signup" element={<SignupPage />} />
+        <Route path="/register" element={<SignupPage />} /> {/* Alias for signup */}
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
+        <Route path="/verify-email" element={<VerifyEmailPage />} />
+        <Route path="/auth/microsoft/callback" element={<MicrosoftCallbackPage />} />
+        {/* Legacy auth pages (for backward compatibility, redirect to new pages) */}
+        <Route path="/login-legacy" element={<LoginPageLegacy />} />
+        <Route path="/register-legacy" element={<RegisterPageLegacy />} />
+        <Route path="/forgot-password-legacy" element={<ForgotPasswordPageLegacy />} />
+        <Route path="/reset-password-legacy" element={<ResetPasswordPageLegacy />} />
+        <Route
+          path="/onboarding"
+          element={
+            <ProtectedRoute>
+              <OnboardingPage />
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="/persona-selection"
           element={
@@ -94,8 +130,6 @@ function App() {
             </ProtectedRoute>
           }
         />
-        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-        <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/template/:templateId" element={<TemplateDetailPage />} />
         <Route path="/example-plans" element={<ExamplePlansPage />} />
         <Route path="/example-plans/:id" element={<ExamplePlanDetailPage />} />
@@ -156,6 +190,15 @@ function App() {
         >
           <Route index element={<QuestionnairePage />} />
         </Route>
+        {/* New questionnaire flow (card-based) */}
+        <Route
+          path="/questionnaire-new/:planId"
+          element={
+            <ProtectedRoute>
+              <NewQuestionnairePage />
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="/plans/:id"
           element={
@@ -166,6 +209,24 @@ function App() {
         >
           <Route index element={<PlanViewPage />} />
         </Route>
+        {/* Generation page - full-screen AI generation progress */}
+        <Route
+          path="/generation/:planId"
+          element={
+            <ProtectedRoute>
+              <GenerationPage />
+            </ProtectedRoute>
+          }
+        />
+        {/* Business plan preview page - full-screen document preview */}
+        <Route
+          path="/business-plan/:id/preview"
+          element={
+            <ProtectedRoute>
+              <BusinessPlanPreviewPage />
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="/subscription-plans"
           element={
@@ -216,8 +277,9 @@ function App() {
           <Route path="settings" element={<AdminSettingsPage />} />
           <Route path="ai-config" element={<AdminAIConfigPage />} />
         </Route>
-      </Routes>
-    </Router>
+        </Routes>
+      </Router>
+    </ToastProvider>
   );
 }
 

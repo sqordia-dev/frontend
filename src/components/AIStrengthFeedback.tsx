@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { Lightbulb, Sparkles, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
+import { useState } from 'react';
+import { Lightbulb, Sparkles, Loader2, AlertCircle } from 'lucide-react';
 import { apiClient } from '../lib/api-client';
 
 interface Gap {
@@ -16,6 +16,7 @@ interface AIStrengthFeedbackProps {
   context?: string;
   persona?: string;
   location?: { city?: string; province?: string };
+  language?: 'en' | 'fr';
   triggerType?: 'field' | 'section' | 'on-demand';
   onPolishApplied?: (polishedText: string) => void;
   onGapAddressed?: (gapIndex: number) => void;
@@ -27,6 +28,7 @@ export default function AIStrengthFeedback({
   context,
   persona = 'Entrepreneur',
   location,
+  language = 'en',
   triggerType = 'field',
   onPolishApplied,
   onGapAddressed
@@ -38,16 +40,7 @@ export default function AIStrengthFeedback({
   const [showFeedback, setShowFeedback] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Auto-trigger for field-level feedback (2 second debounce)
-  useEffect(() => {
-    if (triggerType === 'field' && answer.trim().length >= 10) {
-      const timer = setTimeout(() => {
-        analyzeAnswer();
-      }, 2000);
-
-      return () => clearTimeout(timer);
-    }
-  }, [answer, triggerType]);
+  // Removed auto-trigger - polish should only be triggered by user action (clicking the lightbulb)
 
   const analyzeAnswer = async () => {
     if (!answer.trim() || answer.trim().length < 10) return;
@@ -64,6 +57,7 @@ export default function AIStrengthFeedback({
           context: context || '',
           persona,
           location: location || {},
+          language,
           includePolish: true,
           includeGaps: true
         });
@@ -79,7 +73,8 @@ export default function AIStrengthFeedback({
           answer: answer.trim(),
           context: context || '',
           persona,
-          location: location || {}
+          location: location || {},
+          language
         });
 
         const polishData = polishResponse.data?.value || polishResponse.data;
@@ -91,7 +86,8 @@ export default function AIStrengthFeedback({
           stepNumber: 1, // This should be passed as prop
           answers: [{ questionId, answer: answer.trim() }],
           persona,
-          location: location || {}
+          location: location || {},
+          language
         });
 
         const gapData = gapResponse.data?.value || gapResponse.data;
