@@ -1,7 +1,6 @@
 import { ChevronDown } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import GB from 'country-flag-icons/react/3x2/GB';
-import FR from 'country-flag-icons/react/3x2/FR';
+import CA from 'country-flag-icons/react/3x2/CA';
 import { useTheme } from '../../contexts/ThemeContext';
 import {
   DropdownMenu,
@@ -11,9 +10,25 @@ import {
 } from '../ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 
+// Quebec flag - same as sidebar (create-plan / dashboard)
+const QuebecFlag = ({
+  size = 20,
+  className = '',
+  style,
+}: { size?: number; className?: string; style?: React.CSSProperties }) => (
+  <img
+    src="/quebec-flag.svg"
+    alt="Quebec Flag"
+    width={size}
+    height={size * 0.67}
+    className={className}
+    style={{ objectFit: 'contain', display: 'block', ...style }}
+  />
+);
+
 const LANGUAGES = [
-  { code: 'en' as const, label: 'EN', name: 'English', FlagComponent: GB },
-  { code: 'fr' as const, label: 'FR', name: 'Français', FlagComponent: FR },
+  { code: 'en' as const, label: 'EN', name: 'English', FlagComponent: CA },
+  { code: 'fr' as const, label: 'FR', name: 'Français', FlagComponent: QuebecFlag },
 ];
 
 export const THEME_ORANGE = '#FF6B00';
