@@ -176,9 +176,12 @@ export const authService = {
       throw new Error(data.errorMessage || 'Google authentication failed');
     } catch (error: any) {
       console.error('Google auth error:', error);
-      
-      if (error.response?.data?.errorMessage) {
-        throw new Error(error.response.data.errorMessage);
+
+      // Backend Error class serializes as { code, message, details, type }
+      // Direct controller errors use { errorMessage }
+      const serverMessage = error.response?.data?.errorMessage || error.response?.data?.message;
+      if (serverMessage) {
+        throw new Error(serverMessage);
       }
       throw new Error(error.message || 'Google authentication failed.');
     }
