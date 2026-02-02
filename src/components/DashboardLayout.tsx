@@ -223,7 +223,7 @@ export default function DashboardLayout() {
 
   return (
     <TooltipProvider>
-      <div className="min-h-screen bg-white dark:bg-gray-900">
+      <div className="min-h-screen bg-white dark:bg-gray-900 text-foreground">
         {/* Skip Link for Accessibility */}
         <SkipLink targetId="main-content" />
 

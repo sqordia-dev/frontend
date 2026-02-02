@@ -224,7 +224,7 @@ export default function DashboardPage() {
           <div className="mb-10 dashboard-header">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
               <div>
-                <h1 className="text-3xl lg:text-4xl font-bold tracking-tight mb-2">
+                <h1 className="text-3xl lg:text-4xl font-bold tracking-tight mb-2 text-foreground">
                   {t('dashboard.welcome')}
                 </h1>
                 <p className="text-lg text-muted-foreground">
