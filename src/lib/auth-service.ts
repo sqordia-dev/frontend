@@ -179,7 +179,11 @@ export const authService = {
 
       // Backend Error class serializes as { code, message, details, type }
       // Direct controller errors use { errorMessage }
-      const serverMessage = error.response?.data?.errorMessage || error.response?.data?.message;
+      const data = error.response?.data;
+      if (data?.details) {
+        console.error('Google auth server details:', data.details);
+      }
+      const serverMessage = data?.errorMessage || data?.message;
       if (serverMessage) {
         throw new Error(serverMessage);
       }
