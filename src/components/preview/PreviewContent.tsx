@@ -5,6 +5,7 @@ import { ReadingProgressBar } from './ReadingProgressBar';
 import { StickyTableOfContents } from './StickyTableOfContents';
 import { FloatingActions } from './FloatingActions';
 import { PlanSection } from '../../types/preview';
+import { useTheme } from '../../contexts/ThemeContext';
 
 interface PreviewContentProps {
   children: React.ReactNode;
@@ -50,18 +51,19 @@ export default function PreviewContent({
   showStickyTOC = true,
   showFloatingActions = true,
 }: PreviewContentProps) {
+  const { t } = useTheme();
   // Build TOC items including Cover Page and Table of Contents
   const tocItems = [
     // Cover Page
     {
       id: 'cover-page-section',
-      title: 'Cover Page',
+      title: t('planView.cover'),
       icon: <BookOpen size={14} />,
     },
     // Table of Contents
     {
       id: 'table-of-contents-section',
-      title: 'Table of Contents',
+      title: t('planView.tableOfContents'),
       icon: <List size={14} />,
     },
     // Sections

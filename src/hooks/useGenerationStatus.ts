@@ -78,9 +78,18 @@ export function useGenerationStatus(
       setStatus(statusData);
       setError(null);
 
-      // Check for completion
-      if (statusData.status === 'completed') {
-        // Stop polling
+      const statusLower = (statusData.status ?? '').toString().toLowerCase();
+      const progressPct =
+        statusData.totalSections > 0 && (statusData.completedSections?.length ?? 0) >= 0
+          ? Math.round(((statusData.completedSections?.length ?? 0) / statusData.totalSections) * 100)
+          : 0;
+
+      const isComplete =
+        statusLower === 'completed' ||
+        statusLower === 'generated' ||
+        progressPct >= 100;
+
+      if (isComplete) {
         if (pollIntervalRef.current) {
           clearInterval(pollIntervalRef.current);
           pollIntervalRef.current = null;
@@ -88,8 +97,7 @@ export function useGenerationStatus(
         onCompleteRef.current?.();
       }
 
-      // Check for failure
-      if (statusData.status === 'failed') {
+      if (statusLower === 'failed') {
         // Stop polling
         if (pollIntervalRef.current) {
           clearInterval(pollIntervalRef.current);

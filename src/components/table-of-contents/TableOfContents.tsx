@@ -6,6 +6,7 @@ import { TOCSectionRow } from './TOCSectionRow';
 import { groupSectionsByCategory, getCategoryIcon } from './utils';
 import { TOCStyle, getPresetConfig } from '../../types/toc-settings';
 import { cn } from '../../lib/utils';
+import { useTheme } from '../../contexts/ThemeContext';
 
 interface TableOfContentsProps {
   /** List of sections to display */
@@ -32,8 +33,10 @@ export function TableOfContents({
   className = '',
   style = 'classic',
 }: TableOfContentsProps) {
+  const { t } = useTheme();
   // Get preset configuration
   const preset = useMemo(() => getPresetConfig(style), [style]);
+  const tocTitle = t('planView.tableOfContents');
 
   // Group sections by category
   const groupedSections = useMemo(() => {
@@ -65,8 +68,8 @@ export function TableOfContents({
             className="text-lg font-semibold flex items-center gap-2"
             style={{ color: preset.headerColor, fontFamily: preset.headerFont }}
           >
-            <span className="text-xl">&#128203;</span>
-            {preset.title}
+            <span className="text-xl" aria-hidden="true">{String.fromCodePoint(128203)}</span>
+            {tocTitle}
           </h2>
         </div>
 
@@ -121,7 +124,7 @@ export function TableOfContents({
           className="text-lg font-medium mb-6"
           style={{ color: preset.headerColor, fontFamily: preset.headerFont }}
         >
-          {preset.title}
+          {tocTitle}
         </h2>
         <div className="space-y-3">
           {sections.map((section) => {
@@ -171,7 +174,7 @@ export function TableOfContents({
             className="text-xl font-bold tracking-wider"
             style={{ color: preset.headerColor, fontFamily: preset.headerFont }}
           >
-            {preset.title}
+            {tocTitle}
           </h2>
         </div>
 
@@ -243,7 +246,7 @@ export function TableOfContents({
             className="text-xl font-bold text-center tracking-wide"
             style={{ color: preset.headerColor, fontFamily: preset.headerFont }}
           >
-            {preset.title}
+            {tocTitle}
           </h2>
           <div className="mt-2 mx-auto w-32 border-b-2" style={{ borderColor: preset.accentColor }} />
         </div>

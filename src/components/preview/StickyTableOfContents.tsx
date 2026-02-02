@@ -1,7 +1,8 @@
+import { useState, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { useScrollSpy } from '@/hooks/useScrollSpy';
-import { CheckCircle2 } from 'lucide-react';
+import { CheckCircle2, List } from 'lucide-react';
 
 interface TocItem {
   id: string;
@@ -18,6 +19,8 @@ interface StickyTableOfContentsProps {
   title?: string;
   /** Offset from top when scrolling to section */
   scrollOffset?: number;
+  /** Auto-hide after this many ms of no hover (0 = disabled). Default 2000 */
+  autoHideDelay?: number;
 }
 
 /**
@@ -30,14 +33,38 @@ interface StickyTableOfContentsProps {
  * - Progress tracking with visual indicators
  * - Smooth scroll on click
  */
+const TOC_WIDTH = 280;
+const TAB_WIDTH = 32;
+const WRAPPER_WIDTH_EXPANDED = TOC_WIDTH + TAB_WIDTH;
+
 export function StickyTableOfContents({
   items,
   className = '',
   title = 'On this page',
-  scrollOffset = 100
+  scrollOffset = 100,
+  autoHideDelay = 2000
 }: StickyTableOfContentsProps) {
+  const [isVisible, setIsVisible] = useState(true);
+  const hideTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   const sectionIds = items.map(item => item.id);
   const activeId = useScrollSpy({ sectionIds });
+
+  const handleMouseEnter = useCallback(() => {
+    if (hideTimeoutRef.current) {
+      clearTimeout(hideTimeoutRef.current);
+      hideTimeoutRef.current = null;
+    }
+    setIsVisible(true);
+  }, []);
+
+  const handleMouseLeave = useCallback(() => {
+    if (autoHideDelay <= 0) return;
+    hideTimeoutRef.current = setTimeout(() => {
+      hideTimeoutRef.current = null;
+      setIsVisible(false);
+    }, autoHideDelay);
+  }, [autoHideDelay]);
 
   const handleClick = (id: string) => {
     const element = document.getElementById(id);
@@ -51,18 +78,28 @@ export function StickyTableOfContents({
   const progressPercentage = activeIndex >= 0 ? ((activeIndex + 1) / items.length) * 100 : 0;
 
   return (
-    <nav
-      className={cn(
-        'hidden lg:block',
-        'fixed top-8 right-8',
-        'w-[280px]',
-        'z-20',
-        className
-      )}
+    <motion.div
+      className={cn('hidden lg:flex fixed top-8 right-0 overflow-hidden z-20 flex-row-reverse', className)}
+      style={{ height: 'calc(100vh - 4rem)' }}
+      initial={false}
+      animate={{ width: isVisible ? WRAPPER_WIDTH_EXPANDED : TAB_WIDTH }}
+      transition={{ type: 'tween', duration: 0.25, ease: 'easeInOut' }}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
       aria-label="Table of contents"
     >
-      {/* Glassmorphism container */}
-      <div className="relative backdrop-blur-xl bg-white/80 dark:bg-gray-900/80 rounded-2xl border border-white/20 dark:border-gray-700/50 shadow-[0_8px_32px_rgba(0,0,0,0.08)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.3)] overflow-hidden">
+      {/* Tab: always visible when collapsed, hover to expand */}
+      <div
+        className="flex-shrink-0 w-8 flex items-center justify-center bg-white/90 dark:bg-gray-900/90 border border-l-0 border-white/20 dark:border-gray-700/50 rounded-l-2xl shadow-[0_8px_32px_rgba(0,0,0,0.08)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.3)] cursor-pointer"
+        style={{ width: TAB_WIDTH }}
+        title={title}
+      >
+        <List className="w-4 h-4 text-momentum-orange" aria-hidden />
+      </div>
+
+      {/* TOC panel */}
+      <nav className="flex-shrink-0 w-[280px] h-full overflow-hidden" aria-label="Table of contents">
+      <div className="relative h-full mr-2 backdrop-blur-xl bg-white/80 dark:bg-gray-900/80 rounded-l-2xl border border-white/20 dark:border-gray-700/50 shadow-[0_8px_32px_rgba(0,0,0,0.08)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.3)] overflow-hidden">
         {/* Gradient accent line at top */}
         <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-momentum-orange via-orange-400 to-amber-400" />
 
@@ -227,7 +264,8 @@ export function StickyTableOfContents({
           </div>
         </div>
       </div>
-    </nav>
+      </nav>
+    </motion.div>
   );
 }
 

@@ -100,6 +100,8 @@ interface SectionCardProps {
   isRegenerating?: boolean;
   /** Whether inline editing is enabled (default: true) */
   enableInlineEdit?: boolean;
+  /** Callback for AI assist on selected text: (sectionId, selectedText) => Promise<improvedText> */
+  onAIAssistSelection?: (sectionId: string, selectedText: string) => Promise<string>;
   /** Ref for scrolling */
   sectionRef?: React.RefObject<HTMLElement>;
 }
@@ -186,6 +188,7 @@ export default function SectionCard({
   onInlineSave,
   isRegenerating = false,
   enableInlineEdit = false,
+  onAIAssistSelection,
   sectionRef,
 }: SectionCardProps) {
   const hasContent = section.content && section.content.trim().length > 0;
@@ -298,6 +301,11 @@ export default function SectionCard({
                 content={section.content!}
                 onSave={handleInlineSave}
                 disabled={isRegenerating}
+                onAIAssistSelection={
+                  onAIAssistSelection
+                    ? (text) => onAIAssistSelection(section.name || section.id, text)
+                    : undefined
+                }
                 debounceMs={2000}
                 autosave={true}
               >

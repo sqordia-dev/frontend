@@ -27,6 +27,7 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { PlanSection } from '../../types/preview';
+import { useTheme } from '../../contexts/ThemeContext';
 
 export type ExportFormat = 'pdf' | 'word';
 
@@ -183,6 +184,7 @@ export default function PreviewSidebar({
   onTOCClick,
   onEditPlanTitle,
 }: PreviewSidebarProps) {
+  const { t } = useTheme();
   const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
   const exportMenuRef = useRef<HTMLDivElement>(null);
 
@@ -265,7 +267,7 @@ export default function PreviewSidebar({
           <div className="mb-4">
             <SidebarNavItem
               icon={List}
-              label="Table of Contents"
+              label={t('planView.tableOfContents')}
               isActive={isTOCActive}
               onClick={onTOCClick}
             />

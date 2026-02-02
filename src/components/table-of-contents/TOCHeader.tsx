@@ -1,4 +1,5 @@
 import { List } from 'lucide-react';
+import { useTheme } from '../../contexts/ThemeContext';
 
 interface TOCHeaderProps {
   className?: string;
@@ -6,9 +7,11 @@ interface TOCHeaderProps {
 
 /**
  * TOCHeader - Header section for the Table of Contents
- * Displays the icon and title
+ * Displays the icon and title (translated for current language)
  */
 export function TOCHeader({ className = '' }: TOCHeaderProps) {
+  const { t } = useTheme();
+  const title = t('planView.tableOfContents');
   return (
     <div className={`p-6 border-b border-gray-200 dark:border-gray-700 ${className}`}>
       <div className="flex items-center gap-3">
@@ -20,10 +23,10 @@ export function TOCHeader({ className = '' }: TOCHeaderProps) {
         </div>
         <div>
           <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide font-medium">
-            TABLE OF CONTENTS
+            {title.toUpperCase()}
           </p>
           <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-            Table of Contents
+            {title}
           </h2>
         </div>
       </div>

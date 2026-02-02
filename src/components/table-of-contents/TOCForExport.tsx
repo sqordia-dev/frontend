@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { PlanSection } from '../../types/preview';
 import { groupSectionsByCategory, getCategoryIcon } from './utils';
 import { TOCStyle, getPresetConfig } from '../../types/toc-settings';
+import { useTheme } from '../../contexts/ThemeContext';
 
 interface TOCForExportProps {
   /** List of sections to display */
@@ -33,6 +34,8 @@ export function TOCForExport({
   style = 'classic',
   primaryColor = '#2563EB',
 }: TOCForExportProps) {
+  const { t } = useTheme();
+  const tocTitle = t('planView.tableOfContents');
   // Get preset configuration
   const preset = useMemo(() => getPresetConfig(style), [style]);
 
@@ -71,7 +74,7 @@ export function TOCForExport({
         )}
 
         <h1 className="text-2xl font-semibold mb-6 flex items-center gap-2" style={{ color: preset.headerColor }}>
-          <span>&#128203;</span> {preset.title}
+          <span aria-hidden="true">{String.fromCodePoint(128203)}</span> {tocTitle}
         </h1>
 
         <div className="grid grid-cols-2 gap-4">
@@ -82,7 +85,7 @@ export function TOCForExport({
               style={{ borderColor: '#E5E7EB', backgroundColor: '#F9FAFB' }}
             >
               <div className="flex items-center gap-2">
-                <span dangerouslySetInnerHTML={{ __html: getCategoryIcon(section.title) }} />
+                <span aria-hidden="true">{getCategoryIcon(section.title)}</span>
                 <span className="font-medium" style={{ color: preset.textColor }}>{section.title}</span>
               </div>
               {preset.showPageNumbers && (
@@ -118,7 +121,7 @@ export function TOCForExport({
         )}
 
         <h1 className="text-xl font-medium mb-8" style={{ color: preset.headerColor }}>
-          {preset.title}
+          {tocTitle}
         </h1>
 
         <div className="space-y-4">
@@ -154,7 +157,7 @@ export function TOCForExport({
 
         <div className="text-center py-4 mb-6" style={{ backgroundColor: preset.borderColor }}>
           <h1 className="text-2xl font-bold tracking-widest" style={{ color: '#FFFFFF' }}>
-            {preset.title}
+            {tocTitle}
           </h1>
         </div>
 
@@ -208,7 +211,7 @@ export function TOCForExport({
 
         <div className="text-center mb-6">
           <h1 className="text-2xl font-bold tracking-wide" style={{ color: preset.headerColor }}>
-            {preset.title}
+            {tocTitle}
           </h1>
           <div className="mt-2 mx-auto w-32 border-b-2" style={{ borderColor: accentColor }} />
         </div>
@@ -274,7 +277,7 @@ export function TOCForExport({
         className="text-3xl font-bold mb-8"
         style={{ color: accentColor, fontFamily: preset.headerFont }}
       >
-        {preset.title}
+        {tocTitle}
       </h1>
 
       {/* Separator line */}

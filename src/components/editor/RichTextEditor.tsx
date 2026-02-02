@@ -142,6 +142,9 @@ export function RichTextEditor({
         heading: {
           levels: [1, 2, 3, 4, 5, 6],
         },
+        // Disable link and underline so we register them once with our config (avoids duplicate extension warning)
+        link: false,
+        underline: false,
       }),
       Underline,
       Link.configure({

@@ -26,6 +26,7 @@ import {
   getPresetConfig,
 } from '../../types/toc-settings';
 import { useToast } from '../../contexts/ToastContext';
+import { useTheme } from '../../contexts/ThemeContext';
 import { cn } from '../../lib/utils';
 
 interface TOCStyleSelectorProps {
@@ -46,6 +47,7 @@ const styleIcons: Record<TOCStyle, React.ReactNode> = {
 
 export function TOCStyleSelector({ planId, isOpen, onClose, onSave }: TOCStyleSelectorProps) {
   const toast = useToast();
+  const { t } = useTheme();
   const [selectedStyle, setSelectedStyle] = useState<TOCStyle>('classic');
   const [currentSettings, setCurrentSettings] = useState<TOCSettings | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -189,7 +191,7 @@ export function TOCStyleSelector({ planId, isOpen, onClose, onSave }: TOCStyleSe
                           textTransform: preset.titleStyle === 'uppercase' ? 'uppercase' : 'none',
                         }}
                       >
-                        {preset.title}
+                        {t('planView.tableOfContents')}
                       </div>
 
                       {preset.showDividers && (
@@ -224,7 +226,7 @@ export function TOCStyleSelector({ planId, isOpen, onClose, onSave }: TOCStyleSe
                           className="flex items-center gap-1"
                           style={{ color: preset.textColor }}
                         >
-                          {preset.showIcons && <span>&#128221;</span>}
+                          {preset.showIcons && <span aria-hidden="true">{String.fromCodePoint(128221)}</span>}
                           <span className={preset.indentSubsections ? 'ml-2' : ''}>
                             Executive Summary
                           </span>
@@ -237,7 +239,7 @@ export function TOCStyleSelector({ planId, isOpen, onClose, onSave }: TOCStyleSe
                           className="flex items-center gap-1"
                           style={{ color: preset.textColor }}
                         >
-                          {preset.showIcons && <span>&#127970;</span>}
+                          {preset.showIcons && <span aria-hidden="true">{String.fromCodePoint(127970)}</span>}
                           <span className={preset.indentSubsections ? 'ml-2' : ''}>
                             Company Overview
                           </span>

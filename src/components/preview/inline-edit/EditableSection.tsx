@@ -1,7 +1,9 @@
-import React, { useRef, useCallback, useState, useEffect } from 'react';
+import React, { useRef, useCallback, useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Pencil, X, Check, Undo2, Redo2 } from 'lucide-react';
 import { useInlineEdit } from '../../../hooks/useInlineEdit';
+import { useTheme } from '../../../contexts/ThemeContext';
+import { markdownToHtmlForEditor } from '../../../utils/markdown-to-html';
 import { SaveIndicator } from './SaveIndicator';
 import { FloatingToolbar, FormatCommand } from './FloatingToolbar';
 
@@ -22,6 +24,11 @@ interface EditableSectionProps {
   className?: string;
   /** Placeholder when content is empty */
   placeholder?: string;
+  /** Callback for AI assist on selection: receives selected text, returns improved text */
+  onAIAssistSelection?: (selectedText: string) => Promise<string>;
+  /** Labels for toolbar selection actions */
+  editSelectionLabel?: string;
+  aiAssistSelectionLabel?: string;
 }
 
 /**
@@ -38,13 +45,38 @@ export function EditableSection({
   children,
   className = '',
   placeholder = 'Click to add content...',
+  onAIAssistSelection,
+  editSelectionLabel: editSelectionLabelProp,
+  aiAssistSelectionLabel: aiAssistSelectionLabelProp,
 }: EditableSectionProps) {
+  const { t } = useTheme();
   const containerRef = useRef<HTMLDivElement>(null);
   const editableRef = useRef<HTMLDivElement>(null);
+
+  // Skip syncing state → DOM when the update came from user input (typing, format, replace)
+  const contentUpdateFromInputRef = useRef(false);
+
+  // Saved selection for Edit / AI assist (range is cloned when button is clicked)
+  const savedRangeRef = useRef<Range | null>(null);
+  const savedTextRef = useRef<string>('');
 
   // Floating toolbar state
   const [showToolbar, setShowToolbar] = useState(false);
   const [toolbarPosition, setToolbarPosition] = useState({ x: 0, y: 0 });
+
+  // Edit selection popover
+  const [editPopoverOpen, setEditPopoverOpen] = useState(false);
+  const [editPopoverValue, setEditPopoverValue] = useState('');
+  const editPopoverPositionRef = useRef({ x: 0, y: 0 });
+
+  // AI assist loading
+  const [isAIAssistLoading, setIsAIAssistLoading] = useState(false);
+
+  // Normalize content for editor: convert markdown to HTML so the contenteditable shows formatted text
+  const initialContentForEditor = useMemo(
+    () => markdownToHtmlForEditor(content),
+    [content]
+  );
 
   // Use the inline edit hook
   const {
@@ -63,11 +95,48 @@ export function EditableSection({
     canUndo,
     canRedo,
   } = useInlineEdit<string>({
-    initialContent: content,
+    initialContent: initialContentForEditor,
     onSave,
     debounceMs,
     autosave,
   });
+
+  // Set content once when entering edit mode and place cursor at end
+  useEffect(() => {
+    if (!isEditing) return;
+    const el = editableRef.current;
+    if (!el) return;
+    el.innerHTML = initialContentForEditor || placeholder;
+    el.focus();
+    const sel = window.getSelection();
+    if (sel) {
+      const range = document.createRange();
+      range.selectNodeContents(el);
+      range.collapse(false);
+      sel.removeAllRanges();
+      sel.addRange(range);
+    }
+  }, [isEditing, initialContentForEditor, placeholder]);
+
+  // Sync state → DOM only for undo/redo (not when update came from handleInput / replaceSelectionWith / handleFormat)
+  useEffect(() => {
+    if (!isEditing) return;
+    const el = editableRef.current;
+    if (!el) return;
+    if (contentUpdateFromInputRef.current) {
+      contentUpdateFromInputRef.current = false;
+      return;
+    }
+    el.innerHTML = editedContent || placeholder;
+    const sel = window.getSelection();
+    if (sel) {
+      const range = document.createRange();
+      range.selectNodeContents(el);
+      range.collapse(false);
+      sel.removeAllRanges();
+      sel.addRange(range);
+    }
+  }, [isEditing, editedContent, placeholder]);
 
   // Handle click to start editing
   const handleClick = useCallback(
@@ -110,6 +179,7 @@ export function EditableSection({
   // Handle content input changes
   const handleInput = useCallback(
     (e: React.FormEvent<HTMLDivElement>) => {
+      contentUpdateFromInputRef.current = true;
       const newContent = (e.target as HTMLDivElement).innerHTML;
       updateContent(newContent);
     },
@@ -127,10 +197,15 @@ export function EditableSection({
       // Check if selection is within our editable area
       if (editableRef.current?.contains(range.commonAncestorContainer)) {
         const rect = range.getBoundingClientRect();
-        setToolbarPosition({
-          x: rect.left + rect.width / 2,
-          y: rect.top - 10,
-        });
+        // Center above selection; clamp to viewport so toolbar stays on screen
+        const toolbarWidth = 320;
+        const toolbarHeight = 72; // includes drag handle
+        const padding = 8;
+        let x = rect.left + rect.width / 2;
+        let y = rect.top - padding;
+        x = Math.max(toolbarWidth / 2, Math.min(window.innerWidth - toolbarWidth / 2, x));
+        y = Math.max(toolbarHeight + padding, y);
+        setToolbarPosition({ x, y });
         setShowToolbar(true);
       }
     } else {
@@ -146,12 +221,92 @@ export function EditableSection({
     };
   }, [handleSelectionChange]);
 
+  // Replace saved selection with new text; fallback to string replace if range invalid
+  const replaceSelectionWith = useCallback(
+    (newText: string) => {
+      const el = editableRef.current;
+      if (!el) return;
+      const range = savedRangeRef.current;
+      const savedText = savedTextRef.current;
+      try {
+        if (range && savedText && (el.contains(range.startContainer) && el.contains(range.endContainer))) {
+          const sel = window.getSelection();
+          sel?.removeAllRanges();
+          sel?.addRange(range);
+          range.deleteContents();
+          const textNode = document.createTextNode(newText);
+          range.insertNode(textNode);
+          range.collapse(false);
+          sel?.removeAllRanges();
+          sel?.addRange(range);
+        } else if (savedText) {
+          const html = el.innerHTML;
+          const idx = html.indexOf(savedText);
+          if (idx !== -1) {
+            el.innerHTML = html.slice(0, idx) + newText + html.slice(idx + savedText.length);
+          }
+        }
+        contentUpdateFromInputRef.current = true;
+        updateContent(el.innerHTML);
+      } finally {
+        savedRangeRef.current = null;
+        savedTextRef.current = '';
+      }
+    },
+    [updateContent]
+  );
+
+  // Edit selection: save range and text, show popover
+  const handleEditSelection = useCallback(() => {
+    const sel = window.getSelection();
+    if (!sel || sel.isCollapsed || !editableRef.current?.contains(sel.anchorNode)) return;
+    savedRangeRef.current = sel.getRangeAt(0).cloneRange();
+    savedTextRef.current = sel.toString();
+    setEditPopoverValue(savedTextRef.current);
+    editPopoverPositionRef.current = { ...toolbarPosition };
+    setEditPopoverOpen(true);
+  }, [toolbarPosition]);
+
+  // AI assist selection: save range and text, call API, replace with result
+  const handleAIAssistSelection = useCallback(() => {
+    const sel = window.getSelection();
+    if (!sel || sel.isCollapsed || !editableRef.current?.contains(sel.anchorNode) || !onAIAssistSelection) return;
+    savedRangeRef.current = sel.getRangeAt(0).cloneRange();
+    savedTextRef.current = sel.toString();
+    setIsAIAssistLoading(true);
+    onAIAssistSelection(savedTextRef.current)
+      .then((improved) => {
+        replaceSelectionWith(improved);
+        saveNow();
+      })
+      .catch(() => {
+        savedRangeRef.current = null;
+        savedTextRef.current = '';
+      })
+      .finally(() => setIsAIAssistLoading(false));
+  }, [onAIAssistSelection, replaceSelectionWith, saveNow]);
+
+  // Edit popover Apply: replace selection and close
+  const handleEditPopoverApply = useCallback(() => {
+    replaceSelectionWith(editPopoverValue);
+    setEditPopoverOpen(false);
+    setEditPopoverValue('');
+    saveNow();
+  }, [editPopoverValue, replaceSelectionWith, saveNow]);
+
+  const handleEditPopoverCancel = useCallback(() => {
+    setEditPopoverOpen(false);
+    setEditPopoverValue('');
+    savedRangeRef.current = null;
+    savedTextRef.current = '';
+  }, []);
+
   // Handle format command from toolbar
   const handleFormat = useCallback(
     (command: FormatCommand) => {
-      // Update content after format is applied
       setTimeout(() => {
         if (editableRef.current) {
+          contentUpdateFromInputRef.current = true;
           updateContent(editableRef.current.innerHTML);
         }
       }, 0);
@@ -204,9 +359,59 @@ export function EditableSection({
         position={toolbarPosition}
         onFormat={handleFormat}
         isVisible={showToolbar}
+        onEditSelection={handleEditSelection}
+        onAIAssistSelection={onAIAssistSelection ? handleAIAssistSelection : undefined}
+        isAIAssistLoading={isAIAssistLoading}
+        editSelectionLabel={editSelectionLabelProp ?? t('planView.editSelection')}
+        aiAssistSelectionLabel={aiAssistSelectionLabelProp ?? t('planView.aiAssistSelection')}
       />
 
-      {/* Content area */}
+      {/* Edit selection popover */}
+      {editPopoverOpen && (
+        <div
+          className="fixed z-50 p-3 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700"
+          style={{
+            left: editPopoverPositionRef.current.x,
+            top: editPopoverPositionRef.current.y,
+            transform: 'translate(-50%, -100%)',
+            marginTop: -8,
+          }}
+        >
+          <textarea
+            value={editPopoverValue}
+            onChange={(e) => setEditPopoverValue(e.target.value)}
+            className="w-64 min-h-[80px] px-3 py-2 text-sm border border-gray-200 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-y"
+            placeholder="Edit selection..."
+            aria-label="Edit selection"
+            autoFocus
+            onKeyDown={(e) => {
+              if (e.key === 'Escape') handleEditPopoverCancel();
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleEditPopoverApply();
+              }
+            }}
+          />
+          <div className="flex justify-end gap-2 mt-2">
+            <button
+              type="button"
+              onClick={handleEditPopoverCancel}
+              className="px-3 py-1.5 text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleEditPopoverApply}
+              className="px-3 py-1.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
+            >
+              Apply
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Content area: uncontrolled while editing so React does not overwrite DOM and lose cursor */}
       {isEditing ? (
         <div
           ref={editableRef}
@@ -214,7 +419,6 @@ export function EditableSection({
           suppressContentEditableWarning
           onInput={handleInput}
           className="prose prose-gray dark:prose-invert max-w-none outline-none cursor-text min-h-[100px]"
-          dangerouslySetInnerHTML={{ __html: editedContent || placeholder }}
           role="textbox"
           aria-multiline="true"
           aria-label="Edit section content"

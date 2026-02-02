@@ -218,16 +218,29 @@ const sectionTitleToEmoji: Record<string, string> = {
 };
 
 /**
- * Get emoji icon for a section based on its title (for modern/magazine styles)
+ * Decode an HTML numeric entity (e.g. &#128221;) to the actual Unicode character
+ * so React displays the emoji instead of the literal entity string.
+ */
+function decodeHtmlNumericEntity(str: string): string {
+  const dec = str.match(/^&#(\d+);$/);
+  if (dec) return String.fromCodePoint(parseInt(dec[1], 10));
+  const hex = str.match(/^&#x([0-9a-fA-F]+);$/);
+  if (hex) return String.fromCodePoint(parseInt(hex[1], 16));
+  return str;
+}
+
+/**
+ * Get emoji icon for a section based on its title (for modern/magazine styles).
+ * Returns the actual Unicode character so it renders as the emoji, not the entity string.
  */
 export function getCategoryIcon(title: string): string {
   const normalizedTitle = title.toLowerCase();
 
   for (const [keyword, emoji] of Object.entries(sectionTitleToEmoji)) {
     if (normalizedTitle.includes(keyword)) {
-      return emoji;
+      return decodeHtmlNumericEntity(emoji);
     }
   }
 
-  return '&#128196;'; // default: page facing up
+  return decodeHtmlNumericEntity('&#128196;'); // default: page facing up
 }

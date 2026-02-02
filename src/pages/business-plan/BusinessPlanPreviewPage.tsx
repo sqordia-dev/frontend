@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Loader2, AlertCircle, ArrowLeft, Edit3 } from 'lucide-react';
 import {
@@ -29,6 +29,7 @@ import { useToast } from '../../contexts/ToastContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import SEO from '../../components/SEO';
 import { exportService, type ExportFormat } from '../../lib/export-service';
+import { translateSectionTitle } from '../../utils/section-title-translations';
 
 /**
  * Business Plan Preview Page (Redesigned)
@@ -176,6 +177,15 @@ export default function BusinessPlanPreviewPage() {
     };
   }, [preview]);
 
+  // Sections with titles translated for the selected language
+  const sectionsForDisplay = useMemo(() => {
+    if (!preview?.sections) return [];
+    return preview.sections.map((s) => ({
+      ...s,
+      title: translateSectionTitle(s.title, language),
+    }));
+  }, [preview?.sections, language]);
+
   // Handle section click - scroll to section
   const handleSectionClick = useCallback((sectionId: string) => {
     setActiveSectionId(sectionId);
@@ -279,7 +289,33 @@ export default function BusinessPlanPreviewPage() {
     [planId, preview?.sections]
   );
 
-  // Handle AI assist
+  // Handle AI assist on selected text (inline selection toolbar)
+  const handleAIAssistSelection = useCallback(
+    async (sectionId: string, selectedText: string): Promise<string> => {
+      if (!planId || !preview) {
+        throw new Error('Plan not loaded');
+      }
+      try {
+        const improved = await previewService.aiAssistSection(
+          planId,
+          sectionId,
+          'improve',
+          selectedText,
+          preview.planType || 'BusinessPlan',
+          language
+        );
+        return improved;
+      } catch (err) {
+        console.error('AI assist selection failed:', err);
+        const message = err instanceof Error ? err.message : 'AI assist failed';
+        toast.error('AI assist failed', message);
+        throw err;
+      }
+    },
+    [planId, preview, language, toast]
+  );
+
+  // Handle AI assist (modal editor)
   const handleAIAssist = useCallback(
     async (action: AIAssistAction, content: string, customPrompt?: string) => {
       if (!planId || !editingSection) return '';
@@ -360,10 +396,10 @@ export default function BusinessPlanPreviewPage() {
       setExportingFormat(format);
 
       try {
-        // Use client-side export service
+        // Use client-side export service (sections with titles in selected language)
         await exportService.export(format, {
           coverSettings: coverPageSettings,
-          sections: preview.sections,
+          sections: sectionsForDisplay,
           companyName: coverPageSettings.companyName || preview.title,
         });
 
@@ -382,7 +418,7 @@ export default function BusinessPlanPreviewPage() {
         setExportingFormat(null);
       }
     },
-    [planId, preview, coverPageSettings, toast]
+    [planId, preview, coverPageSettings, sectionsForDisplay, toast]
   );
 
   // Handle share
@@ -476,7 +512,7 @@ export default function BusinessPlanPreviewPage() {
     <PreviewSidebar
       planName={preview.title}
       planStatus={preview.status || 'Draft'}
-      sections={preview.sections}
+      sections={sectionsForDisplay}
       activeSectionId={activeSectionId}
       onSectionClick={handleSectionClick}
       onExportClick={(format) => handleExport(format || 'pdf')}
@@ -506,12 +542,12 @@ export default function BusinessPlanPreviewPage() {
         onExport={() => handleExport('pdf')}
         onShare={handleOpenShareModal}
         isExporting={isExporting}
-        sections={preview.sections}
+        sections={sectionsForDisplay}
         activeSectionId={activeSectionId}
         onSectionScroll={handleSectionClick}
       >
         <PreviewContent
-          sections={preview.sections}
+          sections={sectionsForDisplay}
           onSectionClick={handleSectionClick}
           onExport={() => handleExport('pdf')}
           onShare={handleOpenShareModal}
@@ -545,7 +581,7 @@ export default function BusinessPlanPreviewPage() {
             <div id="table-of-contents-section" className="mb-8 scroll-mt-6">
               <div className="relative">
                 <TableOfContents
-                  sections={preview.sections}
+                  sections={sectionsForDisplay}
                   onSectionClick={handleSectionClick}
                   activeSectionId={activeSectionId}
                   style={tocSettings?.style as TOCStyle || 'classic'}
@@ -562,7 +598,7 @@ export default function BusinessPlanPreviewPage() {
           </ScrollReveal>
 
           {/* Business Plan Sections with scroll-triggered animations */}
-          {preview.sections.map((section, index) => (
+          {sectionsForDisplay.map((section, index) => (
             <ScrollReveal
               key={section.id}
               direction="up"
@@ -576,8 +612,9 @@ export default function BusinessPlanPreviewPage() {
                 onRegenerate={() => handleRegenerateSection(section.name || section.id)}
                 onGenerate={() => handleGenerateSection(section.name || section.id)}
                 onInlineSave={(content) => handleInlineSaveSection(section.id, content)}
+                onAIAssistSelection={handleAIAssistSelection}
                 isRegenerating={regeneratingSectionId === (section.name || section.id)}
-                enableInlineEdit={false}
+                enableInlineEdit={true}
                 sectionRef={{
                   current: sectionRefs.current.get(section.id) || null,
                 } as React.RefObject<HTMLElement>}
