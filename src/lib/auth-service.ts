@@ -392,9 +392,12 @@ export const authService = {
   },
 
   async logout(): Promise<void> {
+    const refreshToken = localStorage.getItem('refreshToken');
     try {
       await activityLogger.logLogout().catch(console.error);
-      await apiClient.post('/api/v1/auth/logout');
+      if (refreshToken) {
+        await apiClient.post('/api/v1/auth/logout', { refreshToken });
+      }
     } catch (error) {
       console.error('Logout error:', error);
     } finally {

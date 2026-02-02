@@ -22,9 +22,8 @@ export default defineConfig({
     fs: {
       strict: false,
     },
-    headers: {
-      'Cross-Origin-Opener-Policy': 'same-origin-allow-popups',
-    },
+    // Do not set Cross-Origin-Opener-Policy: Google Sign-In (GSI) requires postMessage
+    // from its iframe; COOP blocks that and causes "COOP policy would block postMessage" errors.
     proxy: {
       '/api': {
         target: 'http://localhost:5241',
