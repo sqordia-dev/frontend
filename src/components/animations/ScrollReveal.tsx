@@ -78,8 +78,9 @@ export function ScrollReveal({
       variants={variants}
       initial="hidden"
       whileInView="visible"
-      viewport={{ once, amount }}
+      viewport={{ once, amount, margin: "100px 0px" }}
       className={className}
+      style={{ willChange: 'opacity, transform' }}
     >
       {children}
     </motion.div>
@@ -126,7 +127,7 @@ export function StaggerContainer({
       }}
       initial="hidden"
       whileInView="visible"
-      viewport={{ once: true, amount: 0.1 }}
+      viewport={{ once: true, amount: 0.1, margin: "100px 0px" }}
       className={className}
     >
       {children}

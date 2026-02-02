@@ -1,4 +1,4 @@
-import { FileText, Download, Eye, Search, Filter, ArrowRight } from 'lucide-react';
+import { FileText, Download, Eye, Search, Filter, ArrowRight, Menu, X } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useTheme } from '../contexts/ThemeContext';
@@ -140,6 +140,7 @@ export default function ExamplePlansPage() {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedIndustry, setSelectedIndustry] = useState('All');
   const sectionRef = useRef<HTMLElement>(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -205,8 +206,25 @@ export default function ExamplePlansPage() {
       />
       <Header />
       <div className="pt-20 flex">
+        {/* Mobile Filter Toggle */}
+        <button
+          onClick={() => setSidebarOpen(!sidebarOpen)}
+          className="md:hidden fixed top-24 left-4 z-40 p-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg shadow-md"
+          aria-label="Toggle filters"
+        >
+          {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
+        </button>
+
+        {/* Mobile Overlay */}
+        {sidebarOpen && (
+          <div
+            className="md:hidden fixed inset-0 bg-black/50 z-30"
+            onClick={() => setSidebarOpen(false)}
+          />
+        )}
+
         {/* Sidebar Navigation */}
-        <aside className="fixed left-0 top-20 bottom-0 w-64 bg-white dark:bg-gray-800 border-r-2 border-gray-300 dark:border-gray-700 overflow-y-auto z-30">
+        <aside className={`fixed left-0 top-20 bottom-0 w-64 bg-white dark:bg-gray-800 border-r-2 border-gray-300 dark:border-gray-700 overflow-y-auto z-30 transition-transform duration-300 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0`}>
           <div className="p-6">
             <div className="mb-8 pb-6 border-b-2 border-gray-200 dark:border-gray-700">
               <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4">{t('examplePlans.title')}</h2>
@@ -280,9 +298,9 @@ export default function ExamplePlansPage() {
         </aside>
 
         {/* Main Content */}
-        <main className="flex-1 ml-64">
+        <main ref={sectionRef} className="flex-1 ml-0 md:ml-64">
           {/* Hero Section */}
-          <section ref={sectionRef} className="relative bg-gray-900 dark:bg-gray-950 border-b-8 border-green-600">
+          <section className="relative bg-gray-900 dark:bg-gray-950 border-b-8 border-green-600">
             <div className="relative py-24 px-8">
               <div className="max-w-5xl mx-auto">
                 <div className="mb-6">

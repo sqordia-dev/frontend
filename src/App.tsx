@@ -206,16 +206,7 @@ function App() {
             </ProtectedRoute>
           }
         />
-        <Route
-          path="/subscription-plans"
-          element={
-            <ProtectedRoute>
-              <DashboardLayout />
-            </ProtectedRoute>
-          }
-        >
-          <Route index element={<SubscriptionPlansPage />} />
-        </Route>
+        <Route path="/subscription-plans" element={<SubscriptionPlansPage />} />
         <Route
           path="/subscription"
           element={
