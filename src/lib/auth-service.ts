@@ -10,9 +10,7 @@ const MICROSOFT_TENANT = import.meta.env.VITE_MICROSOFT_TENANT || 'common';
 export const authService = {
   async login(credentials: LoginRequest): Promise<LoginResponse> {
     try {
-      console.log('Login attempt:', { email: credentials.email });
       const response = await apiClient.post('/api/v1/auth/login', credentials);
-      console.log('Login response:', response.data);
       const data = response.data;
 
       // Handle wrapped response format (isSuccess/value)
@@ -20,7 +18,6 @@ export const authService = {
         localStorage.setItem('accessToken', data.value.accessToken);
         localStorage.setItem('refreshToken', data.value.refreshToken);
         localStorage.removeItem('demoMode');
-        console.log('Login successful, tokens stored');
         await activityLogger.logLogin().catch(console.error);
         return data.value;
       }
@@ -33,7 +30,6 @@ export const authService = {
         localStorage.setItem('accessToken', accessToken);
         localStorage.setItem('refreshToken', refreshToken);
         localStorage.removeItem('demoMode');
-        console.log('Login successful, tokens stored');
         await activityLogger.logLogin().catch(console.error);
 
         return {
@@ -120,9 +116,7 @@ export const authService = {
 
   async googleAuth(tokens: GoogleAuthRequest): Promise<LoginResponse> {
     try {
-      console.log('Google auth attempt');
       const response = await apiClient.post('/api/v1/auth/google', tokens);
-      console.log('Google auth response:', response.data);
       const data = response.data;
 
       // Handle wrapped response format (isSuccess/value) - AuthResponse with Token/RefreshToken
@@ -139,7 +133,6 @@ export const authService = {
         localStorage.setItem('accessToken', accessToken);
         localStorage.setItem('refreshToken', refreshToken);
         localStorage.removeItem('demoMode');
-        console.log('Google auth successful, tokens stored');
         await activityLogger.logLogin().catch(console.error);
 
         return {
@@ -162,7 +155,6 @@ export const authService = {
         localStorage.setItem('accessToken', accessToken);
         localStorage.setItem('refreshToken', refreshToken);
         localStorage.removeItem('demoMode');
-        console.log('Google auth successful, tokens stored');
         await activityLogger.logLogin().catch(console.error);
 
         return {
@@ -328,9 +320,7 @@ export const authService = {
    */
   async microsoftAuth(request: MicrosoftAuthRequest): Promise<LoginResponse> {
     try {
-      console.log('Microsoft auth attempt');
       const response = await apiClient.post('/api/v1/auth/microsoft', request);
-      console.log('Microsoft auth response:', response.data);
       const data = response.data;
 
       // Handle wrapped response format
@@ -346,7 +336,6 @@ export const authService = {
         localStorage.setItem('accessToken', accessToken);
         localStorage.setItem('refreshToken', refreshToken);
         localStorage.removeItem('demoMode');
-        console.log('Microsoft auth successful, tokens stored');
         await activityLogger.logLogin().catch(console.error);
 
         return {
@@ -369,7 +358,6 @@ export const authService = {
         localStorage.setItem('accessToken', accessToken);
         localStorage.setItem('refreshToken', refreshToken);
         localStorage.removeItem('demoMode');
-        console.log('Microsoft auth successful, tokens stored');
         await activityLogger.logLogin().catch(console.error);
 
         return {
