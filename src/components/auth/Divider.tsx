@@ -14,7 +14,7 @@ export default function Divider({ text = 'or', className = '' }: DividerProps) {
         <div className="w-full border-t border-gray-200 dark:border-gray-700" />
       </div>
       <div className="relative flex justify-center text-sm">
-        <span className="bg-white px-4 text-gray-500 dark:bg-gray-900 dark:text-gray-400">
+        <span className="bg-background px-4 text-muted-foreground">
           {text}
         </span>
       </div>

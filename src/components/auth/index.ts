@@ -4,3 +4,4 @@ export { default as PasswordInput } from './PasswordInput';
 export { default as SocialLoginButtons } from './SocialLoginButtons';
 export { default as Divider } from './Divider';
 export { default as AuthLayout } from './AuthLayout';
+export { default as IllustrationPanel } from './IllustrationPanel';

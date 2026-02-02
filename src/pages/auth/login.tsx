@@ -1,6 +1,6 @@
 import { useState, FormEvent } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
-import { Mail, ArrowRight, AlertCircle, CheckCircle } from 'lucide-react';
+import { AlertCircle, CheckCircle } from 'lucide-react';
 import { authService } from '../../lib/auth-service';
 import { signInWithGoogle } from '../../lib/google-auth';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -121,7 +121,13 @@ export default function LoginPage() {
   };
 
   return (
-    <AuthLayout variant="centered">
+    <AuthLayout
+      variant="split"
+      illustrationPanel={{
+        tagline: t('login.panel.tagline'),
+        subtitle: t('login.panel.subtitle'),
+      }}
+    >
       <SEO
         title={t('login.title') || 'Login | Sqordia'}
         description={t('login.subtitle') || 'Sign in to your Sqordia account'}
@@ -129,7 +135,7 @@ export default function LoginPage() {
       />
 
       {/* Title */}
-      <div className="mb-8 text-center animate-fade-in-up">
+      <div className="mb-8 animate-fade-in-up">
         <h1 className="mb-2 text-3xl font-bold font-heading text-foreground">
           {t('login.title')}
         </h1>
@@ -164,47 +170,26 @@ export default function LoginPage() {
         </div>
       )}
 
-      {/* Social Login Buttons */}
-      <div className="animate-fade-in-up animation-delay-100">
-        <SocialLoginButtons
-          onGoogleClick={handleGoogleSignIn}
-          onMicrosoftClick={handleMicrosoftSignIn}
-          disabled={loading}
-          mode="signin"
-          className="mb-6"
-        />
-      </div>
-
-      {/* Divider */}
-      <div className="animate-fade-in-up animation-delay-200">
-        <Divider text={t('login.divider')} className="mb-6" />
-      </div>
-
       {/* Login Form */}
-      <form onSubmit={handleSubmit} className="space-y-5 animate-fade-in-up animation-delay-300" noValidate>
+      <form onSubmit={handleSubmit} className="space-y-5 animate-fade-in-up animation-delay-100" noValidate>
         {/* Email */}
         <div>
           <Label htmlFor="email" className="mb-2 block text-sm font-semibold">
             {t('login.email')}
           </Label>
-          <div className="relative">
-            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
-              <Mail className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
-            </div>
-            <Input
-              id="email"
-              name="email"
-              type="email"
-              value={formData.email}
-              onChange={handleChange}
-              required
-              autoComplete="email"
-              className={`h-12 pl-12 ${getFieldError(errors, 'email') ? 'border-red-300 focus-visible:ring-red-500 dark:border-red-500' : ''}`}
-              placeholder={t('login.email.placeholder')}
-              aria-invalid={!!getFieldError(errors, 'email')}
-              aria-describedby={getFieldError(errors, 'email') ? 'email-error' : undefined}
-            />
-          </div>
+          <Input
+            id="email"
+            name="email"
+            type="email"
+            value={formData.email}
+            onChange={handleChange}
+            required
+            autoComplete="email"
+            className={`h-12 ${getFieldError(errors, 'email') ? 'border-red-300 focus-visible:ring-red-500 dark:border-red-500' : ''}`}
+            placeholder={t('login.email.placeholder')}
+            aria-invalid={!!getFieldError(errors, 'email')}
+            aria-describedby={getFieldError(errors, 'email') ? 'email-error' : undefined}
+          />
           {getFieldError(errors, 'email') && (
             <p id="email-error" className="mt-1.5 text-xs text-red-600 dark:text-red-400" role="alert">
               {getFieldError(errors, 'email')}
@@ -219,6 +204,7 @@ export default function LoginPage() {
           value={formData.password}
           onChange={handleChange}
           required
+          showIcon={false}
           autoComplete="current-password"
           placeholder={t('login.password.placeholder')}
           error={getFieldError(errors, 'password')}
@@ -252,21 +238,29 @@ export default function LoginPage() {
           variant="brand"
           size="lg"
           disabled={loading}
-          className="group w-full min-h-[44px]"
+          className="w-full min-h-[44px]"
         >
-          {loading ? (
-            <span>{t('login.signing')}</span>
-          ) : (
-            <>
-              <span>{t('login.button')}</span>
-              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
-            </>
-          )}
+          {loading ? t('login.signing') : t('login.button')}
         </Button>
       </form>
 
+      {/* Divider */}
+      <div className="animate-fade-in-up animation-delay-200">
+        <Divider text={t('login.divider')} className="my-6" />
+      </div>
+
+      {/* Social Login Buttons */}
+      <div className="animate-fade-in-up animation-delay-300">
+        <SocialLoginButtons
+          onGoogleClick={handleGoogleSignIn}
+          onMicrosoftClick={handleMicrosoftSignIn}
+          disabled={loading}
+          mode="signin"
+        />
+      </div>
+
       {/* Sign Up Link */}
-      <div className="mt-8 border-t border-border pt-6 animate-fade-in-up animation-delay-400">
+      <div className="mt-8 pt-6 animate-fade-in-up animation-delay-400">
         <p className="text-center text-sm text-muted-foreground">
           {t('login.noaccount')}{' '}
           <Link
@@ -279,7 +273,7 @@ export default function LoginPage() {
       </div>
 
       {/* Back to Home */}
-      <p className="mt-6 text-center text-sm animate-fade-in-up animation-delay-500">
+      <p className="mt-4 text-center text-sm animate-fade-in-up animation-delay-400">
         <Link
           to="/"
           className="text-muted-foreground transition-colors hover:text-foreground hover:underline"

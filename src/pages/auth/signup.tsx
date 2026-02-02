@@ -1,6 +1,6 @@
 import { useState, FormEvent } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Mail, User, Building2, ArrowRight, AlertCircle } from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
 import { authService } from '../../lib/auth-service';
 import { signInWithGoogle } from '../../lib/google-auth';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -106,16 +106,9 @@ export default function SignupPage() {
   return (
     <AuthLayout
       variant="split"
-      leftPanel={{
-        headlineKey: 'register.panel.subtitle',
-        subheadlineKey: 'register.panel.tagline',
-        testimonial: {
-          quoteKey: 'register.panel.testimonial.quote',
-          authorKey: 'register.panel.testimonial.author',
-          roleKey: 'register.panel.testimonial.role',
-          rating: 5,
-        },
-        showTrustIndicators: true,
+      illustrationPanel={{
+        tagline: t('register.panel.tagline'),
+        subtitle: t('register.panel.subtitle'),
       }}
     >
       <SEO
@@ -147,48 +140,27 @@ export default function SignupPage() {
         </div>
       )}
 
-      {/* Social Login Buttons */}
-      <div className="animate-fade-in-up animation-delay-100">
-        <SocialLoginButtons
-          onGoogleClick={handleGoogleSignUp}
-          onMicrosoftClick={handleMicrosoftSignUp}
-          disabled={loading}
-          mode="signup"
-          className="mb-6"
-        />
-      </div>
-
-      {/* Divider */}
-      <div className="animate-fade-in-up animation-delay-200">
-        <Divider text={t('register.divider')} className="mb-6" />
-      </div>
-
       {/* Signup Form */}
-      <form onSubmit={handleSubmit} className="space-y-5 animate-fade-in-up animation-delay-300" noValidate>
+      <form onSubmit={handleSubmit} className="space-y-5 animate-fade-in-up animation-delay-100" noValidate>
         {/* Name fields */}
         <div className="grid grid-cols-2 gap-4">
           <div>
             <Label htmlFor="firstName" className="mb-2 block text-sm font-semibold">
               {t('register.firstname')}
             </Label>
-            <div className="relative">
-              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
-                <User className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-              </div>
-              <Input
-                id="firstName"
-                name="firstName"
-                type="text"
-                value={formData.firstName}
-                onChange={handleChange}
-                required
-                autoComplete="given-name"
-                className={`h-12 pl-12 ${getFieldError(errors, 'firstName') ? 'border-red-300 focus-visible:ring-red-500 dark:border-red-500' : ''}`}
-                placeholder={t('register.firstname.placeholder')}
-                aria-invalid={!!getFieldError(errors, 'firstName')}
-                aria-describedby={getFieldError(errors, 'firstName') ? 'firstName-error' : undefined}
-              />
-            </div>
+            <Input
+              id="firstName"
+              name="firstName"
+              type="text"
+              value={formData.firstName}
+              onChange={handleChange}
+              required
+              autoComplete="given-name"
+              className={`h-12 ${getFieldError(errors, 'firstName') ? 'border-red-300 focus-visible:ring-red-500 dark:border-red-500' : ''}`}
+              placeholder={t('register.firstname.placeholder')}
+              aria-invalid={!!getFieldError(errors, 'firstName')}
+              aria-describedby={getFieldError(errors, 'firstName') ? 'firstName-error' : undefined}
+            />
             {getFieldError(errors, 'firstName') && (
               <p id="firstName-error" className="mt-1.5 text-xs text-red-600 dark:text-red-400" role="alert">
                 {getFieldError(errors, 'firstName')}
@@ -200,24 +172,19 @@ export default function SignupPage() {
             <Label htmlFor="lastName" className="mb-2 block text-sm font-semibold">
               {t('register.lastname')}
             </Label>
-            <div className="relative">
-              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
-                <User className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-              </div>
-              <Input
-                id="lastName"
-                name="lastName"
-                type="text"
-                value={formData.lastName}
-                onChange={handleChange}
-                required
-                autoComplete="family-name"
-                className={`h-12 pl-12 ${getFieldError(errors, 'lastName') ? 'border-red-300 focus-visible:ring-red-500 dark:border-red-500' : ''}`}
-                placeholder={t('register.lastname.placeholder')}
-                aria-invalid={!!getFieldError(errors, 'lastName')}
-                aria-describedby={getFieldError(errors, 'lastName') ? 'lastName-error' : undefined}
-              />
-            </div>
+            <Input
+              id="lastName"
+              name="lastName"
+              type="text"
+              value={formData.lastName}
+              onChange={handleChange}
+              required
+              autoComplete="family-name"
+              className={`h-12 ${getFieldError(errors, 'lastName') ? 'border-red-300 focus-visible:ring-red-500 dark:border-red-500' : ''}`}
+              placeholder={t('register.lastname.placeholder')}
+              aria-invalid={!!getFieldError(errors, 'lastName')}
+              aria-describedby={getFieldError(errors, 'lastName') ? 'lastName-error' : undefined}
+            />
             {getFieldError(errors, 'lastName') && (
               <p id="lastName-error" className="mt-1.5 text-xs text-red-600 dark:text-red-400" role="alert">
                 {getFieldError(errors, 'lastName')}
@@ -231,24 +198,19 @@ export default function SignupPage() {
           <Label htmlFor="email" className="mb-2 block text-sm font-semibold">
             {t('register.email')}
           </Label>
-          <div className="relative">
-            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
-              <Mail className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
-            </div>
-            <Input
-              id="email"
-              name="email"
-              type="email"
-              value={formData.email}
-              onChange={handleChange}
-              required
-              autoComplete="email"
-              className={`h-12 pl-12 ${getFieldError(errors, 'email') ? 'border-red-300 focus-visible:ring-red-500 dark:border-red-500' : ''}`}
-              placeholder={t('register.email.placeholder')}
-              aria-invalid={!!getFieldError(errors, 'email')}
-              aria-describedby={getFieldError(errors, 'email') ? 'email-error' : undefined}
-            />
-          </div>
+          <Input
+            id="email"
+            name="email"
+            type="email"
+            value={formData.email}
+            onChange={handleChange}
+            required
+            autoComplete="email"
+            className={`h-12 ${getFieldError(errors, 'email') ? 'border-red-300 focus-visible:ring-red-500 dark:border-red-500' : ''}`}
+            placeholder={t('register.email.placeholder')}
+            aria-invalid={!!getFieldError(errors, 'email')}
+            aria-describedby={getFieldError(errors, 'email') ? 'email-error' : undefined}
+          />
           {getFieldError(errors, 'email') && (
             <p id="email-error" className="mt-1.5 text-xs text-red-600 dark:text-red-400" role="alert">
               {getFieldError(errors, 'email')}
@@ -262,21 +224,16 @@ export default function SignupPage() {
             {t('register.organization')}{' '}
             <span className="font-normal text-muted-foreground">{t('register.optional')}</span>
           </Label>
-          <div className="relative">
-            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
-              <Building2 className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
-            </div>
-            <Input
-              id="organizationName"
-              name="organizationName"
-              type="text"
-              value={formData.organizationName}
-              onChange={handleChange}
-              autoComplete="organization"
-              className="h-12 pl-12"
-              placeholder={t('register.organization.placeholder')}
-            />
-          </div>
+          <Input
+            id="organizationName"
+            name="organizationName"
+            type="text"
+            value={formData.organizationName}
+            onChange={handleChange}
+            autoComplete="organization"
+            className="h-12"
+            placeholder={t('register.organization.placeholder')}
+          />
         </div>
 
         {/* Password */}
@@ -287,6 +244,7 @@ export default function SignupPage() {
             value={formData.password}
             onChange={handleChange}
             required
+            showIcon={false}
             autoComplete="new-password"
             placeholder={t('register.password.placeholder')}
             error={getFieldError(errors, 'password')}
@@ -307,6 +265,7 @@ export default function SignupPage() {
           value={formData.confirmPassword || ''}
           onChange={handleChange}
           required
+          showIcon={false}
           autoComplete="new-password"
           placeholder={t('register.confirm.placeholder')}
           error={getFieldError(errors, 'confirmPassword')}
@@ -354,21 +313,29 @@ export default function SignupPage() {
           variant="brand"
           size="lg"
           disabled={loading}
-          className="group w-full min-h-[44px]"
+          className="w-full min-h-[44px]"
         >
-          {loading ? (
-            <span>{t('register.creating')}</span>
-          ) : (
-            <>
-              <span>{t('register.button')}</span>
-              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
-            </>
-          )}
+          {loading ? t('register.creating') : t('register.button')}
         </Button>
       </form>
 
+      {/* Divider */}
+      <div className="animate-fade-in-up animation-delay-200">
+        <Divider text={t('register.divider')} className="my-6" />
+      </div>
+
+      {/* Social Login Buttons */}
+      <div className="animate-fade-in-up animation-delay-300">
+        <SocialLoginButtons
+          onGoogleClick={handleGoogleSignUp}
+          onMicrosoftClick={handleMicrosoftSignUp}
+          disabled={loading}
+          mode="signup"
+        />
+      </div>
+
       {/* Login Link */}
-      <div className="mt-8 border-t border-border pt-6 animate-fade-in-up animation-delay-400">
+      <div className="mt-8 pt-6 animate-fade-in-up animation-delay-400">
         <p className="text-center text-sm text-muted-foreground">
           {t('register.hasaccount')}{' '}
           <Link
@@ -381,7 +348,7 @@ export default function SignupPage() {
       </div>
 
       {/* Back to Home */}
-      <p className="mt-6 text-center text-sm animate-fade-in-up animation-delay-500">
+      <p className="mt-4 text-center text-sm animate-fade-in-up animation-delay-400">
         <Link
           to="/"
           className="text-muted-foreground transition-colors hover:text-foreground hover:underline"

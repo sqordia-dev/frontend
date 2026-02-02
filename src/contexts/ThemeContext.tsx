@@ -211,6 +211,9 @@ const translations = {
     'auth.common.req.number': 'One number',
     'auth.common.req.special': 'One special character (optional)',
     'auth.common.copyright': 'Sqordia. All rights reserved.',
+    'auth.panel.tagline': 'AI-Powered Strategic Planning',
+    'auth.panel.subtitle': 'Create professional business plans in minutes with intelligent assistance',
+    'auth.panel.illustrationPlaceholder': 'Illustration coming soon',
     // Features
     'features.feature1.title': 'AI Business Mentor',
     'features.feature1.desc': 'Get intelligent strategy suggestions, risk mitigation recommendations, and identify hidden opportunities in your business model.',
@@ -1267,6 +1270,9 @@ const translations = {
     'auth.common.req.number': 'Un chiffre',
     'auth.common.req.special': 'Un caract\u00e8re sp\u00e9cial (optionnel)',
     'auth.common.copyright': 'Sqordia. Tous droits r\u00e9serv\u00e9s.',
+    'auth.panel.tagline': 'Planification strat\u00e9gique propuls\u00e9e par l\u2019IA',
+    'auth.panel.subtitle': 'Cr\u00e9ez des plans d\u2019affaires professionnels en quelques minutes avec une assistance intelligente',
+    'auth.panel.illustrationPlaceholder': 'Illustration \u00e0 venir',
     // Features
     'features.feature1.title': 'Mentor d\'affaires IA',
     'features.feature1.desc': 'Obtenez des suggestions de stratégie intelligentes, des recommandations d\'atténuation des risques et identifiez les opportunités cachées dans votre modèle d\'affaires.',
