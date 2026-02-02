@@ -35,7 +35,7 @@ export default function AuthLayout({
         {/* Animated gradient orbs */}
         <AnimatedBackground />
 
-        <div className="relative z-10 w-full max-w-md">
+        <div className="relative z-10 w-full max-w-md text-foreground">
           {/* Logo */}
           <div className="mb-8 text-center">
             <Link to="/" className="inline-flex items-center gap-3 group">
@@ -66,7 +66,7 @@ export default function AuthLayout({
   return (
     <div className="flex min-h-screen">
       {/* LEFT Panel - Form */}
-      <div className="flex flex-1 flex-col items-center justify-center overflow-y-auto bg-background px-4 py-12 sm:px-6 lg:px-12">
+      <div className="flex flex-1 flex-col items-center justify-center overflow-y-auto bg-background text-foreground px-4 py-12 sm:px-6 lg:px-12">
         <div className="w-full max-w-[480px]">
           {/* Mobile Logo (shown when illustration panel is hidden) */}
           <div className="mb-8 text-center lg:hidden">

@@ -242,6 +242,65 @@
   opacity: 0;
 }
 
+/* Auth illustration ambient animations (only when .illus-animate is present; respects reduced motion via class) */
+@keyframes illus-float-subtle {
+  0%,
+  100% {
+    transform: scale(1) translate(0, 0);
+  }
+  50% {
+    transform: scale(1.03) translate(2px, -2px);
+  }
+}
+
+@keyframes illus-float-person {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(1px, 2px);
+  }
+}
+
+@keyframes illus-pulse-dots {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+@keyframes illus-pulse-soft {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.02);
+    opacity: 0.95;
+  }
+}
+
+.illus-animate #illus-bg-circle {
+  animation: illus-float-subtle 9s ease-in-out infinite;
+}
+
+.illus-animate #illus-person {
+  animation: illus-float-person 5s ease-in-out infinite;
+}
+
+.illus-animate #illus-bubble-dots {
+  animation: illus-pulse-dots 1.5s ease-in-out infinite;
+}
+
+.illus-animate #illus-device {
+  animation: illus-pulse-soft 3s ease-in-out infinite;
+}
+
 /* Hide scrollbar for plan sidebar but keep functionality */
 .plan-sidebar {
   scrollbar-width: none; /* Firefox */

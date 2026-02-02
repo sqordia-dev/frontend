@@ -1,6 +1,9 @@
+import { motion } from 'framer-motion';
 import { Brain } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
+import AuthLoginSvg from '../../assets/illustrations/auth-login.svg?react';
 
 interface IllustrationPanelProps {
   tagline?: string;
@@ -12,6 +15,7 @@ interface IllustrationPanelProps {
  * Right-side branding panel for split-screen auth layout.
  * Shows branded illustration placeholder, tagline, and decorative elements.
  * Hidden on mobile, visible on lg+ breakpoints.
+ * Respects prefers-reduced-motion for illustration animations.
  */
 export default function IllustrationPanel({
   tagline,
@@ -19,6 +23,15 @@ export default function IllustrationPanel({
   illustrationSrc,
 }: IllustrationPanelProps) {
   const { t } = useTheme();
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setPrefersReducedMotion(mediaQuery.matches);
+    const handleChange = (e: MediaQueryListEvent) => setPrefersReducedMotion(e.matches);
+    mediaQuery.addEventListener('change', handleChange);
+    return () => mediaQuery.removeEventListener('change', handleChange);
+  }, []);
 
   return (
     <div className="relative hidden lg:flex lg:w-[50%] flex-col items-center justify-center overflow-hidden bg-light-ai-grey dark:bg-[#0F1A2D]">
@@ -71,14 +84,26 @@ export default function IllustrationPanel({
         </p>
 
         {/* Illustration area */}
-        <div className="w-full max-w-[380px] rounded-2xl overflow-hidden">
-          <img
-            src={illustrationSrc || '/illustrations/auth-login.svg'}
-            alt=""
-            className="w-full h-auto object-contain"
-            aria-hidden="true"
-          />
-        </div>
+        <motion.div
+          className={`w-full max-w-[380px] rounded-2xl overflow-hidden ${!prefersReducedMotion ? 'illus-animate' : ''}`}
+          initial={prefersReducedMotion ? false : { opacity: 0, scale: 0.96 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.5, ease: 'easeOut' }}
+        >
+          {illustrationSrc ? (
+            <img
+              src={illustrationSrc}
+              alt=""
+              className="w-full h-auto object-contain"
+              aria-hidden="true"
+            />
+          ) : (
+            <AuthLoginSvg
+              className="w-full h-auto object-contain"
+              aria-hidden="true"
+            />
+          )}
+        </motion.div>
 
         {/* Carousel dots */}
         <div className="mt-8 flex items-center gap-2" aria-hidden="true">
