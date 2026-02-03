@@ -1,4 +1,4 @@
-import { MessageSquare, BarChart3, Share2, Sparkles, CheckCircle } from 'lucide-react';
+import { MessageSquare, BarChart3, Share2, CheckCircle } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -11,8 +11,9 @@ interface Feature {
   subtitleKey: string;
   descriptionKey: string;
   benefitKeys: string[];
-  /** Solid accent color (no gradient). */
   accentColor: string;
+  /** Tailwind bg class for the accent */
+  accentCls: string;
   imageAltKey: string;
 }
 
@@ -29,6 +30,7 @@ const features: Feature[] = [
       'landing.features.step1.benefit4',
     ],
     accentColor: '#FF6B00',
+    accentCls: 'bg-momentum-orange',
     imageAltKey: 'landing.features.step1.imageAlt',
   },
   {
@@ -43,6 +45,7 @@ const features: Feature[] = [
       'landing.features.step2.benefit4',
     ],
     accentColor: '#14B8A6',
+    accentCls: 'bg-teal-500',
     imageAltKey: 'landing.features.step2.imageAlt',
   },
   {
@@ -57,66 +60,41 @@ const features: Feature[] = [
       'landing.features.step3.benefit4',
     ],
     accentColor: '#F59E0B',
+    accentCls: 'bg-amber-500',
     imageAltKey: 'landing.features.step3.imageAlt',
   },
 ];
 
 export default function Features() {
-  const { theme, t } = useTheme();
-  const isDark = theme === 'dark';
+  const { t } = useTheme();
 
   return (
     <section
       id="features"
-      className="py-20 md:py-28 lg:py-32 relative overflow-hidden"
-      style={{ backgroundColor: isDark ? '#0F172A' : '#F9FAFB' }}
+      className="py-section-lg bg-gray-50 dark:bg-slate-900"
       aria-labelledby="features-heading"
     >
-      {/* Background decoration */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
-        <div
-          className="absolute inset-0 opacity-[0.02]"
-          style={{
-            backgroundImage: `linear-gradient(${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'} 1px, transparent 1px), linear-gradient(90deg, ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'} 1px, transparent 1px)`,
-            backgroundSize: '40px 40px',
-          }}
-        />
-      </div>
-
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center max-w-3xl mx-auto mb-16 md:mb-24">
           <ScrollReveal>
-            <div className="inline-flex items-center gap-2 mb-6">
-              <Sparkles className="w-5 h-5 text-[#FF6B00]" aria-hidden="true" />
-              <span
-                className="px-4 py-1.5 rounded-full text-xs md:text-sm font-semibold"
-                style={{
-                  backgroundColor: isDark ? 'rgba(255, 107, 0, 0.2)' : 'rgba(255, 107, 0, 0.1)',
-                  color: isDark ? '#FDBA74' : '#FF6B00',
-                }}
-              >
-                {t('landing.features.badge')}
-              </span>
-            </div>
+            <p className="text-label-sm uppercase tracking-widest text-momentum-orange mb-4">
+              {t('landing.features.badge')}
+            </p>
           </ScrollReveal>
           <ScrollReveal delay={0.1}>
             <h2
               id="features-heading"
-              className="text-3xl sm:text-4xl md:text-5xl font-bold font-heading mb-6"
-              style={{ color: isDark ? '#FFFFFF' : '#1A2B47' }}
+              className="text-display-md sm:text-display-lg font-heading mb-6 text-strategy-blue dark:text-white"
             >
               {t('landing.features.title')}{' '}
-              <span style={{ color: '#FF6B00' }}>
+              <span className="text-momentum-orange">
                 {t('landing.features.title.highlight')}
               </span>
             </h2>
           </ScrollReveal>
           <ScrollReveal delay={0.15}>
-            <p
-              className="text-lg md:text-xl"
-              style={{ color: isDark ? '#9CA3AF' : '#6B7280' }}
-            >
+            <p className="text-body-lg text-gray-500 dark:text-gray-400">
               {t('landing.features.subtitle')}
             </p>
           </ScrollReveal>
@@ -130,18 +108,11 @@ export default function Features() {
 
             return (
               <ScrollReveal key={index} delay={index * 0.1}>
-                <div
-                  className={`grid lg:grid-cols-2 gap-12 lg:gap-16 items-center ${isReversed ? 'lg:flex-row-reverse' : ''}`}
-                >
-                  {/* Content - Card with left accent bar */}
+                <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+                  {/* Content card */}
                   <div className={cn(isReversed && 'lg:order-2')}>
-                    <Card
-                      className={cn(
-                        'overflow-hidden rounded-2xl border shadow-sm flex flex-row',
-                        isDark ? 'bg-[#1E293B] border-white/10' : 'bg-white border-gray-200/80'
-                      )}
-                    >
-                      {/* Left vertical accent bar */}
+                    <Card className="overflow-hidden rounded-2xl border border-border shadow-card flex flex-row bg-white dark:bg-gray-800">
+                      {/* Left accent bar */}
                       <div
                         className="w-1 min-h-full flex-shrink-0 rounded-l-full"
                         style={{ backgroundColor: feature.accentColor }}
@@ -157,24 +128,15 @@ export default function Features() {
                             >
                               {index + 1}
                             </Badge>
-                            <span
-                              className="text-sm font-semibold uppercase tracking-wide"
-                              style={{ color: isDark ? '#9CA3AF' : '#6B7280' }}
-                            >
+                            <span className="text-label-sm uppercase tracking-wide text-gray-500 dark:text-gray-400">
                               {t(feature.subtitleKey)}
                             </span>
                           </div>
                         </CardHeader>
-                        <CardTitle
-                          className="text-2xl sm:text-3xl md:text-4xl font-bold font-heading mb-4 leading-tight"
-                          style={{ color: isDark ? '#FFFFFF' : '#1A2B47' }}
-                        >
+                        <CardTitle className="text-2xl sm:text-3xl md:text-4xl font-bold font-heading mb-4 leading-tight text-strategy-blue dark:text-white">
                           {t(feature.titleKey)}
                         </CardTitle>
-                        <CardDescription
-                          className="text-lg mb-6 leading-relaxed"
-                          style={{ color: isDark ? '#9CA3AF' : '#6B7280' }}
-                        >
+                        <CardDescription className="text-body-lg mb-6 leading-relaxed text-gray-500 dark:text-gray-400">
                           {t(feature.descriptionKey)}
                         </CardDescription>
                         <CardContent className="p-0">
@@ -186,7 +148,7 @@ export default function Features() {
                                   className="flex-shrink-0 mt-0.5 text-green-500"
                                   aria-hidden="true"
                                 />
-                                <span style={{ color: isDark ? '#D1D5DB' : '#374151' }}>
+                                <span className="text-gray-700 dark:text-gray-300">
                                   {t(benefitKey)}
                                 </span>
                               </li>
@@ -197,52 +159,23 @@ export default function Features() {
                     </Card>
                   </div>
 
-                  {/* Image/Screenshot placeholder */}
-                  <div className={`${isReversed ? 'lg:order-1' : ''}`}>
-                    <div
-                      className="relative rounded-2xl overflow-hidden shadow-2xl border"
-                      style={{
-                        backgroundColor: isDark ? '#1F2937' : '#FFFFFF',
-                        borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
-                      }}
-                    >
+                  {/* Visual — prominent icon card instead of empty placeholder */}
+                  <div className={cn(isReversed && 'lg:order-1')}>
+                    <div className="relative rounded-2xl overflow-hidden shadow-card border border-border bg-white dark:bg-gray-800">
                       <div className="aspect-[4/3] flex items-center justify-center p-8">
-                        <div className="text-center">
-                          <div
-                            className="w-20 h-20 mx-auto mb-4 rounded-2xl flex items-center justify-center opacity-20"
-                            style={{ backgroundColor: feature.accentColor }}
-                          >
-                            <Icon className="w-10 h-10" style={{ color: isDark ? '#FFFFFF' : '#1A2B47' }} aria-hidden="true" />
-                          </div>
-                          <p
-                            className="text-lg font-medium"
-                            style={{ color: isDark ? '#E5E7EB' : '#374151' }}
-                          >
-                            {t(feature.subtitleKey)}
-                          </p>
-                          <p
-                            className="text-sm mt-1"
-                            style={{ color: isDark ? '#9CA3AF' : '#6B7280' }}
-                          >
-                            {t('landing.features.screenshot.placeholder')}
-                          </p>
+                        <div
+                          className={cn('w-24 h-24 rounded-2xl flex items-center justify-center', feature.accentCls)}
+                        >
+                          <Icon className="w-12 h-12 text-white" aria-hidden="true" />
                         </div>
                       </div>
-
-                      {/* Solid tint overlay */}
+                      {/* Subtle tint */}
                       <div
-                        className="absolute inset-0 pointer-events-none opacity-5"
+                        className="absolute inset-0 pointer-events-none opacity-[0.03]"
                         style={{ backgroundColor: feature.accentColor }}
                         aria-hidden="true"
                       />
                     </div>
-
-                    {/* Decorative element */}
-                    <div
-                      className={cn('absolute -z-10 w-full h-full rounded-2xl -bottom-4 opacity-10', isReversed ? '-left-4' : '-right-4')}
-                      style={{ backgroundColor: feature.accentColor }}
-                      aria-hidden="true"
-                    />
                   </div>
                 </div>
               </ScrollReveal>

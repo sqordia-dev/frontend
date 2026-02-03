@@ -39,7 +39,7 @@ export default function AuthLayout({
           {/* Logo */}
           <div className="mb-8 text-center">
             <Link to="/" className="inline-flex items-center gap-3 group">
-              <div className="rounded-xl p-3 transition-transform group-hover:scale-105 bg-[#1A2B47] dark:bg-slate-800">
+              <div className="rounded-xl p-3 transition-transform group-hover:scale-105 bg-strategy-blue dark:bg-slate-800">
                 <Brain className="h-7 w-7 text-white" aria-hidden="true" />
               </div>
               <span className="text-2xl font-bold font-heading text-foreground">
@@ -48,8 +48,8 @@ export default function AuthLayout({
             </Link>
           </div>
 
-          {/* Glassmorphism content card */}
-          <div className="glass-card rounded-2xl p-8 shadow-xl sm:p-10">
+          {/* Content card */}
+          <div className="rounded-2xl border border-border bg-card p-8 shadow-xl sm:p-10">
             {children}
           </div>
 

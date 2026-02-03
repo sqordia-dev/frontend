@@ -1,79 +1,142 @@
-import { ArrowRight, Shield, Clock, CheckCircle, Star, X as XIcon } from 'lucide-react';
+import { ArrowRight, Shield, Clock, XCircle, FileText, BarChart3, Brain, Sparkles } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
+import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
-
-// Orchestrated hero entrance: staggered children with smooth easing
-const containerVariants = {
-  hidden: {},
-  visible: {
-    transition: { staggerChildren: 0.12, delayChildren: 0.1 },
-  },
-};
 
 const smoothEase: [number, number, number, number] = [0.25, 0.1, 0.25, 1];
 
+const containerVariants = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.1, delayChildren: 0.08 } },
+};
+
 const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: smoothEase } },
+};
+
+const mockupVariants = {
   hidden: { opacity: 0, y: 24 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.6, ease: smoothEase },
-  },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.6, delay: 0.25, ease: smoothEase } },
 };
 
-const imageVariants = {
-  hidden: { opacity: 0, scale: 0.95, y: 20 },
-  visible: {
-    opacity: 1,
-    scale: 1,
-    y: 0,
-    transition: { duration: 0.7, delay: 0.3, ease: smoothEase },
-  },
-};
+// ── Product mockup built with CSS (replaces empty placeholder) ──────────────
+function ProductMockup({ isDark }: { isDark: boolean }) {
+  return (
+    <div className={cn(
+      'rounded-xl border overflow-hidden shadow-card',
+      isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200',
+    )}>
+      {/* Fake browser chrome */}
+      <div className={cn(
+        'flex items-center gap-2 px-4 py-2.5 border-b',
+        isDark ? 'bg-gray-900 border-gray-700' : 'bg-gray-50 border-gray-200',
+      )}>
+        <div className="flex gap-1.5">
+          <div className="w-2.5 h-2.5 rounded-full bg-red-400" />
+          <div className="w-2.5 h-2.5 rounded-full bg-amber-400" />
+          <div className="w-2.5 h-2.5 rounded-full bg-green-400" />
+        </div>
+        <div className={cn(
+          'flex-1 h-5 rounded-md mx-8',
+          isDark ? 'bg-gray-700' : 'bg-gray-200',
+        )} />
+      </div>
 
+      {/* App content mockup */}
+      <div className="p-5">
+        {/* Header row */}
+        <div className="flex items-center justify-between mb-5">
+          <div className="flex items-center gap-2.5">
+            <div className="w-7 h-7 rounded-md bg-strategy-blue flex items-center justify-center">
+              <Brain size={14} className="text-white" />
+            </div>
+            <div className={cn('h-3 w-20 rounded', isDark ? 'bg-gray-600' : 'bg-gray-300')} />
+          </div>
+          <div className="flex gap-2">
+            <div className={cn('h-7 w-16 rounded-md', isDark ? 'bg-gray-700' : 'bg-gray-100')} />
+            <div className="h-7 w-24 rounded-md bg-momentum-orange/90" />
+          </div>
+        </div>
+
+        {/* Stats row */}
+        <div className="grid grid-cols-3 gap-3 mb-5">
+          {[
+            { icon: FileText, label: '12', sublabel: 'Plans' },
+            { icon: BarChart3, label: '87%', sublabel: 'Score' },
+            { icon: Sparkles, label: '24', sublabel: 'Sections' },
+          ].map(({ icon: Icon, label, sublabel }) => (
+            <div key={sublabel} className={cn(
+              'rounded-lg p-3 border',
+              isDark ? 'bg-gray-700/50 border-gray-600' : 'bg-gray-50 border-gray-100',
+            )}>
+              <Icon size={14} className="text-momentum-orange mb-1.5" />
+              <div className={cn('text-base font-bold', isDark ? 'text-white' : 'text-strategy-blue')}>{label}</div>
+              <div className={cn('text-[10px]', isDark ? 'text-gray-400' : 'text-gray-500')}>{sublabel}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* Content rows */}
+        <div className="space-y-2.5">
+          {[85, 60, 72].map((w, i) => (
+            <div key={i} className={cn(
+              'flex items-center gap-3 p-3 rounded-lg border',
+              isDark ? 'bg-gray-700/30 border-gray-600/50' : 'bg-white border-gray-100',
+            )}>
+              <div className={cn(
+                'w-8 h-8 rounded-md shrink-0',
+                i === 0 ? 'bg-momentum-orange/15' : isDark ? 'bg-gray-600' : 'bg-gray-100',
+              )} />
+              <div className="flex-1 space-y-1.5">
+                <div className={cn('h-2.5 rounded', isDark ? 'bg-gray-600' : 'bg-gray-200')} style={{ width: `${w}%` }} />
+                <div className={cn('h-2 rounded', isDark ? 'bg-gray-700' : 'bg-gray-100')} style={{ width: `${w - 20}%` }} />
+              </div>
+              {i === 0 && (
+                <span className="text-[9px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
+                  Active
+                </span>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Hero ─────────────────────────────────────────────────────────────────────
 export default function Hero() {
   const { theme, t } = useTheme();
   const isDark = theme === 'dark';
 
   return (
     <section
-      className="relative pt-24 pb-16 md:pt-32 md:pb-24 lg:pt-40 lg:pb-32 overflow-hidden min-h-[90vh] flex items-center"
-      style={{
-        background: isDark
-          ? 'linear-gradient(180deg, #1A2B47 0%, #0F172A 100%)'
-          : 'linear-gradient(180deg, #EEF2FF 0%, #FFFFFF 100%)',
-      }}
+      className={cn(
+        'relative pt-28 pb-16 md:pt-36 md:pb-24 lg:pt-44 lg:pb-32 overflow-hidden min-h-[90vh] flex items-center',
+        isDark
+          ? 'bg-gradient-to-b from-strategy-blue to-[#0F172A]'
+          : 'bg-gradient-to-b from-light-ai-grey to-white',
+      )}
       aria-labelledby="hero-heading"
     >
-      {/* Background decoration */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
+      {/* Subtle dot pattern instead of blobs */}
+      <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
         <div
-          className="absolute top-20 right-10 w-[300px] h-[300px] md:w-[500px] md:h-[500px] rounded-full filter blur-[80px] md:blur-[120px] animate-blob"
-          style={{ backgroundColor: isDark ? 'rgba(255, 107, 0, 0.12)' : 'rgba(255, 107, 0, 0.08)' }}
-        />
-        <div
-          className="absolute top-40 left-10 w-[250px] h-[250px] md:w-[400px] md:h-[400px] rounded-full filter blur-[60px] md:blur-[100px] animate-blob"
-          style={{ backgroundColor: isDark ? 'rgba(255, 107, 0, 0.08)' : 'rgba(255, 107, 0, 0.06)', animationDelay: '2s' }}
-        />
-        <div
-          className="absolute -bottom-20 left-1/2 w-[350px] h-[350px] md:w-[600px] md:h-[600px] rounded-full filter blur-[90px] md:blur-[140px] animate-blob"
-          style={{ backgroundColor: isDark ? 'rgba(20, 184, 166, 0.08)' : 'rgba(20, 184, 166, 0.06)', animationDelay: '4s' }}
-        />
-
-        {/* Grid pattern */}
-        <div
-          className="absolute inset-0 opacity-[0.03]"
+          className={cn('absolute inset-0', isDark ? 'opacity-[0.04]' : 'opacity-[0.5]')}
           style={{
-            backgroundImage: `linear-gradient(${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'} 1px, transparent 1px), linear-gradient(90deg, ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'} 1px, transparent 1px)`,
-            backgroundSize: '50px 50px',
+            backgroundImage: isDark
+              ? 'radial-gradient(circle, rgba(255,255,255,0.15) 1px, transparent 1px)'
+              : 'radial-gradient(circle, rgba(26,43,71,0.06) 1px, transparent 1px)',
+            backgroundSize: '32px 32px',
           }}
         />
       </div>
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-          {/* Left column - Content */}
+        <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+          {/* Left column */}
           <motion.div
             className="text-center lg:text-left"
             variants={containerVariants}
@@ -82,66 +145,62 @@ export default function Hero() {
           >
             {/* Social proof badge */}
             <motion.div variants={itemVariants}>
-              <div
-                className="inline-flex items-center gap-2 px-4 py-2 mb-6 rounded-full text-sm font-medium border backdrop-blur-sm"
-                style={{
-                  backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.8)',
-                  borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
-                  color: isDark ? '#E5E7EB' : '#374151',
-                }}
-              >
-                <span className="flex items-center gap-1">
-                  <CheckCircle size={16} className="text-green-500" aria-hidden="true" />
-                  <span>{t('landing.hero.badge.trusted')}</span>
+              <div className={cn(
+                'inline-flex items-center gap-2.5 px-4 py-2 mb-7 rounded-full text-body-sm font-medium border',
+                isDark
+                  ? 'bg-white/5 border-white/10 text-gray-300'
+                  : 'bg-white border-gray-200 text-gray-600 shadow-sm',
+              )}>
+                <span className="flex items-center gap-1.5 text-green-500 font-semibold">
+                  <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
+                  {t('landing.hero.badge.trusted')}
                 </span>
-                <span className="w-1 h-1 rounded-full bg-gray-400" aria-hidden="true" />
-                <span className="flex items-center gap-1">
-                  <Star size={14} className="text-amber-500 fill-amber-500" aria-hidden="true" />
-                  <span>{t('landing.hero.badge.rating')}</span>
-                </span>
+                <span className="w-px h-3.5 bg-gray-300 dark:bg-gray-600" />
+                <span>{t('landing.hero.badge.rating')}</span>
               </div>
             </motion.div>
 
-            {/* Main Headline */}
+            {/* Headline */}
             <motion.h1
               id="hero-heading"
               variants={itemVariants}
-              className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6 font-heading"
-              style={{ color: isDark ? '#FFFFFF' : '#1A2B47' }}
+              className={cn(
+                'text-display-lg sm:text-display-xl lg:text-display-2xl mb-6 font-heading',
+                isDark ? 'text-white' : 'text-strategy-blue',
+              )}
             >
               <span className="block">{t('landing.hero.headline.line1')}</span>
-              <span className="block" style={{ color: '#FF6B00' }}>
-                {t('landing.hero.headline.highlight')}
-              </span>
+              <span className="block text-momentum-orange">{t('landing.hero.headline.highlight')}</span>
             </motion.h1>
 
             {/* Subheadline */}
             <motion.p
               variants={itemVariants}
-              className="text-lg md:text-xl mb-8 max-w-xl mx-auto lg:mx-0"
-              style={{ color: isDark ? '#D1D5DB' : '#6B7280' }}
+              className={cn(
+                'text-body-lg md:text-xl mb-8 max-w-xl mx-auto lg:mx-0',
+                isDark ? 'text-gray-300' : 'text-gray-500',
+              )}
             >
               {t('landing.hero.subheadline')}
             </motion.p>
 
-            {/* CTA Buttons */}
-            <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-8">
+            {/* CTA */}
+            <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start mb-10">
               <Link
                 to="/signup"
-                className="group inline-flex items-center justify-center gap-2 px-8 py-4 bg-[#FF6B00] hover:bg-[#E55F00] text-white text-lg font-semibold rounded-xl transition-all duration-300 hover:-translate-y-0.5 shadow-glow-orange focus:outline-none focus:ring-4 focus:ring-[#FF6B00]/50 focus:ring-offset-2"
+                className="group inline-flex items-center justify-center gap-2 px-7 py-3.5 bg-momentum-orange hover:bg-[#E55F00] text-white text-base font-semibold rounded-lg transition-all duration-200 shadow-sm hover:shadow-md focus:outline-none focus:ring-4 focus:ring-momentum-orange/30"
               >
                 {t('landing.hero.cta.primary')}
-                <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" aria-hidden="true" />
+                <ArrowRight size={18} className="group-hover:translate-x-0.5 transition-transform" />
               </Link>
-
               <Link
                 to="/example-plans"
-                className="group inline-flex items-center justify-center gap-2 px-8 py-4 text-lg font-semibold rounded-xl border-2 transition-all duration-300 hover:-translate-y-0.5 focus:outline-none focus:ring-4 focus:ring-gray-400 focus:ring-offset-2"
-                style={{
-                  backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'transparent',
-                  borderColor: isDark ? 'rgba(255,255,255,0.2)' : '#E5E7EB',
-                  color: isDark ? '#FFFFFF' : '#374151',
-                }}
+                className={cn(
+                  'inline-flex items-center justify-center gap-2 px-7 py-3.5 text-base font-semibold rounded-lg border transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-gray-400/30',
+                  isDark
+                    ? 'bg-white/5 border-white/15 text-white hover:bg-white/10'
+                    : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50 shadow-sm',
+                )}
               >
                 {t('landing.hero.cta.secondary')}
               </Link>
@@ -150,96 +209,31 @@ export default function Hero() {
             {/* Trust badges */}
             <motion.div
               variants={itemVariants}
-              className="flex flex-wrap items-center justify-center lg:justify-start gap-6 text-sm"
-              style={{ color: isDark ? '#9CA3AF' : '#6B7280' }}
+              className={cn('flex flex-wrap items-center justify-center lg:justify-start gap-5 text-body-sm', isDark ? 'text-gray-400' : 'text-gray-500')}
             >
-              <div className="flex items-center gap-2">
-                <Shield size={18} className="text-green-500" aria-hidden="true" />
+              <div className="flex items-center gap-1.5">
+                <Shield size={16} className="text-green-500" />
                 <span>{t('landing.hero.trust.noCard')}</span>
               </div>
-              <div className="flex items-center gap-2">
-                <Clock size={18} className="text-[#FF6B00]" aria-hidden="true" />
+              <div className="flex items-center gap-1.5">
+                <Clock size={16} className="text-momentum-orange" />
                 <span>{t('landing.hero.trust.trial')}</span>
               </div>
-              <div className="flex items-center gap-2">
-                <XIcon size={18} className="text-rose-500" aria-hidden="true" />
+              <div className="flex items-center gap-1.5">
+                <XCircle size={16} className="text-gray-400" />
                 <span>{t('landing.hero.trust.cancel')}</span>
               </div>
             </motion.div>
           </motion.div>
 
-          {/* Right column - Product screenshot placeholder */}
+          {/* Right column - Product mockup */}
           <motion.div
-            className="relative"
-            variants={imageVariants}
+            className="relative lg:pl-4"
+            variants={mockupVariants}
             initial="hidden"
             animate="visible"
           >
-            <div
-              className="relative rounded-2xl overflow-hidden shadow-2xl border"
-              style={{
-                backgroundColor: isDark ? '#1F2937' : '#FFFFFF',
-                borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
-              }}
-            >
-              {/* Screenshot placeholder */}
-              <div className="aspect-[4/3] flex items-center justify-center p-8">
-                <div className="text-center">
-                  <div
-                    className="w-24 h-24 mx-auto mb-4 rounded-2xl flex items-center justify-center"
-                    style={{ backgroundColor: isDark ? 'rgba(99, 102, 241, 0.2)' : 'rgba(99, 102, 241, 0.1)' }}
-                  >
-                    <svg
-                      className="w-12 h-12"
-                      style={{ color: '#6366F1' }}
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      aria-hidden="true"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={1.5}
-                        d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2"
-                      />
-                    </svg>
-                  </div>
-                  <p className="text-lg font-medium" style={{ color: isDark ? '#E5E7EB' : '#374151' }}>
-                    {t('landing.hero.screenshot.alt')}
-                  </p>
-                  <p className="text-sm mt-1" style={{ color: isDark ? '#9CA3AF' : '#6B7280' }}>
-                    {t('landing.hero.screenshot.placeholder')}
-                  </p>
-                </div>
-              </div>
-
-              {/* Decorative gradient overlay */}
-              <div
-                className="absolute inset-0 pointer-events-none"
-                style={{ background: 'linear-gradient(180deg, transparent 60%, rgba(79, 70, 229, 0.05) 100%)' }}
-                aria-hidden="true"
-              />
-            </div>
-
-            {/* Floating elements */}
-            <div
-              className="absolute -top-4 -right-4 w-20 h-20 rounded-2xl animate-float"
-              style={{
-                backgroundColor: isDark ? 'rgba(99, 102, 241, 0.2)' : 'rgba(99, 102, 241, 0.15)',
-                backdropFilter: 'blur(10px)',
-              }}
-              aria-hidden="true"
-            />
-            <div
-              className="absolute -bottom-6 -left-6 w-16 h-16 rounded-xl animate-float"
-              style={{
-                backgroundColor: isDark ? 'rgba(236, 72, 153, 0.2)' : 'rgba(236, 72, 153, 0.15)',
-                backdropFilter: 'blur(10px)',
-                animationDelay: '2s',
-              }}
-              aria-hidden="true"
-            />
+            <ProductMockup isDark={isDark} />
           </motion.div>
         </div>
       </div>

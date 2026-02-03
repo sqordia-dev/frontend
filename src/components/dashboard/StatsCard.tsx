@@ -35,22 +35,13 @@ export function StatsCard({
   return (
     <Card
       className={cn(
-        "group relative overflow-hidden transition-all duration-300",
-        "hover:-translate-y-1 hover:shadow-lg hover:border-primary/30",
+        "group relative overflow-hidden transition-all duration-200",
+        "hover:shadow-card-hover hover:border-primary/20",
         variants[variant],
         className
       )}
     >
-      {/* Subtle gradient overlay on hover */}
-      <div
-        className={cn(
-          "absolute inset-0 opacity-0 transition-opacity duration-300",
-          "bg-gradient-to-br from-primary/5 to-transparent",
-          "group-hover:opacity-100"
-        )}
-      />
-
-      <CardContent className="relative z-10 p-6">
+      <CardContent className="p-6">
         <div className="flex items-start justify-between">
           <div className="space-y-2">
             <p className="text-sm font-medium text-muted-foreground">
@@ -91,9 +82,8 @@ export function StatsCard({
               className={cn(
                 "flex h-12 w-12 items-center justify-center rounded-xl",
                 "bg-primary/10 text-primary",
-                "transition-all duration-300",
+                "transition-colors duration-200",
                 "group-hover:bg-primary group-hover:text-primary-foreground",
-                "group-hover:scale-110"
               )}
             >
               {icon}

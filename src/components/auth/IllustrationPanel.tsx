@@ -34,32 +34,20 @@ export default function IllustrationPanel({
   }, []);
 
   return (
-    <div className="relative hidden lg:flex lg:w-[50%] flex-col items-center justify-center overflow-hidden bg-light-ai-grey dark:bg-[#0F1A2D]">
-      {/* Ambient gradient blobs */}
-      <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
-        <div
-          className="absolute -top-24 -right-24 h-[420px] w-[420px] rounded-full blur-[120px] opacity-60"
-          style={{ background: 'radial-gradient(circle, rgba(255,107,0,0.18) 0%, transparent 70%)' }}
-        />
-        <div
-          className="absolute -bottom-16 -left-16 h-[360px] w-[360px] rounded-full blur-[100px] opacity-40"
-          style={{ background: 'radial-gradient(circle, rgba(26,43,71,0.22) 0%, transparent 70%)' }}
-        />
-        <div
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[500px] w-[500px] rounded-full blur-[140px] opacity-20"
-          style={{ background: 'radial-gradient(circle, rgba(255,107,0,0.1) 0%, transparent 60%)' }}
-        />
-      </div>
-
+    <div className="relative hidden lg:flex lg:w-[50%] flex-col items-center justify-center overflow-hidden bg-light-ai-grey dark:bg-gray-950">
       {/* Subtle dot grid pattern */}
       <div
         className="absolute inset-0 opacity-[0.03] dark:opacity-[0.04] pointer-events-none"
         aria-hidden="true"
         style={{
-          backgroundImage: 'radial-gradient(circle, #1A2B47 1px, transparent 1px)',
+          backgroundImage: 'radial-gradient(circle, currentColor 1px, transparent 1px)',
           backgroundSize: '24px 24px',
         }}
       />
+      {/* Faint warm glow top-right */}
+      <div className="absolute -top-24 -right-24 h-[350px] w-[350px] rounded-full bg-momentum-orange/[0.06] blur-[100px]" aria-hidden="true" />
+      {/* Faint cool glow bottom-left */}
+      <div className="absolute -bottom-16 -left-16 h-[300px] w-[300px] rounded-full bg-strategy-blue/[0.08] blur-[100px] dark:bg-white/[0.04]" aria-hidden="true" />
 
       <div className="relative z-10 flex flex-col items-center text-center max-w-md px-8">
         {/* Logo */}
@@ -105,12 +93,8 @@ export default function IllustrationPanel({
           )}
         </motion.div>
 
-        {/* Carousel dots */}
-        <div className="mt-8 flex items-center gap-2" aria-hidden="true">
-          <div className="h-2 w-2 rounded-full bg-gray-300/80 dark:bg-white/15 transition-colors" />
-          <div className="h-2 w-2 rounded-full bg-gray-300/80 dark:bg-white/15 transition-colors" />
-          <div className="h-2 w-7 rounded-full bg-momentum-orange transition-colors" />
-        </div>
+        {/* Accent bar */}
+        <div className="mt-8 h-1 w-12 rounded-full bg-momentum-orange/60" aria-hidden="true" />
       </div>
 
       {/* Copyright */}

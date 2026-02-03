@@ -3,29 +3,27 @@ import { useTheme } from '../../contexts/ThemeContext';
 
 interface SocialLoginButtonsProps {
   onGoogleClick: () => Promise<void>;
-  onMicrosoftClick: () => Promise<void>;
+  onMicrosoftClick?: () => Promise<void>;
   disabled?: boolean;
   mode?: 'signin' | 'signup';
   className?: string;
 }
 
 /**
- * Social login buttons component for Google and Microsoft OAuth
+ * Social login buttons component for Google OAuth
  * WCAG 2.0 AA compliant with proper focus states and loading indicators
  */
 export default function SocialLoginButtons({
   onGoogleClick,
-  onMicrosoftClick,
   disabled = false,
   mode = 'signin',
   className = '',
 }: SocialLoginButtonsProps) {
   const [googleLoading, setGoogleLoading] = useState(false);
-  const [microsoftLoading, setMicrosoftLoading] = useState(false);
   const { t } = useTheme();
 
   const handleGoogleClick = async () => {
-    if (disabled || googleLoading || microsoftLoading) return;
+    if (disabled || googleLoading) return;
     setGoogleLoading(true);
     try {
       await onGoogleClick();
@@ -34,23 +32,9 @@ export default function SocialLoginButtons({
     }
   };
 
-  const handleMicrosoftClick = async () => {
-    if (disabled || googleLoading || microsoftLoading) return;
-    setMicrosoftLoading(true);
-    try {
-      await onMicrosoftClick();
-    } finally {
-      setMicrosoftLoading(false);
-    }
-  };
-
-  const isLoading = googleLoading || microsoftLoading;
   const googleText = mode === 'signup'
     ? t('auth.common.signUpWithGoogle')
     : t('auth.common.continueWithGoogle');
-  const microsoftText = mode === 'signup'
-    ? t('auth.common.signUpWithMicrosoft')
-    : t('auth.common.continueWithMicrosoft');
 
   const buttonBaseClasses = `
     flex w-full items-center justify-center gap-3 rounded-lg border
@@ -65,7 +49,7 @@ export default function SocialLoginButtons({
       <button
         type="button"
         onClick={handleGoogleClick}
-        disabled={disabled || isLoading}
+        disabled={disabled || googleLoading}
         className={`${buttonBaseClasses} border-input bg-background text-foreground hover:bg-accent focus:ring-ring`}
         aria-label={googleLoading ? t('auth.common.signingInWithGoogle') : googleText}
       >
@@ -77,18 +61,7 @@ export default function SocialLoginButtons({
         <span>{googleLoading ? t('auth.common.signingInWithGoogle') : googleText}</span>
       </button>
 
-      {/* Microsoft Button - Disabled (Feature not ready) */}
-      <button
-        type="button"
-        onClick={handleMicrosoftClick}
-        disabled={true}
-        className={`${buttonBaseClasses} border-input bg-muted text-muted-foreground cursor-not-allowed opacity-60`}
-        aria-label={t('auth.common.microsoftComingSoon')}
-        title={t('auth.common.microsoftComingSoon')}
-      >
-        <MicrosoftIcon />
-        <span>{microsoftText}</span>
-      </button>
+      {/* Microsoft Button - Hidden until feature is ready */}
     </div>
   );
 }
@@ -138,17 +111,6 @@ function GoogleIcon() {
         fill="#EA4335"
         d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
       />
-    </svg>
-  );
-}
-
-function MicrosoftIcon() {
-  return (
-    <svg className="h-5 w-5" viewBox="0 0 24 24" aria-hidden="true">
-      <path fill="#F25022" d="M1 1h10v10H1z" />
-      <path fill="#00A4EF" d="M1 13h10v10H1z" />
-      <path fill="#7FBA00" d="M13 1h10v10H13z" />
-      <path fill="#FFB900" d="M13 13h10v10H13z" />
     </svg>
   );
 }

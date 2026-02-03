@@ -2,9 +2,10 @@ import { useState, useEffect, useRef } from 'react';
 import { Menu, X, Brain, Sun, Moon, ChevronDown } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { useTheme } from '../contexts/ThemeContext';
+import { cn } from '@/lib/utils';
 import CA from 'country-flag-icons/react/3x2/CA';
 
-// Quebec Flag Component - using local SVG file
+// ── Shared flag components ──────────────────────────────────────────────────
 const QuebecFlag = ({ size = 20, className = '' }: { size?: number; className?: string }) => (
   <img
     src="/quebec-flag.svg"
@@ -16,25 +17,30 @@ const QuebecFlag = ({ size = 20, className = '' }: { size?: number; className?: 
   />
 );
 
-// Flag Icon Wrapper Component
-const FlagIcon = ({ 
-  FlagComponent, 
-  size = 20, 
-  className = '' 
-}: { 
-  FlagComponent: React.ComponentType<any>; 
-  size?: number; 
+const FlagIcon = ({
+  FlagComponent,
+  size = 20,
+  className = '',
+}: {
+  FlagComponent: React.ComponentType<any>;
+  size?: number;
   className?: string;
 }) => (
-  <div style={{ width: size, height: size * 0.67, display: 'inline-block', lineHeight: 0 }}>
-    <FlagComponent 
-      className={className}
-      style={{ width: '100%', height: '100%', display: 'block' }}
-      title=""
-    />
+  <div className={cn('inline-block leading-[0]', className)} style={{ width: size, height: size * 0.67 }}>
+    <FlagComponent className="block w-full h-full" title="" />
   </div>
 );
 
+// ── Constants ───────────────────────────────────────────────────────────────
+const NAV_ITEMS = ['features', 'pricing', 'example-plans', 'about', 'blog', 'contact'] as const;
+const NAV_KEY_MAP: Record<string, string> = { 'example-plans': 'examplePlans' };
+const LANGUAGES = [
+  { code: 'en' as const, label: 'English', displayCode: 'EN', FlagComponent: CA },
+  { code: 'fr' as const, label: 'Fran\u00e7ais', displayCode: 'FR', FlagComponent: QuebecFlag },
+];
+const NO_HERO_PAGES = ['/example-plans', '/login', '/register', '/forgot-password', '/reset-password'];
+
+// ── Header ──────────────────────────────────────────────────────────────────
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -43,715 +49,288 @@ export default function Header() {
   const { theme, language, toggleTheme, setLanguage, t } = useTheme();
   const headerRef = useRef<HTMLElement>(null);
   const location = useLocation();
-  
-  // Pages without dark hero sections should use dark text
-  const pagesWithoutHero = ['/example-plans', '/login', '/register', '/forgot-password', '/reset-password'];
-  const hasDarkHero = !pagesWithoutHero.some(path => location.pathname.startsWith(path));
 
+  const hasDarkHero = !NO_HERO_PAGES.some((p) => location.pathname.startsWith(p));
+  // Text should be light when floating over a dark hero in dark mode
+  const isLightText = !isScrolled && hasDarkHero && theme === 'dark';
+  // Header has a solid (blurred) background
+  const hasBg = isScrolled || !hasDarkHero;
+
+  // Scroll tracking
   useEffect(() => {
-    const handleScroll = () => {
+    const onScroll = () => {
       setIsScrolled(window.scrollY > 20);
-      
-      // Track active section based on scroll position
-      const sections = ['features', 'pricing', 'example-plans', 'about', 'blog', 'contact'];
-      const scrollPosition = window.scrollY + 150;
-      
-      for (const section of sections) {
-        const element = document.getElementById(section);
-        if (element) {
-          const { offsetTop, offsetHeight } = element;
-          if (scrollPosition >= offsetTop && scrollPosition < offsetTop + offsetHeight) {
-            setActiveSection(section);
-            break;
-          }
+      const y = window.scrollY + 150;
+      for (const id of NAV_ITEMS) {
+        const el = document.getElementById(id);
+        if (el && y >= el.offsetTop && y < el.offsetTop + el.offsetHeight) {
+          setActiveSection(id);
+          return;
         }
       }
     };
-    
-    window.addEventListener('scroll', handleScroll);
-    handleScroll(); // Initial check
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+    return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  // Close language dropdown when clicking outside
+  // Close language dropdown on outside click
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (isLangOpen && !(event.target as Element).closest('.language-selector')) {
-        setIsLangOpen(false);
-      }
+    if (!isLangOpen) return;
+    const close = (e: MouseEvent) => {
+      if (!(e.target as Element).closest('.lang-sel')) setIsLangOpen(false);
     };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener('mousedown', close);
+    return () => document.removeEventListener('mousedown', close);
   }, [isLangOpen]);
-
-  const languages = [
-    { code: 'en', label: 'English', displayCode: 'EN', FlagComponent: CA },
-    { code: 'fr', label: 'Français', displayCode: 'FR', FlagComponent: QuebecFlag }
-  ];
-
-  const currentLang = languages.find(l => l.code === language);
-
-  // Color values
-  const strategyBlue = '#1A2B47';
-  const momentumOrange = '#FF6B00';
-  const momentumOrangeHover = '#E55F00';
-  const lightAIGrey = '#F4F7FA';
-
-  // Dynamic colors based on theme and scroll state
-  const getHeaderBg = () => {
-    if (isScrolled || !hasDarkHero) {
-      return theme === 'dark' 
-        ? 'rgba(17, 24, 39, 0.85)' 
-        : 'rgba(255, 255, 255, 0.85)';
-    }
-    return 'transparent';
-  };
-
-  const getTextColor = () => {
-    // If header is scrolled or we're on a page without dark hero
-    if (isScrolled || !hasDarkHero) {
-      return theme === 'dark' ? '#F3F4F6' : strategyBlue;
-    }
-    
-    // Header is transparent (not scrolled, on landing page with hero)
-    // Check theme: in light mode, hero is light, so use dark text
-    if (theme === 'light') {
-      return strategyBlue;
-    }
-    
-    // Dark mode with transparent header over dark hero - use white
-    return '#FFFFFF';
-  };
-
-  const getLogoColor = () => {
-    const headerBg = getHeaderBg();
-    
-    // If header background is transparent, check theme
-    if (headerBg === 'transparent') {
-      // In light mode, hero is light, so use dark text
-      if (theme === 'light') {
-        return strategyBlue;
-      }
-      // In dark mode, hero is dark, so use white
-      return '#FFFFFF';
-    }
-    
-    // If we have a dark hero section, use white text (even when scrolled if background is still dark)
-    if (hasDarkHero) {
-      // Only use dark text if scrolled AND header has white background
-      if (isScrolled && headerBg.includes('255, 255, 255')) {
-        return theme === 'dark' ? '#F3F4F6' : strategyBlue;
-      }
-      // Otherwise use white for visibility on dark backgrounds
-      return '#FFFFFF';
-    }
-    
-    // If header background is dark (dark theme), use white text
-    if (headerBg.includes('17, 24, 39') || headerBg.includes('rgba(17')) {
-      return '#FFFFFF';
-    }
-    
-    // If header background is white/light, use dark text
-    if (headerBg.includes('255, 255, 255') || headerBg.includes('rgba(255')) {
-      return theme === 'dark' ? '#F3F4F6' : strategyBlue;
-    }
-    
-    // Default: use white for safety (better to be visible than invisible)
-    return '#FFFFFF';
-  };
-
-  const navItems = ['features', 'pricing', 'example-plans', 'about', 'blog', 'contact'];
-
-  // Map nav items to translation keys
-  const getNavTranslationKey = (item: string): string => {
-    const translationMap: Record<string, string> = {
-      'example-plans': 'examplePlans',
-    };
-    return translationMap[item] || item;
-  };
 
   const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, section: string) => {
     e.preventDefault();
-    
-    // Handle example-plans as a route
-    if (section === 'example-plans') {
-      window.location.href = '/example-plans';
-      return;
-    }
-    
-    // If we're not on the landing page, navigate to landing page first, then scroll
+    if (section === 'example-plans') { window.location.href = '/example-plans'; return; }
     if (location.pathname !== '/') {
-      // Store the section to scroll to in sessionStorage
       sessionStorage.setItem('scrollToSection', section);
-      // Navigate to landing page
       window.location.href = '/';
       return;
     }
-    
-    // We're on the landing page, scroll to the section
-    const element = document.getElementById(section);
-    if (element) {
-      const headerHeight = headerRef.current?.offsetHeight || 80;
-      const elementPosition = element.getBoundingClientRect().top + window.scrollY;
-      const offsetPosition = elementPosition - headerHeight - 20;
-
-      // Smooth scroll to the section
+    const el = document.getElementById(section);
+    if (el) {
+      const offset = (headerRef.current?.offsetHeight || 80) + 20;
       window.scrollTo({
-        top: Math.max(0, offsetPosition),
-        behavior: 'smooth'
+        top: Math.max(0, el.getBoundingClientRect().top + window.scrollY - offset),
+        behavior: 'smooth',
       });
     }
     setIsMenuOpen(false);
   };
 
+  const currentLang = LANGUAGES.find((l) => l.code === language);
+
+  // Reusable text color class based on header state
+  const textCls = isLightText
+    ? 'text-white'
+    : 'text-strategy-blue dark:text-gray-100';
+
   return (
     <header
       ref={headerRef}
-      className="fixed top-0 w-full z-50 transition-all duration-500 ease-out"
-      style={{
-        backgroundColor: getHeaderBg(),
-        backdropFilter: isScrolled ? 'blur(20px) saturate(180%)' : 'none',
-        WebkitBackdropFilter: isScrolled ? 'blur(20px) saturate(180%)' : 'none',
-        borderBottom: isScrolled 
-          ? `1px solid ${theme === 'dark' ? 'rgba(75, 85, 99, 0.2)' : 'rgba(229, 231, 235, 0.3)'}`
-          : 'none',
-        boxShadow: isScrolled 
-          ? (theme === 'dark' 
-              ? '0 4px 20px rgba(0, 0, 0, 0.3)' 
-              : '0 4px 20px rgba(0, 0, 0, 0.08)')
-          : 'none',
-      }}
+      className={cn(
+        'fixed top-0 w-full z-50 transition-all duration-300 ease-smooth',
+        hasBg
+          ? 'bg-white/85 dark:bg-gray-900/85 backdrop-blur-xl border-b border-gray-200/30 dark:border-gray-700/20 shadow-soft'
+          : 'bg-transparent border-b border-transparent',
+      )}
     >
       <nav className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20">
-          {/* Logo with enhanced hover effect */}
-          <Link 
-            to="/" 
-            className="flex items-center gap-3 group relative"
-            onMouseEnter={(e) => {
-              const logo = e.currentTarget.querySelector('.logo-icon');
-              if (logo) {
-                logo.style.transform = 'scale(1.1) rotate(5deg)';
-              }
-            }}
-            onMouseLeave={(e) => {
-              const logo = e.currentTarget.querySelector('.logo-icon');
-              if (logo) {
-                logo.style.transform = 'scale(1) rotate(0deg)';
-              }
-            }}
-          >
-            <div className="relative">
-              {/* Glow effect */}
-              <div 
-                className="absolute inset-0 rounded-xl blur-xl opacity-0 group-hover:opacity-60 transition-opacity duration-300"
-                style={{ 
-                  backgroundColor: isScrolled ? strategyBlue : '#FFFFFF',
-                }}
-              ></div>
-              <div 
-                className="relative logo-icon p-2.5 rounded-xl transition-all duration-300 shadow-lg"
-                style={{ 
-                  backgroundColor: isScrolled ? strategyBlue : '#FFFFFF',
-                  boxShadow: isScrolled 
-                    ? '0 4px 12px rgba(26, 43, 71, 0.2)' 
-                    : '0 4px 12px rgba(0, 0, 0, 0.1)',
-                }}
-              >
-                <Brain 
-                  className="transition-colors duration-300" 
-                  size={26}
-                  style={{ 
-                    color: isScrolled ? '#FFFFFF' : strategyBlue,
-                  }}
-                />
-              </div>
+        <div className="flex items-center justify-between h-[72px]">
+
+          {/* ── Logo ── */}
+          <Link to="/" className="flex items-center gap-2.5 group">
+            <div className={cn(
+              'p-2 rounded-lg transition-colors duration-200',
+              hasBg ? 'bg-strategy-blue' : 'bg-white dark:bg-white/10',
+            )}>
+              <Brain
+                size={22}
+                className={cn('transition-colors duration-200', hasBg ? 'text-white' : 'text-strategy-blue dark:text-white')}
+              />
             </div>
-            <span 
-              className="text-2xl font-bold font-heading transition-all duration-300 tracking-tight"
-              style={{
-                color: getLogoColor(),
-              }}
-            >
+            <span className={cn('text-xl font-bold font-heading tracking-tight transition-colors duration-200', textCls)}>
               Sqordia
             </span>
           </Link>
 
-          {/* Desktop Navigation with active indicator */}
-          <div className="hidden lg:flex items-center space-x-1">
-            {navItems.map((item) => {
-              const isActive = activeSection === item;
+          {/* ── Desktop Nav ── */}
+          <div className="hidden lg:flex items-center gap-0.5">
+            {NAV_ITEMS.map((item) => {
+              const active = activeSection === item;
               return (
                 <a
                   key={item}
                   href={`#${item}`}
                   onClick={(e) => handleNavClick(e, item)}
-                  className="relative px-4 py-2.5 rounded-lg transition-all duration-300 font-medium font-heading text-sm group"
-                  style={{
-                    color: isActive ? momentumOrange : getTextColor(),
-                  }}
-                  onMouseEnter={(e) => {
-                    if (!isScrolled) {
-                      e.currentTarget.style.opacity = '0.9';
-                    } else {
-                      e.currentTarget.style.color = momentumOrange;
-                      e.currentTarget.style.backgroundColor = theme === 'dark' 
-                        ? 'rgba(31, 41, 55, 0.4)' 
-                        : lightAIGrey;
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (!isScrolled) {
-                      e.currentTarget.style.opacity = '1';
-                    } else {
-                      e.currentTarget.style.color = isActive ? momentumOrange : getTextColor();
-                      e.currentTarget.style.backgroundColor = 'transparent';
-                    }
-                  }}
-                >
-                  {t(`nav.${getNavTranslationKey(item)}`)}
-                  {/* Active indicator underline */}
-                  {isActive && (
-                    <span 
-                      className="absolute bottom-1 left-1/2 transform -translate-x-1/2 h-0.5 rounded-full transition-all duration-300"
-                      style={{
-                        width: '60%',
-                        backgroundColor: momentumOrange,
-                      }}
-                    />
+                  className={cn(
+                    'relative px-3.5 py-2 rounded-md text-label-md font-heading transition-colors duration-150',
+                    active
+                      ? 'text-momentum-orange'
+                      : cn(textCls, 'hover:text-momentum-orange'),
+                    hasBg && !active && 'hover:bg-light-ai-grey dark:hover:bg-gray-800',
                   )}
-                  {/* Hover underline animation */}
-                  <span 
-                    className="absolute bottom-1 left-1/2 transform -translate-x-1/2 h-0.5 rounded-full transition-all duration-300 opacity-0 group-hover:opacity-100"
-                    style={{
-                      width: isActive ? '60%' : '0%',
-                      backgroundColor: momentumOrange,
-                    }}
-                    onMouseEnter={(e) => {
-                      if (!isActive) {
-                        e.currentTarget.style.width = '60%';
-                      }
-                    }}
-                  />
+                >
+                  {t(`nav.${NAV_KEY_MAP[item] || item}`)}
+                  {active && (
+                    <span className="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-5 h-0.5 rounded-full bg-momentum-orange" />
+                  )}
                 </a>
               );
             })}
           </div>
 
-          {/* Desktop Actions */}
-          <div className="hidden lg:flex items-center gap-2">
-            {/* Language Selector with improved styling */}
-            <div className="relative language-selector">
+          {/* ── Desktop Actions ── */}
+          <div className="hidden lg:flex items-center gap-1">
+            {/* Language selector */}
+            <div className="relative lang-sel">
               <button
                 onClick={() => setIsLangOpen(!isLangOpen)}
-                className="flex items-center gap-2.5 px-3.5 py-2 rounded-lg transition-all duration-300 group"
-                style={{
-                  color: getTextColor(),
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = isScrolled 
-                    ? (theme === 'dark' ? 'rgba(31, 41, 55, 0.4)' : lightAIGrey)
-                    : 'rgba(255, 255, 255, 0.15)';
-                  e.currentTarget.style.transform = 'translateY(-1px)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = 'transparent';
-                  e.currentTarget.style.transform = 'translateY(0)';
-                }}
+                className={cn(
+                  'flex items-center gap-2 px-3 py-2 rounded-md text-label-md transition-colors duration-150',
+                  textCls,
+                  hasBg ? 'hover:bg-light-ai-grey dark:hover:bg-gray-800' : 'hover:bg-white/10',
+                )}
               >
-                <div 
-                  className="w-7 h-7 rounded-lg flex items-center justify-center shadow-sm transition-transform group-hover:scale-110 overflow-hidden"
-                  style={{
-                    backgroundColor: isScrolled 
-                      ? (theme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(26, 43, 71, 0.05)')
-                      : 'rgba(255, 255, 255, 0.2)',
-                  }}
-                >
-                  {currentLang?.FlagComponent && (
-                    <FlagIcon FlagComponent={currentLang.FlagComponent} size={20} />
-                  )}
+                <div className="w-5 h-3.5 rounded-[2px] overflow-hidden">
+                  {currentLang?.FlagComponent && <FlagIcon FlagComponent={currentLang.FlagComponent} size={20} />}
                 </div>
-                <span className="text-sm font-semibold font-heading">{currentLang?.displayCode}</span>
-                <ChevronDown 
-                  size={14} 
-                  className={`transition-transform duration-300 ${isLangOpen ? 'rotate-180' : ''}`} 
-                />
+                <span className="font-semibold font-heading text-xs">{currentLang?.displayCode}</span>
+                <ChevronDown size={13} className={cn('transition-transform duration-200', isLangOpen && 'rotate-180')} />
               </button>
 
               {isLangOpen && (
-                <div 
-                  className="absolute right-0 mt-2 w-52 rounded-2xl shadow-2xl overflow-hidden animate-fade-in-dropdown border"
-                  style={{
-                    backgroundColor: theme === 'dark' ? '#1F2937' : '#FFFFFF',
-                    borderColor: theme === 'dark' ? 'rgba(75, 85, 99, 0.3)' : 'rgba(229, 231, 235, 0.5)',
-                    boxShadow: theme === 'dark'
-                      ? '0 20px 25px -5px rgba(0, 0, 0, 0.5)'
-                      : '0 20px 25px -5px rgba(0, 0, 0, 0.1)',
-                  }}
-                >
-                  {languages.map((lang) => (
+                <div className="absolute right-0 mt-1.5 w-44 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-elevated overflow-hidden animate-scale-in origin-top-right">
+                  {LANGUAGES.map((lang) => (
                     <button
                       key={lang.code}
-                      onClick={() => {
-                        setLanguage(lang.code as 'en' | 'fr');
-                        setIsLangOpen(false);
-                      }}
-                      className="w-full flex items-center gap-3 px-4 py-3 text-left transition-all duration-200 group"
-                      style={{
-                        backgroundColor: language === lang.code 
-                          ? (theme === 'dark' ? 'rgba(26, 43, 71, 0.4)' : lightAIGrey)
-                          : 'transparent',
-                        color: language === lang.code 
-                          ? strategyBlue 
-                          : (theme === 'dark' ? '#F3F4F6' : '#374151'),
-                      }}
-                      onMouseEnter={(e) => {
-                        if (language !== lang.code) {
-                          e.currentTarget.style.backgroundColor = theme === 'dark' 
-                            ? 'rgba(31, 41, 55, 0.5)' 
-                            : lightAIGrey;
-                          e.currentTarget.style.transform = 'translateX(4px)';
-                        }
-                      }}
-                      onMouseLeave={(e) => {
-                        if (language !== lang.code) {
-                          e.currentTarget.style.backgroundColor = 'transparent';
-                          e.currentTarget.style.transform = 'translateX(0)';
-                        }
-                      }}
-                    >
-                      <div 
-                        className="w-10 h-10 rounded-xl flex items-center justify-center shadow-md transition-transform group-hover:scale-110 overflow-hidden"
-                        style={{
-                          backgroundColor: theme === 'dark' 
-                            ? 'rgba(255, 255, 255, 0.1)' 
-                            : 'rgba(26, 43, 71, 0.05)',
-                        }}
-                      >
-                        {lang.FlagComponent && (
-                          <FlagIcon FlagComponent={lang.FlagComponent} size={28} />
-                        )}
-                      </div>
-                      <span className="font-medium flex-1">{lang.label}</span>
-                      {language === lang.code && (
-                        <div 
-                          className="w-2 h-2 rounded-full transition-all"
-                          style={{ backgroundColor: momentumOrange }}
-                        />
+                      onClick={() => { setLanguage(lang.code); setIsLangOpen(false); }}
+                      className={cn(
+                        'w-full flex items-center gap-3 px-3.5 py-2.5 text-sm transition-colors duration-100',
+                        language === lang.code
+                          ? 'bg-light-ai-grey dark:bg-gray-700 text-strategy-blue dark:text-white font-semibold'
+                          : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/60',
                       )}
+                    >
+                      <div className="w-6 h-4 rounded-[2px] overflow-hidden shrink-0">
+                        <FlagIcon FlagComponent={lang.FlagComponent} size={24} />
+                      </div>
+                      <span className="flex-1 text-left">{lang.label}</span>
+                      {language === lang.code && <div className="w-1.5 h-1.5 rounded-full bg-momentum-orange" />}
                     </button>
                   ))}
                 </div>
               )}
             </div>
 
-            {/* Theme Toggle with smooth animation */}
+            {/* Theme toggle */}
             <button
               onClick={toggleTheme}
-              className="p-2.5 rounded-lg transition-all duration-300 group relative"
-              style={{
-                color: getTextColor(),
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = isScrolled 
-                  ? (theme === 'dark' ? 'rgba(31, 41, 55, 0.4)' : lightAIGrey)
-                  : 'rgba(255, 255, 255, 0.15)';
-                e.currentTarget.style.transform = 'rotate(15deg) scale(1.1)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'transparent';
-                e.currentTarget.style.transform = 'rotate(0deg) scale(1)';
-              }}
+              className={cn(
+                'p-2.5 rounded-md transition-colors duration-150',
+                textCls,
+                hasBg ? 'hover:bg-light-ai-grey dark:hover:bg-gray-800' : 'hover:bg-white/10',
+              )}
               aria-label={theme === 'light' ? t('header.switchToDark') || 'Switch to dark mode' : t('header.switchToLight') || 'Switch to light mode'}
             >
-              {theme === 'light' ? (
-                <Moon size={20} className="animate-fade-in transition-transform group-hover:rotate-12" aria-hidden="true" />
-              ) : (
-                <Sun size={20} className="animate-fade-in transition-transform group-hover:rotate-90" aria-hidden="true" />
-              )}
+              {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
             </button>
 
-            {/* Sign In with subtle styling */}
+            {/* Sign In */}
             <Link
               to="/login"
-              className="px-5 py-2.5 rounded-lg transition-all duration-300 font-medium font-heading text-sm"
-              style={{
-                color: getTextColor(),
-              }}
-              onMouseEnter={(e) => {
-                if (isScrolled) {
-                  e.currentTarget.style.color = momentumOrange;
-                  e.currentTarget.style.backgroundColor = theme === 'dark' 
-                    ? 'rgba(31, 41, 55, 0.4)' 
-                    : lightAIGrey;
-                } else {
-                  e.currentTarget.style.opacity = '0.85';
-                }
-                e.currentTarget.style.transform = 'translateY(-1px)';
-              }}
-              onMouseLeave={(e) => {
-                if (isScrolled) {
-                  e.currentTarget.style.color = getTextColor();
-                  e.currentTarget.style.backgroundColor = 'transparent';
-                } else {
-                  e.currentTarget.style.opacity = '1';
-                }
-                e.currentTarget.style.transform = 'translateY(0)';
-              }}
+              className={cn(
+                'px-4 py-2 rounded-md text-label-md font-heading font-medium transition-colors duration-150',
+                textCls,
+                hasBg ? 'hover:bg-light-ai-grey dark:hover:bg-gray-800' : 'hover:opacity-80',
+              )}
             >
               {t('nav.signin')}
             </Link>
 
-            {/* Get Started CTA with enhanced styling */}
+            {/* Get Started CTA */}
             <Link
               to="/register"
-              className="px-6 py-2.5 rounded-xl font-semibold font-heading text-sm transition-all duration-300 relative overflow-hidden group"
-              style={{
-                backgroundColor: momentumOrange,
-                color: '#FFFFFF',
-                boxShadow: '0 4px 14px rgba(255, 107, 0, 0.3)',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = momentumOrangeHover;
-                e.currentTarget.style.transform = 'translateY(-2px)';
-                e.currentTarget.style.boxShadow = '0 6px 20px rgba(255, 107, 0, 0.4)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = momentumOrange;
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = '0 4px 14px rgba(255, 107, 0, 0.3)';
-              }}
+              className="ml-1 px-5 py-2.5 rounded-lg bg-momentum-orange text-white text-label-md font-heading font-semibold transition-all duration-150 hover:bg-[#E55F00] shadow-sm hover:shadow-md"
             >
-              <span className="relative z-10">{t('nav.getstarted')}</span>
+              {t('nav.getstarted')}
             </Link>
           </div>
 
-          {/* Mobile Menu Button */}
-          <div className="flex lg:hidden items-center gap-2">
+          {/* ── Mobile buttons ── */}
+          <div className="flex lg:hidden items-center gap-1">
             <button
               onClick={toggleTheme}
-              className="p-2.5 rounded-lg transition-all duration-300 min-h-[44px] min-w-[44px] flex items-center justify-center"
-              style={{
-                color: getTextColor(),
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = isScrolled 
-                  ? (theme === 'dark' ? 'rgba(31, 41, 55, 0.4)' : lightAIGrey)
-                  : 'rgba(255, 255, 255, 0.15)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'transparent';
-              }}
-              aria-label={theme === 'light' ? t('header.switchToDark') || 'Switch to dark mode' : t('header.switchToLight') || 'Switch to light mode'}
+              className={cn(
+                'p-2.5 rounded-md min-h-[44px] min-w-[44px] flex items-center justify-center transition-colors',
+                textCls, 'hover:bg-black/5 dark:hover:bg-white/10',
+              )}
+              aria-label={theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'}
             >
-              {theme === 'light' ? <Moon size={20} aria-hidden="true" /> : <Sun size={20} aria-hidden="true" />}
+              {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
             </button>
-
             <button
-              className="p-2.5 rounded-lg transition-all duration-300 min-h-[44px] min-w-[44px] flex items-center justify-center"
-              style={{
-                color: getTextColor(),
-              }}
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = isScrolled 
-                  ? (theme === 'dark' ? 'rgba(31, 41, 55, 0.4)' : lightAIGrey)
-                  : 'rgba(255, 255, 255, 0.15)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'transparent';
-              }}
-              aria-label={isMenuOpen ? t('header.closeMenu') || 'Close menu' : t('header.openMenu') || 'Open menu'}
+              className={cn(
+                'p-2.5 rounded-md min-h-[44px] min-w-[44px] flex items-center justify-center transition-colors',
+                textCls, 'hover:bg-black/5 dark:hover:bg-white/10',
+              )}
+              aria-label={isMenuOpen ? 'Close menu' : 'Open menu'}
               aria-expanded={isMenuOpen}
             >
-              {isMenuOpen ? (
-                <X size={24} className="transition-transform rotate-90" aria-hidden="true" />
-              ) : (
-                <Menu size={24} aria-hidden="true" />
-              )}
+              {isMenuOpen ? <X size={22} /> : <Menu size={22} />}
             </button>
           </div>
         </div>
       </nav>
 
-      {/* Enhanced Mobile Menu */}
+      {/* ── Mobile Menu ── */}
       {isMenuOpen && (
-        <div 
-          className="lg:hidden animate-slide-down backdrop-blur-xl border-t"
-          style={{
-            backgroundColor: theme === 'dark' 
-              ? 'rgba(17, 24, 39, 0.95)' 
-              : 'rgba(255, 255, 255, 0.95)',
-            borderColor: theme === 'dark' 
-              ? 'rgba(75, 85, 99, 0.3)' 
-              : 'rgba(229, 231, 235, 0.5)',
-            boxShadow: '0 10px 30px rgba(0, 0, 0, 0.1)',
-          }}
-        >
-          <div className="container mx-auto px-6 py-6 flex flex-col space-y-1">
-            {navItems.map((item, index) => {
-              const isActive = activeSection === item;
+        <div className="lg:hidden bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border-t border-gray-200/50 dark:border-gray-700/30 shadow-elevated animate-fade-in-down">
+          <div className="container mx-auto px-5 py-5 space-y-1">
+            {NAV_ITEMS.map((item) => {
+              const active = activeSection === item;
               return (
                 <a
                   key={item}
                   href={`#${item}`}
                   onClick={(e) => handleNavClick(e, item)}
-                  className="px-4 py-4 md:py-3.5 rounded-xl transition-all duration-300 font-medium font-heading relative group min-h-[44px] flex items-center"
-                  style={{
-                    color: isActive ? momentumOrange : (theme === 'dark' ? '#F3F4F6' : strategyBlue),
-                    backgroundColor: isActive 
-                      ? (theme === 'dark' ? 'rgba(26, 43, 71, 0.3)' : lightAIGrey)
-                      : 'transparent',
-                    animationDelay: `${index * 50}ms`,
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.color = momentumOrange;
-                    e.currentTarget.style.backgroundColor = theme === 'dark' 
-                      ? 'rgba(31, 41, 55, 0.5)' 
-                      : lightAIGrey;
-                    e.currentTarget.style.transform = 'translateX(8px)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.color = isActive ? momentumOrange : (theme === 'dark' ? '#F3F4F6' : strategyBlue);
-                    e.currentTarget.style.backgroundColor = isActive 
-                      ? (theme === 'dark' ? 'rgba(26, 43, 71, 0.3)' : lightAIGrey)
-                      : 'transparent';
-                    e.currentTarget.style.transform = 'translateX(0)';
-                  }}
-                >
-                  {t(`nav.${getNavTranslationKey(item)}`)}
-                  {isActive && (
-                    <span 
-                      className="absolute left-0 top-1/2 transform -translate-y-1/2 h-6 w-1 rounded-r-full"
-                      style={{ backgroundColor: momentumOrange }}
-                    />
+                  className={cn(
+                    'relative block px-4 py-3 rounded-lg font-medium font-heading text-sm min-h-[44px] flex items-center transition-colors duration-100',
+                    active
+                      ? 'text-momentum-orange bg-light-ai-grey dark:bg-gray-800'
+                      : 'text-strategy-blue dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800',
                   )}
+                >
+                  {active && <span className="absolute left-0 top-1/2 -translate-y-1/2 h-5 w-0.5 rounded-r-full bg-momentum-orange" />}
+                  {t(`nav.${NAV_KEY_MAP[item] || item}`)}
                 </a>
               );
             })}
 
-            {/* Language Selector Mobile */}
-            <div 
-              className="pt-4 mt-2 border-t"
-              style={{
-                borderColor: theme === 'dark' 
-                  ? 'rgba(75, 85, 99, 0.3)' 
-                  : 'rgba(229, 231, 235, 0.5)',
-              }}
-            >
-              <div 
-                className="text-xs font-semibold uppercase tracking-wide px-4 mb-3"
-                style={{
-                  color: theme === 'dark' ? '#9CA3AF' : '#6B7280',
-                }}
-              >
+            {/* Language (mobile) */}
+            <div className="pt-3 mt-3 border-t border-gray-200/60 dark:border-gray-700/40">
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500 px-4 mb-2">
                 Language
-              </div>
-              {languages.map((lang) => (
+              </p>
+              {LANGUAGES.map((lang) => (
                 <button
                   key={lang.code}
-                  onClick={() => {
-                    setLanguage(lang.code as 'en' | 'fr');
-                    setIsMenuOpen(false);
-                  }}
-                  className="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200"
-                  style={{
-                    backgroundColor: language === lang.code 
-                      ? (theme === 'dark' ? 'rgba(26, 43, 71, 0.3)' : lightAIGrey)
-                      : 'transparent',
-                    color: language === lang.code 
-                      ? strategyBlue 
-                      : (theme === 'dark' ? '#F3F4F6' : '#374151'),
-                  }}
-                  onMouseEnter={(e) => {
-                    if (language !== lang.code) {
-                      e.currentTarget.style.backgroundColor = theme === 'dark' 
-                        ? 'rgba(31, 41, 55, 0.5)' 
-                        : lightAIGrey;
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (language !== lang.code) {
-                      e.currentTarget.style.backgroundColor = 'transparent';
-                    }
-                  }}
-                >
-                  <div 
-                    className="w-12 h-12 rounded-xl flex items-center justify-center shadow-md overflow-hidden"
-                    style={{
-                      backgroundColor: theme === 'dark' 
-                        ? 'rgba(255, 255, 255, 0.1)' 
-                        : 'rgba(26, 43, 71, 0.05)',
-                    }}
-                  >
-                    {lang.FlagComponent && (
-                      <FlagIcon FlagComponent={lang.FlagComponent} size={32} />
-                    )}
-                  </div>
-                  <span className="font-medium flex-1">{lang.label}</span>
-                  {language === lang.code && (
-                    <div 
-                      className="w-2.5 h-2.5 rounded-full"
-                      style={{ backgroundColor: momentumOrange }}
-                    />
+                  onClick={() => { setLanguage(lang.code); setIsMenuOpen(false); }}
+                  className={cn(
+                    'w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm transition-colors',
+                    language === lang.code
+                      ? 'bg-light-ai-grey dark:bg-gray-800 text-strategy-blue dark:text-white font-semibold'
+                      : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800',
                   )}
+                >
+                  <div className="w-7 h-5 rounded-[2px] overflow-hidden shrink-0">
+                    <FlagIcon FlagComponent={lang.FlagComponent} size={28} />
+                  </div>
+                  <span className="flex-1 text-left">{lang.label}</span>
+                  {language === lang.code && <div className="w-1.5 h-1.5 rounded-full bg-momentum-orange" />}
                 </button>
               ))}
             </div>
 
-            {/* Mobile Actions */}
-            <div 
-              className="pt-4 mt-2 space-y-2 border-t"
-              style={{
-                borderColor: theme === 'dark' 
-                  ? 'rgba(75, 85, 99, 0.3)' 
-                  : 'rgba(229, 231, 235, 0.5)',
-              }}
-            >
+            {/* Actions (mobile) */}
+            <div className="pt-3 mt-3 border-t border-gray-200/60 dark:border-gray-700/40 space-y-2">
               <Link
                 to="/login"
-                className="block w-full px-4 py-3.5 text-center rounded-xl transition-all duration-300 font-medium font-heading"
-                style={{
-                  color: theme === 'dark' ? '#F3F4F6' : strategyBlue,
-                  border: `1px solid ${theme === 'dark' ? 'rgba(75, 85, 99, 0.3)' : 'rgba(229, 231, 235, 0.8)'}`,
-                }}
                 onClick={() => setIsMenuOpen(false)}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.color = momentumOrange;
-                  e.currentTarget.style.borderColor = momentumOrange;
-                  e.currentTarget.style.backgroundColor = theme === 'dark' 
-                    ? 'rgba(31, 41, 55, 0.3)' 
-                    : lightAIGrey;
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.color = theme === 'dark' ? '#F3F4F6' : strategyBlue;
-                  e.currentTarget.style.borderColor = theme === 'dark' 
-                    ? 'rgba(75, 85, 99, 0.3)' 
-                    : 'rgba(229, 231, 235, 0.8)';
-                  e.currentTarget.style.backgroundColor = 'transparent';
-                }}
+                className="block w-full px-4 py-3 text-center rounded-lg font-medium font-heading text-sm border border-gray-200 dark:border-gray-700 text-strategy-blue dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
               >
                 {t('nav.signin')}
               </Link>
               <Link
                 to="/register"
-                className="block w-full px-6 py-3.5 text-center rounded-xl font-semibold font-heading transition-all duration-300"
-                style={{
-                  backgroundColor: momentumOrange,
-                  color: '#FFFFFF',
-                  boxShadow: '0 4px 14px rgba(255, 107, 0, 0.3)',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = momentumOrangeHover;
-                  e.currentTarget.style.boxShadow = '0 6px 20px rgba(255, 107, 0, 0.4)';
-                  e.currentTarget.style.transform = 'translateY(-2px)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = momentumOrange;
-                  e.currentTarget.style.boxShadow = '0 4px 14px rgba(255, 107, 0, 0.3)';
-                  e.currentTarget.style.transform = 'translateY(0)';
-                }}
                 onClick={() => setIsMenuOpen(false)}
+                className="block w-full px-4 py-3 text-center rounded-lg font-semibold font-heading text-sm bg-momentum-orange text-white hover:bg-[#E55F00] transition-colors shadow-sm"
               >
                 {t('nav.getstarted')}
               </Link>
@@ -759,51 +338,6 @@ export default function Header() {
           </div>
         </div>
       )}
-
-      <style>{`
-        @keyframes slide-down {
-          from {
-            opacity: 0;
-            transform: translateY(-10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        @keyframes fade-in-dropdown {
-          from {
-            opacity: 0;
-            transform: translateY(-8px) scale(0.95);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-          }
-        }
-
-        .animate-slide-down {
-          animation: slide-down 0.3s ease-out;
-        }
-
-        .animate-fade-in-dropdown {
-          animation: fade-in-dropdown 0.2s ease-out;
-        }
-
-        .animate-fade-in {
-          animation: fade-in 0.2s ease-out;
-        }
-
-        @keyframes fade-in {
-          from {
-            opacity: 0;
-          }
-          to {
-            opacity: 1;
-          }
-        }
-      `}</style>
     </header>
   );
 }

@@ -266,22 +266,20 @@ export default function DashboardPage() {
             ))}
           </StaggerContainer>
 
-          {/* Create New Plan Card - dark navy + orange accent */}
-          <Card
-            className="overflow-hidden dashboard-create-card group hover:shadow-lg transition-shadow border-2 rounded-xl bg-[#1A2B47] border-[#FF6B00]"
-          >
+          {/* Create New Plan Card */}
+          <Card className="overflow-hidden dashboard-create-card group hover:shadow-card-hover transition-shadow border border-momentum-orange/30 rounded-xl bg-strategy-blue">
             <Link to="/create-plan" className="block">
               <CardContent className="p-8 lg:p-12">
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
                   <div className="flex items-center gap-6">
-                    <div className="flex h-16 w-16 items-center justify-center rounded-lg shrink-0 bg-[#FF6B00]">
-                      <Sparkles className="h-8 w-8 text-white" />
+                    <div className="flex h-14 w-14 items-center justify-center rounded-xl shrink-0 bg-momentum-orange">
+                      <Sparkles className="h-7 w-7 text-white" />
                     </div>
                     <div>
-                      <h3 className="text-2xl lg:text-3xl font-bold mb-2 text-white font-heading">
+                      <h3 className="text-2xl lg:text-3xl font-bold mb-1.5 text-white font-heading">
                         {t('dashboard.createNextPlan')}
                       </h3>
-                      <p className="text-lg text-gray-300">
+                      <p className="text-base text-gray-300">
                         {t('dashboard.createNextPlanDesc')}
                       </p>
                     </div>
@@ -290,8 +288,8 @@ export default function DashboardPage() {
                     <span className="font-semibold hidden sm:inline text-white">
                       {t('dashboard.getStarted')}
                     </span>
-                    <div className="flex h-12 w-12 items-center justify-center rounded-lg shrink-0 transition-opacity group-hover:opacity-90 bg-[#FF6B00]">
-                      <ArrowRight className="h-6 w-6 text-white" />
+                    <div className="flex h-11 w-11 items-center justify-center rounded-lg shrink-0 bg-momentum-orange group-hover:bg-[#E55F00] transition-colors">
+                      <ArrowRight className="h-5 w-5 text-white" />
                     </div>
                   </div>
                 </div>

@@ -1,5 +1,6 @@
-import { Star, Quote, Sparkles } from 'lucide-react';
+import { Star, Quote } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
+
 import { ScrollReveal, StaggerContainer, StaggerItem } from '../animations/ScrollReveal';
 
 interface Testimonial {
@@ -35,162 +36,92 @@ const testimonials: Testimonial[] = [
 ];
 
 export default function Testimonials() {
-  const { theme, t } = useTheme();
-  const isDark = theme === 'dark';
+  const { t } = useTheme();
 
   return (
     <section
       id="testimonials"
-      className="py-20 md:py-28 lg:py-32 relative overflow-hidden"
-      style={{ backgroundColor: isDark ? '#111827' : '#FFFFFF' }}
+      className="py-section-lg bg-white dark:bg-gray-900"
       aria-labelledby="testimonials-heading"
     >
-      {/* Background decoration */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
-        <div
-          className="absolute top-1/4 left-0 w-[500px] h-[500px] rounded-full filter blur-[120px] opacity-30"
-          style={{ backgroundColor: isDark ? 'rgba(99, 102, 241, 0.1)' : 'rgba(99, 102, 241, 0.05)' }}
-        />
-        <div
-          className="absolute bottom-1/4 right-0 w-[500px] h-[500px] rounded-full filter blur-[120px] opacity-30"
-          style={{ backgroundColor: isDark ? 'rgba(16, 185, 129, 0.1)' : 'rgba(16, 185, 129, 0.05)' }}
-        />
-      </div>
-
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        {/* Header */}
-        <div className="text-center max-w-3xl mx-auto mb-16 md:mb-20">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header — simple left-aligned overline, no Sparkles or gradient text */}
+        <div className="max-w-3xl mx-auto text-center mb-16 md:mb-20">
           <ScrollReveal>
-            <div className="inline-flex items-center gap-2 mb-6">
-              <Sparkles className="w-5 h-5 text-green-500" aria-hidden="true" />
-              <span
-                className="px-4 py-1.5 rounded-full text-xs md:text-sm font-semibold"
-                style={{
-                  backgroundColor: isDark ? 'rgba(16, 185, 129, 0.2)' : 'rgba(16, 185, 129, 0.1)',
-                  color: isDark ? '#6EE7B7' : '#059669',
-                }}
-              >
-                {t('landing.testimonials.badge')}
-              </span>
-            </div>
+            <p className="text-label-sm uppercase tracking-widest text-emerald-600 dark:text-emerald-400 mb-4 font-semibold">
+              {t('landing.testimonials.badge')}
+            </p>
           </ScrollReveal>
           <ScrollReveal delay={0.1}>
             <h2
               id="testimonials-heading"
-              className="text-3xl sm:text-4xl md:text-5xl font-bold font-heading mb-6"
-              style={{ color: isDark ? '#FFFFFF' : '#1A2B47' }}
+              className="text-display-md sm:text-display-lg font-heading mb-6 text-strategy-blue dark:text-white"
             >
               {t('landing.testimonials.title')}{' '}
-              <span className="bg-gradient-to-r from-green-500 to-emerald-500 bg-clip-text text-transparent">
+              <span className="text-emerald-600 dark:text-emerald-400">
                 {t('landing.testimonials.title.highlight')}
               </span>
             </h2>
           </ScrollReveal>
           <ScrollReveal delay={0.15}>
-            <p
-              className="text-lg md:text-xl"
-              style={{ color: isDark ? '#9CA3AF' : '#6B7280' }}
-            >
+            <p className="text-body-lg text-gray-500 dark:text-gray-400">
               {t('landing.testimonials.subtitle')}
             </p>
           </ScrollReveal>
         </div>
 
-        {/* Testimonials Grid */}
+        {/* Grid */}
         <StaggerContainer className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 max-w-7xl mx-auto">
           {testimonials.map((testimonial, index) => (
             <StaggerItem key={index}>
-              <article
-                className="group relative rounded-2xl md:rounded-3xl p-6 md:p-8 border-2 transition-all duration-500 hover:shadow-2xl hover:-translate-y-2 h-full"
-                style={{
-                  backgroundColor: isDark ? '#1F2937' : '#FFFFFF',
-                  borderColor: isDark ? 'rgba(75, 85, 99, 0.3)' : 'rgba(229, 231, 235, 0.8)',
-                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.boxShadow = '0 25px 50px -12px rgba(99, 102, 241, 0.25)';
-                  e.currentTarget.style.borderColor = 'transparent';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)';
-                  e.currentTarget.style.borderColor = isDark ? 'rgba(75, 85, 99, 0.3)' : 'rgba(229, 231, 235, 0.8)';
-                }}
-              >
-                {/* Quote icon */}
-                <div
-                  className="absolute -top-4 -left-4 w-12 h-12 bg-gradient-to-br from-[#FF6B00] to-[#E55F00] rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300"
-                  aria-hidden="true"
-                >
-                  <Quote className="text-white" size={20} />
-                </div>
-
-                {/* Rating */}
-                <div
-                  className="flex gap-1 mb-4 mt-4"
-                  role="img"
-                  aria-label={t('landing.testimonials.ratingLabel').replace('{rating}', String(testimonial.rating))}
-                >
-                  {[...Array(testimonial.rating)].map((_, i) => (
-                    <Star
-                      key={i}
-                      size={18}
-                      className="fill-yellow-400 text-yellow-400"
-                      aria-hidden="true"
-                    />
-                  ))}
-                </div>
-
-                {/* Quote */}
-                <figure>
-                  <blockquote
-                    className="mb-6 leading-relaxed text-sm md:text-base"
-                    style={{ color: isDark ? '#D1D5DB' : '#374151' }}
+              <article className="group rounded-2xl p-6 md:p-8 border border-border bg-white dark:bg-gray-800 shadow-card hover:shadow-card-hover transition-all duration-300 h-full flex flex-col">
+                {/* Quote icon — inline, not floating */}
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 rounded-lg bg-momentum-orange/10 flex items-center justify-center shrink-0">
+                    <Quote size={18} className="text-momentum-orange" aria-hidden="true" />
+                  </div>
+                  <div
+                    className="flex gap-0.5"
+                    role="img"
+                    aria-label={t('landing.testimonials.ratingLabel').replace('{rating}', String(testimonial.rating))}
                   >
+                    {[...Array(testimonial.rating)].map((_, i) => (
+                      <Star key={i} size={14} className="fill-amber-400 text-amber-400" aria-hidden="true" />
+                    ))}
+                  </div>
+                </div>
+
+                {/* Quote text */}
+                <figure className="flex-1 flex flex-col">
+                  <blockquote className="mb-6 leading-relaxed text-body-md text-gray-700 dark:text-gray-300 flex-1">
                     <p>"{t(testimonial.quoteKey)}"</p>
                   </blockquote>
 
                   {/* Author */}
-                  <figcaption
-                    className="flex items-center gap-4 pt-6 border-t"
-                    style={{ borderColor: isDark ? 'rgba(75, 85, 99, 0.3)' : 'rgba(229, 231, 235, 0.8)' }}
-                  >
-                    {/* Avatar */}
-                    <div
-                      className="w-12 h-12 md:w-14 md:h-14 rounded-full overflow-hidden flex-shrink-0"
-                      style={{
-                        boxShadow: `0 0 0 2px ${isDark ? 'rgba(99, 102, 241, 0.3)' : 'rgba(99, 102, 241, 0.2)'}`,
-                      }}
-                    >
-                      <img
-                        src={testimonial.avatar}
-                        alt=""
-                        className="w-full h-full object-cover"
-                        loading="lazy"
-                        width={56}
-                        height={56}
-                        aria-hidden="true"
-                      />
-                    </div>
+                  <figcaption className="flex items-center gap-3 pt-5 border-t border-border">
+                    <img
+                      src={testimonial.avatar}
+                      alt=""
+                      className="w-11 h-11 rounded-full object-cover ring-2 ring-border shrink-0"
+                      loading="lazy"
+                      width={44}
+                      height={44}
+                      aria-hidden="true"
+                    />
                     <div>
-                      <cite
-                        className="font-bold text-sm md:text-base not-italic"
-                        style={{ color: isDark ? '#FFFFFF' : '#1A2B47' }}
-                      >
+                      <cite className="font-semibold text-body-sm not-italic text-strategy-blue dark:text-white">
                         {t(testimonial.authorKey)}
                       </cite>
-                      <div
-                        className="text-xs md:text-sm"
-                        style={{ color: isDark ? '#9CA3AF' : '#6B7280' }}
-                      >
+                      <div className="text-body-xs text-gray-500 dark:text-gray-400">
                         {t(testimonial.roleKey)}
                       </div>
                     </div>
                   </figcaption>
                 </figure>
 
-                {/* Decorative gradient on hover */}
+                {/* Bottom accent line on hover */}
                 <div
-                  className="absolute inset-x-0 bottom-0 h-1 bg-gradient-to-r from-[#FF6B00] to-[#E55F00] opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-b-2xl md:rounded-b-3xl"
+                  className="absolute inset-x-0 bottom-0 h-0.5 bg-momentum-orange opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-b-2xl"
                   aria-hidden="true"
                 />
               </article>
