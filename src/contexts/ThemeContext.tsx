@@ -843,6 +843,8 @@ const translations = {
     'dashboard.tour.next': 'Next',
     'dashboard.tour.finish': 'Get Started',
     // Navigation
+    'nav.mainMenu': 'Main Menu',
+    'nav.admin': 'Administration',
     'nav.dashboard': 'Dashboard',
     'nav.createPlan': 'Create Plan',
     'nav.myPlans': 'My Plans',
@@ -1906,6 +1908,8 @@ const translations = {
     'dashboard.tour.next': 'Suivant',
     'dashboard.tour.finish': 'Commencer',
     // Navigation
+    'nav.mainMenu': 'Menu principal',
+    'nav.admin': 'Administration',
     'nav.dashboard': 'Tableau de bord',
     'nav.createPlan': 'Créer un plan',
     'nav.myPlans': 'Mes plans',

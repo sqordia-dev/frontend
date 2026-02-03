@@ -14,35 +14,14 @@ export default function FinalCTA() {
 
   return (
     <section
-      className="relative py-24 md:py-32 lg:py-40 overflow-hidden"
-      style={{
-        background: 'linear-gradient(135deg, #FF6B00 0%, #E55F00 50%, #CC4A00 100%)',
-      }}
+      className="relative py-24 md:py-32 lg:py-40 overflow-hidden bg-gradient-to-br from-momentum-orange via-[#E55F00] to-[#CC4A00]"
       aria-labelledby="final-cta-heading"
     >
-      {/* Background decorative elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
-        <div className="absolute top-20 right-10 w-96 h-96 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob" style={{ backgroundColor: 'rgba(255, 255, 255, 0.2)' }} />
-        <div className="absolute top-40 left-10 w-96 h-96 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob" style={{ backgroundColor: 'rgba(255, 255, 255, 0.2)', animationDelay: '2s' }} />
-        <div className="absolute -bottom-8 left-1/2 w-96 h-96 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob" style={{ backgroundColor: 'rgba(255, 255, 255, 0.2)', animationDelay: '4s' }} />
-
-        {/* Grid pattern */}
-        <div
-          className="absolute inset-0 opacity-[0.05]"
-          style={{
-            backgroundImage: `linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px)`,
-            backgroundSize: '50px 50px',
-          }}
-        />
-      </div>
-
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="max-w-4xl mx-auto text-center">
           {/* Badge */}
           <ScrollReveal>
-            <div
-              className="inline-block px-4 py-2 bg-white/10 backdrop-blur-md text-white rounded-full text-sm font-medium mb-8 border border-white/20"
-            >
+            <div className="inline-block px-4 py-2 bg-white/10 text-white rounded-full text-sm font-medium mb-8 border border-white/20">
               {t('landing.finalCta.badge')}
             </div>
           </ScrollReveal>
@@ -59,9 +38,7 @@ export default function FinalCTA() {
 
           {/* Sub-headline */}
           <ScrollReveal delay={0.15}>
-            <p
-              className="text-lg md:text-xl lg:text-2xl mb-10 leading-relaxed text-white/80 max-w-2xl mx-auto"
-            >
+            <p className="text-lg md:text-xl lg:text-2xl mb-10 leading-relaxed text-white/80 max-w-2xl mx-auto">
               {t('landing.finalCta.subheadline')}
             </p>
           </ScrollReveal>
@@ -71,13 +48,10 @@ export default function FinalCTA() {
             <div className="mb-10">
               <Link
                 to="/signup"
-                className="group inline-flex items-center gap-3 px-10 py-5 md:px-12 md:py-6 bg-white text-[#FF6B00] text-lg md:text-xl font-bold rounded-xl shadow-2xl transition-all duration-300 hover:shadow-3xl hover:scale-105 focus:outline-none focus:ring-4 focus:ring-white/50"
-                style={{
-                  boxShadow: '0 20px 40px rgba(0, 0, 0, 0.2)',
-                }}
+                className="group inline-flex items-center gap-3 px-10 py-5 md:px-12 md:py-6 bg-white text-momentum-orange text-lg md:text-xl font-bold rounded-xl shadow-elevated transition-all duration-200 hover:shadow-2xl focus:outline-none focus:ring-4 focus:ring-white/50"
               >
                 {t('landing.finalCta.cta')}
-                <ArrowRight size={24} className="group-hover:translate-x-1 transition-transform" aria-hidden="true" />
+                <ArrowRight size={24} className="group-hover:translate-x-0.5 transition-transform" aria-hidden="true" />
               </Link>
             </div>
           </ScrollReveal>

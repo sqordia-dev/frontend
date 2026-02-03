@@ -1,4 +1,4 @@
-import { MessageSquare, BarChart3, Share2, CheckCircle } from 'lucide-react';
+import { CheckCircle } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -6,20 +6,19 @@ import { cn } from '@/lib/utils';
 import { ScrollReveal } from '../animations/ScrollReveal';
 
 interface Feature {
-  icon: React.ElementType;
   titleKey: string;
   subtitleKey: string;
   descriptionKey: string;
   benefitKeys: string[];
   accentColor: string;
-  /** Tailwind bg class for the accent */
-  accentCls: string;
   imageAltKey: string;
+  screenshot: string;
+  /** Optional light/dark video paths — when present, renders <video> instead of <img> */
+  video?: { light: string; dark: string };
 }
 
 const features: Feature[] = [
   {
-    icon: MessageSquare,
     titleKey: 'landing.features.step1.title',
     subtitleKey: 'landing.features.step1.subtitle',
     descriptionKey: 'landing.features.step1.description',
@@ -30,11 +29,14 @@ const features: Feature[] = [
       'landing.features.step1.benefit4',
     ],
     accentColor: '#FF6B00',
-    accentCls: 'bg-momentum-orange',
     imageAltKey: 'landing.features.step1.imageAlt',
+    screenshot: '/images/screenshots/questionnaire.png',
+    video: {
+      light: '/images/screenshots/questionnaire-light.webm',
+      dark: '/images/screenshots/questionnaire-dark.webm',
+    },
   },
   {
-    icon: BarChart3,
     titleKey: 'landing.features.step2.title',
     subtitleKey: 'landing.features.step2.subtitle',
     descriptionKey: 'landing.features.step2.description',
@@ -45,11 +47,14 @@ const features: Feature[] = [
       'landing.features.step2.benefit4',
     ],
     accentColor: '#14B8A6',
-    accentCls: 'bg-teal-500',
     imageAltKey: 'landing.features.step2.imageAlt',
+    screenshot: '/images/screenshots/preview.png',
+    video: {
+      light: '/images/screenshots/preview-light.webm',
+      dark: '/images/screenshots/preview-dark.webm',
+    },
   },
   {
-    icon: Share2,
     titleKey: 'landing.features.step3.title',
     subtitleKey: 'landing.features.step3.subtitle',
     descriptionKey: 'landing.features.step3.description',
@@ -60,13 +65,18 @@ const features: Feature[] = [
       'landing.features.step3.benefit4',
     ],
     accentColor: '#F59E0B',
-    accentCls: 'bg-amber-500',
     imageAltKey: 'landing.features.step3.imageAlt',
+    screenshot: '/images/screenshots/dashboard.png',
+    video: {
+      light: '/images/screenshots/dashboard-light.webm',
+      dark: '/images/screenshots/dashboard-dark.webm',
+    },
   },
 ];
 
 export default function Features() {
-  const { t } = useTheme();
+  const { theme, t } = useTheme();
+  const isDark = theme === 'dark';
 
   return (
     <section
@@ -104,7 +114,6 @@ export default function Features() {
         <div className="space-y-24 md:space-y-32">
           {features.map((feature, index) => {
             const isReversed = index % 2 === 1;
-            const Icon = feature.icon;
 
             return (
               <ScrollReveal key={index} delay={index * 0.1}>
@@ -159,22 +168,44 @@ export default function Features() {
                     </Card>
                   </div>
 
-                  {/* Visual — prominent icon card instead of empty placeholder */}
+                  {/* Product visual (video or screenshot) */}
                   <div className={cn(isReversed && 'lg:order-1')}>
-                    <div className="relative rounded-2xl overflow-hidden shadow-card border border-border bg-white dark:bg-gray-800">
-                      <div className="aspect-[4/3] flex items-center justify-center p-8">
-                        <div
-                          className={cn('w-24 h-24 rounded-2xl flex items-center justify-center', feature.accentCls)}
+                    <div className="rounded-2xl overflow-hidden shadow-elevated border border-border">
+                      {feature.video ? (
+                        <video
+                          key={isDark ? 'dark' : 'light'}
+                          autoPlay
+                          loop
+                          muted
+                          playsInline
+                          poster={feature.screenshot}
+                          className="w-full h-auto block"
+                          width={1440}
+                          height={900}
+                          aria-label={t(feature.imageAltKey)}
                         >
-                          <Icon className="w-12 h-12 text-white" aria-hidden="true" />
-                        </div>
-                      </div>
-                      {/* Subtle tint */}
-                      <div
-                        className="absolute inset-0 pointer-events-none opacity-[0.03]"
-                        style={{ backgroundColor: feature.accentColor }}
-                        aria-hidden="true"
-                      />
+                          <source
+                            src={isDark ? feature.video.dark : feature.video.light}
+                            type="video/webm"
+                          />
+                          <img
+                            src={feature.screenshot}
+                            alt={t(feature.imageAltKey)}
+                            className="w-full h-auto block"
+                            width={1440}
+                            height={900}
+                          />
+                        </video>
+                      ) : (
+                        <img
+                          src={feature.screenshot}
+                          alt={t(feature.imageAltKey)}
+                          className="w-full h-auto block"
+                          loading="lazy"
+                          width={1440}
+                          height={900}
+                        />
+                      )}
                     </div>
                   </div>
                 </div>

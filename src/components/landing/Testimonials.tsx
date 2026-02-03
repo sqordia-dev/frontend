@@ -74,7 +74,7 @@ export default function Testimonials() {
         <StaggerContainer className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 max-w-7xl mx-auto">
           {testimonials.map((testimonial, index) => (
             <StaggerItem key={index}>
-              <article className="group rounded-2xl p-6 md:p-8 border border-border bg-white dark:bg-gray-800 shadow-card hover:shadow-card-hover transition-all duration-300 h-full flex flex-col">
+              <article className="group relative rounded-2xl p-6 md:p-8 border border-border bg-white dark:bg-gray-800 shadow-card hover:shadow-card-hover transition-all duration-300 h-full flex flex-col">
                 {/* Quote icon — inline, not floating */}
                 <div className="flex items-center gap-3 mb-4">
                   <div className="w-10 h-10 rounded-lg bg-momentum-orange/10 flex items-center justify-center shrink-0">

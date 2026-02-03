@@ -1,4 +1,15 @@
-import { HelpCircle, ChevronDown } from 'lucide-react';
+import {
+  ChevronDown,
+  Clock,
+  UserCheck,
+  FileOutput,
+  TrendingUp,
+  Share2,
+  HelpCircle,
+  Cpu,
+  Award,
+  type LucideIcon,
+} from 'lucide-react';
 import { useState, useCallback } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { cn } from '@/lib/utils';
@@ -8,12 +19,19 @@ import { motion, AnimatePresence } from 'framer-motion';
 interface FAQItem {
   questionKey: string;
   answerKey: string;
+  icon: LucideIcon;
 }
 
-const faqItems: FAQItem[] = Array.from({ length: 8 }, (_, i) => ({
-  questionKey: `landing.faq.q${i + 1}.question`,
-  answerKey: `landing.faq.q${i + 1}.answer`,
-}));
+const faqItems: FAQItem[] = [
+  { questionKey: 'landing.faq.q1.question', answerKey: 'landing.faq.q1.answer', icon: Clock },
+  { questionKey: 'landing.faq.q2.question', answerKey: 'landing.faq.q2.answer', icon: UserCheck },
+  { questionKey: 'landing.faq.q3.question', answerKey: 'landing.faq.q3.answer', icon: FileOutput },
+  { questionKey: 'landing.faq.q4.question', answerKey: 'landing.faq.q4.answer', icon: TrendingUp },
+  { questionKey: 'landing.faq.q5.question', answerKey: 'landing.faq.q5.answer', icon: Share2 },
+  { questionKey: 'landing.faq.q6.question', answerKey: 'landing.faq.q6.answer', icon: HelpCircle },
+  { questionKey: 'landing.faq.q7.question', answerKey: 'landing.faq.q7.answer', icon: Cpu },
+  { questionKey: 'landing.faq.q8.question', answerKey: 'landing.faq.q8.answer', icon: Award },
+];
 
 export default function FAQ() {
   const { t } = useTheme();
@@ -85,7 +103,7 @@ export default function FAQ() {
                             : 'bg-gray-100 dark:bg-gray-700',
                         )}
                       >
-                        <HelpCircle
+                        <item.icon
                           size={18}
                           className={cn('transition-colors', isOpen ? 'text-momentum-orange' : 'text-gray-400 dark:text-gray-500')}
                           aria-hidden="true"

@@ -1,7 +1,10 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, Check, Circle, Loader2, AlertCircle, X } from 'lucide-react';
+import Lottie from 'lottie-react';
+import { Check, Circle, Loader2, AlertCircle, X } from 'lucide-react';
 import { GenerationStatusDto, SectionStatusDto } from '../../types/generation';
+
+const LOTTIE_ANIMATION_URL = '/assets/business-plan-with-executives-lightbulb-and-briefcase.json';
 
 // Tips to display during generation
 const GENERATION_TIPS = [
@@ -45,6 +48,15 @@ export default function GenerationProgress({
   planTitle,
 }: GenerationProgressProps) {
   const [currentTipIndex, setCurrentTipIndex] = useState(0);
+  const [lottieData, setLottieData] = useState<object | null>(null);
+
+  // Load Lottie animation data
+  useEffect(() => {
+    fetch(LOTTIE_ANIMATION_URL)
+      .then((res) => res.json())
+      .then((data) => setLottieData(data))
+      .catch(() => setLottieData(null));
+  }, []);
 
   // Rotate tips every 8 seconds
   useEffect(() => {
@@ -67,73 +79,31 @@ export default function GenerationProgress({
       aria-label="Business plan generation progress"
     >
       <div className="w-full max-w-lg">
-        {/* Animated Magic/Sparkle Icon */}
+        {/* Lottie animation while progress is moving */}
         <motion.div
           className="flex justify-center mb-8"
-          animate={{
-            y: [0, -10, 0],
-          }}
-          transition={{
-            duration: 2,
-            repeat: Infinity,
-            ease: 'easeInOut',
-          }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.3 }}
         >
-          <div className="relative">
-            <motion.div
-              animate={{
-                scale: [1, 1.1, 1],
-                rotate: [0, 5, -5, 0],
-              }}
-              transition={{
-                duration: 3,
-                repeat: Infinity,
-                ease: 'easeInOut',
-              }}
-            >
-              <Sparkles
-                size={64}
-                className="text-orange-500"
-                aria-hidden="true"
+          <div className="w-40 h-40 md:w-48 md:h-48 flex items-center justify-center" aria-hidden="true">
+            {lottieData && !error && status?.status === 'generating' ? (
+              <Lottie
+                animationData={lottieData}
+                loop
+                style={{ width: '100%', height: '100%' }}
               />
-            </motion.div>
-            {/* Sparkle particles */}
-            <motion.div
-              className="absolute -top-2 -right-2 w-3 h-3 bg-orange-400 rounded-full"
-              animate={{
-                opacity: [0, 1, 0],
-                scale: [0.5, 1, 0.5],
-              }}
-              transition={{
-                duration: 1.5,
-                repeat: Infinity,
-                delay: 0,
-              }}
-            />
-            <motion.div
-              className="absolute -bottom-1 -left-1 w-2 h-2 bg-yellow-400 rounded-full"
-              animate={{
-                opacity: [0, 1, 0],
-                scale: [0.5, 1, 0.5],
-              }}
-              transition={{
-                duration: 1.5,
-                repeat: Infinity,
-                delay: 0.5,
-              }}
-            />
-            <motion.div
-              className="absolute top-1/2 -right-3 w-2 h-2 bg-orange-300 rounded-full"
-              animate={{
-                opacity: [0, 1, 0],
-                scale: [0.5, 1, 0.5],
-              }}
-              transition={{
-                duration: 1.5,
-                repeat: Infinity,
-                delay: 1,
-              }}
-            />
+            ) : lottieData && !error ? (
+              <Lottie
+                animationData={lottieData}
+                loop={false}
+                style={{ width: '100%', height: '100%' }}
+              />
+            ) : (
+              <div className="w-16 h-16 rounded-full bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center">
+                <Loader2 className="w-8 h-8 text-orange-500 animate-spin" aria-hidden="true" />
+              </div>
+            )}
           </div>
         </motion.div>
 

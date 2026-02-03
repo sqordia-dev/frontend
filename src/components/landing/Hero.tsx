@@ -1,4 +1,4 @@
-import { ArrowRight, Shield, Clock, XCircle, FileText, BarChart3, Brain, Sparkles } from 'lucide-react';
+import { ArrowRight, Shield, Clock, XCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
 import { cn } from '@/lib/utils';
@@ -20,91 +20,6 @@ const mockupVariants = {
   hidden: { opacity: 0, y: 24 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.6, delay: 0.25, ease: smoothEase } },
 };
-
-// ── Product mockup built with CSS (replaces empty placeholder) ──────────────
-function ProductMockup({ isDark }: { isDark: boolean }) {
-  return (
-    <div className={cn(
-      'rounded-xl border overflow-hidden shadow-card',
-      isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200',
-    )}>
-      {/* Fake browser chrome */}
-      <div className={cn(
-        'flex items-center gap-2 px-4 py-2.5 border-b',
-        isDark ? 'bg-gray-900 border-gray-700' : 'bg-gray-50 border-gray-200',
-      )}>
-        <div className="flex gap-1.5">
-          <div className="w-2.5 h-2.5 rounded-full bg-red-400" />
-          <div className="w-2.5 h-2.5 rounded-full bg-amber-400" />
-          <div className="w-2.5 h-2.5 rounded-full bg-green-400" />
-        </div>
-        <div className={cn(
-          'flex-1 h-5 rounded-md mx-8',
-          isDark ? 'bg-gray-700' : 'bg-gray-200',
-        )} />
-      </div>
-
-      {/* App content mockup */}
-      <div className="p-5">
-        {/* Header row */}
-        <div className="flex items-center justify-between mb-5">
-          <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-md bg-strategy-blue flex items-center justify-center">
-              <Brain size={14} className="text-white" />
-            </div>
-            <div className={cn('h-3 w-20 rounded', isDark ? 'bg-gray-600' : 'bg-gray-300')} />
-          </div>
-          <div className="flex gap-2">
-            <div className={cn('h-7 w-16 rounded-md', isDark ? 'bg-gray-700' : 'bg-gray-100')} />
-            <div className="h-7 w-24 rounded-md bg-momentum-orange/90" />
-          </div>
-        </div>
-
-        {/* Stats row */}
-        <div className="grid grid-cols-3 gap-3 mb-5">
-          {[
-            { icon: FileText, label: '12', sublabel: 'Plans' },
-            { icon: BarChart3, label: '87%', sublabel: 'Score' },
-            { icon: Sparkles, label: '24', sublabel: 'Sections' },
-          ].map(({ icon: Icon, label, sublabel }) => (
-            <div key={sublabel} className={cn(
-              'rounded-lg p-3 border',
-              isDark ? 'bg-gray-700/50 border-gray-600' : 'bg-gray-50 border-gray-100',
-            )}>
-              <Icon size={14} className="text-momentum-orange mb-1.5" />
-              <div className={cn('text-base font-bold', isDark ? 'text-white' : 'text-strategy-blue')}>{label}</div>
-              <div className={cn('text-[10px]', isDark ? 'text-gray-400' : 'text-gray-500')}>{sublabel}</div>
-            </div>
-          ))}
-        </div>
-
-        {/* Content rows */}
-        <div className="space-y-2.5">
-          {[85, 60, 72].map((w, i) => (
-            <div key={i} className={cn(
-              'flex items-center gap-3 p-3 rounded-lg border',
-              isDark ? 'bg-gray-700/30 border-gray-600/50' : 'bg-white border-gray-100',
-            )}>
-              <div className={cn(
-                'w-8 h-8 rounded-md shrink-0',
-                i === 0 ? 'bg-momentum-orange/15' : isDark ? 'bg-gray-600' : 'bg-gray-100',
-              )} />
-              <div className="flex-1 space-y-1.5">
-                <div className={cn('h-2.5 rounded', isDark ? 'bg-gray-600' : 'bg-gray-200')} style={{ width: `${w}%` }} />
-                <div className={cn('h-2 rounded', isDark ? 'bg-gray-700' : 'bg-gray-100')} style={{ width: `${w - 20}%` }} />
-              </div>
-              {i === 0 && (
-                <span className="text-[9px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
-                  Active
-                </span>
-              )}
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
 
 // ── Hero ─────────────────────────────────────────────────────────────────────
 export default function Hero() {
@@ -226,14 +141,45 @@ export default function Hero() {
             </motion.div>
           </motion.div>
 
-          {/* Right column - Product mockup */}
+          {/* Right column - Dashboard demo video (light/dark) */}
           <motion.div
             className="relative lg:pl-4"
             variants={mockupVariants}
             initial="hidden"
             animate="visible"
           >
-            <ProductMockup isDark={isDark} />
+            <div className={cn(
+              'rounded-2xl border overflow-hidden shadow-elevated',
+              isDark ? 'border-gray-700' : 'border-gray-200/80',
+            )}>
+              <video
+                key={isDark ? 'dark' : 'light'}
+                autoPlay
+                loop
+                muted
+                playsInline
+                poster="/images/screenshots/dashboard.png"
+                className="w-full h-auto block"
+                width={1440}
+                height={900}
+                aria-label={t('landing.hero.productDemo') || 'Sqordia dashboard demo'}
+              >
+                <source
+                  src={isDark
+                    ? '/images/screenshots/hero-dashboard-dark.webm'
+                    : '/images/screenshots/hero-dashboard-light.webm'
+                  }
+                  type="video/webm"
+                />
+                <img
+                  src="/images/screenshots/dashboard.png"
+                  alt="Sqordia dashboard"
+                  className="w-full h-auto block"
+                  width={1440}
+                  height={900}
+                />
+              </video>
+            </div>
           </motion.div>
         </div>
       </div>
