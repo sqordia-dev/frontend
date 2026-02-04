@@ -928,11 +928,8 @@ export default function WizardQuestionnairePage() {
 
   const canGoNext = () => {
     const currentStepQuestions = getCurrentStepQuestions();
-    const requiredQuestions = currentStepQuestions.filter(q => q.isRequired);
-    return requiredQuestions.every(q => {
-      const answer = answers[q.id];
-      return answer && answer.trim().length >= 10;
-    });
+    if (currentStepQuestions.length === 0) return false;
+    return currentStepQuestions.every(q => q.isAnswered);
   };
 
   const canGoPrevious = () => {
@@ -1077,11 +1074,8 @@ export default function WizardQuestionnairePage() {
 
   const isStepComplete = (stepNum: number) => {
     const stepQuestions = questions.filter(q => q.stepNumber === stepNum);
-    const requiredQuestions = stepQuestions.filter(q => q.isRequired);
-    return requiredQuestions.every(q => {
-      const answer = answers[q.id];
-      return answer && answer.trim().length >= 10;
-    });
+    if (stepQuestions.length === 0) return false;
+    return stepQuestions.every(q => q.isAnswered);
   };
 
   if (loading) {
@@ -1468,15 +1462,23 @@ export default function WizardQuestionnairePage() {
               const isComplete = isStepComplete(step.number);
               const StepIconComponent = step.icon;
 
+              const canNavigate = isComplete || isActive;
+
               return (
                 <div
                   key={step.number}
                   className="flex items-center flex-1"
                 >
-                  <div className="flex flex-col items-center gap-2 flex-1">
+                  <button
+                    type="button"
+                    onClick={() => canNavigate && setCurrentStep(step.number)}
+                    disabled={!canNavigate}
+                    className={`flex flex-col items-center gap-2 flex-1 ${canNavigate ? 'cursor-pointer group' : 'cursor-default'}`}
+                  >
                     <div
                       className={`
                         w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all
+                        ${canNavigate ? 'group-hover:scale-110' : ''}
                         ${isActive
                           ? 'ring-4 ring-opacity-30 scale-110'
                           : isComplete
@@ -1491,14 +1493,14 @@ export default function WizardQuestionnairePage() {
                     >
                       {isComplete ? <CheckCircle2 size={20} /> : <StepIconComponent size={20} />}
                     </div>
-                    <span className={`text-xs font-medium text-center ${isActive ? 'font-bold' : ''}`} style={{
+                    <span className={`text-xs font-medium text-center transition-colors ${canNavigate ? 'group-hover:text-[#FF6B00]' : ''} ${isActive ? 'font-bold' : ''}`} style={{
                       color: isActive
                         ? momentumOrange
-                        : (theme === 'dark' ? '#9CA3AF' : '#6B7280')
+                        : undefined
                     }}>
                       {cms('questionnaire.step_' + step.number + '_title', '') || (language === 'fr' ? step.titleFr : step.title)}
                     </span>
-                  </div>
+                  </button>
                   {idx < STEP_INFO.length - 1 && (
                     <div 
                       className="flex-1 h-0.5 mx-2"
