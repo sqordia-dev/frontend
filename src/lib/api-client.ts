@@ -73,7 +73,13 @@ class ApiClient {
           data: error.response?.data,
           requestData: error.config?.data ? (typeof error.config.data === 'string' ? JSON.parse(error.config.data) : error.config.data) : null
         };
-        console.error('API Error:', errorDetails);
+
+        // Don't log expected 404s from CMS content endpoints (no published version yet)
+        const isCmsContent404 = error.response?.status === 404 &&
+          error.config?.url?.includes('/api/v1/content/');
+        if (!isCmsContent404) {
+          console.error('API Error:', errorDetails);
+        }
         
         // Handle CORS and network errors
         if (error.code === 'ERR_NETWORK' || error.message === 'Network Error') {
@@ -103,7 +109,7 @@ class ApiClient {
         }
         
         // Also log the full error response data for debugging
-        if (error.response?.data) {
+        if (error.response?.data && !isCmsContent404) {
           console.error('Full error response:', JSON.stringify(error.response.data, null, 2));
         }
 

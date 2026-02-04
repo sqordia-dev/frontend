@@ -12,6 +12,7 @@ import {
 import { businessPlanService } from '../lib/business-plan-service';
 import { organizationService } from '../lib/organization-service';
 import { useTheme } from '../contexts/ThemeContext';
+import { useCmsContent } from '../hooks/useCmsContent';
 import SEO from '../components/SEO';
 import { getCanonicalUrl } from '../utils/seo';
 // Template selection disabled - import removed
@@ -19,7 +20,8 @@ import { getCanonicalUrl } from '../utils/seo';
 
 export default function CreatePlanPage() {
   const navigate = useNavigate();
-  const { t, theme, language } = useTheme();
+  const { theme, language } = useTheme();
+  const { getContent: cms } = useCmsContent('create_plan');
   
   const [step, setStep] = useState<'type' | 'organization' | 'details'>('type');
   const [selectedType, setSelectedType] = useState<'business' | 'obnl' | null>(null);
@@ -71,7 +73,7 @@ export default function CreatePlanPage() {
       setStep('details');
     } catch (error: any) {
       console.error('Failed to create organization:', error);
-      setError(error.message || t('createPlan.errorCreatingOrg'));
+      setError(error.message || cms('create_plan.error_creating_org', 'createPlan.errorCreatingOrg'));
     } finally {
       setLoading(false);
     }
@@ -93,7 +95,7 @@ export default function CreatePlanPage() {
     if (!planTitle || !selectedType) return;
 
     if (!organizationId) {
-      setError(t('createPlan.selectOrgFirst'));
+      setError(cms('create_plan.select_org_first', 'createPlan.selectOrgFirst'));
       return;
     }
 
@@ -125,9 +127,9 @@ export default function CreatePlanPage() {
   // Step indicator component
   const StepIndicator = ({ currentStep }: { currentStep: string }) => {
     const steps = [
-      { id: 'type', label: t('createPlan.planType') },
-      { id: 'organization', label: t('createPlan.createOrganization') },
-      { id: 'details', label: t('createPlan.details') }
+      { id: 'type', label: cms('create_plan.plan_type', 'createPlan.planType') },
+      { id: 'organization', label: cms('create_plan.create_organization', 'createPlan.createOrganization') },
+      { id: 'details', label: cms('create_plan.details', 'createPlan.details') }
     ];
     // Map organization step to details for display purposes (organization is conditional)
     const displayStep = currentStep === 'organization' ? 'details' : currentStep;
@@ -165,12 +167,8 @@ export default function CreatePlanPage() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <SEO
-        title={language === 'fr' 
-          ? "Créer un Plan | Sqordia"
-          : "Create Plan | Sqordia"}
-        description={language === 'fr'
-          ? "Créez un nouveau plan d'affaires ou plan stratégique avec Sqordia."
-          : "Create a new business plan or strategic plan with Sqordia."}
+        title={`${cms('create_plan.seo_title', '') || 'Create Plan'} | Sqordia`}
+        description={cms('create_plan.seo_description', '') || "Create a new business plan or strategic plan with Sqordia."}
         url={getCanonicalUrl('/create-plan')}
         noindex={true}
         nofollow={true}
@@ -183,7 +181,7 @@ export default function CreatePlanPage() {
             className="flex items-center gap-2 mb-10 hover:opacity-70 transition-opacity text-sm font-medium text-gray-500 dark:text-gray-400"
           >
             <ArrowLeft size={18} />
-            <span>{t('createPlan.back')}</span>
+            <span>{cms('create_plan.back', 'createPlan.back')}</span>
           </button>
 
           <div className="text-center mb-12">
@@ -191,9 +189,9 @@ export default function CreatePlanPage() {
               {/* Glow effect */}
               <div className="absolute inset-0 rounded-full opacity-50 blur-xl group-hover:opacity-75 transition-opacity bg-[#FF6B00]" />
               {/* Shine effect */}
-              <div 
+              <div
                 className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-30 transition-opacity shimmer-shine"
-                style={{ 
+                style={{
                   background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent)',
                 }}
               />
@@ -201,13 +199,13 @@ export default function CreatePlanPage() {
                 size={18}
                 className="relative z-10 animate-pulse text-white"
               />
-              <span className="relative z-10">{t('createPlan.aiBadge')}</span>
+              <span className="relative z-10">{cms('create_plan.ai_badge', 'createPlan.aiBadge')}</span>
             </div>
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold mb-6 tracking-tight text-[#1A2B47] dark:text-gray-50 font-heading">
-              {t('createPlan.title')}
+              {cms('create_plan.header_title', 'createPlan.title')}
             </h1>
             <p className="text-lg text-gray-500 dark:text-gray-400 max-w-3xl mx-auto">
-              {t('createPlan.subtitle')}
+              {cms('create_plan.subtitle', 'createPlan.subtitle')}
             </p>
           </div>
 
@@ -228,13 +226,13 @@ export default function CreatePlanPage() {
                   <Building2 size={36} className="text-white" />
                 </div>
                 <h3 className="text-2xl font-bold mb-4 text-[#1A2B47] dark:text-gray-50 font-heading">
-                  {t('createPlan.businessPlan')}
+                  {cms('create_plan.business_plan_title', 'createPlan.businessPlan')}
                 </h3>
                 <p className="text-gray-500 dark:text-gray-400 mb-8 text-base leading-relaxed">
-                  {t('createPlan.businessPlanDesc')}
+                  {cms('create_plan.business_plan_desc', 'createPlan.businessPlanDesc')}
                 </p>
                 <ul className="space-y-4 mb-8">
-                  {[t('createPlan.businessFeatures1'), t('createPlan.businessFeatures2'), t('createPlan.businessFeatures3')].map((item, idx) => (
+                  {[cms('create_plan.business_features_1', 'createPlan.businessFeatures1'), cms('create_plan.business_features_2', 'createPlan.businessFeatures2'), cms('create_plan.business_features_3', 'createPlan.businessFeatures3')].map((item, idx) => (
                     <li key={idx} className="flex items-start gap-3">
                       <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 bg-[#FF6B00]">
                         <CheckCircle size={14} className="text-white" />
@@ -244,7 +242,7 @@ export default function CreatePlanPage() {
                   ))}
                 </ul>
                 <div className="flex items-center gap-2 font-bold text-base group-hover:gap-3 transition-all text-[#FF6B00]">
-                  <span>{t('createPlan.getStarted')}</span>
+                  <span>{cms('create_plan.get_started', 'createPlan.getStarted')}</span>
                   <ArrowRight size={20} />
                 </div>
               </div>
@@ -261,13 +259,13 @@ export default function CreatePlanPage() {
                   <Heart size={36} className="text-white" />
                 </div>
                 <h3 className="text-2xl font-bold mb-4 text-[#1A2B47] dark:text-gray-50 font-heading">
-                  {t('createPlan.obnlPlan')}
+                  {cms('create_plan.obnl_plan_title', 'createPlan.obnlPlan')}
                 </h3>
                 <p className="text-gray-500 dark:text-gray-400 mb-8 text-base leading-relaxed">
-                  {t('createPlan.obnlPlanDesc')}
+                  {cms('create_plan.obnl_plan_desc', 'createPlan.obnlPlanDesc')}
                 </p>
                 <ul className="space-y-4 mb-8">
-                  {[t('createPlan.obnlFeatures1'), t('createPlan.obnlFeatures2'), t('createPlan.obnlFeatures3')].map((item, idx) => (
+                  {[cms('create_plan.obnl_features_1', 'createPlan.obnlFeatures1'), cms('create_plan.obnl_features_2', 'createPlan.obnlFeatures2'), cms('create_plan.obnl_features_3', 'createPlan.obnlFeatures3')].map((item, idx) => (
                     <li key={idx} className="flex items-start gap-3">
                       <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 bg-[#FF6B00]">
                         <CheckCircle size={14} className="text-white" />
@@ -277,7 +275,7 @@ export default function CreatePlanPage() {
                   ))}
                 </ul>
                 <div className="flex items-center gap-2 font-bold text-base group-hover:gap-3 transition-all text-[#FF6B00]">
-                  <span>{t('createPlan.getStarted')}</span>
+                  <span>{cms('create_plan.get_started', 'createPlan.getStarted')}</span>
                   <ArrowRight size={20} />
                 </div>
               </div>
@@ -291,10 +289,10 @@ export default function CreatePlanPage() {
             <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden">
               <div className="p-10 border-b border-gray-100 dark:border-gray-700">
                 <h2 className="text-2xl font-bold mb-3 text-[#1A2B47] dark:text-gray-50 font-heading">
-                  {t('createPlan.createOrganization')}
+                  {cms('create_plan.create_organization', 'createPlan.createOrganization')}
                 </h2>
                 <p className="text-gray-500 dark:text-gray-400 text-lg">
-                  {t('createPlan.createOrganizationDesc')}
+                  {cms('create_plan.create_organization_desc', 'createPlan.createOrganizationDesc')}
                 </p>
               </div>
 
@@ -303,7 +301,7 @@ export default function CreatePlanPage() {
                   <div className="p-5 bg-red-50 dark:bg-red-900/20 rounded-xl flex items-start gap-4">
                     <AlertCircle className="text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" size={22} />
                     <div className="flex-1">
-                      <p className="text-base font-semibold text-red-900 dark:text-red-200 mb-1">{t('createPlan.error')}</p>
+                      <p className="text-base font-semibold text-red-900 dark:text-red-200 mb-1">{cms('create_plan.error', 'createPlan.error')}</p>
                       <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
                     </div>
                   </div>
@@ -311,25 +309,25 @@ export default function CreatePlanPage() {
 
                 <div>
                   <label className="block text-base font-bold mb-4 text-[#1A2B47] dark:text-gray-50">
-                    {t('createPlan.organizationName')} <span className="text-red-500">*</span>
+                    {cms('create_plan.organization_name', 'createPlan.organizationName')} <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
                     value={orgName}
                     onChange={(e) => setOrgName(e.target.value)}
-                    placeholder={t('createPlan.orgNamePlaceholder')}
+                    placeholder={cms('create_plan.org_name_placeholder', 'createPlan.orgNamePlaceholder')}
                     className="w-full px-5 py-4 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#FF6B00] focus:border-[#FF6B00] text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 text-base transition-all"
                   />
                 </div>
 
                 <div>
                   <label className="block text-base font-bold mb-4 text-[#1A2B47] dark:text-gray-50">
-                    {t('createPlan.organizationDesc')} <span className="text-gray-400 dark:text-gray-500 font-normal text-sm">{t('createPlan.optional')}</span>
+                    {cms('create_plan.organization_desc', 'createPlan.organizationDesc')} <span className="text-gray-400 dark:text-gray-500 font-normal text-sm">{cms('create_plan.optional', 'createPlan.optional')}</span>
                   </label>
                   <textarea
                     value={orgDescription}
                     onChange={(e) => setOrgDescription(e.target.value)}
-                    placeholder={t('createPlan.orgDescPlaceholder')}
+                    placeholder={cms('create_plan.org_desc_placeholder', 'createPlan.orgDescPlaceholder')}
                     rows={5}
                     className="w-full px-5 py-4 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#FF6B00] focus:border-[#FF6B00] text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 resize-none text-base transition-all"
                   />
@@ -340,14 +338,14 @@ export default function CreatePlanPage() {
                     onClick={() => setStep('type')}
                     className="flex-1 px-4 py-2.5 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm"
                   >
-                    {t('createPlan.back')}
+                    {cms('create_plan.back', 'createPlan.back')}
                   </button>
                   <button
                     onClick={handleCreateOrganization}
                     disabled={!orgName.trim() || loading}
                     className="flex-1 px-4 py-2.5 text-white rounded-lg font-medium shadow-md hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm bg-[#FF6B00] hover:bg-[#E55F00]"
                   >
-                    {loading ? t('createPlan.creating') : t('createPlan.createOrgButton')}
+                    {loading ? cms('create_plan.creating', 'createPlan.creating') : cms('create_plan.create_org_button', 'createPlan.createOrgButton')}
                     {!loading && <ArrowRight size={18} />}
                   </button>
                 </div>
@@ -366,7 +364,7 @@ export default function CreatePlanPage() {
                   className="flex items-center gap-2 mb-8 hover:opacity-70 transition-opacity text-sm font-medium text-gray-500 dark:text-gray-400"
                 >
                   <ArrowLeft size={16} />
-                  <span>{t('createPlan.changePlanType')}</span>
+                  <span>{cms('create_plan.change_plan_type', 'createPlan.changePlanType')}</span>
                 </button>
 
                 <div className="flex items-center gap-5">
@@ -383,10 +381,10 @@ export default function CreatePlanPage() {
                   </div>
                   <div>
                     <h2 className="text-2xl font-bold mb-2 text-[#1A2B47] dark:text-gray-50 font-heading">
-                      {selectedType === 'business' ? t('createPlan.businessPlan') : t('createPlan.obnlPlan')}
+                      {selectedType === 'business' ? cms('create_plan.business_plan_title', 'createPlan.businessPlan') : cms('create_plan.obnl_plan_title', 'createPlan.obnlPlan')}
                     </h2>
                     <p className="text-base text-gray-500 dark:text-gray-400">
-                      {t('createPlan.tellUsAboutPlan')}
+                      {cms('create_plan.tell_us_about_plan', 'createPlan.tellUsAboutPlan')}
                     </p>
                   </div>
                 </div>
@@ -397,7 +395,7 @@ export default function CreatePlanPage() {
                   <div className="p-5 bg-red-50 dark:bg-red-900/20 rounded-xl flex items-start gap-4">
                     <AlertCircle className="text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" size={22} />
                     <div className="flex-1">
-                      <p className="text-base font-semibold text-red-900 dark:text-red-200 mb-1">{t('createPlan.errorCreatingPlan')}</p>
+                      <p className="text-base font-semibold text-red-900 dark:text-red-200 mb-1">{cms('create_plan.error_creating_plan', 'createPlan.errorCreatingPlan')}</p>
                       <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
                     </div>
                   </div>
@@ -405,25 +403,25 @@ export default function CreatePlanPage() {
 
                 <div>
                   <label className="block text-base font-bold mb-4 text-[#1A2B47] dark:text-gray-50">
-                    {t('createPlan.planTitle')} <span className="text-red-500">*</span>
+                    {cms('create_plan.plan_title', 'createPlan.planTitle')} <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
                     value={planTitle}
                     onChange={(e) => setPlanTitle(e.target.value)}
-                    placeholder={t('createPlan.planTitlePlaceholder')}
+                    placeholder={cms('create_plan.plan_title_placeholder', 'createPlan.planTitlePlaceholder')}
                     className="w-full px-5 py-4 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#FF6B00] focus:border-[#FF6B00] text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 text-base transition-all"
                   />
                 </div>
 
                 <div>
                   <label className="block text-base font-bold mb-4 text-[#1A2B47] dark:text-gray-50">
-                    {t('createPlan.planDescription')} <span className="text-gray-400 dark:text-gray-500 font-normal text-sm">{t('createPlan.optional')}</span>
+                    {cms('create_plan.plan_description', 'createPlan.planDescription')} <span className="text-gray-400 dark:text-gray-500 font-normal text-sm">{cms('create_plan.optional', 'createPlan.optional')}</span>
                   </label>
                   <textarea
                     value={planDescription}
                     onChange={(e) => setPlanDescription(e.target.value)}
-                    placeholder={t('createPlan.planDescPlaceholder')}
+                    placeholder={cms('create_plan.plan_desc_placeholder', 'createPlan.planDescPlaceholder')}
                     rows={5}
                     className="w-full px-5 py-4 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#FF6B00] focus:border-[#FF6B00] text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 resize-none text-base transition-all"
                   />
@@ -437,18 +435,18 @@ export default function CreatePlanPage() {
                   {loading ? (
                     <>
                       <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                      {t('createPlan.creating')}
+                      {cms('create_plan.creating', 'createPlan.creating')}
                     </>
                   ) : (
                     <>
-                      {t('createPlan.startQuestionnaire')}
+                      {cms('create_plan.start_questionnaire', 'createPlan.startQuestionnaire')}
                       <ArrowRight size={18} />
                     </>
                   )}
                 </button>
 
                 <p className="text-xs text-center text-gray-500 dark:text-gray-400">
-                  {t('createPlan.questionnaireDesc')}
+                  {cms('create_plan.questionnaire_desc', 'createPlan.questionnaireDesc')}
                 </p>
               </div>
             </div>

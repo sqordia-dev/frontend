@@ -1,11 +1,13 @@
 import { useTheme } from '../contexts/ThemeContext';
+import { useCmsContent } from '../hooks/useCmsContent';
 import { ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import SEO from '../components/SEO';
 import { getCanonicalUrl } from '../utils/seo';
 
 export default function TermsOfServicePage() {
-  const { t, language } = useTheme();
+  const { language } = useTheme();
+  const { getContent: cms } = useCmsContent('legal');
   const strategyBlue = '#1A2B47';
   const momentumOrange = '#FF6B00';
 
@@ -26,23 +28,25 @@ export default function TermsOfServicePage() {
           className="inline-flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white mb-8 transition-colors"
         >
           <ArrowLeft size={20} />
-          <span>{language === 'fr' ? 'Retour à l\'accueil' : 'Back to Home'}</span>
+          <span>{cms('legal.back_to_home', '') || (language === 'fr' ? 'Retour à l\'accueil' : 'Back to Home')}</span>
         </Link>
 
         <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-8" style={{ color: strategyBlue }}>
-          {language === 'fr' ? 'Conditions d\'Utilisation' : 'Terms of Service'}
+          {cms('legal.terms_title', '') || (language === 'fr' ? 'Conditions d\'Utilisation' : 'Terms of Service')}
         </h1>
 
         <div className="prose prose-lg dark:prose-invert max-w-none">
           <p className="text-gray-600 dark:text-gray-400 mb-8">
-            {language === 'fr' 
-              ? 'Dernière mise à jour : ' 
-              : 'Last updated: '}
-            {new Date().toLocaleDateString(language === 'fr' ? 'fr-FR' : 'en-US', { 
-              year: 'numeric', 
-              month: 'long', 
-              day: 'numeric' 
-            })}
+            {cms('legal.terms_last_updated', '') || (
+              (language === 'fr'
+                ? 'Dernière mise à jour : '
+                : 'Last updated: ') +
+              new Date().toLocaleDateString(language === 'fr' ? 'fr-FR' : 'en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+              })
+            )}
           </p>
 
           <section className="mb-8">

@@ -2,7 +2,7 @@ import { useState, FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { Mail, ArrowRight, ArrowLeft, CheckCircle } from 'lucide-react';
 import { authService } from '../../lib/auth-service';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useCmsContent } from '../../hooks/useCmsContent';
 import SEO from '../../components/SEO';
 import { getCanonicalUrl } from '../../utils/seo';
 import { AuthLayout } from '../../components/auth';
@@ -17,7 +17,7 @@ import {
 } from '../../utils/auth-validation';
 
 export default function ForgotPasswordPage() {
-  const { t } = useTheme();
+  const { getContent: cms } = useCmsContent('auth');
 
   const [formData, setFormData] = useState<ForgotPasswordFormData>({
     email: '',
@@ -65,8 +65,8 @@ export default function ForgotPasswordPage() {
     return (
       <AuthLayout variant="centered">
         <SEO
-          title={t('forgotPassword.success.title') + ' | Sqordia'}
-          description={t('forgotPassword.success.instructions')}
+          title={cms('auth.forgot_password.success_title', 'forgotPassword.success.title') + ' | Sqordia'}
+          description={cms('auth.forgot_password.success_instructions', 'forgotPassword.success.instructions')}
           url={getCanonicalUrl('/forgot-password')}
         />
 
@@ -75,29 +75,29 @@ export default function ForgotPasswordPage() {
             <CheckCircle className="h-8 w-8 text-green-600 dark:text-green-400" aria-hidden="true" />
           </div>
           <h1 className="mb-2 text-2xl font-bold text-foreground">
-            {t('forgotPassword.success.title')}
+            {cms('auth.forgot_password.success_title', 'forgotPassword.success.title')}
           </h1>
           <p className="mb-6 text-muted-foreground">
-            {t('forgotPassword.success.message')}{' '}
+            {cms('auth.forgot_password.success_message', 'forgotPassword.success.message')}{' '}
             <strong className="text-foreground">{formData.email}</strong>.
-            {' '}{t('forgotPassword.success.instructions')}
+            {' '}{cms('auth.forgot_password.success_instructions', 'forgotPassword.success.instructions')}
           </p>
 
           <div className="space-y-4">
             <Button variant="brand" size="lg" className="w-full" asChild>
               <Link to="/login">
                 <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-                {t('forgotPassword.success.backToLogin')}
+                {cms('auth.forgot_password.success_back_to_login', 'forgotPassword.success.backToLogin')}
               </Link>
             </Button>
 
             <p className="text-sm text-muted-foreground">
-              {t('forgotPassword.success.noEmail')}{' '}
+              {cms('auth.forgot_password.success_no_email', 'forgotPassword.success.noEmail')}{' '}
               <button
                 onClick={() => setSuccess(false)}
                 className="font-semibold text-momentum-orange transition-colors hover:underline"
               >
-                {t('forgotPassword.success.tryAgain')}
+                {cms('auth.forgot_password.success_try_again', 'forgotPassword.success.tryAgain')}
               </button>
             </p>
           </div>
@@ -109,18 +109,18 @@ export default function ForgotPasswordPage() {
   return (
     <AuthLayout variant="centered">
       <SEO
-        title={t('forgotPassword.title') + ' | Sqordia'}
-        description={t('forgotPassword.subtitle')}
+        title={cms('auth.forgot_password.title', 'forgotPassword.title') + ' | Sqordia'}
+        description={cms('auth.forgot_password.subtitle', 'forgotPassword.subtitle')}
         url={getCanonicalUrl('/forgot-password')}
       />
 
       {/* Title */}
       <div className="mb-8 text-center">
         <h1 className="mb-2 text-3xl font-bold font-heading text-foreground">
-          {t('forgotPassword.title')}
+          {cms('auth.forgot_password.title', 'forgotPassword.title')}
         </h1>
         <p className="text-base text-muted-foreground">
-          {t('forgotPassword.subtitle')}
+          {cms('auth.forgot_password.subtitle', 'forgotPassword.subtitle')}
         </p>
       </div>
 
@@ -141,7 +141,7 @@ export default function ForgotPasswordPage() {
         {/* Email */}
         <div>
           <Label htmlFor="email" className="mb-2 block text-sm font-semibold">
-            {t('forgotPassword.email')}
+            {cms('auth.forgot_password.email_label', 'forgotPassword.email')}
           </Label>
           <div className="relative">
             <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
@@ -156,7 +156,7 @@ export default function ForgotPasswordPage() {
               required
               autoComplete="email"
               className={`h-12 pl-12 ${getFieldError(errors, 'email') ? 'border-red-300 focus-visible:ring-red-500 dark:border-red-500' : ''}`}
-              placeholder={t('forgotPassword.email.placeholder')}
+              placeholder={cms('auth.forgot_password.email_placeholder', 'forgotPassword.email.placeholder')}
               aria-invalid={!!getFieldError(errors, 'email')}
               aria-describedby={getFieldError(errors, 'email') ? 'email-error' : undefined}
             />
@@ -177,10 +177,10 @@ export default function ForgotPasswordPage() {
           className="group w-full min-h-[44px]"
         >
           {loading ? (
-            <span>{t('forgotPassword.sending')}</span>
+            <span>{cms('auth.forgot_password.sending', 'forgotPassword.sending')}</span>
           ) : (
             <>
-              <span>{t('forgotPassword.button')}</span>
+              <span>{cms('auth.forgot_password.button', 'forgotPassword.button')}</span>
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
             </>
           )}
@@ -194,7 +194,7 @@ export default function ForgotPasswordPage() {
           className="inline-flex items-center gap-1 text-sm font-medium text-momentum-orange transition-colors hover:underline"
         >
           <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-          {t('forgotPassword.backToLogin')}
+          {cms('auth.forgot_password.back_to_login', 'forgotPassword.backToLogin')}
         </Link>
       </div>
     </AuthLayout>

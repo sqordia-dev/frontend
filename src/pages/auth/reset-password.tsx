@@ -2,7 +2,7 @@ import { useState, useEffect, FormEvent } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { ArrowRight, ArrowLeft, CheckCircle, AlertCircle } from 'lucide-react';
 import { authService } from '../../lib/auth-service';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useCmsContent } from '../../hooks/useCmsContent';
 import SEO from '../../components/SEO';
 import { getCanonicalUrl } from '../../utils/seo';
 import { AuthLayout, PasswordInput, PasswordStrengthMeter } from '../../components/auth';
@@ -18,7 +18,7 @@ import { calculatePasswordStrength } from '../../utils/password-strength';
 export default function ResetPasswordPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { t } = useTheme();
+  const { getContent: cms } = useCmsContent('auth');
 
   const token = searchParams.get('token') || '';
 
@@ -45,7 +45,7 @@ export default function ResetPasswordPage() {
       const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
       return () => clearTimeout(timer);
     } else if (success && countdown === 0) {
-      navigate('/login', { state: { message: t('resetPassword.success.title') } });
+      navigate('/login', { state: { message: cms('auth.reset_password.success_title', 'resetPassword.success.title') } });
     }
   }, [success, countdown, navigate]);
 
@@ -93,8 +93,8 @@ export default function ResetPasswordPage() {
     return (
       <AuthLayout variant="centered">
         <SEO
-          title={t('resetPassword.success.title') + ' | Sqordia'}
-          description={t('resetPassword.success.message')}
+          title={cms('auth.reset_password.success_title', 'resetPassword.success.title') + ' | Sqordia'}
+          description={cms('auth.reset_password.success_message', 'resetPassword.success.message')}
           url={getCanonicalUrl('/reset-password')}
           noindex={true}
           nofollow={true}
@@ -105,14 +105,14 @@ export default function ResetPasswordPage() {
             <CheckCircle className="h-8 w-8 text-green-600 dark:text-green-400" aria-hidden="true" />
           </div>
           <h1 className="mb-2 text-2xl font-bold text-foreground">
-            {t('resetPassword.success.title')}
+            {cms('auth.reset_password.success_title', 'resetPassword.success.title')}
           </h1>
           <p className="mb-6 text-muted-foreground">
-            {t('resetPassword.success.message')}
+            {cms('auth.reset_password.success_message', 'resetPassword.success.message')}
           </p>
           <p className="text-sm text-muted-foreground">
-            {t('resetPassword.success.redirecting')} {countdown}{' '}
-            {countdown !== 1 ? t('resetPassword.success.seconds') : t('resetPassword.success.second')}...
+            {cms('auth.reset_password.success_redirecting', 'resetPassword.success.redirecting')} {countdown}{' '}
+            {countdown !== 1 ? cms('auth.reset_password.success_seconds', 'resetPassword.success.seconds') : cms('auth.reset_password.success_second', 'resetPassword.success.second')}...
           </p>
         </div>
       </AuthLayout>
@@ -122,8 +122,8 @@ export default function ResetPasswordPage() {
   return (
     <AuthLayout variant="centered">
       <SEO
-        title={t('resetPassword.title') + ' | Sqordia'}
-        description={t('resetPassword.subtitle')}
+        title={cms('auth.reset_password.title', 'resetPassword.title') + ' | Sqordia'}
+        description={cms('auth.reset_password.subtitle', 'resetPassword.subtitle')}
         url={getCanonicalUrl('/reset-password')}
         noindex={true}
         nofollow={true}
@@ -132,10 +132,10 @@ export default function ResetPasswordPage() {
       {/* Title */}
       <div className="mb-8 text-center">
         <h1 className="mb-2 text-3xl font-bold font-heading text-foreground">
-          {t('resetPassword.title')}
+          {cms('auth.reset_password.title', 'resetPassword.title')}
         </h1>
         <p className="text-base text-muted-foreground">
-          {t('resetPassword.subtitle')}
+          {cms('auth.reset_password.subtitle', 'resetPassword.subtitle')}
         </p>
       </div>
 
@@ -147,9 +147,9 @@ export default function ResetPasswordPage() {
         >
           <AlertCircle className="h-5 w-5 flex-shrink-0 text-yellow-600 dark:text-yellow-400" aria-hidden="true" />
           <p className="text-sm font-medium text-yellow-800 dark:text-yellow-300">
-            {t('resetPassword.tokenError')}{' '}
+            {cms('auth.reset_password.token_error', 'resetPassword.tokenError')}{' '}
             <Link to="/forgot-password" className="underline text-momentum-orange">
-              {t('resetPassword.tokenError.requestNew')}
+              {cms('auth.reset_password.token_error_request_new', 'resetPassword.tokenError.requestNew')}
             </Link>.
           </p>
         </div>
@@ -173,13 +173,13 @@ export default function ResetPasswordPage() {
         {/* New Password */}
         <div>
           <PasswordInput
-            label={t('resetPassword.newPassword')}
+            label={cms('auth.reset_password.new_password_label', 'resetPassword.newPassword')}
             name="password"
             value={formData.password}
             onChange={handleChange}
             required
             autoComplete="new-password"
-            placeholder={t('resetPassword.newPassword.placeholder')}
+            placeholder={cms('auth.reset_password.new_password_placeholder', 'resetPassword.newPassword.placeholder')}
             error={getFieldError(errors, 'password')}
           />
           {formData.password && (
@@ -194,13 +194,13 @@ export default function ResetPasswordPage() {
 
         {/* Confirm Password */}
         <PasswordInput
-          label={t('resetPassword.confirmPassword')}
+          label={cms('auth.reset_password.confirm_password_label', 'resetPassword.confirmPassword')}
           name="confirmPassword"
           value={formData.confirmPassword}
           onChange={handleChange}
           required
           autoComplete="new-password"
-          placeholder={t('resetPassword.confirmPassword.placeholder')}
+          placeholder={cms('auth.reset_password.confirm_password_placeholder', 'resetPassword.confirmPassword.placeholder')}
           error={getFieldError(errors, 'confirmPassword')}
         />
 
@@ -213,10 +213,10 @@ export default function ResetPasswordPage() {
           className="group w-full min-h-[44px]"
         >
           {loading ? (
-            <span>{t('resetPassword.resetting')}</span>
+            <span>{cms('auth.reset_password.resetting', 'resetPassword.resetting')}</span>
           ) : (
             <>
-              <span>{t('resetPassword.button')}</span>
+              <span>{cms('auth.reset_password.button', 'resetPassword.button')}</span>
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
             </>
           )}
@@ -230,7 +230,7 @@ export default function ResetPasswordPage() {
           className="inline-flex items-center gap-1 text-sm font-medium text-momentum-orange transition-colors hover:underline"
         >
           <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-          {t('resetPassword.backToLogin')}
+          {cms('auth.reset_password.back_to_login', 'resetPassword.backToLogin')}
         </Link>
       </div>
     </AuthLayout>

@@ -37,6 +37,8 @@ import AdminSystemHealthPage from './pages/admin/AdminSystemHealthPage';
 import AdminTemplatesPage from './pages/admin/AdminTemplatesPage';
 import AdminSettingsPage from './pages/admin/AdminSettingsPage';
 import { AdminAIConfigPage } from './pages/admin/AdminAIConfigPage';
+import AdminCmsPage from './pages/admin/AdminCmsPage';
+import AdminCmsPreviewPage from './pages/admin/AdminCmsPreviewPage';
 import SubscriptionPlansPage from './pages/SubscriptionPlansPage';
 import SubscriptionPage from './pages/SubscriptionPage';
 import InvoicesPage from './pages/InvoicesPage';
@@ -227,6 +229,10 @@ function App() {
         >
           <Route index element={<InvoicesPage />} />
         </Route>
+        {/* CMS routes - standalone (no AdminLayout sidebar) */}
+        <Route path="/admin/cms" element={<ProtectedRoute><AdminCmsPage /></ProtectedRoute>} />
+        <Route path="/admin/cms/preview" element={<ProtectedRoute><AdminCmsPreviewPage /></ProtectedRoute>} />
+
         <Route
           path="/admin"
           element={

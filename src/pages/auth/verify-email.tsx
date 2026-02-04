@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { CheckCircle, AlertCircle, Mail, RefreshCw } from 'lucide-react';
 import { authService } from '../../lib/auth-service';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useCmsContent } from '../../hooks/useCmsContent';
 import SEO from '../../components/SEO';
 import { getCanonicalUrl } from '../../utils/seo';
 import { AuthLayout } from '../../components/auth';
@@ -13,7 +13,7 @@ type VerificationStatus = 'loading' | 'success' | 'error' | 'resend';
 export default function VerifyEmailPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { t } = useTheme();
+  const { getContent: cms } = useCmsContent('auth');
 
   const token = searchParams.get('token');
 
@@ -36,7 +36,7 @@ export default function VerifyEmailPage() {
       const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
       return () => clearTimeout(timer);
     } else if (status === 'success' && countdown === 0) {
-      navigate('/login', { state: { message: t('verifyEmail.success.title') } });
+      navigate('/login', { state: { message: cms('auth.verify_email.success_title', 'verifyEmail.success.title') } });
     }
   }, [status, countdown, navigate]);
 
@@ -70,8 +70,8 @@ export default function VerifyEmailPage() {
     return (
       <AuthLayout variant="centered">
         <SEO
-          title={t('verifyEmail.loading.title') + ' | Sqordia'}
-          description={t('verifyEmail.loading.message')}
+          title={cms('auth.verify_email.loading_title', 'verifyEmail.loading.title') + ' | Sqordia'}
+          description={cms('auth.verify_email.loading_message', 'verifyEmail.loading.message')}
           url={getCanonicalUrl('/verify-email')}
           noindex={true}
           nofollow={true}
@@ -80,10 +80,10 @@ export default function VerifyEmailPage() {
         <div className="text-center">
           <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-4 border-muted border-t-momentum-orange" />
           <h1 className="text-xl font-semibold text-foreground">
-            {t('verifyEmail.loading.title')}
+            {cms('auth.verify_email.loading_title', 'verifyEmail.loading.title')}
           </h1>
           <p className="mt-2 text-muted-foreground">
-            {t('verifyEmail.loading.message')}
+            {cms('auth.verify_email.loading_message', 'verifyEmail.loading.message')}
           </p>
         </div>
       </AuthLayout>
@@ -95,8 +95,8 @@ export default function VerifyEmailPage() {
     return (
       <AuthLayout variant="centered">
         <SEO
-          title={t('verifyEmail.success.title') + ' | Sqordia'}
-          description={t('verifyEmail.success.message')}
+          title={cms('auth.verify_email.success_title', 'verifyEmail.success.title') + ' | Sqordia'}
+          description={cms('auth.verify_email.success_message', 'verifyEmail.success.message')}
           url={getCanonicalUrl('/verify-email')}
           noindex={true}
           nofollow={true}
@@ -107,20 +107,20 @@ export default function VerifyEmailPage() {
             <CheckCircle className="h-8 w-8 text-green-600 dark:text-green-400" aria-hidden="true" />
           </div>
           <h1 className="mb-2 text-2xl font-bold text-foreground">
-            {t('verifyEmail.success.title')}
+            {cms('auth.verify_email.success_title', 'verifyEmail.success.title')}
           </h1>
           <p className="mb-6 text-muted-foreground">
-            {t('verifyEmail.success.message')}
+            {cms('auth.verify_email.success_message', 'verifyEmail.success.message')}
           </p>
           <p className="text-sm text-muted-foreground">
-            {t('verifyEmail.success.redirecting')} {countdown}{' '}
-            {countdown !== 1 ? t('verifyEmail.success.seconds') : t('verifyEmail.success.second')}...
+            {cms('auth.verify_email.success_redirecting', 'verifyEmail.success.redirecting')} {countdown}{' '}
+            {countdown !== 1 ? cms('auth.verify_email.success_seconds', 'verifyEmail.success.seconds') : cms('auth.verify_email.success_second', 'verifyEmail.success.second')}...
           </p>
           <Link
             to="/login"
             className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-momentum-orange transition-colors hover:underline"
           >
-            {t('verifyEmail.success.loginLink')}
+            {cms('auth.verify_email.login_link', 'verifyEmail.success.loginLink')}
           </Link>
         </div>
       </AuthLayout>
@@ -131,8 +131,8 @@ export default function VerifyEmailPage() {
   return (
     <AuthLayout variant="centered">
       <SEO
-        title={(status === 'error' ? t('verifyEmail.error.title') : t('verifyEmail.resend.title')) + ' | Sqordia'}
-        description={status === 'error' ? t('verifyEmail.error.defaultMessage') : t('verifyEmail.resend.message')}
+        title={(status === 'error' ? cms('auth.verify_email.error_title', 'verifyEmail.error.title') : cms('auth.verify_email.resend_title', 'verifyEmail.resend.title')) + ' | Sqordia'}
+        description={status === 'error' ? cms('auth.verify_email.error_default_message', 'verifyEmail.error.defaultMessage') : cms('auth.verify_email.resend_message', 'verifyEmail.resend.message')}
         url={getCanonicalUrl('/verify-email')}
         noindex={true}
         nofollow={true}
@@ -145,10 +145,10 @@ export default function VerifyEmailPage() {
               <AlertCircle className="h-8 w-8 text-red-600 dark:text-red-400" aria-hidden="true" />
             </div>
             <h1 className="mb-2 text-2xl font-bold text-foreground">
-              {t('verifyEmail.error.title')}
+              {cms('auth.verify_email.error_title', 'verifyEmail.error.title')}
             </h1>
             <p className="mb-6 text-muted-foreground">
-              {error || t('verifyEmail.error.defaultMessage')}
+              {error || cms('auth.verify_email.error_default_message', 'verifyEmail.error.defaultMessage')}
             </p>
           </>
         ) : (
@@ -157,10 +157,10 @@ export default function VerifyEmailPage() {
               <Mail className="h-8 w-8 text-momentum-orange" aria-hidden="true" />
             </div>
             <h1 className="mb-2 text-2xl font-bold text-foreground">
-              {t('verifyEmail.resend.title')}
+              {cms('auth.verify_email.resend_title', 'verifyEmail.resend.title')}
             </h1>
             <p className="mb-6 text-muted-foreground">
-              {t('verifyEmail.resend.message')}
+              {cms('auth.verify_email.resend_message', 'verifyEmail.resend.message')}
             </p>
           </>
         )}
@@ -173,7 +173,7 @@ export default function VerifyEmailPage() {
           >
             <CheckCircle className="h-5 w-5 flex-shrink-0 text-green-600 dark:text-green-400" aria-hidden="true" />
             <p className="text-sm font-medium text-green-800 dark:text-green-300">
-              {t('verifyEmail.resend.success')}
+              {cms('auth.verify_email.resend_success', 'verifyEmail.resend.success')}
             </p>
           </div>
         )}
@@ -202,12 +202,12 @@ export default function VerifyEmailPage() {
           {resendLoading ? (
             <>
               <RefreshCw className="h-4 w-4 animate-spin" aria-hidden="true" />
-              <span>{t('verifyEmail.resend.sending')}</span>
+              <span>{cms('auth.verify_email.resend_sending', 'verifyEmail.resend.sending')}</span>
             </>
           ) : (
             <>
               <RefreshCw className="h-4 w-4" aria-hidden="true" />
-              <span>{t('verifyEmail.resend.button')}</span>
+              <span>{cms('auth.verify_email.resend_button', 'verifyEmail.resend.button')}</span>
             </>
           )}
         </Button>
@@ -215,24 +215,24 @@ export default function VerifyEmailPage() {
         {/* Login Link */}
         <div className="mt-6 border-t border-border pt-6">
           <p className="text-sm text-muted-foreground">
-            {t('verifyEmail.alreadyVerified')}{' '}
+            {cms('auth.verify_email.already_verified', 'verifyEmail.alreadyVerified')}{' '}
             <Link
               to="/login"
               className="font-semibold text-momentum-orange transition-colors hover:underline"
             >
-              {t('verifyEmail.loginLink')}
+              {cms('auth.verify_email.login_link', 'verifyEmail.loginLink')}
             </Link>
           </p>
         </div>
 
         {/* Help Text */}
         <p className="mt-4 text-sm text-muted-foreground">
-          {t('verifyEmail.helpText')}{' '}
+          {cms('auth.verify_email.help_text', 'verifyEmail.helpText')}{' '}
           <Link
             to="/support"
             className="font-medium text-momentum-orange transition-colors hover:underline"
           >
-            {t('verifyEmail.contactSupport')}
+            {cms('auth.verify_email.contact_support', 'verifyEmail.contactSupport')}
           </Link>.
         </p>
       </div>

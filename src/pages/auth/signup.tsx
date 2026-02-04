@@ -4,6 +4,7 @@ import { AlertCircle } from 'lucide-react';
 import { authService } from '../../lib/auth-service';
 import { signInWithGoogle } from '../../lib/google-auth';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useCmsContent } from '../../hooks/useCmsContent';
 import SEO from '../../components/SEO';
 import { getCanonicalUrl } from '../../utils/seo';
 import {
@@ -25,7 +26,7 @@ import {
 
 export default function SignupPage() {
   const navigate = useNavigate();
-  const { t } = useTheme();
+  const { getContent: cms } = useCmsContent('auth');
 
   const [formData, setFormData] = useState<SignupFormData>({
     firstName: '',
@@ -70,7 +71,7 @@ export default function SignupPage() {
         password: formData.password,
         organizationName: formData.organizationName || undefined,
       });
-      navigate('/login', { state: { message: t('register.success') } });
+      navigate('/login', { state: { message: cms('auth.signup.success', 'register.success') } });
     } catch (err: any) {
       setServerError(err.message || 'Registration failed. Please try again.');
     } finally {
@@ -107,23 +108,23 @@ export default function SignupPage() {
     <AuthLayout
       variant="split"
       illustrationPanel={{
-        tagline: t('register.panel.tagline'),
-        subtitle: t('register.panel.subtitle'),
+        tagline: cms('auth.signup.panel_tagline', 'register.panel.tagline'),
+        subtitle: cms('auth.signup.panel_subtitle', 'register.panel.subtitle'),
       }}
     >
       <SEO
-        title={t('register.title') + ' | Sqordia'}
-        description={t('register.description')}
+        title={cms('auth.signup.title', 'register.title') + ' | Sqordia'}
+        description={cms('auth.signup.description', 'register.description')}
         url={getCanonicalUrl('/signup')}
       />
 
       {/* Title */}
       <div className="mb-8 animate-fade-in-up">
         <h2 className="mb-2 text-3xl font-bold font-heading text-foreground">
-          {t('register.title')}
+          {cms('auth.signup.title', 'register.title')}
         </h2>
         <p className="text-base text-muted-foreground">
-          {t('register.subtitle')}
+          {cms('auth.signup.subtitle', 'register.subtitle')}
         </p>
       </div>
 
@@ -146,7 +147,7 @@ export default function SignupPage() {
         <div className="grid grid-cols-2 gap-4">
           <div>
             <Label htmlFor="firstName" className="mb-2 block text-sm font-semibold">
-              {t('register.firstname')}
+              {cms('auth.signup.firstname_label', 'register.firstname')}
             </Label>
             <Input
               id="firstName"
@@ -157,7 +158,7 @@ export default function SignupPage() {
               required
               autoComplete="given-name"
               className={`h-12 ${getFieldError(errors, 'firstName') ? 'border-red-300 focus-visible:ring-red-500 dark:border-red-500' : ''}`}
-              placeholder={t('register.firstname.placeholder')}
+              placeholder={cms('auth.signup.firstname_placeholder', 'register.firstname.placeholder')}
               aria-invalid={!!getFieldError(errors, 'firstName')}
               aria-describedby={getFieldError(errors, 'firstName') ? 'firstName-error' : undefined}
             />
@@ -170,7 +171,7 @@ export default function SignupPage() {
 
           <div>
             <Label htmlFor="lastName" className="mb-2 block text-sm font-semibold">
-              {t('register.lastname')}
+              {cms('auth.signup.lastname_label', 'register.lastname')}
             </Label>
             <Input
               id="lastName"
@@ -181,7 +182,7 @@ export default function SignupPage() {
               required
               autoComplete="family-name"
               className={`h-12 ${getFieldError(errors, 'lastName') ? 'border-red-300 focus-visible:ring-red-500 dark:border-red-500' : ''}`}
-              placeholder={t('register.lastname.placeholder')}
+              placeholder={cms('auth.signup.lastname_placeholder', 'register.lastname.placeholder')}
               aria-invalid={!!getFieldError(errors, 'lastName')}
               aria-describedby={getFieldError(errors, 'lastName') ? 'lastName-error' : undefined}
             />
@@ -196,7 +197,7 @@ export default function SignupPage() {
         {/* Email */}
         <div>
           <Label htmlFor="email" className="mb-2 block text-sm font-semibold">
-            {t('register.email')}
+            {cms('auth.signup.email_label', 'register.email')}
           </Label>
           <Input
             id="email"
@@ -207,7 +208,7 @@ export default function SignupPage() {
             required
             autoComplete="email"
             className={`h-12 ${getFieldError(errors, 'email') ? 'border-red-300 focus-visible:ring-red-500 dark:border-red-500' : ''}`}
-            placeholder={t('register.email.placeholder')}
+            placeholder={cms('auth.signup.email_placeholder', 'register.email.placeholder')}
             aria-invalid={!!getFieldError(errors, 'email')}
             aria-describedby={getFieldError(errors, 'email') ? 'email-error' : undefined}
           />
@@ -221,8 +222,8 @@ export default function SignupPage() {
         {/* Organization (Optional) */}
         <div>
           <Label htmlFor="organizationName" className="mb-2 block text-sm font-semibold">
-            {t('register.organization')}{' '}
-            <span className="font-normal text-muted-foreground">{t('register.optional')}</span>
+            {cms('auth.signup.organization_label', 'register.organization')}{' '}
+            <span className="font-normal text-muted-foreground">{cms('auth.signup.optional', 'register.optional')}</span>
           </Label>
           <Input
             id="organizationName"
@@ -232,21 +233,21 @@ export default function SignupPage() {
             onChange={handleChange}
             autoComplete="organization"
             className="h-12"
-            placeholder={t('register.organization.placeholder')}
+            placeholder={cms('auth.signup.organization_placeholder', 'register.organization.placeholder')}
           />
         </div>
 
         {/* Password */}
         <div>
           <PasswordInput
-            label={t('register.password')}
+            label={cms('auth.signup.password_label', 'register.password')}
             name="password"
             value={formData.password}
             onChange={handleChange}
             required
             showIcon={false}
             autoComplete="new-password"
-            placeholder={t('register.password.placeholder')}
+            placeholder={cms('auth.signup.password_placeholder', 'register.password.placeholder')}
             error={getFieldError(errors, 'password')}
           />
           {formData.password && (
@@ -260,14 +261,14 @@ export default function SignupPage() {
 
         {/* Confirm Password */}
         <PasswordInput
-          label={t('register.confirm')}
+          label={cms('auth.signup.confirm_label', 'register.confirm')}
           name="confirmPassword"
           value={formData.confirmPassword || ''}
           onChange={handleChange}
           required
           showIcon={false}
           autoComplete="new-password"
-          placeholder={t('register.confirm.placeholder')}
+          placeholder={cms('auth.signup.confirm_placeholder', 'register.confirm.placeholder')}
           error={getFieldError(errors, 'confirmPassword')}
         />
 
@@ -284,19 +285,19 @@ export default function SignupPage() {
               aria-describedby={getFieldError(errors, 'acceptTerms') ? 'terms-error' : undefined}
             />
             <span className="text-sm leading-relaxed text-muted-foreground">
-              {t('register.terms')}{' '}
+              {cms('auth.signup.terms_prefix', 'register.terms')}{' '}
               <Link
                 to="/terms"
                 className="font-semibold text-momentum-orange transition-colors hover:underline"
               >
-                {t('register.termslink')}
+                {cms('auth.signup.terms_link', 'register.termslink')}
               </Link>{' '}
-              {t('register.and')}{' '}
+              {cms('auth.signup.and', 'register.and')}{' '}
               <Link
                 to="/privacy"
                 className="font-semibold text-momentum-orange transition-colors hover:underline"
               >
-                {t('register.privacy')}
+                {cms('auth.signup.privacy_link', 'register.privacy')}
               </Link>
             </span>
           </label>
@@ -315,13 +316,13 @@ export default function SignupPage() {
           disabled={loading}
           className="w-full min-h-[44px]"
         >
-          {loading ? t('register.creating') : t('register.button')}
+          {loading ? cms('auth.signup.creating', 'register.creating') : cms('auth.signup.button', 'register.button')}
         </Button>
       </form>
 
       {/* Divider */}
       <div className="animate-fade-in-up animation-delay-200">
-        <Divider text={t('register.divider')} className="my-6" />
+        <Divider text={cms('auth.signup.divider', 'register.divider')} className="my-6" />
       </div>
 
       {/* Social Login Buttons */}
@@ -337,12 +338,12 @@ export default function SignupPage() {
       {/* Login Link */}
       <div className="mt-8 pt-6 animate-fade-in-up animation-delay-400">
         <p className="text-center text-sm text-muted-foreground">
-          {t('register.hasaccount')}{' '}
+          {cms('auth.signup.has_account', 'register.hasaccount')}{' '}
           <Link
             to="/login"
             className="font-semibold text-momentum-orange transition-colors hover:underline"
           >
-            {t('register.signin')}
+            {cms('auth.signup.signin_link', 'register.signin')}
           </Link>
         </p>
       </div>
@@ -353,7 +354,7 @@ export default function SignupPage() {
           to="/"
           className="text-muted-foreground transition-colors hover:text-foreground hover:underline"
         >
-          {t('register.back')}
+          {cms('auth.signup.back', 'register.back')}
         </Link>
       </p>
     </AuthLayout>

@@ -1,6 +1,7 @@
 import { ArrowRight, Shield, Clock, XCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
+import { usePublishedContent } from '@/hooks/usePublishedContent';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 
@@ -24,7 +25,20 @@ const mockupVariants = {
 // ── Hero ─────────────────────────────────────────────────────────────────────
 export default function Hero() {
   const { theme, t } = useTheme();
+  const { getBlockContent } = usePublishedContent();
   const isDark = theme === 'dark';
+
+  // CMS content with i18n fallbacks
+  const badgeTrusted = getBlockContent('landing.hero.badge_trusted', t('landing.hero.badge.trusted'));
+  const badgeRating = getBlockContent('landing.hero.badge_rating', t('landing.hero.badge.rating'));
+  const headlineLine1 = getBlockContent('landing.hero.headline_line1', t('landing.hero.headline.line1'));
+  const headlineHighlight = getBlockContent('landing.hero.headline_highlight', t('landing.hero.headline.highlight'));
+  const subheadline = getBlockContent('landing.hero.subheadline', t('landing.hero.subheadline'));
+  const ctaPrimary = getBlockContent('landing.hero.cta_primary', t('landing.hero.cta.primary'));
+  const ctaSecondary = getBlockContent('landing.hero.cta_secondary', t('landing.hero.cta.secondary'));
+  const trustNoCard = getBlockContent('landing.hero.trust_nocard', t('landing.hero.trust.noCard'));
+  const trustTrial = getBlockContent('landing.hero.trust_trial', t('landing.hero.trust.trial'));
+  const trustCancel = getBlockContent('landing.hero.trust_cancel', t('landing.hero.trust.cancel'));
 
   return (
     <section
@@ -68,10 +82,10 @@ export default function Hero() {
               )}>
                 <span className="flex items-center gap-1.5 text-green-500 font-semibold">
                   <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
-                  {t('landing.hero.badge.trusted')}
+                  {badgeTrusted}
                 </span>
                 <span className="w-px h-3.5 bg-gray-300 dark:bg-gray-600" />
-                <span>{t('landing.hero.badge.rating')}</span>
+                <span>{badgeRating}</span>
               </div>
             </motion.div>
 
@@ -84,8 +98,8 @@ export default function Hero() {
                 isDark ? 'text-white' : 'text-strategy-blue',
               )}
             >
-              <span className="block">{t('landing.hero.headline.line1')}</span>
-              <span className="block text-momentum-orange">{t('landing.hero.headline.highlight')}</span>
+              <span className="block">{headlineLine1}</span>
+              <span className="block text-momentum-orange">{headlineHighlight}</span>
             </motion.h1>
 
             {/* Subheadline */}
@@ -96,7 +110,7 @@ export default function Hero() {
                 isDark ? 'text-gray-300' : 'text-gray-500',
               )}
             >
-              {t('landing.hero.subheadline')}
+              {subheadline}
             </motion.p>
 
             {/* CTA */}
@@ -105,7 +119,7 @@ export default function Hero() {
                 to="/signup"
                 className="group inline-flex items-center justify-center gap-2 px-7 py-3.5 bg-momentum-orange hover:bg-[#E55F00] text-white text-base font-semibold rounded-lg transition-all duration-200 shadow-sm hover:shadow-md focus:outline-none focus:ring-4 focus:ring-momentum-orange/30"
               >
-                {t('landing.hero.cta.primary')}
+                {ctaPrimary}
                 <ArrowRight size={18} className="group-hover:translate-x-0.5 transition-transform" />
               </Link>
               <Link
@@ -117,7 +131,7 @@ export default function Hero() {
                     : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50 shadow-sm',
                 )}
               >
-                {t('landing.hero.cta.secondary')}
+                {ctaSecondary}
               </Link>
             </motion.div>
 
@@ -128,15 +142,15 @@ export default function Hero() {
             >
               <div className="flex items-center gap-1.5">
                 <Shield size={16} className="text-green-500" />
-                <span>{t('landing.hero.trust.noCard')}</span>
+                <span>{trustNoCard}</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <Clock size={16} className="text-momentum-orange" />
-                <span>{t('landing.hero.trust.trial')}</span>
+                <span>{trustTrial}</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <XCircle size={16} className="text-gray-400" />
-                <span>{t('landing.hero.trust.cancel')}</span>
+                <span>{trustCancel}</span>
               </div>
             </motion.div>
           </motion.div>

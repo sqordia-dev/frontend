@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { businessPlanService } from '../lib/business-plan-service';
 import { useTheme } from '../contexts/ThemeContext';
+import { useCmsContent } from '../hooks/useCmsContent';
 import { PersonaType } from '../lib/types';
 import SEO from '../components/SEO';
 import WizardStep from '../components/WizardStep';
@@ -93,7 +94,8 @@ const STEP_INFO: StepInfo[] = [
 export default function WizardQuestionnairePage() {
   const { planId } = useParams();
   const navigate = useNavigate();
-  const { theme, t, language } = useTheme();
+  const { theme, language } = useTheme();
+  const { getContent: cms } = useCmsContent('questionnaire');
   const strategyBlue = '#1A2B47';
   const momentumOrange = '#FF6B00';
 
@@ -401,7 +403,7 @@ export default function WizardQuestionnairePage() {
 
       if (!Array.isArray(questionsData) || questionsData.length === 0) {
         console.warn('No questions found in response:', responseData);
-        setError('No questions found for this persona. Please try again.');
+        setError(cms('questionnaire.no_questions_error', '') || 'No questions found for this persona. Please try again.');
         return;
       }
 
@@ -983,9 +985,7 @@ export default function WizardQuestionnairePage() {
           generationPollRef.current = null;
         }
         // Keep modal open but show error with retry option
-        setGenerationError(status.errorMessage || (language === 'fr'
-          ? 'La génération du plan d\'affaires a échoué. Veuillez réessayer.'
-          : 'Business plan generation failed. Please try again.'));
+        setGenerationError(status.errorMessage || (cms('questionnaire.generation_failed', '') || 'Business plan generation failed. Please try again.'));
         return;
       }
     } catch (err) {
@@ -1011,9 +1011,7 @@ export default function WizardQuestionnairePage() {
       pollGenerationStatus();
     } catch (err: any) {
       console.error('Failed to retry generation:', err);
-      setGenerationError(err.message || (language === 'fr'
-        ? 'Impossible de démarrer la génération du plan d\'affaires. Veuillez réessayer.'
-        : 'Failed to start business plan generation. Please try again.'));
+      setGenerationError(err.message || (cms('questionnaire.generation_start_failed', '') || 'Failed to start business plan generation. Please try again.'));
     }
   }, [planId, pollGenerationStatus, language]);
 
@@ -1091,7 +1089,7 @@ export default function WizardQuestionnairePage() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4" style={{ color: momentumOrange }} />
-          <p className="text-gray-600 dark:text-gray-400">Loading your questionnaire...</p>
+          <p className="text-gray-600 dark:text-gray-400">{cms('questionnaire.loading', '') || 'Loading your questionnaire...'}</p>
         </div>
       </div>
     );
@@ -1108,12 +1106,8 @@ export default function WizardQuestionnairePage() {
   return (
     <div className="min-h-screen" style={{ backgroundColor: theme === 'dark' ? '#111827' : '#F9FAFB' }}>
       <SEO
-        title={language === 'fr'
-          ? "Questionnaire | Sqordia"
-          : "Questionnaire | Sqordia"}
-        description={language === 'fr'
-          ? "Répondez aux questions pour créer votre plan d'affaires."
-          : "Answer questions to create your business plan."}
+        title={`${cms('questionnaire.seo_title', '') || 'Questionnaire'} | Sqordia`}
+        description={cms('questionnaire.seo_description', '') || "Answer questions to create your business plan."}
         url={`/questionnaire/${planId}`}
         noindex={true}
         nofollow={true}
@@ -1140,11 +1134,11 @@ export default function WizardQuestionnairePage() {
               className="sr-only"
             >
               {generationError
-                ? (language === 'fr' ? 'Erreur de génération' : 'Generation error')
+                ? (cms('questionnaire.generation_error_sr', '') || 'Generation error')
                 : generationStatus?.status === 'completed'
-                ? (language === 'fr' ? 'Génération terminée, redirection en cours' : 'Generation complete, redirecting')
-                : `${language === 'fr' ? 'Progression' : 'Progress'}: ${Math.round(generationStatus?.progress || 0)}%. ${
-                    generationStatus?.currentStep || (language === 'fr' ? 'Traitement en cours' : 'Processing')
+                ? (cms('questionnaire.generation_complete_sr', '') || 'Generation complete, redirecting')
+                : `${cms('questionnaire.progress', '') || 'Progress'}: ${Math.round(generationStatus?.progress || 0)}%. ${
+                    generationStatus?.currentStep || (cms('questionnaire.processing', '') || 'Processing')
                   }`
               }
             </div>
@@ -1237,10 +1231,10 @@ export default function WizardQuestionnairePage() {
                 }`}
               >
                 {generationError
-                  ? (language === 'fr' ? 'Erreur de génération' : 'Generation Error')
+                  ? (cms('questionnaire.generation_error_title', '') || 'Generation Error')
                   : generationStatus?.status === 'completed'
-                  ? (language === 'fr' ? 'Génération terminée!' : 'Generation Complete!')
-                  : (language === 'fr' ? 'Génération en cours...' : 'Generating Your Business Plan...')}
+                  ? (cms('questionnaire.generation_complete_title', '') || 'Generation Complete!')
+                  : (cms('questionnaire.generation_title', '') || 'Generating Your Business Plan...')}
               </h3>
 
               {/* Current Section / Status Description */}
@@ -1255,12 +1249,8 @@ export default function WizardQuestionnairePage() {
                 {generationError
                   ? generationError
                   : generationStatus?.status === 'completed'
-                  ? (language === 'fr'
-                    ? 'Redirection vers votre plan d\'affaires...'
-                    : 'Redirecting to your business plan...')
-                  : generationStatus?.currentStep || (language === 'fr'
-                    ? 'Préparation de votre plan d\'affaires personnalisé'
-                    : 'Preparing your personalized business plan')}
+                  ? (cms('questionnaire.generation_redirecting', '') || 'Redirecting to your business plan...')
+                  : generationStatus?.currentStep || (cms('questionnaire.generation_preparing', '') || 'Preparing your personalized business plan')}
               </p>
 
               {/* Progress Bar - only show if not error */}
@@ -1272,7 +1262,7 @@ export default function WizardQuestionnairePage() {
                     aria-valuenow={Math.round(generationStatus?.progress || 0)}
                     aria-valuemin={0}
                     aria-valuemax={100}
-                    aria-label={language === 'fr' ? 'Progression de la génération' : 'Generation progress'}
+                    aria-label={cms('questionnaire.generation_progress_label', '') || 'Generation progress'}
                   >
                     <div
                       className={`h-full rounded-full ${
@@ -1289,7 +1279,7 @@ export default function WizardQuestionnairePage() {
 
                   <div className="flex justify-between text-sm text-gray-500 dark:text-gray-400 mb-6">
                     <span>
-                      {generationStatus?.completedSections || 0} / {generationStatus?.totalSections || 8} {language === 'fr' ? 'sections' : 'sections'}
+                      {generationStatus?.completedSections || 0} / {generationStatus?.totalSections || 8} {cms('questionnaire.sections', '') || 'sections'}
                     </span>
                     <span>{Math.round(generationStatus?.progress || 0)}%</span>
                   </div>
@@ -1312,7 +1302,7 @@ export default function WizardQuestionnairePage() {
                     />
                     <div className="text-left">
                       <span className="text-xs font-semibold text-blue-700 dark:text-blue-300 uppercase tracking-wide">
-                        {language === 'fr' ? 'Le saviez-vous?' : 'Did you know?'}
+                        {cms('questionnaire.did_you_know', '') || 'Did you know?'}
                       </span>
                       <p
                         className={`text-sm text-blue-800 dark:text-blue-200 mt-1 ${
@@ -1351,7 +1341,7 @@ export default function WizardQuestionnairePage() {
                       onClick={handleCancelGeneration}
                       className="px-6 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
                     >
-                      {language === 'fr' ? 'Annuler' : 'Cancel'}
+                      {cms('questionnaire.cancel', '') || 'Cancel'}
                     </button>
                     <button
                       ref={cancelButtonRef}
@@ -1360,7 +1350,7 @@ export default function WizardQuestionnairePage() {
                       style={{ backgroundColor: momentumOrange }}
                     >
                       <RefreshCw size={18} aria-hidden="true" />
-                      {language === 'fr' ? 'Réessayer' : 'Retry'}
+                      {cms('questionnaire.retry', '') || 'Retry'}
                     </button>
                   </>
                 ) : generationStatus?.status !== 'completed' ? (
@@ -1370,7 +1360,7 @@ export default function WizardQuestionnairePage() {
                     onClick={handleCancelGeneration}
                     className="px-6 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
                   >
-                    {language === 'fr' ? 'Annuler' : 'Cancel'}
+                    {cms('questionnaire.cancel', '') || 'Cancel'}
                   </button>
                 ) : null}
               </div>
@@ -1378,9 +1368,7 @@ export default function WizardQuestionnairePage() {
               {/* Estimated time remaining (when in progress) */}
               {!generationError && generationStatus?.status !== 'completed' && (
                 <p className="text-xs text-gray-400 dark:text-gray-500 mt-4">
-                  {language === 'fr'
-                    ? 'Estimation: 1-2 minutes restantes'
-                    : 'Estimated: 1-2 minutes remaining'}
+                  {cms('questionnaire.estimated_time', '') || 'Estimated: 1-2 minutes remaining'}
                 </p>
               )}
             </div>
@@ -1401,7 +1389,7 @@ export default function WizardQuestionnairePage() {
               style={{ color: theme === 'dark' ? '#9CA3AF' : '#6B7280' }}
             >
               <ArrowLeft size={18} />
-              <span>Back to Dashboard</span>
+              <span>{cms('questionnaire.back_to_dashboard', '') || 'Back to Dashboard'}</span>
             </button>
 
             <div className="flex items-center gap-4">
@@ -1409,7 +1397,7 @@ export default function WizardQuestionnairePage() {
               <button
                 onClick={() => setShowPreview(!showPreview)}
                 className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                title={showPreview ? 'Hide Preview' : 'Show Preview'}
+                title={showPreview ? (cms('questionnaire.hide_preview', '') || 'Hide Preview') : (cms('questionnaire.show_preview', '') || 'Show Preview')}
               >
                 {showPreview ? <EyeOff size={20} /> : <Eye size={20} />}
               </button>
@@ -1417,7 +1405,7 @@ export default function WizardQuestionnairePage() {
               {/* Progress */}
               <div className="text-sm">
                 <span className="font-medium">{progress.answered}/{progress.total}</span>
-                <span className="text-gray-500 dark:text-gray-400 ml-1">answered</span>
+                <span className="text-gray-500 dark:text-gray-400 ml-1">{cms('questionnaire.answered', '') || 'answered'}</span>
               </div>
             </div>
           </div>
@@ -1425,7 +1413,7 @@ export default function WizardQuestionnairePage() {
           {/* Segmented Progress Bar */}
           <div className="mt-4">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium">Progress</span>
+              <span className="text-sm font-medium">{cms('questionnaire.progress', '') || 'Progress'}</span>
               <span className="text-sm text-gray-500 dark:text-gray-400">
                 {Math.round(progress.percentage)}%
               </span>
@@ -1504,11 +1492,11 @@ export default function WizardQuestionnairePage() {
                       {isComplete ? <CheckCircle2 size={20} /> : <StepIconComponent size={20} />}
                     </div>
                     <span className={`text-xs font-medium text-center ${isActive ? 'font-bold' : ''}`} style={{
-                      color: isActive 
-                        ? momentumOrange 
+                      color: isActive
+                        ? momentumOrange
                         : (theme === 'dark' ? '#9CA3AF' : '#6B7280')
                     }}>
-                      {language === 'fr' ? step.titleFr : step.title}
+                      {cms('questionnaire.step_' + step.number + '_title', '') || (language === 'fr' ? step.titleFr : step.title)}
                     </span>
                   </div>
                   {idx < STEP_INFO.length - 1 && (
@@ -1532,7 +1520,7 @@ export default function WizardQuestionnairePage() {
       {showMilestone && milestoneStep !== null && (
         <MilestoneCelebration
           stepNumber={milestoneStep}
-          stepTitle={STEP_INFO[milestoneStep - 1]?.title || `Step ${milestoneStep}`}
+          stepTitle={cms('questionnaire.step_' + milestoneStep + '_title', '') || (language === 'fr' ? STEP_INFO[milestoneStep - 1]?.titleFr : STEP_INFO[milestoneStep - 1]?.title) || `Step ${milestoneStep}`}
           overallProgress={Math.round(progress.percentage)}
           isVisible={showMilestone}
           onClose={() => setShowMilestone(false)}
@@ -1544,7 +1532,7 @@ export default function WizardQuestionnairePage() {
         isOpen={showSectionReview}
         onClose={() => setShowSectionReview(false)}
         stepNumber={currentStep}
-        stepTitle={stepInfo?.title || `Step ${currentStep}`}
+        stepTitle={cms('questionnaire.step_' + currentStep + '_title', '') || (language === 'fr' ? stepInfo?.titleFr : stepInfo?.title) || `Step ${currentStep}`}
         questions={[]} // TODO: Populate with actual question reviews
         onApplyPolish={(questionId, polishedText) => {
           // TODO: Apply polished text
@@ -1591,7 +1579,7 @@ export default function WizardQuestionnairePage() {
             <WizardStep
               stepNumber={currentStep}
               totalSteps={5}
-              title={language === 'fr' ? stepInfo.titleFr : stepInfo.title}
+              title={cms('questionnaire.step_' + currentStep + '_title', '') || (language === 'fr' ? stepInfo.titleFr : stepInfo.title)}
               timeEstimate={stepInfo.timeEstimate}
               elapsedTime={elapsedTime}
               isComplete={isStepComplete(currentStep)}
@@ -1604,7 +1592,7 @@ export default function WizardQuestionnairePage() {
                 {currentStepQuestions.length === 0 ? (
                   <div className="text-center py-12">
                     <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4" style={{ color: momentumOrange }} />
-                    <p className="text-gray-500 dark:text-gray-400">Loading questions...</p>
+                    <p className="text-gray-500 dark:text-gray-400">{cms('questionnaire.loading_questions', '') || 'Loading questions...'}</p>
                   </div>
                 ) : (
                   <>
@@ -1669,11 +1657,11 @@ export default function WizardQuestionnairePage() {
               <div className="mb-4 flex items-center justify-between">
                 <h3 className="text-lg font-semibold flex items-center gap-2">
                   <FileText size={20} />
-                  Live Preview
+                  {cms('questionnaire.live_preview', '') || 'Live Preview'}
                 </h3>
                 <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
                   <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-                  Auto-updating
+                  {cms('questionnaire.auto_updating', '') || 'Auto-updating'}
                 </span>
               </div>
               
@@ -1694,7 +1682,7 @@ export default function WizardQuestionnairePage() {
                 ) : (
                   <div className="text-center py-12">
                     <FileText size={48} className="mx-auto mb-4 text-gray-300 dark:text-gray-600" />
-                    <p className="text-gray-400 dark:text-gray-500 text-lg">Start answering questions to see your preview here...</p>
+                    <p className="text-gray-400 dark:text-gray-500 text-lg">{cms('questionnaire.empty_preview', '') || 'Start answering questions to see your preview here...'}</p>
                   </div>
                 )}
               </div>

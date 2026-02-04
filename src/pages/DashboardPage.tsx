@@ -12,8 +12,8 @@ import {
 } from 'lucide-react';
 import { businessPlanService } from '../lib/business-plan-service';
 import { BusinessPlan } from '../lib/types';
-import { useTheme } from '../contexts/ThemeContext';
 import { useToast } from '../contexts/ToastContext';
+import { useCmsContent } from '../hooks/useCmsContent';
 import DashboardTour from '../components/DashboardTour';
 
 // shadcn/ui components
@@ -38,7 +38,7 @@ import { StatsCard } from '@/components/dashboard/StatsCard';
 import { PlanCard } from '@/components/dashboard/PlanCard';
 
 export default function DashboardPage() {
-  const { t } = useTheme();
+  const { getContent: cms } = useCmsContent('dashboard');
   const toast = useToast();
   const [plans, setPlans] = useState<BusinessPlan[]>([]);
   const [loading, setLoading] = useState(true);
@@ -101,13 +101,13 @@ export default function DashboardPage() {
       setShowDeleteModal(false);
       setPlanToDelete(null);
       toast.success(
-        t('dashboard.deleteSuccess') || 'Plan deleted',
-        t('dashboard.deleteSuccessDesc') || 'Your plan has been deleted successfully'
+        cms('dashboard.deleteSuccess', 'dashboard.deleteSuccess') || 'Plan deleted',
+        cms('dashboard.deleteSuccessDesc', 'dashboard.deleteSuccessDesc') || 'Your plan has been deleted successfully'
       );
     } catch (error: unknown) {
       console.error('Failed to delete plan:', error);
       const errorMessage = error instanceof Error ? error.message : 'An error occurred';
-      toast.error(t('dashboard.deleteError') || 'Failed to delete plan', errorMessage);
+      toast.error(cms('dashboard.deleteError', 'dashboard.deleteError') || 'Failed to delete plan', errorMessage);
     } finally {
       setDeletingPlanId(null);
     }
@@ -126,13 +126,13 @@ export default function DashboardPage() {
       const duplicatedPlan = await businessPlanService.duplicateBusinessPlan(planId);
       setPlans(prevPlans => [...prevPlans, duplicatedPlan]);
       toast.success(
-        t('dashboard.duplicateSuccess') || 'Plan duplicated',
-        t('dashboard.duplicateSuccessDesc') || 'Your plan has been duplicated successfully'
+        cms('dashboard.duplicateSuccess', 'dashboard.duplicateSuccess') || 'Plan duplicated',
+        cms('dashboard.duplicateSuccessDesc', 'dashboard.duplicateSuccessDesc') || 'Your plan has been duplicated successfully'
       );
     } catch (error: unknown) {
       console.error('Failed to duplicate plan:', error);
       const errorMessage = error instanceof Error ? error.message : 'An error occurred';
-      toast.error(t('dashboard.duplicateError') || 'Failed to duplicate plan', errorMessage);
+      toast.error(cms('dashboard.duplicateError', 'dashboard.duplicateError') || 'Failed to duplicate plan', errorMessage);
     } finally {
       setDuplicatingPlanId(null);
     }
@@ -143,8 +143,8 @@ export default function DashboardPage() {
     return (
       <div className="min-h-screen">
         <SEO
-          title={t('dashboard.title') || 'Dashboard | Sqordia'}
-          description={t('dashboard.description') || 'Manage your business plans and projects'}
+          title={cms('dashboard.title', 'dashboard.title') || 'Dashboard | Sqordia'}
+          description={cms('dashboard.description', 'dashboard.description') || 'Manage your business plans and projects'}
           noindex={true}
           nofollow={true}
         />
@@ -180,17 +180,17 @@ export default function DashboardPage() {
 
   const stats = [
     {
-      title: t('dashboard.totalPlans'),
+      title: cms('dashboard.totalPlans', 'dashboard.totalPlans'),
       value: plans.length,
       icon: <FileText className="h-6 w-6" />,
     },
     {
-      title: t('dashboard.activePlans'),
+      title: cms('dashboard.activePlans', 'dashboard.activePlans'),
       value: plans.filter(p => p.status === 'active' || !p.status).length,
       icon: <Target className="h-6 w-6" />,
     },
     {
-      title: t('dashboard.recentPlans'),
+      title: cms('dashboard.recentPlans', 'dashboard.recentPlans'),
       value: plans.filter(p => {
         if (!p.createdAt) return false;
         const created = new Date(p.createdAt);
@@ -201,7 +201,7 @@ export default function DashboardPage() {
       icon: <Zap className="h-6 w-6" />,
     },
     {
-      title: t('dashboard.completionRate'),
+      title: cms('dashboard.completionRate', 'dashboard.completionRate'),
       value: plans.length > 0
         ? `${Math.round((plans.filter(p => p.status === 'Completed').length / plans.length) * 100)}%`
         : '0%',
@@ -212,8 +212,8 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen">
       <SEO
-        title={t('dashboard.title') || 'Dashboard | Sqordia'}
-        description={t('dashboard.description') || 'Manage your business plans and projects'}
+        title={cms('dashboard.title', 'dashboard.title') || 'Dashboard | Sqordia'}
+        description={cms('dashboard.description', 'dashboard.description') || 'Manage your business plans and projects'}
         noindex={true}
         nofollow={true}
       />
@@ -225,10 +225,10 @@ export default function DashboardPage() {
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
               <div>
                 <h1 className="text-3xl lg:text-4xl font-bold tracking-tight mb-2 text-foreground">
-                  {t('dashboard.welcome')}
+                  {cms('dashboard.welcome', 'dashboard.welcome')}
                 </h1>
                 <p className="text-lg text-muted-foreground">
-                  {t('dashboard.subtitle')}
+                  {cms('dashboard.subtitle', 'dashboard.subtitle')}
                 </p>
               </div>
               <div className="flex items-center gap-3">
@@ -241,12 +241,12 @@ export default function DashboardPage() {
                   className="hidden sm:flex"
                 >
                   <Sparkles className="mr-2 h-4 w-4" />
-                  {t('dashboard.showTour')}
+                  {cms('dashboard.showTour', 'dashboard.showTour')}
                 </Button>
                 <Button asChild variant="brand">
                   <Link to="/create-plan">
                     <Plus className="mr-2 h-4 w-4" />
-                    {t('dashboard.newPlan')}
+                    {cms('dashboard.newPlan', 'dashboard.newPlan')}
                   </Link>
                 </Button>
               </div>
@@ -277,16 +277,16 @@ export default function DashboardPage() {
                     </div>
                     <div>
                       <h3 className="text-2xl lg:text-3xl font-bold mb-1.5 text-white font-heading">
-                        {t('dashboard.createNextPlan')}
+                        {cms('dashboard.createNextPlan', 'dashboard.createNextPlan')}
                       </h3>
                       <p className="text-base text-gray-300">
-                        {t('dashboard.createNextPlanDesc')}
+                        {cms('dashboard.createNextPlanDesc', 'dashboard.createNextPlanDesc')}
                       </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
                     <span className="font-semibold hidden sm:inline text-white">
-                      {t('dashboard.getStarted')}
+                      {cms('dashboard.getStarted', 'dashboard.getStarted')}
                     </span>
                     <div className="flex h-11 w-11 items-center justify-center rounded-lg shrink-0 bg-momentum-orange group-hover:bg-[#E55F00] transition-colors">
                       <ArrowRight className="h-5 w-5 text-white" />
@@ -303,10 +303,10 @@ export default function DashboardPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <CardTitle className="text-2xl">
-                    {t('dashboard.yourPlans')}
+                    {cms('dashboard.yourPlans', 'dashboard.yourPlans')}
                   </CardTitle>
                   <CardDescription>
-                    {plans.length} {plans.length === 1 ? t('dashboard.plan') : t('dashboard.plansTotal')}
+                    {plans.length} {plans.length === 1 ? cms('dashboard.plan', 'dashboard.plan') : cms('dashboard.plansTotal', 'dashboard.plansTotal')}
                   </CardDescription>
                 </div>
               </div>
@@ -319,15 +319,15 @@ export default function DashboardPage() {
                     <FileText className="h-10 w-10 text-muted-foreground" />
                   </div>
                   <h3 className="text-2xl font-bold mb-3">
-                    {t('dashboard.noPlans')}
+                    {cms('dashboard.noPlans', 'dashboard.noPlans')}
                   </h3>
                   <p className="text-muted-foreground mb-8 max-w-md mx-auto text-lg">
-                    {t('dashboard.noPlansDesc')}
+                    {cms('dashboard.noPlansDesc', 'dashboard.noPlansDesc')}
                   </p>
                   <Button asChild variant="brand" size="lg">
                     <Link to="/create-plan">
                       <Plus className="mr-2 h-5 w-5" />
-                      {t('dashboard.createFirstPlan')}
+                      {cms('dashboard.createFirstPlan', 'dashboard.createFirstPlan')}
                     </Link>
                   </Button>
                 </div>
@@ -351,16 +351,16 @@ export default function DashboardPage() {
                           isDeleting={deletingPlanId === plan.id}
                           isDuplicating={duplicatingPlanId === plan.id}
                           translations={{
-                            resume: t('dashboard.resume'),
-                            view: t('dashboard.view'),
-                            noDescription: t('dashboard.noDescription'),
-                            delete: t('dashboard.deletePlan'),
-                            duplicate: t('dashboard.duplicatePlan'),
+                            resume: cms('dashboard.resume', 'dashboard.resume'),
+                            view: cms('dashboard.view', 'dashboard.view'),
+                            noDescription: cms('dashboard.noDescription', 'dashboard.noDescription'),
+                            delete: cms('dashboard.deletePlan', 'dashboard.deletePlan'),
+                            duplicate: cms('dashboard.duplicatePlan', 'dashboard.duplicatePlan'),
                             status: {
-                              draft: t('dashboard.status.draft'),
-                              completed: t('dashboard.status.completed'),
-                              active: t('dashboard.status.active'),
-                              inProgress: t('dashboard.status.inProgress'),
+                              draft: cms('dashboard.status.draft', 'dashboard.status.draft'),
+                              completed: cms('dashboard.status.completed', 'dashboard.status.completed'),
+                              active: cms('dashboard.status.active', 'dashboard.status.active'),
+                              inProgress: cms('dashboard.status.inProgress', 'dashboard.status.inProgress'),
                             },
                           }}
                         />
@@ -379,20 +379,20 @@ export default function DashboardPage() {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              {t('dashboard.deletePlan')}
+              {cms('dashboard.deletePlan', 'dashboard.deletePlan')}
             </AlertDialogTitle>
             <AlertDialogDescription className="space-y-3">
               <p>
-                {t('dashboard.deleteConfirm')} <strong>"{planToDelete?.title || 'Untitled Plan'}"</strong>?
+                {cms('dashboard.deleteConfirm', 'dashboard.deleteConfirm')} <strong>"{planToDelete?.title || 'Untitled Plan'}"</strong>?
               </p>
               <p className="text-destructive font-medium">
-                {t('dashboard.deleteWarning')}
+                {cms('dashboard.deleteWarning', 'dashboard.deleteWarning')}
               </p>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel onClick={handleDeleteCancel} disabled={!!deletingPlanId}>
-              {t('dashboard.cancel')}
+              {cms('dashboard.cancel', 'dashboard.cancel')}
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteConfirm}
@@ -402,10 +402,10 @@ export default function DashboardPage() {
               {deletingPlanId ? (
                 <>
                   <Spinner size="sm" variant="white" className="mr-2" />
-                  {t('dashboard.deleting')}
+                  {cms('dashboard.deleting', 'dashboard.deleting')}
                 </>
               ) : (
-                t('dashboard.deletePlanButton')
+                cms('dashboard.deletePlanButton', 'dashboard.deletePlanButton')
               )}
             </AlertDialogAction>
           </AlertDialogFooter>

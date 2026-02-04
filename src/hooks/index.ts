@@ -10,12 +10,5 @@ export { useOnboarding } from './useOnboarding';
 export { useQuestionnaireProgress } from './useQuestionnaireProgress';
 export { useSectionObserver, useSectionRef } from './useSectionObserver';
 export type { Section } from './useSectionObserver';
-export {
-  useKeyboardShortcuts,
-  useKeyboardShortcut,
-  formatShortcut,
-  getShortcutParts,
-} from './useKeyboardShortcuts';
-export type { KeyboardShortcut } from './useKeyboardShortcuts';
 export { useReadingProgress } from './useReadingProgress';
 export { useScrollSpy } from './useScrollSpy';

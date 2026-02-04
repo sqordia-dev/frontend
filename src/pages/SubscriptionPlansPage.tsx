@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { organizationService } from '../lib/organization-service';
 import { subscriptionService } from '../lib/subscription-service';
 import { useTheme } from '../contexts/ThemeContext';
+import { useCmsContent } from '../hooks/useCmsContent';
 import SEO from '../components/SEO';
 import { getCanonicalUrl } from '../utils/seo';
 
@@ -30,7 +31,8 @@ interface SubscriptionPlan {
 
 export default function SubscriptionPlansPage() {
   const navigate = useNavigate();
-  const { t, language } = useTheme();
+  const { language } = useTheme();
+  const { getContent: cms } = useCmsContent('subscription');
   const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
   const [loading, setLoading] = useState(true);
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
@@ -392,12 +394,12 @@ export default function SubscriptionPlansPage() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
       <SEO
-        title={language === 'fr' 
+        title={cms('subscription.seo_title', '') || (language === 'fr'
           ? "Plans d'Abonnement | Sqordia"
-          : "Subscription Plans | Sqordia"}
-        description={language === 'fr'
+          : "Subscription Plans | Sqordia")}
+        description={cms('subscription.seo_description', '') || (language === 'fr'
           ? "Choisissez le plan d'abonnement Sqordia qui correspond à vos besoins."
-          : "Choose the Sqordia subscription plan that fits your needs."}
+          : "Choose the Sqordia subscription plan that fits your needs.")}
         url={getCanonicalUrl('/subscription-plans')}
         noindex={true}
         nofollow={true}
@@ -405,7 +407,7 @@ export default function SubscriptionPlansPage() {
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
-            Choose Your Plan
+            {cms('subscription.page_title', '') || 'Choose Your Plan'}
           </h1>
           <p className="text-xl text-gray-600 dark:text-gray-400 mb-8">
             Select the perfect plan for your business needs
@@ -414,7 +416,7 @@ export default function SubscriptionPlansPage() {
           {/* Billing Cycle Toggle */}
           <div className="flex items-center justify-center gap-4 mb-8">
             <span className={`text-sm font-medium ${billingCycle === 'monthly' ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400'}`}>
-              Monthly
+              {cms('subscription.monthly', '') || 'Monthly'}
             </span>
             <button
               onClick={() => setBillingCycle(billingCycle === 'monthly' ? 'yearly' : 'monthly')}
@@ -427,7 +429,7 @@ export default function SubscriptionPlansPage() {
               />
             </button>
             <span className={`text-sm font-medium ${billingCycle === 'yearly' ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400'}`}>
-              Yearly
+              {cms('subscription.yearly', '') || 'Yearly'}
             </span>
             {billingCycle === 'yearly' && (
               <span className="px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 text-xs font-semibold rounded-full">
@@ -467,7 +469,7 @@ export default function SubscriptionPlansPage() {
               >
                 {isPopular && (
                   <div className="absolute top-0 left-0 right-0 bg-blue-600 text-white text-center py-1 text-sm font-semibold">
-                    Most Popular
+                    {cms('subscription.popular', '') || 'Most Popular'}
                   </div>
                 )}
 
@@ -510,14 +512,14 @@ export default function SubscriptionPlansPage() {
                         // Check if user is logged in
                         const token = localStorage.getItem('accessToken');
                         if (!token) {
-                          alert(t('subscription.loginRequired') || 'Please log in to subscribe to a plan.');
+                          alert(cms('subscription.login_required', 'subscription.loginRequired') || 'Please log in to subscribe to a plan.');
                           navigate('/login');
                           return;
                         }
 
                         // Use the organizations we already have from page load
                         if (organizations.length === 0) {
-                          alert(t('subscription.orgRequired') || 'Please create an organization first. Refreshing page...');
+                          alert(cms('subscription.org_required', 'subscription.orgRequired') || 'Please create an organization first. Refreshing page...');
                           window.location.reload();
                           return;
                         }
@@ -537,12 +539,12 @@ export default function SubscriptionPlansPage() {
                           if (existingSubscription) {
                             // Change plan
                             await subscriptionService.changePlan(plan.id, billingCycle === 'yearly');
-                            alert(t('subscription.planChanged') || `Successfully changed to ${plan.name}!`);
+                            alert(cms('subscription.plan_changed', 'subscription.planChanged') || `Successfully changed to ${plan.name}!`);
                             navigate('/subscription');
                           } else {
                             // Subscribe directly
                             await subscriptionService.subscribe(plan.id, organizationId, billingCycle === 'yearly');
-                            alert(t('subscription.subscribed') || `Successfully subscribed to ${plan.name}!`);
+                            alert(cms('subscription.subscribed', 'subscription.subscribed') || `Successfully subscribed to ${plan.name}!`);
                             navigate('/subscription');
                           }
                           return;
@@ -566,18 +568,18 @@ export default function SubscriptionPlansPage() {
                                            err.response?.data?.message || 
                                            err.response?.data?.errorMessage || 
                                            'Failed to subscribe';
-                        alert(t('subscription.error') || `Failed to subscribe: ${errorMessage}`);
+                        alert(cms('subscription.error', 'subscription.error') || `Failed to subscribe: ${errorMessage}`);
                       } finally {
                         setSubscribingPlanId(null);
                       }
                     }}
                     disabled={subscribingPlanId === plan.id}
                   >
-                    {subscribingPlanId === plan.id 
-                      ? (t('subscription.processing') || 'Processing...')
-                      : plan.planType === 'Free' 
-                        ? (t('subscription.getStarted') || 'Get Started')
-                        : (t('subscription.subscribe') || 'Subscribe')
+                    {subscribingPlanId === plan.id
+                      ? (cms('subscription.processing', 'subscription.processing') || 'Processing...')
+                      : plan.planType === 'Free'
+                        ? (cms('subscription.get_started', 'subscription.getStarted') || 'Get Started')
+                        : (cms('subscription.subscribe', 'subscription.subscribe') || 'Subscribe')
                     }
                   </button>
 

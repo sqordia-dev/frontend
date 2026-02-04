@@ -15,7 +15,8 @@ import {
   Settings,
   ChevronDown,
   Activity,
-  HeartPulse
+  HeartPulse,
+  Palette
 } from 'lucide-react';
 import { authService } from '../lib/auth-service';
 import { useTheme } from '../contexts/ThemeContext';
@@ -96,6 +97,7 @@ export default function AdminLayout() {
     { name: t('admin.nav.users'), href: '/admin/users', icon: Users },
     { name: t('admin.nav.businessPlans'), href: '/admin/business-plans', icon: FileText },
     { name: t('admin.nav.templates'), href: '/admin/templates', icon: FileText },
+    { name: 'Content Manager', href: '/admin/cms', icon: Palette },
     { name: 'Prompts Studio', href: '/admin/prompts-studio', icon: Brain },
     { name: 'AI Configuration', href: '/admin/ai-config', icon: Brain },
     { name: t('admin.nav.activityLogs') || 'Activity Logs', href: '/admin/activity-logs', icon: Activity },

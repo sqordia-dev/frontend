@@ -1,6 +1,8 @@
 import { Facebook, Twitter, Linkedin, Instagram, Mail, Brain } from 'lucide-react';
+import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
+import { usePublishedContent } from '@/hooks/usePublishedContent';
 
 interface FooterLink {
   label: string;
@@ -23,10 +25,37 @@ const socialLinks = [
 
 export default function Footer() {
   const { theme, t, language } = useTheme();
+  const { getBlockContent } = usePublishedContent();
   const homePath = language === 'fr' ? '/fr' : '/';
   const currentYear = new Date().getFullYear();
 
   const isDark = theme === 'dark';
+
+  // CMS-driven social links with fallback to hardcoded
+  const resolvedSocialLinks = useMemo(() => {
+    const twitterUrl = getBlockContent('global.social.twitter');
+    const linkedinUrl = getBlockContent('global.social.linkedin');
+    const facebookUrl = getBlockContent('global.social.facebook');
+    const instagramUrl = getBlockContent('global.social.instagram');
+    const emailUrl = getBlockContent('global.social.email');
+
+    // If any CMS social link is set, use CMS values (with fallbacks)
+    if (twitterUrl || linkedinUrl || facebookUrl || instagramUrl || emailUrl) {
+      return [
+        { icon: Twitter, href: twitterUrl || 'https://twitter.com/sqordia', label: 'Twitter' },
+        { icon: Linkedin, href: linkedinUrl || 'https://linkedin.com/company/sqordia', label: 'LinkedIn' },
+        { icon: Facebook, href: facebookUrl || 'https://facebook.com/sqordia', label: 'Facebook' },
+        { icon: Instagram, href: instagramUrl || 'https://instagram.com/sqordia', label: 'Instagram' },
+        { icon: Mail, href: emailUrl || 'mailto:hello@sqordia.com', label: 'Email' },
+      ];
+    }
+    return socialLinks;
+  }, [getBlockContent]);
+
+  // CMS-driven footer content
+  const footerTagline = getBlockContent('global.footer.tagline', t('footer.tagline'));
+  const footerCopyright = getBlockContent('global.footer.copyright', t('footer.copyright'));
+  const cmsLogoUrl = getBlockContent('global.branding.logo_url');
 
   const footerSections: FooterSection[] = [
     {
@@ -95,21 +124,29 @@ export default function Footer() {
           {/* Brand column */}
           <div className="lg:col-span-2">
             <Link to={homePath} className="flex items-center gap-3 mb-6" aria-label="Sqordia - Home">
-              <div
-                className="w-12 h-12 rounded-xl flex items-center justify-center"
-                style={{ backgroundColor: '#FF6B00' }}
-              >
-                <Brain className="text-white" size={24} aria-hidden="true" />
-              </div>
+              {cmsLogoUrl ? (
+                <img
+                  src={cmsLogoUrl}
+                  alt="Sqordia"
+                  className="w-12 h-12 rounded-xl object-contain"
+                />
+              ) : (
+                <div
+                  className="w-12 h-12 rounded-xl flex items-center justify-center"
+                  style={{ backgroundColor: '#FF6B00' }}
+                >
+                  <Brain className="text-white" size={24} aria-hidden="true" />
+                </div>
+              )}
               <span className="text-2xl font-bold font-heading text-white">Sqordia</span>
             </Link>
             <p className="mb-6 leading-relaxed text-white/70 max-w-sm">
-              {t('footer.tagline')}
+              {footerTagline}
             </p>
 
             {/* Social links */}
             <div className="flex gap-3">
-              {socialLinks.map((social) => {
+              {resolvedSocialLinks.map((social) => {
                 const Icon = social.icon;
                 return (
                   <a
@@ -166,7 +203,7 @@ export default function Footer() {
           style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}
         >
           <p className="text-sm text-white/60">
-            &copy; {currentYear} Sqordia. {t('footer.copyright')}
+            &copy; {currentYear} Sqordia. {footerCopyright}
           </p>
 
           <div className="flex flex-wrap items-center gap-4 md:gap-6 text-sm">

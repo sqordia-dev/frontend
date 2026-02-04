@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Menu, X, Brain, Sun, Moon } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
+import { usePublishedContent } from '@/hooks/usePublishedContent';
 import LanguageDropdown, { THEME_ORANGE } from './LanguageDropdown';
 
 interface NavItem {
@@ -15,7 +16,11 @@ export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const headerRef = useRef<HTMLElement>(null);
   const { theme, toggleTheme, t, language } = useTheme();
+  const { getBlockContent } = usePublishedContent();
   const location = useLocation();
+
+  // CMS-driven logo URL (if set, renders img instead of Brain icon)
+  const cmsLogoUrl = getBlockContent('global.branding.logo_url');
 
   const navItems: NavItem[] = [
     { label: t('nav.features'), href: '#features' },
@@ -125,21 +130,29 @@ export default function Header() {
             className="flex items-center gap-3 group"
             aria-label="Sqordia - Home"
           >
-            <div
-              className="relative p-2.5 rounded-xl transition-all duration-300 shadow-lg group-hover:scale-110"
-              style={{
-                backgroundColor: isScrolled ? THEME_ORANGE : (isDark ? '#FFFFFF' : THEME_ORANGE),
-              }}
-            >
-              <Brain
-                className="transition-colors duration-300"
-                size={26}
-                style={{
-                  color: isScrolled ? '#FFFFFF' : (isDark ? THEME_ORANGE : '#FFFFFF'),
-                }}
-                aria-hidden="true"
+            {cmsLogoUrl ? (
+              <img
+                src={cmsLogoUrl}
+                alt="Sqordia"
+                className="w-11 h-11 rounded-xl object-contain transition-all duration-300 group-hover:scale-110"
               />
-            </div>
+            ) : (
+              <div
+                className="relative p-2.5 rounded-xl transition-all duration-300 shadow-lg group-hover:scale-110"
+                style={{
+                  backgroundColor: isScrolled ? THEME_ORANGE : (isDark ? '#FFFFFF' : THEME_ORANGE),
+                }}
+              >
+                <Brain
+                  className="transition-colors duration-300"
+                  size={26}
+                  style={{
+                    color: isScrolled ? '#FFFFFF' : (isDark ? THEME_ORANGE : '#FFFFFF'),
+                  }}
+                  aria-hidden="true"
+                />
+              </div>
+            )}
             <span
               className="text-2xl font-bold font-heading transition-all duration-300 tracking-tight"
               style={{ color: textColor }}

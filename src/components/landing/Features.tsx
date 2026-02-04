@@ -1,5 +1,6 @@
 import { CheckCircle } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
+import { usePublishedContent } from '@/hooks/usePublishedContent';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
@@ -76,6 +77,7 @@ const features: Feature[] = [
 
 export default function Features() {
   const { theme, t } = useTheme();
+  const { getBlockContent } = usePublishedContent();
   const isDark = theme === 'dark';
 
   return (
@@ -138,15 +140,15 @@ export default function Features() {
                               {index + 1}
                             </Badge>
                             <span className="text-label-sm uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                              {t(feature.subtitleKey)}
+                              {getBlockContent(`landing.features.step${index + 1}.subtitle`, t(feature.subtitleKey))}
                             </span>
                           </div>
                         </CardHeader>
                         <CardTitle className="text-2xl sm:text-3xl md:text-4xl font-bold font-heading mb-4 leading-tight text-strategy-blue dark:text-white">
-                          {t(feature.titleKey)}
+                          {getBlockContent(`landing.features.step${index + 1}.title`, t(feature.titleKey))}
                         </CardTitle>
                         <CardDescription className="text-body-lg mb-6 leading-relaxed text-gray-500 dark:text-gray-400">
-                          {t(feature.descriptionKey)}
+                          {getBlockContent(`landing.features.step${index + 1}.description`, t(feature.descriptionKey))}
                         </CardDescription>
                         <CardContent className="p-0">
                           <ul className="space-y-3">
@@ -158,7 +160,7 @@ export default function Features() {
                                   aria-hidden="true"
                                 />
                                 <span className="text-gray-700 dark:text-gray-300">
-                                  {t(benefitKey)}
+                                  {getBlockContent(`landing.features.step${index + 1}.benefit${benefitIndex + 1}`, t(benefitKey))}
                                 </span>
                               </li>
                             ))}

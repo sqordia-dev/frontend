@@ -4,6 +4,7 @@ import { AlertCircle, CheckCircle } from 'lucide-react';
 import { authService } from '../../lib/auth-service';
 import { signInWithGoogle } from '../../lib/google-auth';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useCmsContent } from '../../hooks/useCmsContent';
 import SEO from '../../components/SEO';
 import { getCanonicalUrl } from '../../utils/seo';
 import { AuthLayout } from '../../components/auth';
@@ -29,7 +30,7 @@ interface LocationState {
 export default function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { t } = useTheme();
+  const { getContent: cms } = useCmsContent('auth');
 
   // Check for success message from registration
   const successMessage = (location.state as LocationState)?.message;
@@ -124,23 +125,23 @@ export default function LoginPage() {
     <AuthLayout
       variant="split"
       illustrationPanel={{
-        tagline: t('login.panel.tagline'),
-        subtitle: t('login.panel.subtitle'),
+        tagline: cms('auth.login.panel_tagline', 'login.panel.tagline'),
+        subtitle: cms('auth.login.panel_subtitle', 'login.panel.subtitle'),
       }}
     >
       <SEO
-        title={t('login.title') || 'Login | Sqordia'}
-        description={t('login.subtitle') || 'Sign in to your Sqordia account'}
+        title={cms('auth.login.title', 'login.title') || 'Login | Sqordia'}
+        description={cms('auth.login.subtitle', 'login.subtitle') || 'Sign in to your Sqordia account'}
         url={getCanonicalUrl('/login')}
       />
 
       {/* Title */}
       <div className="mb-8 animate-fade-in-up">
         <h1 className="mb-2 text-3xl font-bold font-heading text-foreground">
-          {t('login.title')}
+          {cms('auth.login.title', 'login.title')}
         </h1>
         <p className="text-base text-muted-foreground">
-          {t('login.subtitle')}
+          {cms('auth.login.subtitle', 'login.subtitle')}
         </p>
       </div>
 
@@ -175,7 +176,7 @@ export default function LoginPage() {
         {/* Email */}
         <div>
           <Label htmlFor="email" className="mb-2 block text-sm font-semibold">
-            {t('login.email')}
+            {cms('auth.login.email_label', 'login.email')}
           </Label>
           <Input
             id="email"
@@ -186,7 +187,7 @@ export default function LoginPage() {
             required
             autoComplete="email"
             className={`h-12 ${getFieldError(errors, 'email') ? 'border-red-300 focus-visible:ring-red-500 dark:border-red-500' : ''}`}
-            placeholder={t('login.email.placeholder')}
+            placeholder={cms('auth.login.email_placeholder', 'login.email.placeholder')}
             aria-invalid={!!getFieldError(errors, 'email')}
             aria-describedby={getFieldError(errors, 'email') ? 'email-error' : undefined}
           />
@@ -199,14 +200,14 @@ export default function LoginPage() {
 
         {/* Password */}
         <PasswordInput
-          label={t('login.password')}
+          label={cms('auth.login.password_label', 'login.password')}
           name="password"
           value={formData.password}
           onChange={handleChange}
           required
           showIcon={false}
           autoComplete="current-password"
-          placeholder={t('login.password.placeholder')}
+          placeholder={cms('auth.login.password_placeholder', 'login.password.placeholder')}
           error={getFieldError(errors, 'password')}
         />
 
@@ -221,14 +222,14 @@ export default function LoginPage() {
               className="h-4 w-4 rounded border-gray-300 text-momentum-orange focus:ring-2 focus:ring-momentum-orange focus:ring-offset-0"
             />
             <span className="ml-2.5 text-muted-foreground">
-              {t('login.remember')}
+              {cms('auth.login.remember', 'login.remember')}
             </span>
           </label>
           <Link
             to="/forgot-password"
             className="font-semibold text-momentum-orange transition-colors hover:underline"
           >
-            {t('login.forgot')}
+            {cms('auth.login.forgot_password', 'login.forgot')}
           </Link>
         </div>
 
@@ -240,13 +241,13 @@ export default function LoginPage() {
           disabled={loading}
           className="w-full min-h-[44px]"
         >
-          {loading ? t('login.signing') : t('login.button')}
+          {loading ? cms('auth.login.signing_in', 'login.signing') : cms('auth.login.button', 'login.button')}
         </Button>
       </form>
 
       {/* Divider */}
       <div className="animate-fade-in-up animation-delay-200">
-        <Divider text={t('login.divider')} className="my-6" />
+        <Divider text={cms('auth.login.divider', 'login.divider')} className="my-6" />
       </div>
 
       {/* Social Login Buttons */}
@@ -262,12 +263,12 @@ export default function LoginPage() {
       {/* Sign Up Link */}
       <div className="mt-8 pt-6 animate-fade-in-up animation-delay-400">
         <p className="text-center text-sm text-muted-foreground">
-          {t('login.noaccount')}{' '}
+          {cms('auth.login.no_account', 'login.noaccount')}{' '}
           <Link
             to="/signup"
             className="font-semibold text-momentum-orange transition-colors hover:underline"
           >
-            {t('login.create')}
+            {cms('auth.login.create_account', 'login.create')}
           </Link>
         </p>
       </div>
@@ -278,7 +279,7 @@ export default function LoginPage() {
           to="/"
           className="text-muted-foreground transition-colors hover:text-foreground hover:underline"
         >
-          {t('login.back')}
+          {cms('auth.login.back_to_home', 'login.back')}
         </Link>
       </p>
     </AuthLayout>

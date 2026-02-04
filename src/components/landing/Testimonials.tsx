@@ -1,5 +1,7 @@
 import { Star, Quote } from 'lucide-react';
+import { useMemo } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
+import { usePublishedContent } from '@/hooks/usePublishedContent';
 
 import { ScrollReveal, StaggerContainer, StaggerItem } from '../animations/ScrollReveal';
 
@@ -37,6 +39,27 @@ const testimonials: Testimonial[] = [
 
 export default function Testimonials() {
   const { t } = useTheme();
+  const { getBlock, getBlockContent } = usePublishedContent();
+
+  // Try to load testimonials from CMS JSON block, falling back to hardcoded items
+  const cmsTestimonials = useMemo(() => {
+    const block = getBlock('landing.testimonials.items');
+    if (block?.content) {
+      try {
+        const parsed = JSON.parse(block.content) as {
+          name: string;
+          role: string;
+          quote: string;
+          avatar?: string;
+          company?: string;
+        }[];
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed;
+        }
+      } catch { /* fall through to null */ }
+    }
+    return null;
+  }, [getBlock]);
 
   return (
     <section
@@ -49,7 +72,7 @@ export default function Testimonials() {
         <div className="max-w-3xl mx-auto text-center mb-16 md:mb-20">
           <ScrollReveal>
             <p className="text-label-sm uppercase tracking-widest text-emerald-600 dark:text-emerald-400 mb-4 font-semibold">
-              {t('landing.testimonials.badge')}
+              {getBlockContent('landing.testimonials.badge', t('landing.testimonials.badge'))}
             </p>
           </ScrollReveal>
           <ScrollReveal delay={0.1}>
@@ -57,76 +80,125 @@ export default function Testimonials() {
               id="testimonials-heading"
               className="text-display-md sm:text-display-lg font-heading mb-6 text-strategy-blue dark:text-white"
             >
-              {t('landing.testimonials.title')}{' '}
+              {getBlockContent('landing.testimonials.title', t('landing.testimonials.title'))}{' '}
               <span className="text-emerald-600 dark:text-emerald-400">
-                {t('landing.testimonials.title.highlight')}
+                {getBlockContent('landing.testimonials.title_highlight', t('landing.testimonials.title.highlight'))}
               </span>
             </h2>
           </ScrollReveal>
           <ScrollReveal delay={0.15}>
             <p className="text-body-lg text-gray-500 dark:text-gray-400">
-              {t('landing.testimonials.subtitle')}
+              {getBlockContent('landing.testimonials.subtitle', t('landing.testimonials.subtitle'))}
             </p>
           </ScrollReveal>
         </div>
 
         {/* Grid */}
         <StaggerContainer className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 max-w-7xl mx-auto">
-          {testimonials.map((testimonial, index) => (
-            <StaggerItem key={index}>
-              <article className="group relative rounded-2xl p-6 md:p-8 border border-border bg-white dark:bg-gray-800 shadow-card hover:shadow-card-hover transition-all duration-300 h-full flex flex-col">
-                {/* Quote icon — inline, not floating */}
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 rounded-lg bg-momentum-orange/10 flex items-center justify-center shrink-0">
-                    <Quote size={18} className="text-momentum-orange" aria-hidden="true" />
-                  </div>
-                  <div
-                    className="flex gap-0.5"
-                    role="img"
-                    aria-label={t('landing.testimonials.ratingLabel').replace('{rating}', String(testimonial.rating))}
-                  >
-                    {[...Array(testimonial.rating)].map((_, i) => (
-                      <Star key={i} size={14} className="fill-amber-400 text-amber-400" aria-hidden="true" />
-                    ))}
-                  </div>
-                </div>
-
-                {/* Quote text */}
-                <figure className="flex-1 flex flex-col">
-                  <blockquote className="mb-6 leading-relaxed text-body-md text-gray-700 dark:text-gray-300 flex-1">
-                    <p>"{t(testimonial.quoteKey)}"</p>
-                  </blockquote>
-
-                  {/* Author */}
-                  <figcaption className="flex items-center gap-3 pt-5 border-t border-border">
-                    <img
-                      src={testimonial.avatar}
-                      alt=""
-                      className="w-11 h-11 rounded-full object-cover ring-2 ring-border shrink-0"
-                      loading="lazy"
-                      width={44}
-                      height={44}
-                      aria-hidden="true"
-                    />
-                    <div>
-                      <cite className="font-semibold text-body-sm not-italic text-strategy-blue dark:text-white">
-                        {t(testimonial.authorKey)}
-                      </cite>
-                      <div className="text-body-xs text-gray-500 dark:text-gray-400">
-                        {t(testimonial.roleKey)}
+          {cmsTestimonials
+            ? /* CMS-driven testimonials */
+              cmsTestimonials.map((cmsItem, index) => (
+                <StaggerItem key={index}>
+                  <article className="group relative rounded-2xl p-6 md:p-8 border border-border bg-white dark:bg-gray-800 shadow-card hover:shadow-card-hover transition-all duration-300 h-full flex flex-col">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="w-10 h-10 rounded-lg bg-momentum-orange/10 flex items-center justify-center shrink-0">
+                        <Quote size={18} className="text-momentum-orange" aria-hidden="true" />
+                      </div>
+                      <div className="flex gap-0.5" role="img" aria-label="5 star rating">
+                        {[...Array(5)].map((_, i) => (
+                          <Star key={i} size={14} className="fill-amber-400 text-amber-400" aria-hidden="true" />
+                        ))}
                       </div>
                     </div>
-                  </figcaption>
-                </figure>
 
-                {/* Bottom accent line on hover */}
-                <div
-                  className="absolute inset-x-0 bottom-0 h-0.5 bg-momentum-orange opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-b-2xl"
-                  aria-hidden="true"
-                />
-              </article>
-            </StaggerItem>
-          ))}
+                    <figure className="flex-1 flex flex-col">
+                      <blockquote className="mb-6 leading-relaxed text-body-md text-gray-700 dark:text-gray-300 flex-1">
+                        <p>"{cmsItem.quote}"</p>
+                      </blockquote>
+
+                      <figcaption className="flex items-center gap-3 pt-5 border-t border-border">
+                        {cmsItem.avatar && (
+                          <img
+                            src={cmsItem.avatar}
+                            alt=""
+                            className="w-11 h-11 rounded-full object-cover ring-2 ring-border shrink-0"
+                            loading="lazy"
+                            width={44}
+                            height={44}
+                            aria-hidden="true"
+                          />
+                        )}
+                        <div>
+                          <cite className="font-semibold text-body-sm not-italic text-strategy-blue dark:text-white">
+                            {cmsItem.name}
+                          </cite>
+                          <div className="text-body-xs text-gray-500 dark:text-gray-400">
+                            {cmsItem.role}{cmsItem.company ? `, ${cmsItem.company}` : ''}
+                          </div>
+                        </div>
+                      </figcaption>
+                    </figure>
+
+                    <div
+                      className="absolute inset-x-0 bottom-0 h-0.5 bg-momentum-orange opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-b-2xl"
+                      aria-hidden="true"
+                    />
+                  </article>
+                </StaggerItem>
+              ))
+            : /* Hardcoded fallback testimonials */
+              testimonials.map((testimonial, index) => (
+                <StaggerItem key={index}>
+                  <article className="group relative rounded-2xl p-6 md:p-8 border border-border bg-white dark:bg-gray-800 shadow-card hover:shadow-card-hover transition-all duration-300 h-full flex flex-col">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="w-10 h-10 rounded-lg bg-momentum-orange/10 flex items-center justify-center shrink-0">
+                        <Quote size={18} className="text-momentum-orange" aria-hidden="true" />
+                      </div>
+                      <div
+                        className="flex gap-0.5"
+                        role="img"
+                        aria-label={t('landing.testimonials.ratingLabel').replace('{rating}', String(testimonial.rating))}
+                      >
+                        {[...Array(testimonial.rating)].map((_, i) => (
+                          <Star key={i} size={14} className="fill-amber-400 text-amber-400" aria-hidden="true" />
+                        ))}
+                      </div>
+                    </div>
+
+                    <figure className="flex-1 flex flex-col">
+                      <blockquote className="mb-6 leading-relaxed text-body-md text-gray-700 dark:text-gray-300 flex-1">
+                        <p>"{t(testimonial.quoteKey)}"</p>
+                      </blockquote>
+
+                      <figcaption className="flex items-center gap-3 pt-5 border-t border-border">
+                        <img
+                          src={testimonial.avatar}
+                          alt=""
+                          className="w-11 h-11 rounded-full object-cover ring-2 ring-border shrink-0"
+                          loading="lazy"
+                          width={44}
+                          height={44}
+                          aria-hidden="true"
+                        />
+                        <div>
+                          <cite className="font-semibold text-body-sm not-italic text-strategy-blue dark:text-white">
+                            {t(testimonial.authorKey)}
+                          </cite>
+                          <div className="text-body-xs text-gray-500 dark:text-gray-400">
+                            {t(testimonial.roleKey)}
+                          </div>
+                        </div>
+                      </figcaption>
+                    </figure>
+
+                    <div
+                      className="absolute inset-x-0 bottom-0 h-0.5 bg-momentum-orange opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-b-2xl"
+                      aria-hidden="true"
+                    />
+                  </article>
+                </StaggerItem>
+              ))
+          }
         </StaggerContainer>
       </div>
     </section>

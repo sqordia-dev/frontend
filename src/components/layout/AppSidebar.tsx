@@ -28,6 +28,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
+import { useCmsContent } from "../../hooks/useCmsContent";
 
 export interface NavItem {
   name: string;
@@ -81,6 +82,27 @@ export function AppSidebar({
   const location = useLocation();
   const { state } = useSidebar();
   const isCollapsed = state === "collapsed";
+  const { getContent: cms } = useCmsContent('global');
+
+  const navLabelCmsKeys: Record<string, string> = {
+    "Dashboard": "sidebar.dashboard",
+    "Create Plan": "sidebar.create_plan",
+    "My Plans": "sidebar.my_plans",
+    "Subscription": "sidebar.subscription",
+    "Invoices": "sidebar.invoices",
+    "Profile": "sidebar.profile",
+    "Settings": "sidebar.settings",
+    "Admin Panel": "sidebar.admin_panel",
+  };
+
+  const getNavLabel = (name: string) => {
+    const cmsKey = navLabelCmsKeys[name];
+    if (cmsKey) {
+      const cmsValue = cms(cmsKey, '');
+      if (cmsValue) return cmsValue;
+    }
+    return name;
+  };
 
   const isActive = (href: string) => {
     if (href === "/dashboard") {
@@ -120,23 +142,24 @@ export function AppSidebar({
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel>
-            {translations?.mainMenu || "Main Menu"}
+            {cms('sidebar.main_menu', '') || translations?.mainMenu || "Main Menu"}
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {navigation.map((item) => {
                 const Icon = item.icon;
                 const active = isActive(item.href);
+                const label = getNavLabel(item.name);
                 return (
                   <SidebarMenuItem key={item.href}>
                     <SidebarMenuButton
                       asChild
                       isActive={active}
-                      tooltip={item.name}
+                      tooltip={label}
                     >
                       <Link to={item.href}>
                         <Icon className="size-4" />
-                        <span>{item.name}</span>
+                        <span>{label}</span>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -151,23 +174,24 @@ export function AppSidebar({
             <SidebarSeparator />
             <SidebarGroup>
               <SidebarGroupLabel>
-                {translations?.admin || "Administration"}
+                {cms('sidebar.admin', '') || translations?.admin || "Administration"}
               </SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu>
                   {adminNavigation.map((item) => {
                     const Icon = item.icon;
                     const active = isActive(item.href);
+                    const label = getNavLabel(item.name);
                     return (
                       <SidebarMenuItem key={item.href}>
                         <SidebarMenuButton
                           asChild
                           isActive={active}
-                          tooltip={item.name}
+                          tooltip={label}
                         >
                           <Link to={item.href}>
                             <Icon className="size-4" />
-                            <span>{item.name}</span>
+                            <span>{label}</span>
                           </Link>
                         </SidebarMenuButton>
                       </SidebarMenuItem>
@@ -226,10 +250,10 @@ export function AppSidebar({
             <SidebarMenuItem>
               <SidebarMenuButton
                 onClick={onLogout}
-                tooltip={translations?.logout || "Logout"}
+                tooltip={cms('sidebar.logout', '') || translations?.logout || "Logout"}
               >
                 <LogOut className="size-4" />
-                <span>{translations?.logout || "Logout"}</span>
+                <span>{cms('sidebar.logout', '') || translations?.logout || "Logout"}</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
           )}
