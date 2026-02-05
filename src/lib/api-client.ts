@@ -82,11 +82,11 @@ class ApiClient {
         }
         
         // Handle CORS and network errors
+        // Note: When a 401 response lacks CORS headers, the browser blocks it
+        // and reports it as ERR_NETWORK instead. We handle this by attempting
+        // a token refresh when we have stored credentials.
         if (error.code === 'ERR_NETWORK' || error.message === 'Network Error') {
           const isDevelopment = import.meta.env.MODE === 'development';
-          const errorMessage = isDevelopment
-            ? 'Network error: Make sure the backend API is running on http://localhost:5241 and CORS is properly configured. If using Vite proxy, ensure the proxy is configured correctly.'
-            : 'Network error: Unable to connect to the server. Please check your internet connection.';
           console.error('Network Error Details:', {
             message: error.message,
             code: error.code,
@@ -94,7 +94,26 @@ class ApiClient {
             isDevelopment,
             apiBaseUrl: API_BASE_URL
           });
-          // Don't throw here, let the calling code handle it
+
+          // If we have a token, this might be a CORS-blocked 401 (expired token).
+          // Attempt a token refresh before giving up.
+          const hasToken = localStorage.getItem('accessToken');
+          if (hasToken && error.config && !error.config._networkRetried) {
+            const refreshed = await this.refreshToken();
+            if (refreshed) {
+              error.config._networkRetried = true;
+              return this.client.request(error.config);
+            }
+            // Refresh failed — token is truly invalid, redirect to login
+            localStorage.removeItem('accessToken');
+            localStorage.removeItem('refreshToken');
+            window.location.href = '/login';
+            return Promise.reject(error);
+          }
+
+          const errorMessage = isDevelopment
+            ? 'Network error: Make sure the backend API is running on http://localhost:5241 and CORS is properly configured. If using Vite proxy, ensure the proxy is configured correctly.'
+            : 'Network error: Unable to connect to the server. Please check your internet connection.';
           error.userMessage = errorMessage;
         }
         
