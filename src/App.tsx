@@ -29,6 +29,7 @@ import AdminLayout from './components/AdminLayout';
 import DashboardLayout from './components/DashboardLayout';
 import AdminOverviewPage from './pages/admin/AdminOverviewPage';
 import AdminUsersPage from './pages/admin/AdminUsersPage';
+import AdminUserDetailPage from './pages/admin/AdminUserDetailPage';
 import AdminOrganizationsPage from './pages/admin/AdminOrganizationsPage';
 import AdminBusinessPlansPage from './pages/admin/AdminBusinessPlansPage';
 import AdminAIPromptsPage from './pages/admin/AdminAIPromptsPage';
@@ -243,6 +244,7 @@ function App() {
         >
           <Route index element={<AdminOverviewPage />} />
           <Route path="users" element={<AdminUsersPage />} />
+          <Route path="users/:userId" element={<AdminUserDetailPage />} />
           <Route path="organizations" element={<AdminOrganizationsPage />} />
           <Route path="business-plans" element={<AdminBusinessPlansPage />} />
           <Route path="templates" element={<AdminTemplatesPage />} />

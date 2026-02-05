@@ -374,5 +374,114 @@ export const adminService = {
       }
       throw error;
     }
+  },
+
+  // ======== User Management ========
+
+  async getUserDetail(userId: string): Promise<any> {
+    const response = await apiClient.get(`/api/v1/admin/users/${userId}`);
+    if (response.data?.isSuccess && response.data.value) {
+      return response.data.value;
+    }
+    return response.data;
+  },
+
+  async getUsersPaginated(params?: Record<string, any>): Promise<{ items: any[]; totalCount: number; pageNumber: number; totalPages: number }> {
+    const queryString = params ? `?${new URLSearchParams(
+      Object.entries(params).filter(([, v]) => v !== undefined && v !== null && v !== '').map(([k, v]) => [k, String(v)])
+    ).toString()}` : '';
+    const response = await apiClient.get(`/api/v1/admin/users${queryString}`);
+
+    if (response.data?.isSuccess && response.data.value) {
+      return response.data.value;
+    }
+    const data = response.data;
+    if (data?.items || data?.Items) {
+      return {
+        items: data.items || data.Items || [],
+        totalCount: data.totalCount || data.TotalCount || 0,
+        pageNumber: data.pageNumber || data.PageNumber || 1,
+        totalPages: data.totalPages || data.TotalPages || 1
+      };
+    }
+    if (Array.isArray(data)) {
+      return { items: data, totalCount: data.length, pageNumber: 1, totalPages: 1 };
+    }
+    return { items: [], totalCount: 0, pageNumber: 1, totalPages: 1 };
+  },
+
+  async createUser(data: {
+    firstName: string;
+    lastName: string;
+    email: string;
+    password?: string;
+    userType?: string;
+    sendWelcomeEmail?: boolean;
+    emailVerified?: boolean;
+    roleIds?: string[];
+  }): Promise<string> {
+    const response = await apiClient.post('/api/v1/admin/users', data);
+    if (response.data?.isSuccess && response.data.value) {
+      return response.data.value;
+    }
+    return response.data;
+  },
+
+  async updateUserProfile(userId: string, data: {
+    firstName?: string;
+    lastName?: string;
+    userName?: string;
+    userType?: string;
+    phoneNumber?: string;
+    emailVerified?: boolean;
+    isActive?: boolean;
+  }): Promise<void> {
+    await apiClient.put(`/api/v1/admin/users/${userId}/profile`, data);
+  },
+
+  async resetUserPassword(userId: string, newPassword?: string): Promise<void> {
+    await apiClient.post(`/api/v1/admin/users/${userId}/reset-password`, { newPassword });
+  },
+
+  async getUserSessions(userId: string): Promise<any[]> {
+    const response = await apiClient.get(`/api/v1/admin/users/${userId}/sessions`);
+    if (response.data?.isSuccess && response.data.value) {
+      return response.data.value;
+    }
+    return Array.isArray(response.data) ? response.data : [];
+  },
+
+  async terminateUserSession(userId: string, sessionId: string): Promise<void> {
+    await apiClient.delete(`/api/v1/admin/users/${userId}/sessions/${sessionId}`);
+  },
+
+  async terminateAllUserSessions(userId: string): Promise<void> {
+    await apiClient.delete(`/api/v1/admin/users/${userId}/sessions`);
+  },
+
+  async getUserLoginHistory(userId: string, limit: number = 50): Promise<any[]> {
+    const response = await apiClient.get(`/api/v1/admin/users/${userId}/login-history?limit=${limit}`);
+    if (response.data?.isSuccess && response.data.value) {
+      return response.data.value;
+    }
+    return Array.isArray(response.data) ? response.data : [];
+  },
+
+  async exportUsers(params?: Record<string, any>): Promise<Blob> {
+    const queryString = params ? `?${new URLSearchParams(
+      Object.entries(params).filter(([, v]) => v !== undefined && v !== null && v !== '').map(([k, v]) => [k, String(v)])
+    ).toString()}` : '';
+    const response = await apiClient.get(`/api/v1/admin/users/export${queryString}`, {
+      responseType: 'blob'
+    });
+    return response.data;
+  },
+
+  async bulkUpdateUserStatus(userIds: string[], status: string, reason: string): Promise<any> {
+    const response = await apiClient.post('/api/v1/admin/users/bulk-status', { userIds, status, reason });
+    if (response.data?.isSuccess && response.data.value) {
+      return response.data.value;
+    }
+    return response.data;
   }
 };
