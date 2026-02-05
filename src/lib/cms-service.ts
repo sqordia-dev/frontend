@@ -26,6 +26,11 @@ function unwrap<T>(data: any): T {
   return data as T;
 }
 
+// Check if the error indicates CMS tables haven't been migrated yet
+function isCmsTablesNotAvailable(error: any): boolean {
+  return error.response?.data?.code === 'Cms.TablesNotAvailable';
+}
+
 export const cmsService = {
   // === Version Operations ===
 
@@ -34,7 +39,7 @@ export const cmsService = {
       const response = await apiClient.get<CmsVersion[]>('/api/v1/admin/cms/versions');
       return unwrap<CmsVersion[]>(response.data);
     } catch (error: any) {
-      if (error.response?.status === 500) {
+      if (error.response?.status === 500 || isCmsTablesNotAvailable(error)) {
         return [];
       }
       throw error;
@@ -50,8 +55,8 @@ export const cmsService = {
       }
       return unwrap<CmsVersionDetail>(response.data);
     } catch (error: any) {
-      // 404 or 500 fallback - no active draft or CMS tables not available
-      if (error.response?.status === 404 || error.response?.status === 500) {
+      // 404, 500, or CMS tables not available - no active draft
+      if (error.response?.status === 404 || error.response?.status === 500 || isCmsTablesNotAvailable(error)) {
         return null;
       }
       throw error;
