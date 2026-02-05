@@ -30,8 +30,15 @@ export const cmsService = {
   // === Version Operations ===
 
   async getVersions(): Promise<CmsVersion[]> {
-    const response = await apiClient.get<CmsVersion[]>('/api/v1/admin/cms/versions');
-    return unwrap<CmsVersion[]>(response.data);
+    try {
+      const response = await apiClient.get<CmsVersion[]>('/api/v1/admin/cms/versions');
+      return unwrap<CmsVersion[]>(response.data);
+    } catch (error: any) {
+      if (error.response?.status === 500) {
+        return [];
+      }
+      throw error;
+    }
   },
 
   async getActiveVersion(): Promise<CmsVersionDetail | null> {
@@ -43,8 +50,8 @@ export const cmsService = {
       }
       return unwrap<CmsVersionDetail>(response.data);
     } catch (error: any) {
-      // 404 fallback - no active draft
-      if (error.response?.status === 404) {
+      // 404 or 500 fallback - no active draft or CMS tables not available
+      if (error.response?.status === 404 || error.response?.status === 500) {
         return null;
       }
       throw error;
@@ -149,7 +156,8 @@ export const cmsService = {
       const response = await apiClient.get<PublishedContent>('/api/v1/content', params);
       return unwrap<PublishedContent>(response.data);
     } catch (error: any) {
-      if (error.response?.status === 404) {
+      // 404 or 500 - no published content or CMS tables not available
+      if (error.response?.status === 404 || error.response?.status === 500) {
         return { sections: {} } as PublishedContent;
       }
       throw error;
@@ -163,8 +171,8 @@ export const cmsService = {
       const response = await apiClient.get<PublishedContent>(`/api/v1/content/pages/${pageKey}`, params);
       return unwrap<PublishedContent>(response.data);
     } catch (error: any) {
-      // 404 is expected when no CMS version is published yet - return empty content
-      if (error.response?.status === 404) {
+      // 404 or 500 - no published content or CMS tables not available
+      if (error.response?.status === 404 || error.response?.status === 500) {
         return { sections: {} } as PublishedContent;
       }
       throw error;
