@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Plus,
   Pencil,
@@ -8,6 +9,7 @@ import {
   Loader2,
   AlertCircle,
   FileText,
+  Eye,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -36,6 +38,7 @@ const questionTypeBadgeClass: Record<string, string> = {
 };
 
 export default function CmsQuestionManager({ activeStepFilter }: CmsQuestionManagerProps) {
+  const navigate = useNavigate();
   const [questions, setQuestions] = useState<AdminQuestionTemplate[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -193,10 +196,20 @@ export default function CmsQuestionManager({ activeStepFilter }: CmsQuestionMana
             {questions.length} question{questions.length !== 1 ? 's' : ''} across {STEP_DEFINITIONS.length} steps
           </p>
         </div>
-        <Button variant="brand" size="sm" onClick={handleCreate}>
-          <Plus className="w-4 h-4 mr-1.5" />
-          Add Question
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => navigate('/admin/cms/questionnaire-preview')}
+          >
+            <Eye className="w-4 h-4 mr-1.5" />
+            Preview Questionnaire
+          </Button>
+          <Button variant="brand" size="sm" onClick={handleCreate}>
+            <Plus className="w-4 h-4 mr-1.5" />
+            Add Question
+          </Button>
+        </div>
       </div>
 
       {/* Error */}
