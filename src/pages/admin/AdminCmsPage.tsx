@@ -377,7 +377,7 @@ function AdminCmsEditor() {
         onPublish={() => setShowPublishDialog(true)}
         onDiscard={handleDiscard}
         onVersionHistory={() => setShowVersionHistory(true)}
-        disabled={isSpecialPage}
+        isSpecialPage={isSpecialPage}
       />
 
       {errorBanner}
