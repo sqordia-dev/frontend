@@ -15,7 +15,7 @@ interface CmsPreviewProviderProps {
 export default function CmsPreviewProvider({ blocks, language, children }: CmsPreviewProviderProps) {
   // Filter blocks by language and build sections map
   const content = useMemo<PublishedContent>(() => {
-    const filteredBlocks = blocks.filter((b) => b.language === language);
+    const filteredBlocks = (blocks || []).filter((b) => b.language === language);
     const sections: Record<string, CmsContentBlock[]> = {};
     for (const block of filteredBlocks) {
       if (!sections[block.sectionKey]) {

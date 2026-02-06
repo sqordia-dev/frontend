@@ -251,10 +251,17 @@ function AdminCmsEditor() {
     }
   }, [activeVersion, deleteVersion]);
 
-  // Preview handler
-  const handlePreview = useCallback(() => {
+  // Preview handler - save pending changes before navigating
+  const handlePreview = useCallback(async () => {
+    // Save any pending changes before navigating to preview
+    if (modifiedBlockIds.size > 0) {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+      await performSave();
+    }
     navigate('/admin/cms/preview');
-  }, [navigate]);
+  }, [modifiedBlockIds, performSave, navigate]);
 
   // Image upload handler
   const handleImageUpload = useCallback(async (file: File): Promise<string> => {
