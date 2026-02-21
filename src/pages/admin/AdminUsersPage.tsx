@@ -9,6 +9,7 @@ import {
   Mail, MailX, Loader2
 } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
+import { getUserFriendlyError } from '../../utils/error-messages';
 
 const STATUS_OPTIONS = ['All', 'Active', 'Inactive', 'Suspended', 'Banned'] as const;
 const USER_TYPE_OPTIONS = ['All', 'Entrepreneur', 'Consultant', 'OBNL'] as const;
@@ -152,7 +153,7 @@ export default function AdminUsersPage() {
         });
       }
     } catch (err: any) {
-      setError(err.message || 'Failed to load users');
+      setError(getUserFriendlyError(err, 'load'));
     } finally {
       setLoading(false);
     }
@@ -175,7 +176,7 @@ export default function AdminUsersPage() {
       await loadUsers();
       setShowActions(null);
     } catch (err: any) {
-      setError(`Failed to update status: ${err.message}`);
+      setError(getUserFriendlyError(err, 'save'));
     }
   };
 
@@ -185,7 +186,7 @@ export default function AdminUsersPage() {
       setShowActions(null);
       setError(null);
     } catch (err: any) {
-      setError(`Failed to reset password: ${err.message}`);
+      setError(getUserFriendlyError(err, 'save'));
     }
   };
 
@@ -208,7 +209,7 @@ export default function AdminUsersPage() {
       document.body.removeChild(a);
       window.URL.revokeObjectURL(url);
     } catch (err: any) {
-      setError(`Export failed: ${err.message}`);
+      setError(getUserFriendlyError(err, 'export'));
     } finally {
       setExporting(false);
     }
@@ -224,7 +225,7 @@ export default function AdminUsersPage() {
       setSelectedUsers(new Set());
       await loadUsers();
     } catch (err: any) {
-      setError(`Bulk action failed: ${err.message}`);
+      setError(getUserFriendlyError(err, 'save'));
     } finally {
       setBulkActioning(false);
     }
@@ -248,7 +249,7 @@ export default function AdminUsersPage() {
       setCreateForm({ firstName: '', lastName: '', email: '', password: '', userType: 'Entrepreneur', emailVerified: false, autoPassword: true, roleIds: [] });
       await loadUsers();
     } catch (err: any) {
-      setCreateError(err.message || 'Failed to create user');
+      setCreateError(getUserFriendlyError(err, 'save'));
     } finally {
       setCreating(false);
     }
@@ -264,7 +265,7 @@ export default function AdminUsersPage() {
       const data = await rolesService.getUserRoles(user.id);
       setUserRoles(Array.isArray(data) ? data : []);
     } catch (err: any) {
-      setError(`Failed to load user roles: ${err.message}`);
+      setError(getUserFriendlyError(err, 'load'));
     } finally {
       setLoadingRoles(false);
     }
@@ -277,7 +278,7 @@ export default function AdminUsersPage() {
       await openRoleModal(selectedUser);
       await loadUsers();
     } catch (err: any) {
-      setError(`Failed to assign role: ${err.message}`);
+      setError(getUserFriendlyError(err, 'save'));
     }
   };
 
@@ -288,7 +289,7 @@ export default function AdminUsersPage() {
       await openRoleModal(selectedUser);
       await loadUsers();
     } catch (err: any) {
-      setError(`Failed to remove role: ${err.message}`);
+      setError(getUserFriendlyError(err, 'delete'));
     }
   };
 

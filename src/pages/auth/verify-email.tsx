@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { CheckCircle, AlertCircle, Mail, RefreshCw } from 'lucide-react';
 import { authService } from '../../lib/auth-service';
 import { useCmsContent } from '../../hooks/useCmsContent';
+import { getUserFriendlyError } from '../../utils/error-messages';
 import SEO from '../../components/SEO';
 import { getCanonicalUrl } from '../../utils/seo';
 import { AuthLayout } from '../../components/auth';
@@ -45,7 +46,7 @@ export default function VerifyEmailPage() {
       await authService.verifyEmail(verificationToken);
       setStatus('success');
     } catch (err: any) {
-      setError(err.message || 'Email verification failed. The link may have expired.');
+      setError(getUserFriendlyError(err, 'login'));
       setStatus('error');
     }
   };
@@ -59,7 +60,7 @@ export default function VerifyEmailPage() {
       await authService.sendVerificationEmail();
       setResendSuccess(true);
     } catch (err: any) {
-      setError(err.message || 'Failed to resend verification email. Please try again.');
+      setError(getUserFriendlyError(err, 'login'));
     } finally {
       setResendLoading(false);
     }

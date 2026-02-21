@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { adminService } from '../../lib/admin-service';
 import { Search, Building2, Users, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
+import { getUserFriendlyError } from '../../utils/error-messages';
 
 export default function AdminOrganizationsPage() {
   const { t } = useTheme();
@@ -21,7 +22,7 @@ export default function AdminOrganizationsPage() {
       const data = await adminService.getOrganizations();
       setOrganizations(data);
     } catch (err: any) {
-      setError(err.message);
+      setError(getUserFriendlyError(err, 'load'));
     } finally {
       setLoading(false);
     }
@@ -33,7 +34,7 @@ export default function AdminOrganizationsPage() {
       await adminService.updateOrganizationStatus(organizationId, isActive, 'Status updated by admin');
       await loadOrganizations();
     } catch (err: any) {
-      alert(`Failed to update organization status: ${err.message}`);
+      alert(getUserFriendlyError(err, 'save'));
     }
   };
 

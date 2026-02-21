@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Sparkles, MessageSquare, X, Send, Loader2 } from 'lucide-react';
 import { apiClient } from '../lib/api-client';
+import { getUserFriendlyError } from '../utils/error-messages';
 
 interface AIActionMenuProps {
   text: string;
@@ -47,7 +48,7 @@ export default function AIActionMenu({
       }
     } catch (err: any) {
       console.error('AI polish error:', err);
-      setError(err.response?.data?.message || 'Failed to polish text. Please try again.');
+      setError(getUserFriendlyError(err, 'ai'));
       setShowMenu(true); // Reopen menu to show error
     } finally {
       setLoading(false);
@@ -97,7 +98,7 @@ export default function AIActionMenu({
       }
     } catch (err: any) {
       console.error('Custom prompt error:', err);
-      setError(err.response?.data?.message || 'Failed to process custom prompt. Please try again.');
+      setError(getUserFriendlyError(err, 'ai'));
     } finally {
       setLoading(false);
     }

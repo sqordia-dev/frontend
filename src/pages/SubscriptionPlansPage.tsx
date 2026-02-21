@@ -8,6 +8,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import { useCmsContent } from '../hooks/useCmsContent';
 import SEO from '../components/SEO';
 import { getCanonicalUrl } from '../utils/seo';
+import { getUserFriendlyError } from '../utils/error-messages';
 
 interface SubscriptionPlan {
   id: string;
@@ -139,7 +140,7 @@ export default function SubscriptionPlansPage() {
       setOrgDescription('');
     } catch (err: any) {
       console.error('Failed to create organization:', err);
-      setError(err.message || 'Failed to create organization. Please try again.');
+      setError(getUserFriendlyError(err, 'save'));
     } finally {
       setCreatingOrg(false);
     }
@@ -242,7 +243,7 @@ export default function SubscriptionPlansPage() {
         setPlans(defaultPlans);
         setError(null);
       } else {
-        setError(err.response?.data?.message || err.message || 'Failed to load subscription plans');
+        setError(getUserFriendlyError(err, 'load'));
       }
     } finally {
       setLoading(false);

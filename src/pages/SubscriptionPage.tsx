@@ -6,6 +6,7 @@ import { subscriptionService } from '../lib/subscription-service';
 import { useTheme } from '../contexts/ThemeContext';
 import SEO from '../components/SEO';
 import { getCanonicalUrl } from '../utils/seo';
+import { getUserFriendlyError } from '../utils/error-messages';
 
 interface Subscription {
   id: string;
@@ -236,7 +237,7 @@ export default function SubscriptionPage() {
             errorMessage.includes('Organization already has')) {
           setError('Organization already has an active subscription. Please change plan instead.');
         } else {
-          setError(err.message || 'Failed to load subscription');
+          setError(getUserFriendlyError(err, 'subscription'));
         }
       }
     } finally {
@@ -274,7 +275,7 @@ export default function SubscriptionPage() {
       alert('Subscription cancelled successfully. It will remain active until the end of the billing period.');
     } catch (err: any) {
       console.error('Failed to cancel subscription:', err);
-      alert(`Failed to cancel subscription: ${err.message}`);
+      alert(getUserFriendlyError(err, 'subscription'));
     } finally {
       setCancelling(false);
     }
@@ -375,7 +376,7 @@ export default function SubscriptionPage() {
           err.message?.includes('Organization already has')) {
         setError('You already have an active subscription. Please use the change plan option instead.');
       } else {
-        setError(err.message || 'Failed to change plan');
+        setError(getUserFriendlyError(err, 'subscription'));
       }
     } finally {
       setChangingPlan(false);

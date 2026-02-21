@@ -11,6 +11,7 @@ import CompletionStep from './steps/CompletionStep';
 import { OnboardingData, OnboardingStep, StepProps } from '../../types/onboarding';
 import { onboardingService } from '../../lib/onboarding-service';
 import { useToast } from '../../contexts/ToastContext';
+import { getUserFriendlyError } from '../../utils/error-messages';
 
 // Define the steps configuration
 const STEPS: OnboardingStep[] = [
@@ -121,7 +122,7 @@ export default function OnboardingWizard({
       console.error('Failed to complete onboarding:', err);
       showError(
         'Failed to create plan',
-        err.message || 'Something went wrong. Please try again.'
+        getUserFriendlyError(err, 'save')
       );
       setIsCompleting(false);
     }

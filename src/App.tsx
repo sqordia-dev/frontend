@@ -38,8 +38,10 @@ import AdminSystemHealthPage from './pages/admin/AdminSystemHealthPage';
 import AdminTemplatesPage from './pages/admin/AdminTemplatesPage';
 import AdminSettingsPage from './pages/admin/AdminSettingsPage';
 import { AdminAIConfigPage } from './pages/admin/AdminAIConfigPage';
-import AdminCmsPage from './pages/admin/AdminCmsPage';
-import AdminCmsPreviewPage from './pages/admin/AdminCmsPreviewPage';
+import AdminPromptRegistryPage from './pages/admin/AdminPromptRegistryPage';
+import PromptRegistryDocPage from './pages/admin/PromptRegistryDocPage';
+import CmsEditorPage from './pages/admin/CmsEditorPage';
+import CmsQuestionnairePage from './pages/admin/CmsQuestionnairePage';
 import AdminQuestionnairePreviewPage from './pages/admin/AdminQuestionnairePreviewPage';
 import SubscriptionPlansPage from './pages/SubscriptionPlansPage';
 import SubscriptionPage from './pages/SubscriptionPage';
@@ -53,6 +55,8 @@ import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
 import TermsOfServicePage from './pages/TermsOfServicePage';
 import SecurityPage from './pages/SecurityPage';
 import CompliancePage from './pages/CompliancePage';
+import NotFoundPage from './pages/NotFoundPage';
+import BugReportPage from './pages/BugReportPage';
 import ScrollToTop from './components/ScrollToTop';
 
 // Component to handle scroll restoration prevention
@@ -231,9 +235,12 @@ function App() {
         >
           <Route index element={<InvoicesPage />} />
         </Route>
+        {/* Bug Report page - standalone */}
+        <Route path="/bug-report" element={<ProtectedRoute><BugReportPage /></ProtectedRoute>} />
+
         {/* CMS routes - standalone (no AdminLayout sidebar) */}
-        <Route path="/admin/cms" element={<ProtectedRoute><AdminCmsPage /></ProtectedRoute>} />
-        <Route path="/admin/cms/preview" element={<ProtectedRoute><AdminCmsPreviewPage /></ProtectedRoute>} />
+        <Route path="/admin/cms" element={<ProtectedRoute><CmsEditorPage /></ProtectedRoute>} />
+        <Route path="/admin/cms/questionnaire" element={<ProtectedRoute><CmsQuestionnairePage /></ProtectedRoute>} />
         <Route path="/admin/cms/questionnaire-preview" element={<ProtectedRoute><AdminQuestionnairePreviewPage /></ProtectedRoute>} />
 
         <Route
@@ -256,7 +263,12 @@ function App() {
           <Route path="system-health" element={<AdminSystemHealthPage />} />
           <Route path="settings" element={<AdminSettingsPage />} />
           <Route path="ai-config" element={<AdminAIConfigPage />} />
+          <Route path="prompt-registry" element={<AdminPromptRegistryPage />} />
+          <Route path="prompt-registry/docs" element={<PromptRegistryDocPage />} />
         </Route>
+
+        {/* 404 catch-all route - must be last */}
+        <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </Router>
     </ToastProvider>

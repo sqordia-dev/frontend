@@ -5,6 +5,7 @@ import { apiClient } from '../lib/api-client';
 import { useTheme } from '../contexts/ThemeContext';
 import SEO from '../components/SEO';
 import { getCanonicalUrl } from '../utils/seo';
+import { getUserFriendlyError } from '../utils/error-messages';
 
 interface Invoice {
   id: string;
@@ -54,7 +55,7 @@ export default function InvoicesPage() {
       }
     } catch (err: any) {
       console.error('Failed to load invoices:', err);
-      setError(err.message);
+      setError(getUserFriendlyError(err, 'load'));
     } finally {
       setLoading(false);
     }
@@ -70,7 +71,7 @@ export default function InvoicesPage() {
       }
     } catch (err: any) {
       console.error('Failed to download invoice:', err);
-      alert(`Failed to download invoice: ${err.message}`);
+      alert(getUserFriendlyError(err, 'download'));
     }
   };
 

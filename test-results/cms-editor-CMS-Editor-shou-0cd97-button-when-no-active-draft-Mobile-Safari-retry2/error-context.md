@@ -1,0 +1,97 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e2]:
+  - link "Skip to main content" [ref=e3]:
+    - /url: "#main-content"
+  - generic [ref=e4]:
+    - banner [ref=e5]:
+      - generic [ref=e6]:
+        - button "menu" [ref=e7] [cursor=pointer]:
+          - generic [ref=e8]: menu
+        - generic [ref=e11]: S
+      - generic [ref=e12]:
+        - generic [ref=e13]:
+          - button "EN" [ref=e14] [cursor=pointer]
+          - button "FR" [ref=e15] [cursor=pointer]
+        - button "Publish Changes" [ref=e16] [cursor=pointer]
+    - main [ref=e18]:
+      - generic [ref=e20]:
+        - generic [ref=e21]: Landing Page
+        - generic [ref=e22]: chevron_right
+        - generic [ref=e23]: Hero
+      - generic [ref=e24]:
+        - generic [ref=e25]:
+          - generic [ref=e26]:
+            - generic [ref=e27]:
+              - generic [ref=e29]: format_size
+              - generic [ref=e30]: Badge trusted
+            - generic [ref=e31]: drag_indicator
+          - textbox [ref=e32]: Trusted by 10,000+ entrepreneurs
+        - generic [ref=e33]:
+          - generic [ref=e34]:
+            - generic [ref=e35]:
+              - generic [ref=e37]: format_size
+              - generic [ref=e38]: Badge rating
+            - generic [ref=e39]: drag_indicator
+          - textbox [ref=e40]: 4.9/5 rating
+        - generic [ref=e41]:
+          - generic [ref=e42]:
+            - generic [ref=e43]:
+              - generic [ref=e45]: format_size
+              - generic [ref=e46]: Headline line1
+            - generic [ref=e47]: drag_indicator
+          - textbox [ref=e48]: A Bank-Ready Business Plan
+        - generic [ref=e49]:
+          - generic [ref=e50]:
+            - generic [ref=e51]:
+              - generic [ref=e53]: format_size
+              - generic [ref=e54]: Headline highlight
+            - generic [ref=e55]: drag_indicator
+          - textbox [ref=e56]: in Under 60 Minutes
+        - generic [ref=e57]:
+          - generic [ref=e58]:
+            - generic [ref=e59]:
+              - generic [ref=e61]: format_size
+              - generic [ref=e62]: Subheadline
+            - generic [ref=e63]: drag_indicator
+          - textbox [ref=e64]: Choose your AI engine. Answer 20 simple questions. Get investor-ready business plans with automated financial projections, market analysis, and bank-readiness scoring.
+        - generic [ref=e65]:
+          - generic [ref=e66]:
+            - generic [ref=e67]:
+              - generic [ref=e69]: format_size
+              - generic [ref=e70]: Cta primary
+            - generic [ref=e71]: drag_indicator
+          - textbox [ref=e72]: Create Your Plan Free
+        - generic [ref=e73]:
+          - generic [ref=e74]:
+            - generic [ref=e75]:
+              - generic [ref=e77]: format_size
+              - generic [ref=e78]: Cta secondary
+            - generic [ref=e79]: drag_indicator
+          - textbox [ref=e80]: See Example Plans
+        - generic [ref=e81]:
+          - generic [ref=e82]:
+            - generic [ref=e83]:
+              - generic [ref=e85]: format_size
+              - generic [ref=e86]: Trust nocard
+            - generic [ref=e87]: drag_indicator
+          - textbox [ref=e88]: No credit card required
+        - generic [ref=e89]:
+          - generic [ref=e90]:
+            - generic [ref=e91]:
+              - generic [ref=e93]: format_size
+              - generic [ref=e94]: Trust trial
+            - generic [ref=e95]: drag_indicator
+          - textbox [ref=e96]: 14-day free trial
+        - generic [ref=e97]:
+          - generic [ref=e98]:
+            - generic [ref=e99]:
+              - generic [ref=e101]: format_size
+              - generic [ref=e102]: Trust cancel
+            - generic [ref=e103]: drag_indicator
+          - textbox [ref=e104]: Cancel anytime
+        - button "add Add content block" [ref=e105] [cursor=pointer]:
+          - generic [ref=e107]: add
+          - generic [ref=e108]: Add content block
+```

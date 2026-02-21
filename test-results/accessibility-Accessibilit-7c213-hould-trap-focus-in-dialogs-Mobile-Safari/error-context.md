@@ -1,0 +1,423 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e2]:
+  - link "Skip to main content" [ref=e3]:
+    - /url: "#main-content"
+  - link "Skip to main content" [ref=e4]:
+    - /url: "#main-content"
+  - banner [ref=e5]:
+    - navigation [ref=e6]:
+      - generic [ref=e7]:
+        - link "Sqordia - Home" [ref=e8]:
+          - /url: /
+          - img [ref=e10]
+          - generic [ref=e20]: Sqordia
+        - generic [ref=e21]:
+          - button "Select language" [ref=e22] [cursor=pointer]:
+            - img [ref=e23]:
+              - img [ref=e24]
+            - img [ref=e27]
+          - button "Switch to dark mode" [ref=e29] [cursor=pointer]:
+            - img [ref=e30]
+          - button "Open menu" [ref=e32] [cursor=pointer]:
+            - img [ref=e33]
+  - main [ref=e34]:
+    - region "A Bank-Ready Business Plan in Under 60 Minutes" [ref=e35]:
+      - generic [ref=e37]:
+        - generic [ref=e38]:
+          - generic [ref=e40]:
+            - generic [ref=e41]: Trusted by 10,000+ entrepreneurs
+            - generic [ref=e44]: 4.9/5 rating
+          - heading "A Bank-Ready Business Plan in Under 60 Minutes" [level=1] [ref=e45]:
+            - generic [ref=e46]: A Bank-Ready Business Plan
+            - generic [ref=e47]: in Under 60 Minutes
+          - paragraph [ref=e48]: Choose your AI engine. Answer 20 simple questions. Get investor-ready business plans with automated financial projections, market analysis, and bank-readiness scoring.
+          - generic [ref=e49]:
+            - link "Create Your Plan Free" [ref=e50]:
+              - /url: /signup
+              - text: Create Your Plan Free
+              - img [ref=e51]
+            - link "See Example Plans" [ref=e53]:
+              - /url: /example-plans
+          - generic [ref=e54]:
+            - generic [ref=e55]:
+              - img [ref=e56]
+              - generic [ref=e58]: No credit card required
+            - generic [ref=e59]:
+              - img [ref=e60]
+              - generic [ref=e63]: 14-day free trial
+            - generic [ref=e64]:
+              - img [ref=e65]
+              - generic [ref=e69]: Cancel anytime
+        - generic "landing.hero.productDemo" [ref=e72]:
+          - img "Sqordia dashboard"
+    - region "Trusted by entrepreneurs across the globe" [ref=e73]:
+      - generic [ref=e74]:
+        - heading "Trusted by entrepreneurs across the globe" [level=2] [ref=e76]
+        - generic [ref=e77]:
+          - generic [ref=e79]:
+            - img [ref=e80]
+            - generic [ref=e83]: 25,000+
+            - generic [ref=e84]: Business Plans Created
+          - generic [ref=e86]:
+            - img [ref=e87]
+            - generic [ref=e89]: $50M+
+            - generic [ref=e90]: Funding Secured
+          - generic [ref=e92]:
+            - img [ref=e93]
+            - generic [ref=e96]: 30+
+            - generic [ref=e97]: Countries
+          - generic [ref=e99]:
+            - img [ref=e100]
+            - generic [ref=e102]: 4.9/5
+            - generic [ref=e103]: Average Rating
+    - region "Built different from every other planning tool" [ref=e104]:
+      - generic [ref=e105]:
+        - generic [ref=e106]:
+          - generic [ref=e110]: Why Choose Sqordia
+          - heading "Built different from every other planning tool" [level=2] [ref=e113]
+          - paragraph [ref=e115]: The only business planning platform with multi-AI engine choice, bank-readiness scoring, and persona-driven planning flows.
+        - generic [ref=e116]:
+          - article [ref=e118]:
+            - img [ref=e120]
+            - heading "Choose Your AI Engine" [level=3] [ref=e130]
+            - paragraph [ref=e131]: "The only business plan tool that lets you pick your AI: OpenAI, Claude, or Gemini. Get the best results from the engine you trust."
+          - article [ref=e133]:
+            - img [ref=e135]
+            - heading "Bank-Readiness Scoring" [level=3] [ref=e139]
+            - paragraph [ref=e140]: Don't just create projections—know if they'll pass. Our bank-readiness score tells you exactly how fundable your plan is before you submit.
+          - article [ref=e142]:
+            - img [ref=e144]
+            - heading "Tailored to Your Role" [level=3] [ref=e149]
+            - paragraph [ref=e150]: Entrepreneur, consultant, or nonprofit? Get a planning experience designed for how you work, with industry-specific guidance at every step.
+          - article [ref=e152]:
+            - img [ref=e154]
+            - heading "Three Plan Formats" [level=3] [ref=e159]
+            - paragraph [ref=e160]: Business Plan, Strategic Plan, or Lean Canvas—create the right document for your audience. Switch formats anytime without losing your work.
+    - region "From Idea to Funded Business in Three Steps" [ref=e161]:
+      - generic [ref=e162]:
+        - generic [ref=e163]:
+          - paragraph [ref=e165]: How It Works
+          - heading "From Idea to Funded Business in Three Steps" [level=2] [ref=e167]
+          - paragraph [ref=e169]: No business experience needed. No consultants required. Just answer questions and let AI do the heavy lifting.
+        - generic [ref=e170]:
+          - generic [ref=e172]:
+            - generic [ref=e176]:
+              - generic [ref=e178]:
+                - generic [ref=e179]: "1"
+                - generic [ref=e180]: Smart Questionnaire
+              - heading "Answer 20 Questions. Get a Complete Plan." [level=3] [ref=e181]
+              - paragraph [ref=e182]: Forget blank-page anxiety. Our intelligent questionnaire adapts to your industry and business type, guiding you through everything from market positioning to revenue model. Your AI engine transforms every answer into polished, professional content.
+              - list [ref=e184]:
+                - listitem [ref=e185]:
+                  - img [ref=e186]
+                  - generic [ref=e189]: Works for startups, restaurants, nonprofits, and 50+ industries
+                - listitem [ref=e190]:
+                  - img [ref=e191]
+                  - generic [ref=e194]: "Adapts questions to your persona: Entrepreneur, Consultant, or OBNL"
+                - listitem [ref=e195]:
+                  - img [ref=e196]
+                  - generic [ref=e199]: Auto-saves every answer—pick up where you left off
+                - listitem [ref=e200]:
+                  - img [ref=e201]
+                  - generic [ref=e204]: Most users finish in under 30 minutes
+            - generic "Questionnaire interface showing guided business plan questions" [ref=e207]:
+              - img "Questionnaire interface showing guided business plan questions"
+          - generic [ref=e209]:
+            - generic [ref=e213]:
+              - generic [ref=e215]:
+                - generic [ref=e216]: "2"
+                - generic [ref=e217]: Automated Financials
+              - heading "Financial Projections That Impress Bankers" [level=3] [ref=e218]
+              - paragraph [ref=e219]: Your AI generates 5-year revenue forecasts, expense breakdowns, cash flow statements, and break-even analysis—all formatted to banking standards. Then our bank-readiness score tells you exactly how your numbers stack up before you walk into the meeting.
+              - list [ref=e221]:
+                - listitem [ref=e222]:
+                  - img [ref=e223]
+                  - generic [ref=e226]: 5-year revenue & expense projections
+                - listitem [ref=e227]:
+                  - img [ref=e228]
+                  - generic [ref=e231]: Cash flow and break-even analysis
+                - listitem [ref=e232]:
+                  - img [ref=e233]
+                  - generic [ref=e236]: Bank-readiness score with actionable improvements
+                - listitem [ref=e237]:
+                  - img [ref=e238]
+                  - generic [ref=e241]: Export financials separately to Excel
+            - generic "Financial dashboard showing projections and charts" [ref=e244]:
+              - img "Financial dashboard showing projections and charts"
+          - generic [ref=e246]:
+            - generic [ref=e250]:
+              - generic [ref=e252]:
+                - generic [ref=e253]: "3"
+                - generic [ref=e254]: Professional Output
+              - heading "One Click to Investor-Ready Documents" [level=3] [ref=e255]
+              - paragraph [ref=e256]: Export to PDF with professional formatting, Word for easy editing, or Excel for detailed financial worksheets. Share a live link with investors and advisors, or download and submit directly to banks and grant programs.
+              - list [ref=e258]:
+                - listitem [ref=e259]:
+                  - img [ref=e260]
+                  - generic [ref=e263]: PDF, Word, and Excel export
+                - listitem [ref=e264]:
+                  - img [ref=e265]
+                  - generic [ref=e268]: Share live links with investors & advisors
+                - listitem [ref=e269]:
+                  - img [ref=e270]
+                  - generic [ref=e273]: Grant-application ready formatting
+                - listitem [ref=e274]:
+                  - img [ref=e275]
+                  - generic [ref=e278]: Unlimited revisions—update anytime
+            - generic "Export options showing PDF, Word, and sharing capabilities" [ref=e281]:
+              - img "Export options showing PDF, Word, and sharing capabilities"
+    - region "Real Results from Real Entrepreneurs" [ref=e282]:
+      - generic [ref=e283]:
+        - generic [ref=e284]:
+          - paragraph [ref=e286]: Success Stories
+          - heading "Real Results from Real Entrepreneurs" [level=2] [ref=e288]
+          - paragraph [ref=e290]: From seed funding to grant applications—see how Sqordia helped them get funded.
+        - generic [ref=e291]:
+          - article [ref=e293]:
+            - generic [ref=e294]:
+              - img [ref=e296]
+              - img "5 out of 5 stars" [ref=e299]:
+                - img [ref=e300]
+                - img [ref=e302]
+                - img [ref=e304]
+                - img [ref=e306]
+                - img [ref=e308]
+            - figure "Sarah Chen Founder & CEO, TechFlow Solutions" [ref=e310]:
+              - blockquote [ref=e311]:
+                - paragraph [ref=e312]: "\"I chose Claude as my AI engine and had a complete SaaS business plan in under 2 hours. The bank-readiness score was 94/100—and I secured $350K in seed funding within 3 weeks of submitting it.\""
+              - generic [ref=e313]:
+                - img [ref=e314]
+                - generic [ref=e315]:
+                  - text: Sarah Chen
+                  - generic [ref=e316]: Founder & CEO, TechFlow Solutions
+          - article [ref=e319]:
+            - generic [ref=e320]:
+              - img [ref=e322]
+              - img "5 out of 5 stars" [ref=e325]:
+                - img [ref=e326]
+                - img [ref=e328]
+                - img [ref=e330]
+                - img [ref=e332]
+                - img [ref=e334]
+            - figure "Michael Rodriguez Small Business Owner, Rodriguez Consulting" [ref=e336]:
+              - blockquote [ref=e337]:
+                - paragraph [ref=e338]: "\"The financial projections alone would have cost me $5,000 with a consultant. Sqordia generated bank-ready 5-year forecasts in minutes. My accountant was genuinely impressed.\""
+              - generic [ref=e339]:
+                - img [ref=e340]
+                - generic [ref=e341]:
+                  - text: Michael Rodriguez
+                  - generic [ref=e342]: Small Business Owner, Rodriguez Consulting
+          - article [ref=e345]:
+            - generic [ref=e346]:
+              - img [ref=e348]
+              - img "5 out of 5 stars" [ref=e351]:
+                - img [ref=e352]
+                - img [ref=e354]
+                - img [ref=e356]
+                - img [ref=e358]
+                - img [ref=e360]
+            - figure "Emily Thompson Executive Director, Community First Foundation" [ref=e362]:
+              - blockquote [ref=e363]:
+                - paragraph [ref=e364]: "\"As a nonprofit, we needed a strategic plan for 3 different grant applications. The OBNL persona understood our needs perfectly. We submitted all three on time and won two grants totaling $180K.\""
+              - generic [ref=e365]:
+                - img [ref=e366]
+                - generic [ref=e367]:
+                  - text: Emily Thompson
+                  - generic [ref=e368]: Executive Director, Community First Foundation
+    - region "Your Business Plan Is 60 Minutes Away" [ref=e370]:
+      - generic [ref=e372]:
+        - generic [ref=e374]: Join 10,000+ entrepreneurs
+        - heading "Your Business Plan Is 60 Minutes Away" [level=2] [ref=e376]
+        - paragraph [ref=e378]: Pick your AI engine. Answer the questions. Get a bank-ready business plan with financial projections, market analysis, and a readiness score that tells you exactly where you stand.
+        - link "Create Your Plan Free" [ref=e381]:
+          - /url: /signup
+          - text: Create Your Plan Free
+          - img [ref=e382]
+        - generic [ref=e385]:
+          - generic [ref=e386]:
+            - img [ref=e387]
+            - generic [ref=e389]: No credit card required
+          - generic [ref=e390]:
+            - img [ref=e391]
+            - generic [ref=e394]: 14-day free trial
+          - generic [ref=e395]:
+            - img [ref=e396]
+            - generic [ref=e399]: Cancel anytime
+    - region "Frequently Asked Questions" [ref=e400]:
+      - generic [ref=e401]:
+        - generic [ref=e402]:
+          - paragraph [ref=e404]: FAQ
+          - heading "Frequently Asked Questions" [level=2] [ref=e406]
+          - paragraph [ref=e408]: Everything you need to know about creating your business plan with Sqordia.
+        - generic [ref=e409]:
+          - button "How long does it take to create a business plan?" [ref=e412] [cursor=pointer]:
+            - generic [ref=e413]:
+              - img [ref=e415]
+              - generic [ref=e418]: How long does it take to create a business plan?
+            - img [ref=e420]
+          - button "Do I need any business experience to use Sqordia?" [ref=e424] [cursor=pointer]:
+            - generic [ref=e425]:
+              - img [ref=e427]
+              - generic [ref=e431]: Do I need any business experience to use Sqordia?
+            - img [ref=e433]
+          - button "What formats can I export my business plan in?" [ref=e437] [cursor=pointer]:
+            - generic [ref=e438]:
+              - img [ref=e440]
+              - generic [ref=e446]: What formats can I export my business plan in?
+            - img [ref=e448]
+          - button "Are the financial projections accurate?" [ref=e452] [cursor=pointer]:
+            - generic [ref=e453]:
+              - img [ref=e455]
+              - generic [ref=e458]: Are the financial projections accurate?
+            - img [ref=e460]
+          - button "Can I share my plan with my team or investors?" [ref=e464] [cursor=pointer]:
+            - generic [ref=e465]:
+              - img [ref=e467]
+              - generic [ref=e473]: Can I share my plan with my team or investors?
+            - img [ref=e475]
+          - button "What if I need help or have questions?" [ref=e479] [cursor=pointer]:
+            - generic [ref=e480]:
+              - img [ref=e482]
+              - generic [ref=e485]: What if I need help or have questions?
+            - img [ref=e487]
+          - button "Which AI engine should I choose?" [ref=e491] [cursor=pointer]:
+            - generic [ref=e492]:
+              - img [ref=e494]
+              - generic [ref=e497]: Which AI engine should I choose?
+            - img [ref=e499]
+          - button "What is the bank-readiness score?" [ref=e503] [cursor=pointer]:
+            - generic [ref=e504]:
+              - img [ref=e506]
+              - generic [ref=e509]: What is the bank-readiness score?
+            - img [ref=e511]
+  - contentinfo [ref=e513]:
+    - generic [ref=e514]:
+      - generic [ref=e515]:
+        - generic [ref=e516]:
+          - link "Sqordia - Home" [ref=e517]:
+            - /url: /
+            - img [ref=e519]
+            - generic [ref=e529]: Sqordia
+          - paragraph [ref=e530]: AI-enhanced strategic planning that transforms your ideas into investor-ready business plans in under 60 minutes.
+          - generic [ref=e531]:
+            - link "Twitter" [ref=e532]:
+              - /url: https://twitter.com/sqordia
+              - img [ref=e533]
+            - link "LinkedIn" [ref=e535]:
+              - /url: https://linkedin.com/company/sqordia
+              - img [ref=e536]
+            - link "Facebook" [ref=e540]:
+              - /url: https://facebook.com/sqordia
+              - img [ref=e541]
+            - link "Instagram" [ref=e543]:
+              - /url: https://instagram.com/sqordia
+              - img [ref=e544]
+            - link "Email" [ref=e547]:
+              - /url: mailto:hello@sqordia.com
+              - img [ref=e548]
+        - generic [ref=e551]:
+          - heading "Product" [level=3] [ref=e552]
+          - list [ref=e553]:
+            - listitem [ref=e554]:
+              - link "Features" [ref=e555]:
+                - /url: /#features
+            - listitem [ref=e556]:
+              - link "Pricing" [ref=e557]:
+                - /url: /#pricing
+            - listitem [ref=e558]:
+              - link "Templates" [ref=e559]:
+                - /url: /templates
+            - listitem [ref=e560]:
+              - link "Examples" [ref=e561]:
+                - /url: /example-plans
+            - listitem [ref=e562]:
+              - link "API" [ref=e563]:
+                - /url: /api
+        - generic [ref=e564]:
+          - heading "Company" [level=3] [ref=e565]
+          - list [ref=e566]:
+            - listitem [ref=e567]:
+              - link "About Us" [ref=e568]:
+                - /url: /about
+            - listitem [ref=e569]:
+              - link "Blog" [ref=e570]:
+                - /url: /blog
+            - listitem [ref=e571]:
+              - link "Careers" [ref=e572]:
+                - /url: /careers
+            - listitem [ref=e573]:
+              - link "Contact" [ref=e574]:
+                - /url: /#contact
+            - listitem [ref=e575]:
+              - link "Partners" [ref=e576]:
+                - /url: /partners
+        - generic [ref=e577]:
+          - heading "Resources" [level=3] [ref=e578]
+          - list [ref=e579]:
+            - listitem [ref=e580]:
+              - link "Documentation" [ref=e581]:
+                - /url: /docs
+            - listitem [ref=e582]:
+              - link "Help Center" [ref=e583]:
+                - /url: /help
+            - listitem [ref=e584]:
+              - link "Community" [ref=e585]:
+                - /url: /community
+            - listitem [ref=e586]:
+              - link "Webinars" [ref=e587]:
+                - /url: /webinars
+            - listitem [ref=e588]:
+              - link "Status" [ref=e589]:
+                - /url: /status
+        - generic [ref=e590]:
+          - heading "Legal" [level=3] [ref=e591]
+          - list [ref=e592]:
+            - listitem [ref=e593]:
+              - link "Privacy Policy" [ref=e594]:
+                - /url: /privacy
+            - listitem [ref=e595]:
+              - link "Terms of Service" [ref=e596]:
+                - /url: /terms
+            - listitem [ref=e597]:
+              - link "Security" [ref=e598]:
+                - /url: /security
+            - listitem [ref=e599]:
+              - link "Compliance" [ref=e600]:
+                - /url: /compliance
+            - listitem [ref=e601]:
+              - link "Cookie Policy" [ref=e602]:
+                - /url: /cookies
+      - generic [ref=e603]:
+        - paragraph [ref=e604]: © 2026 Sqordia. All rights reserved.
+        - generic [ref=e605]:
+          - link "Privacy" [ref=e606]:
+            - /url: /privacy
+          - link "Terms" [ref=e607]:
+            - /url: /terms
+          - link "Security" [ref=e608]:
+            - /url: /security
+          - link "Compliance" [ref=e609]:
+            - /url: /compliance
+        - paragraph [ref=e610]: Built with care in Montreal
+  - generic [ref=e615]:
+    - img [ref=e618]
+    - generic [ref=e620]:
+      - generic [ref=e621]:
+        - generic [ref=e622]:
+          - heading "We use cookies" [level=3] [ref=e623]
+          - paragraph [ref=e624]: We use cookies to enhance your experience, analyze site traffic, and personalize content. By continuing, you accept our use of cookies.
+        - button "Close" [ref=e625] [cursor=pointer]:
+          - img [ref=e626]
+      - generic [ref=e629]:
+        - button "Accept all cookies" [ref=e630] [cursor=pointer]: Accept All
+        - button "Decline cookies" [ref=e631] [cursor=pointer]: Decline
+        - button "Cookie settings" [ref=e632] [cursor=pointer]:
+          - img [ref=e633]
+          - generic [ref=e636]: Settings
+      - link "Learn more about our cookie policy" [ref=e638]:
+        - /url: /privacy
+        - text: Learn more about our cookie policy
+        - img [ref=e639]
+```

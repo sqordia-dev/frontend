@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { adminService } from '../../lib/admin-service';
 import { Search, FileText, RefreshCw, AlertCircle, LayoutGrid, List } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
+import { getUserFriendlyError } from '../../utils/error-messages';
 
 export default function AdminBusinessPlansPage() {
   const { t } = useTheme();
@@ -23,7 +24,7 @@ export default function AdminBusinessPlansPage() {
       const data = await adminService.getBusinessPlans();
       setPlans(data);
     } catch (err: any) {
-      setError(err.message);
+      setError(getUserFriendlyError(err, 'load'));
     } finally {
       setLoading(false);
     }
@@ -35,7 +36,7 @@ export default function AdminBusinessPlansPage() {
       await adminService.regenerateBusinessPlan(planId);
       alert('Business plan regeneration started');
     } catch (err: any) {
-      alert(`Failed to regenerate plan: ${err.message}`);
+      alert(getUserFriendlyError(err, 'generate'));
     } finally {
       setRegenerating(null);
     }

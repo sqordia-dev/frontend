@@ -1,0 +1,392 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e2]:
+  - link "Skip to main content" [ref=e3]:
+    - /url: "#main-content"
+  - link "Aller au contenu principal" [ref=e4]:
+    - /url: "#main-content"
+  - banner [ref=e5]:
+    - navigation [ref=e6]:
+      - generic [ref=e7]:
+        - link "Sqordia - Home" [ref=e8]:
+          - /url: /fr
+          - img [ref=e10]
+          - generic [ref=e20]: Sqordia
+        - generic [ref=e21]:
+          - button "Select language" [ref=e22] [cursor=pointer]:
+            - img [ref=e23]:
+              - img [ref=e24]
+            - img [ref=e25]
+          - button "Passer au mode sombre" [ref=e27] [cursor=pointer]:
+            - img [ref=e28]
+          - button "Ouvrir le menu" [ref=e30] [cursor=pointer]:
+            - img [ref=e31]
+  - main [ref=e32]:
+    - region "Un plan d'affaires prêt pour la banque en moins de 60 minutes" [ref=e33]:
+      - generic [ref=e35]:
+        - generic [ref=e36]:
+          - generic [ref=e38]:
+            - generic [ref=e39]: Plus de 10 000 entrepreneurs nous font confiance
+            - generic [ref=e42]: 4,9/5
+          - heading "Un plan d'affaires prêt pour la banque en moins de 60 minutes" [level=1] [ref=e43]:
+            - generic [ref=e44]: Un plan d'affaires prêt pour la banque
+            - generic [ref=e45]: en moins de 60 minutes
+          - paragraph [ref=e46]: Choisissez votre moteur IA. Répondez à 20 questions simples. Obtenez des plans d'affaires prêts pour les investisseurs avec projections financières, analyse de marché et score de prêt bancaire.
+          - generic [ref=e47]:
+            - link "Créez votre plan gratuitement" [ref=e48]:
+              - /url: /signup
+              - text: Créez votre plan gratuitement
+              - img [ref=e49]
+            - link "Voir des exemples de plans" [ref=e51]:
+              - /url: /example-plans
+          - generic [ref=e52]:
+            - generic [ref=e53]:
+              - img [ref=e54]
+              - generic [ref=e56]: Aucune carte de cr\u00e9dit requise
+            - generic [ref=e57]:
+              - img [ref=e58]
+              - generic [ref=e61]: Essai gratuit de 14 jours
+            - generic [ref=e62]:
+              - img [ref=e63]
+              - generic [ref=e67]: Annulez \u00e0 tout moment
+        - generic "landing.hero.productDemo" [ref=e70]:
+          - img "Sqordia dashboard"
+    - region "La confiance des entrepreneurs du monde entier" [ref=e71]:
+      - generic [ref=e72]:
+        - heading "La confiance des entrepreneurs du monde entier" [level=2] [ref=e74]
+        - generic [ref=e75]:
+          - generic [ref=e77]:
+            - img [ref=e78]
+            - generic [ref=e81]: 10 000+
+            - generic [ref=e82]: Plans d'affaires créés
+          - generic [ref=e84]:
+            - img [ref=e85]
+            - generic [ref=e87]: 50M$+
+            - generic [ref=e88]: Financement obtenu
+          - generic [ref=e90]:
+            - img [ref=e91]
+            - generic [ref=e94]: 50+
+            - generic [ref=e95]: Pays
+          - generic [ref=e97]:
+            - img [ref=e98]
+            - generic [ref=e100]: 4,9/5
+            - generic [ref=e101]: Évaluation utilisateurs
+    - region "Tout ce qu'il vous faut pour réussir" [ref=e102]:
+      - generic [ref=e103]:
+        - generic [ref=e104]:
+          - generic [ref=e108]: Pourquoi Sqordia
+          - heading "Tout ce qu'il vous faut pour réussir" [level=2] [ref=e111]
+          - paragraph [ref=e113]: Des fonctionnalités puissantes conçues pour aider les entrepreneurs à créer des plans d'affaires professionnels qui obtiennent des résultats.
+        - generic [ref=e114]:
+          - article [ref=e116]:
+            - img [ref=e118]
+            - heading "Intelligence propulsée par l'IA" [level=3] [ref=e128]
+            - paragraph [ref=e129]: Plusieurs moteurs IA analysent votre entreprise et génèrent des plans complets basés sur les données.
+          - article [ref=e131]:
+            - img [ref=e133]
+            - heading "Précision stratégique" [level=3] [ref=e137]
+            - paragraph [ref=e138]: Le score de prêt bancaire garantit que votre plan répond aux normes attendues par les investisseurs et les prêteurs.
+          - article [ref=e140]:
+            - img [ref=e142]
+            - heading "Conçu pour tous" [level=3] [ref=e147]
+            - paragraph [ref=e148]: Que vous soyez entrepreneur, consultant ou OBNL, Sqordia s'adapte à vos besoins uniques.
+          - article [ref=e150]:
+            - img [ref=e152]
+            - heading "Plusieurs types de plans" [level=3] [ref=e157]
+            - paragraph [ref=e158]: Créez des plans d'affaires traditionnels, des plans stratégiques ou des lean canvas—le tout depuis une seule plateforme.
+    - region "De l'idée à l'entreprise financée en trois étapes" [ref=e159]:
+      - generic [ref=e160]:
+        - generic [ref=e161]:
+          - paragraph [ref=e163]: Comment ça marche
+          - heading "De l'idée à l'entreprise financée en trois étapes" [level=2] [ref=e165]
+          - paragraph [ref=e167]: Aucune expérience en affaires requise. Aucun consultant nécessaire. Répondez aux questions et laissez l'IA faire le gros du travail.
+        - generic [ref=e168]:
+          - generic [ref=e170]:
+            - generic [ref=e174]:
+              - generic [ref=e176]:
+                - generic [ref=e177]: "1"
+                - generic [ref=e178]: Questionnaire guidé
+              - heading "Répondez aux questions intelligentes" [level=3] [ref=e179]
+              - paragraph [ref=e180]: Notre questionnaire intelligent s'adapte à votre type d'entreprise et fournit des suggestions propulsées par l'IA au fur et à mesure. Aucune expertise commerciale requise.
+              - list [ref=e182]:
+                - listitem [ref=e183]:
+                  - img [ref=e184]
+                  - generic [ref=e187]: Réponses à choix multiples avec suggestions intelligentes
+                - listitem [ref=e188]:
+                  - img [ref=e189]
+                  - generic [ref=e192]: L'IA explique pourquoi chaque question est importante
+                - listitem [ref=e193]:
+                  - img [ref=e194]
+                  - generic [ref=e197]: Sauvegarde automatique au fur et à mesure
+                - listitem [ref=e198]:
+                  - img [ref=e199]
+                  - generic [ref=e202]: Complétez en moins de 20 minutes
+            - generic "Interface du questionnaire montrant les questions guidées pour le plan d'affaires" [ref=e205]:
+              - img "Interface du questionnaire montrant les questions guidées pour le plan d'affaires"
+          - generic [ref=e207]:
+            - generic [ref=e211]:
+              - generic [ref=e213]:
+                - generic [ref=e214]: "2"
+                - generic [ref=e215]: Génération intelligente
+              - heading "L'IA génère votre plan" [level=3] [ref=e216]
+              - paragraph [ref=e217]: Choisissez parmi plusieurs moteurs IA (GPT-4, Claude, Gemini) pour générer un plan d'affaires complet avec analyse de marché, projections financières et stratégie.
+              - list [ref=e219]:
+                - listitem [ref=e220]:
+                  - img [ref=e221]
+                  - generic [ref=e224]: Plusieurs moteurs IA pour les meilleurs résultats
+                - listitem [ref=e225]:
+                  - img [ref=e226]
+                  - generic [ref=e229]: Intégration de données de marché en temps réel
+                - listitem [ref=e230]:
+                  - img [ref=e231]
+                  - generic [ref=e234]: Projections financières automatisées
+                - listitem [ref=e235]:
+                  - img [ref=e236]
+                  - generic [ref=e239]: Score de prêt bancaire inclus
+            - generic "Tableau de bord financier montrant les projections et les graphiques" [ref=e242]:
+              - img "Tableau de bord financier montrant les projections et les graphiques"
+          - generic [ref=e244]:
+            - generic [ref=e248]:
+              - generic [ref=e250]:
+                - generic [ref=e251]: "3"
+                - generic [ref=e252]: Sortie professionnelle
+              - heading "Exportez et présentez" [level=3] [ref=e253]
+              - paragraph [ref=e254]: Exportez votre plan dans plusieurs formats - PDF, Word, PowerPoint. Chaque section est entièrement modifiable avant de présenter aux investisseurs ou aux banques.
+              - list [ref=e256]:
+                - listitem [ref=e257]:
+                  - img [ref=e258]
+                  - generic [ref=e261]: Exportez en PDF, Word et PowerPoint
+                - listitem [ref=e262]:
+                  - img [ref=e263]
+                  - generic [ref=e266]: Entièrement modifiable avant l'export
+                - listitem [ref=e267]:
+                  - img [ref=e268]
+                  - generic [ref=e271]: Mise en forme professionnelle incluse
+                - listitem [ref=e272]:
+                  - img [ref=e273]
+                  - generic [ref=e276]: Mode présentation prêt pour les investisseurs
+            - generic "Options d'exportation montrant PDF, Word et capacités de partage" [ref=e279]:
+              - img "Options d'exportation montrant PDF, Word et capacités de partage"
+    - region "Des résultats réels d' entrepreneurs r\\u00e9els" [ref=e280]:
+      - generic [ref=e281]:
+        - generic [ref=e282]:
+          - paragraph [ref=e284]: Témoignages de succès
+          - heading "Des résultats réels d' entrepreneurs r\\u00e9els" [level=2] [ref=e286]
+          - paragraph [ref=e288]: Du financement d'amorçage aux demandes de subventions—découvrez comment Sqordia les a aidés à obtenir du financement.
+        - generic [ref=e289]:
+          - article [ref=e291]:
+            - generic [ref=e292]:
+              - img [ref=e294]
+              - img "5 star rating" [ref=e297]:
+                - img [ref=e298]
+                - img [ref=e300]
+                - img [ref=e302]
+                - img [ref=e304]
+                - img [ref=e306]
+            - figure "Sarah Chen Fondatrice, TechStart" [ref=e308]:
+              - blockquote [ref=e309]:
+                - paragraph [ref=e310]: "\"Sqordia m'a aidée à créer un plan d'affaires qui a sécurisé 500K$. Les suggestions IA étaient incroyablement utiles.\""
+              - generic [ref=e312]:
+                - text: Sarah Chen
+                - generic [ref=e313]: Fondatrice, TechStart
+          - article [ref=e316]:
+            - generic [ref=e317]:
+              - img [ref=e319]
+              - img "5 star rating" [ref=e322]:
+                - img [ref=e323]
+                - img [ref=e325]
+                - img [ref=e327]
+                - img [ref=e329]
+                - img [ref=e331]
+            - figure "Michael Rodriguez Directeur, Community First" [ref=e333]:
+              - blockquote [ref=e334]:
+                - paragraph [ref=e335]: "\"En tant qu'OBNL, nous avions besoin d'un plan stratégique rapidement. Sqordia a livré un document professionnel en moins d'une heure.\""
+              - generic [ref=e337]:
+                - text: Michael Rodriguez
+                - generic [ref=e338]: Directeur, Community First
+          - article [ref=e341]:
+            - generic [ref=e342]:
+              - img [ref=e344]
+              - img "5 star rating" [ref=e347]:
+                - img [ref=e348]
+                - img [ref=e350]
+                - img [ref=e352]
+                - img [ref=e354]
+                - img [ref=e356]
+            - figure "Emily Watson PDG, GreenTech Solutions" [ref=e358]:
+              - blockquote [ref=e359]:
+                - paragraph [ref=e360]: "\"Les projections financières m'ont économisé des semaines de travail.\""
+              - generic [ref=e362]:
+                - text: Emily Watson
+                - generic [ref=e363]: PDG, GreenTech Solutions
+    - region "Prêt à créer votre plan d'affaires?" [ref=e365]:
+      - generic [ref=e367]:
+        - generic [ref=e369]: Commencez gratuitement aujourd'hui
+        - heading "Prêt à créer votre plan d'affaires?" [level=2] [ref=e371]
+        - paragraph [ref=e373]: Rejoignez des milliers d'entrepreneurs qui ont transformé leurs idées en plans d'affaires prêts pour les investisseurs.
+        - link "Commencer gratuitement" [ref=e376]:
+          - /url: /signup
+          - text: Commencer gratuitement
+          - img [ref=e377]
+        - generic [ref=e380]:
+          - generic [ref=e381]:
+            - img [ref=e382]
+            - generic [ref=e384]: Aucune carte de crédit requise
+          - generic [ref=e385]:
+            - img [ref=e386]
+            - generic [ref=e389]: Essai gratuit de 14 jours
+          - generic [ref=e390]:
+            - img [ref=e391]
+            - generic [ref=e394]: Annulez à tout moment
+    - region "Questions fréquentes" [ref=e395]:
+      - generic [ref=e396]:
+        - generic [ref=e397]:
+          - paragraph [ref=e399]: FAQ
+          - heading "Questions fréquentes" [level=2] [ref=e401]
+          - paragraph [ref=e403]: Tout ce que vous devez savoir sur la création de votre plan d'affaires avec Sqordia.
+        - generic [ref=e404]:
+          - button "Dois-je être un expert?" [ref=e407] [cursor=pointer]:
+            - generic [ref=e408]:
+              - img [ref=e410]
+              - generic [ref=e413]: Dois-je être un expert?
+            - img [ref=e415]
+          - button "L'IA est-elle transparente?" [ref=e419] [cursor=pointer]:
+            - generic [ref=e420]:
+              - img [ref=e422]
+              - generic [ref=e426]: L'IA est-elle transparente?
+            - img [ref=e428]
+          - button "Puis-je modifier le résultat?" [ref=e432] [cursor=pointer]:
+            - generic [ref=e433]:
+              - img [ref=e435]
+              - generic [ref=e441]: Puis-je modifier le résultat?
+            - img [ref=e443]
+  - contentinfo [ref=e445]:
+    - generic [ref=e446]:
+      - generic [ref=e447]:
+        - generic [ref=e448]:
+          - link "Sqordia - Home" [ref=e449]:
+            - /url: /fr
+            - img [ref=e451]
+            - generic [ref=e461]: Sqordia
+          - paragraph [ref=e462]: Planification stratégique améliorée par l'IA qui transforme vos idées en plans d'affaires prêts pour investisseurs en moins de 60 minutes.
+          - generic [ref=e463]:
+            - link "Twitter" [ref=e464]:
+              - /url: https://twitter.com/sqordia
+              - img [ref=e465]
+            - link "LinkedIn" [ref=e467]:
+              - /url: https://linkedin.com/company/sqordia
+              - img [ref=e468]
+            - link "Facebook" [ref=e472]:
+              - /url: https://facebook.com/sqordia
+              - img [ref=e473]
+            - link "Instagram" [ref=e475]:
+              - /url: https://instagram.com/sqordia
+              - img [ref=e476]
+            - link "Email" [ref=e479]:
+              - /url: mailto:hello@sqordia.com
+              - img [ref=e480]
+        - generic [ref=e483]:
+          - heading "Produit" [level=3] [ref=e484]
+          - list [ref=e485]:
+            - listitem [ref=e486]:
+              - link "Fonctionnalités" [ref=e487]:
+                - /url: /fr#features
+            - listitem [ref=e488]:
+              - link "Tarifs" [ref=e489]:
+                - /url: /fr#pricing
+            - listitem [ref=e490]:
+              - link "Modèles" [ref=e491]:
+                - /url: /templates
+            - listitem [ref=e492]:
+              - link "Exemples" [ref=e493]:
+                - /url: /example-plans
+            - listitem [ref=e494]:
+              - link "API" [ref=e495]:
+                - /url: /api
+        - generic [ref=e496]:
+          - heading "Entreprise" [level=3] [ref=e497]
+          - list [ref=e498]:
+            - listitem [ref=e499]:
+              - link "À propos" [ref=e500]:
+                - /url: /about
+            - listitem [ref=e501]:
+              - link "Blog" [ref=e502]:
+                - /url: /blog
+            - listitem [ref=e503]:
+              - link "Carrières" [ref=e504]:
+                - /url: /careers
+            - listitem [ref=e505]:
+              - link "Contact" [ref=e506]:
+                - /url: /fr#contact
+            - listitem [ref=e507]:
+              - link "Partenaires" [ref=e508]:
+                - /url: /partners
+        - generic [ref=e509]:
+          - heading "Ressources" [level=3] [ref=e510]
+          - list [ref=e511]:
+            - listitem [ref=e512]:
+              - link "Documentation" [ref=e513]:
+                - /url: /docs
+            - listitem [ref=e514]:
+              - link "Centre d'aide" [ref=e515]:
+                - /url: /help
+            - listitem [ref=e516]:
+              - link "Communauté" [ref=e517]:
+                - /url: /community
+            - listitem [ref=e518]:
+              - link "Webinaires" [ref=e519]:
+                - /url: /webinars
+            - listitem [ref=e520]:
+              - link "Statut" [ref=e521]:
+                - /url: /status
+        - generic [ref=e522]:
+          - heading "Légal" [level=3] [ref=e523]
+          - list [ref=e524]:
+            - listitem [ref=e525]:
+              - link "Politique de confidentialité" [ref=e526]:
+                - /url: /privacy
+            - listitem [ref=e527]:
+              - link "Conditions d'utilisation" [ref=e528]:
+                - /url: /terms
+            - listitem [ref=e529]:
+              - link "Sécurité" [ref=e530]:
+                - /url: /security
+            - listitem [ref=e531]:
+              - link "Conformité" [ref=e532]:
+                - /url: /compliance
+            - listitem [ref=e533]:
+              - link "Politique de cookies" [ref=e534]:
+                - /url: /cookies
+      - generic [ref=e535]:
+        - paragraph [ref=e536]: © 2026 Sqordia. Tous droits r\u00e9serv\u00e9s.
+        - generic [ref=e537]:
+          - link "Confidentialité" [ref=e538]:
+            - /url: /privacy
+          - link "Conditions" [ref=e539]:
+            - /url: /terms
+          - link "Sécurité" [ref=e540]:
+            - /url: /security
+          - link "Conformité" [ref=e541]:
+            - /url: /compliance
+        - paragraph [ref=e542]: Conçu avec soin à Montréal
+  - generic [ref=e547]:
+    - img [ref=e550]
+    - generic [ref=e552]:
+      - generic [ref=e553]:
+        - generic [ref=e554]:
+          - heading "Nous utilisons des cookies" [level=3] [ref=e555]
+          - paragraph [ref=e556]: Nous utilisons des cookies pour améliorer votre expérience, analyser le trafic du site et personnaliser le contenu. En continuant, vous acceptez notre utilisation des cookies.
+        - button "Fermer" [ref=e557] [cursor=pointer]:
+          - img [ref=e558]
+      - generic [ref=e561]:
+        - button "Accepter tous les cookies" [ref=e562] [cursor=pointer]: Accepter tout
+        - button "Refuser les cookies" [ref=e563] [cursor=pointer]: Refuser
+        - button "Paramètres de cookies" [ref=e564] [cursor=pointer]:
+          - img [ref=e565]
+          - generic [ref=e568]: Paramètres
+      - link "En savoir plus sur notre utilisation des cookies" [ref=e570]:
+        - /url: /privacy
+        - text: En savoir plus sur notre utilisation des cookies
+        - img [ref=e571]
+```

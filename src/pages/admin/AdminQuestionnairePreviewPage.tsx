@@ -257,7 +257,6 @@ export default function AdminQuestionnairePreviewPage() {
                     </span>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
-                        {question.icon && <span className="text-base">{question.icon}</span>}
                         <p className="text-sm font-medium text-gray-900 dark:text-white">
                           {language === 'fr'
                             ? question.questionText

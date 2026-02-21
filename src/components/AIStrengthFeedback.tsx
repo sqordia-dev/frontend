@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Lightbulb, Sparkles, Loader2, AlertCircle } from 'lucide-react';
 import { apiClient } from '../lib/api-client';
+import { getUserFriendlyError } from '../utils/error-messages';
 
 interface Gap {
   category: 'Financial' | 'Strategic' | 'Legal' | 'QuebecCompliance';
@@ -98,7 +99,7 @@ export default function AIStrengthFeedback({
       setShowFeedback(true);
     } catch (err: any) {
       console.error('AI feedback error:', err);
-      setError(err.response?.data?.message || 'Failed to analyze answer. Please try again.');
+      setError(getUserFriendlyError(err, 'ai'));
     } finally {
       setLoading(false);
     }

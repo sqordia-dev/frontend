@@ -7,6 +7,7 @@ import { securityService } from '../lib/security-service';
 import { PersonaType } from '../lib/types';
 import SEO from '../components/SEO';
 import { useCmsContent } from '../hooks/useCmsContent';
+import { getUserFriendlyError } from '../utils/error-messages';
 
 export default function ProfilePage() {
   const { getContent: cms } = useCmsContent('profile');
@@ -153,8 +154,7 @@ export default function ProfilePage() {
       }
     } catch (err: any) {
       console.error('Profile picture upload error:', err);
-      const errorMessage = err.message || err.response?.data?.message || err.response?.data?.errorMessage || 'Failed to upload profile picture';
-      setError(errorMessage);
+      setError(getUserFriendlyError(err, 'upload'));
       setProfileImageError(true);
     } finally {
       setUploadingPicture(false);

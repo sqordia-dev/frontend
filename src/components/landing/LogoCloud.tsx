@@ -1,5 +1,6 @@
 import { FileText, DollarSign, Globe, Star } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
+import { usePublishedContent } from '@/hooks/usePublishedContent';
 import { cn } from '@/lib/utils';
 import { ScrollReveal, StaggerContainer, StaggerItem } from '../animations/ScrollReveal';
 
@@ -19,6 +20,7 @@ const stats: Stat[] = [
 
 export default function LogoCloud() {
   const { t } = useTheme();
+  const { getBlockContent } = usePublishedContent();
 
   return (
     <section
@@ -32,7 +34,7 @@ export default function LogoCloud() {
             id="stats-heading"
             className="text-center text-sm md:text-base font-medium mb-8 md:mb-12 text-gray-500 dark:text-gray-400"
           >
-            {t('landing.stats.heading')}
+            {getBlockContent('landing.stats.heading', t('landing.stats.heading'))}
           </h2>
         </ScrollReveal>
 
@@ -49,10 +51,10 @@ export default function LogoCloud() {
                     aria-hidden="true"
                   />
                   <span className="text-3xl md:text-4xl font-bold font-heading mb-1 text-strategy-blue dark:text-white">
-                    {t(stat.valueKey)}
+                    {getBlockContent(stat.valueKey, t(stat.valueKey))}
                   </span>
                   <span className="text-sm md:text-base text-gray-500 dark:text-gray-400">
-                    {t(stat.labelKey)}
+                    {getBlockContent(stat.labelKey, t(stat.labelKey))}
                   </span>
                 </div>
               </StaggerItem>

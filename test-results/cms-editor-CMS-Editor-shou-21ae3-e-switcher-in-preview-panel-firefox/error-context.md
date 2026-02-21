@@ -1,0 +1,210 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e2]:
+  - link "Skip to main content" [ref=e3] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=e4]:
+    - banner [ref=e5]:
+      - generic [ref=e6]:
+        - generic [ref=e7]:
+          - generic [ref=e9]: S
+          - generic [ref=e10]: Sqordia
+        - generic [ref=e12]:
+          - generic [ref=e13]:
+            - generic [ref=e14]: search
+            - textbox "Search content..." [ref=e15]
+          - generic [ref=e17]: Draft v6
+      - generic [ref=e18]:
+        - button "history" [ref=e19] [cursor=pointer]:
+          - generic [ref=e20]: history
+        - button "schedule" [ref=e21] [cursor=pointer]:
+          - generic [ref=e22]: schedule
+        - generic [ref=e23]:
+          - button "EN" [ref=e24] [cursor=pointer]
+          - button "FR" [ref=e25] [cursor=pointer]
+        - button "Publish Changes" [ref=e26] [cursor=pointer]
+    - generic [ref=e27]:
+      - complementary [ref=e28]:
+        - generic [ref=e30]:
+          - generic [ref=e31]: Content Structure
+          - generic [ref=e32]:
+            - button "web Landing Page chevron_right" [active] [ref=e34] [cursor=pointer]:
+              - generic [ref=e35]:
+                - generic [ref=e36]: web
+                - generic [ref=e37]: Landing Page
+              - generic [ref=e38]: chevron_right
+            - button "dashboard Dashboard chevron_right" [ref=e40] [cursor=pointer]:
+              - generic [ref=e41]:
+                - generic [ref=e42]: dashboard
+                - generic [ref=e43]: Dashboard
+              - generic [ref=e44]: chevron_right
+            - button "person Profile chevron_right" [ref=e46] [cursor=pointer]:
+              - generic [ref=e47]:
+                - generic [ref=e48]: person
+                - generic [ref=e49]: Profile
+              - generic [ref=e50]: chevron_right
+            - button "assignment Questionnaire chevron_right" [ref=e52] [cursor=pointer]:
+              - generic [ref=e53]:
+                - generic [ref=e54]: assignment
+                - generic [ref=e55]: Questionnaire
+              - generic [ref=e56]: chevron_right
+            - button "help Questions chevron_right" [ref=e58] [cursor=pointer]:
+              - generic [ref=e59]:
+                - generic [ref=e60]: help
+                - generic [ref=e61]: Questions
+              - generic [ref=e62]: chevron_right
+            - button "edit_note Create Plan chevron_right" [ref=e64] [cursor=pointer]:
+              - generic [ref=e65]:
+                - generic [ref=e66]: edit_note
+                - generic [ref=e67]: Create Plan
+              - generic [ref=e68]: chevron_right
+            - button "loyalty Subscription Plans chevron_right" [ref=e70] [cursor=pointer]:
+              - generic [ref=e71]:
+                - generic [ref=e72]: loyalty
+                - generic [ref=e73]: Subscription Plans
+              - generic [ref=e74]: chevron_right
+            - button "rocket_launch Onboarding chevron_right" [ref=e76] [cursor=pointer]:
+              - generic [ref=e77]:
+                - generic [ref=e78]: rocket_launch
+                - generic [ref=e79]: Onboarding
+              - generic [ref=e80]: chevron_right
+            - button "login Authentication chevron_right" [ref=e82] [cursor=pointer]:
+              - generic [ref=e83]:
+                - generic [ref=e84]: login
+                - generic [ref=e85]: Authentication
+              - generic [ref=e86]: chevron_right
+            - button "gavel Legal Pages chevron_right" [ref=e88] [cursor=pointer]:
+              - generic [ref=e89]:
+                - generic [ref=e90]: gavel
+                - generic [ref=e91]: Legal Pages
+              - generic [ref=e92]: chevron_right
+            - button "public Global / Shared chevron_right" [ref=e94] [cursor=pointer]:
+              - generic [ref=e95]:
+                - generic [ref=e96]: public
+                - generic [ref=e97]: Global / Shared
+              - generic [ref=e98]: chevron_right
+        - generic [ref=e100]:
+          - generic [ref=e101]: JD
+          - generic [ref=e102]:
+            - generic [ref=e103]: John Doe
+            - generic [ref=e104]: Administrator
+          - button "settings" [ref=e105] [cursor=pointer]:
+            - generic [ref=e106]: settings
+      - main [ref=e107]:
+        - generic [ref=e109]:
+          - generic [ref=e110]: Landing Page
+          - generic [ref=e111]: chevron_right
+          - generic [ref=e112]: Hero
+        - generic [ref=e113]:
+          - generic [ref=e114]:
+            - generic [ref=e115]:
+              - generic [ref=e116]:
+                - generic [ref=e118]: format_size
+                - generic [ref=e119]: Badge trusted
+              - generic [ref=e120]: drag_indicator
+            - textbox [ref=e121]: Trusted by 10,000+ entrepreneurs
+          - generic [ref=e122]:
+            - generic [ref=e123]:
+              - generic [ref=e124]:
+                - generic [ref=e126]: format_size
+                - generic [ref=e127]: Badge rating
+              - generic [ref=e128]: drag_indicator
+            - textbox [ref=e129]: 4.9/5 rating
+          - generic [ref=e130]:
+            - generic [ref=e131]:
+              - generic [ref=e132]:
+                - generic [ref=e134]: format_size
+                - generic [ref=e135]: Headline line1
+              - generic [ref=e136]: drag_indicator
+            - textbox [ref=e137]: A Bank-Ready Business Plan
+          - generic [ref=e138]:
+            - generic [ref=e139]:
+              - generic [ref=e140]:
+                - generic [ref=e142]: format_size
+                - generic [ref=e143]: Headline highlight
+              - generic [ref=e144]: drag_indicator
+            - textbox [ref=e145]: in Under 60 Minutes
+          - generic [ref=e146]:
+            - generic [ref=e147]:
+              - generic [ref=e148]:
+                - generic [ref=e150]: format_size
+                - generic [ref=e151]: Subheadline
+              - generic [ref=e152]: drag_indicator
+            - textbox [ref=e153]: Choose your AI engine. Answer 20 simple questions. Get investor-ready business plans with automated financial projections, market analysis, and bank-readiness scoring.
+          - generic [ref=e154]:
+            - generic [ref=e155]:
+              - generic [ref=e156]:
+                - generic [ref=e158]: format_size
+                - generic [ref=e159]: Cta primary
+              - generic [ref=e160]: drag_indicator
+            - textbox [ref=e161]: Create Your Plan Free
+          - generic [ref=e162]:
+            - generic [ref=e163]:
+              - generic [ref=e164]:
+                - generic [ref=e166]: format_size
+                - generic [ref=e167]: Cta secondary
+              - generic [ref=e168]: drag_indicator
+            - textbox [ref=e169]: See Example Plans
+          - generic [ref=e170]:
+            - generic [ref=e171]:
+              - generic [ref=e172]:
+                - generic [ref=e174]: format_size
+                - generic [ref=e175]: Trust nocard
+              - generic [ref=e176]: drag_indicator
+            - textbox [ref=e177]: No credit card required
+          - generic [ref=e178]:
+            - generic [ref=e179]:
+              - generic [ref=e180]:
+                - generic [ref=e182]: format_size
+                - generic [ref=e183]: Trust trial
+              - generic [ref=e184]: drag_indicator
+            - textbox [ref=e185]: 14-day free trial
+          - generic [ref=e186]:
+            - generic [ref=e187]:
+              - generic [ref=e188]:
+                - generic [ref=e190]: format_size
+                - generic [ref=e191]: Trust cancel
+              - generic [ref=e192]: drag_indicator
+            - textbox [ref=e193]: Cancel anytime
+          - button "add Add content block" [ref=e194] [cursor=pointer]:
+            - generic [ref=e196]: add
+            - generic [ref=e197]: Add content block
+      - complementary [ref=e198]:
+        - generic [ref=e199]:
+          - generic [ref=e200]:
+            - img [ref=e201]
+            - generic [ref=e204]: Live Preview
+            - generic [ref=e205]: Draft
+          - generic [ref=e206]:
+            - button "Desktop preview" [ref=e207] [cursor=pointer]:
+              - img [ref=e208]
+            - button "Tablet preview" [ref=e212] [cursor=pointer]:
+              - img [ref=e213]
+            - button "Mobile preview" [ref=e216] [cursor=pointer]:
+              - img [ref=e217]
+        - generic [ref=e221]:
+          - generic [ref=e223]:
+            - generic [ref=e229]: sqordia.com/preview
+            - generic [ref=e231]:
+              - generic [ref=e232]: Trusted by 10,000+ entrepreneurs
+              - heading "A Bank-Ready Business Plan in Under 60 Minutes" [level=1] [ref=e233]:
+                - text: A Bank-Ready Business Plan
+                - generic [ref=e234]: in Under 60 Minutes
+              - paragraph [ref=e235]: Choose your AI engine. Answer 20 simple questions. Get investor-ready business plans with automated financial projection
+              - generic [ref=e236]:
+                - button "Create Your Plan Free" [ref=e237] [cursor=pointer]:
+                  - text: Create Your Plan Free
+                  - img [ref=e238]
+                - button "See Example Plans" [ref=e241] [cursor=pointer]
+              - generic [ref=e242]:
+                - generic [ref=e243]:
+                  - img [ref=e244]
+                  - text: No credit card required
+                - generic [ref=e247]:
+                  - img [ref=e248]
+                  - text: 14-day free trial
+            - generic:
+              - generic: DRAFT PREVIEW
+          - generic [ref=e252]: desktop • 1280 × 800
+```

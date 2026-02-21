@@ -1,10 +1,12 @@
 import { ArrowRight, Shield, Clock, CheckCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
+import { usePublishedContent } from '@/hooks/usePublishedContent';
 import { ScrollReveal } from '../animations/ScrollReveal';
 
 export default function FinalCTA() {
   const { t } = useTheme();
+  const { getBlockContent } = usePublishedContent();
 
   const trustBadges = [
     { icon: Shield, textKey: 'landing.finalCta.trust.noCard' },
@@ -22,7 +24,7 @@ export default function FinalCTA() {
           {/* Badge */}
           <ScrollReveal>
             <div className="inline-block px-4 py-2 bg-white/10 text-white rounded-full text-sm font-medium mb-8 border border-white/20">
-              {t('landing.finalCta.badge')}
+              {getBlockContent('landing.finalCta.badge', t('landing.finalCta.badge'))}
             </div>
           </ScrollReveal>
 
@@ -32,14 +34,14 @@ export default function FinalCTA() {
               id="final-cta-heading"
               className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold font-heading text-white mb-6"
             >
-              {t('landing.finalCta.headline')}
+              {getBlockContent('landing.finalCta.headline', t('landing.finalCta.headline'))}
             </h2>
           </ScrollReveal>
 
           {/* Sub-headline */}
           <ScrollReveal delay={0.15}>
             <p className="text-lg md:text-xl lg:text-2xl mb-10 leading-relaxed text-white/80 max-w-2xl mx-auto">
-              {t('landing.finalCta.subheadline')}
+              {getBlockContent('landing.finalCta.subheadline', t('landing.finalCta.subheadline'))}
             </p>
           </ScrollReveal>
 
@@ -50,7 +52,7 @@ export default function FinalCTA() {
                 to="/signup"
                 className="group inline-flex items-center gap-3 px-10 py-5 md:px-12 md:py-6 bg-white text-momentum-orange text-lg md:text-xl font-bold rounded-xl shadow-elevated transition-all duration-200 hover:shadow-2xl focus:outline-none focus:ring-4 focus:ring-white/50"
               >
-                {t('landing.finalCta.cta')}
+                {getBlockContent('landing.finalCta.cta', t('landing.finalCta.cta'))}
                 <ArrowRight size={24} className="group-hover:translate-x-0.5 transition-transform" aria-hidden="true" />
               </Link>
             </div>
@@ -64,7 +66,7 @@ export default function FinalCTA() {
                 return (
                   <div key={index} className="flex items-center gap-2">
                     <Icon size={20} className="text-white/70" aria-hidden="true" />
-                    <span className="text-sm md:text-base font-medium">{t(badge.textKey)}</span>
+                    <span className="text-sm md:text-base font-medium">{getBlockContent(badge.textKey, t(badge.textKey))}</span>
                   </div>
                 );
               })}

@@ -11,6 +11,17 @@ import {
   UpdateContentBlockRequest,
   BulkUpdateContentBlocksRequest,
   ReorderContentBlocksRequest,
+  SubmitForApprovalRequest,
+  ApproveVersionRequest,
+  RejectVersionRequest,
+  ScheduleVersionRequest,
+  CmsVersionHistoryEntry,
+  CmsContentTemplate,
+  CmsContentTemplateSummary,
+  CreateCmsTemplateRequest,
+  UpdateCmsTemplateRequest,
+  CreateTemplateFromSectionRequest,
+  ApplyTemplateRequest,
 } from './cms-types';
 
 // Helper to unwrap backend responses that may be Result<T> wrapped
@@ -189,5 +200,75 @@ export const cmsService = {
     if (language) params.language = language;
     const response = await apiClient.get<CmsContentBlock>(`/api/v1/content/${blockKey}`, params);
     return unwrap<CmsContentBlock>(response.data);
+  },
+
+  // === Approval Workflow Operations ===
+
+  async submitForApproval(id: string, request?: SubmitForApprovalRequest): Promise<void> {
+    await apiClient.post(`/api/v1/admin/cms/versions/${id}/submit-for-approval`, request ?? {});
+  },
+
+  async approveVersion(id: string, request?: ApproveVersionRequest): Promise<void> {
+    await apiClient.post(`/api/v1/admin/cms/versions/${id}/approve`, request ?? {});
+  },
+
+  async rejectVersion(id: string, request?: RejectVersionRequest): Promise<void> {
+    await apiClient.post(`/api/v1/admin/cms/versions/${id}/reject`, request ?? {});
+  },
+
+  // === Scheduling Operations ===
+
+  async scheduleVersion(id: string, request: ScheduleVersionRequest): Promise<void> {
+    await apiClient.post(`/api/v1/admin/cms/versions/${id}/schedule`, request);
+  },
+
+  async cancelSchedule(id: string): Promise<void> {
+    await apiClient.delete(`/api/v1/admin/cms/versions/${id}/schedule`);
+  },
+
+  // === Version History ===
+
+  async getVersionHistory(id: string): Promise<CmsVersionHistoryEntry[]> {
+    const response = await apiClient.get<CmsVersionHistoryEntry[]>(`/api/v1/admin/cms/versions/${id}/history`);
+    return unwrap<CmsVersionHistoryEntry[]>(response.data);
+  },
+
+  // === Content Template Operations ===
+
+  async getTemplates(pageKey?: string, sectionKey?: string): Promise<CmsContentTemplateSummary[]> {
+    const params: Record<string, string> = {};
+    if (pageKey) params.pageKey = pageKey;
+    if (sectionKey) params.sectionKey = sectionKey;
+    const response = await apiClient.get<CmsContentTemplateSummary[]>('/api/v1/admin/cms/templates', params);
+    return unwrap<CmsContentTemplateSummary[]>(response.data);
+  },
+
+  async getTemplate(id: string): Promise<CmsContentTemplate> {
+    const response = await apiClient.get<CmsContentTemplate>(`/api/v1/admin/cms/templates/${id}`);
+    return unwrap<CmsContentTemplate>(response.data);
+  },
+
+  async createTemplate(request: CreateCmsTemplateRequest): Promise<CmsContentTemplate> {
+    const response = await apiClient.post<CmsContentTemplate>('/api/v1/admin/cms/templates', request);
+    return unwrap<CmsContentTemplate>(response.data);
+  },
+
+  async updateTemplate(id: string, request: UpdateCmsTemplateRequest): Promise<CmsContentTemplate> {
+    const response = await apiClient.put<CmsContentTemplate>(`/api/v1/admin/cms/templates/${id}`, request);
+    return unwrap<CmsContentTemplate>(response.data);
+  },
+
+  async deleteTemplate(id: string): Promise<void> {
+    await apiClient.delete(`/api/v1/admin/cms/templates/${id}`);
+  },
+
+  async createTemplateFromSection(request: CreateTemplateFromSectionRequest): Promise<CmsContentTemplate> {
+    const response = await apiClient.post<CmsContentTemplate>('/api/v1/admin/cms/templates/from-section', request);
+    return unwrap<CmsContentTemplate>(response.data);
+  },
+
+  async applyTemplate(templateId: string, request: ApplyTemplateRequest): Promise<CmsContentBlock[]> {
+    const response = await apiClient.post<CmsContentBlock[]>(`/api/v1/admin/cms/templates/${templateId}/apply`, request);
+    return unwrap<CmsContentBlock[]>(response.data);
   },
 };

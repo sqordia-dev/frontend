@@ -5,6 +5,7 @@ import {
   OnboardingData,
   OnboardingCompleteRequest,
 } from '../types/onboarding';
+import { getUserFriendlyError } from '../utils/error-messages';
 
 interface UseOnboardingReturn {
   /** Current onboarding progress */
@@ -42,7 +43,7 @@ export function useOnboarding(): UseOnboardingReturn {
       setProgress(data);
     } catch (err: any) {
       console.error('Failed to fetch onboarding progress:', err);
-      setError(err.message || 'Failed to load onboarding progress');
+      setError(getUserFriendlyError(err, 'load'));
     } finally {
       setIsLoading(false);
     }

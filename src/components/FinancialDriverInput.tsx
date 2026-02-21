@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { DollarSign, Percent, Users, MapPin, Calculator, TrendingUp } from 'lucide-react';
 import { apiClient } from '../lib/api-client';
+import { getUserFriendlyError } from '../utils/error-messages';
 
 interface FinancialDriverInputProps {
   persona: 'Consultant' | 'Entrepreneur' | 'OBNL';
@@ -68,8 +69,8 @@ export default function FinancialDriverInput({ persona, onCalculate }: Financial
       }
     } catch (err: any) {
       console.error('Failed to calculate projections:', err);
-      setError(err.response?.data?.errorMessage || err.message || 'Failed to calculate projections.');
-      
+      setError(getUserFriendlyError(err, 'load'));
+
       // Fallback: Calculate locally
       const fallbackProjections = calculateLocalProjections();
       setProjections(fallbackProjections);

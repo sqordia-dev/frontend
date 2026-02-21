@@ -33,7 +33,7 @@ export default function QuestionField({
   onSave,
   isRequired = false,
   isSaving = false,
-  placeholder = 'Share your thoughts here... Be as detailed as you\'d like.',
+  placeholder,
   context,
   persona = 'Entrepreneur',
   location,
@@ -80,6 +80,12 @@ export default function QuestionField({
   const minLength = 10;
   const isTooShort = characterCount > 0 && characterCount < minLength;
   const hasAnswer = value.trim().length > 0;
+
+  const localizedPlaceholder = placeholder || (
+    language === 'fr'
+      ? 'Partagez vos réflexions ici... Soyez aussi détaillé que vous le souhaitez.'
+      : 'Share your thoughts here... Be as detailed as you\'d like.'
+  );
 
   return (
     <div className="space-y-4">
@@ -129,7 +135,10 @@ export default function QuestionField({
                 )}
                 {totalQuestions && questionNumber !== undefined && (
                   <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">
-                    Question {questionNumber} of {totalQuestions}
+                    {language === 'fr'
+                      ? `Question ${questionNumber} sur ${totalQuestions}`
+                      : `Question ${questionNumber} of ${totalQuestions}`
+                    }
                   </p>
                 )}
               </div>
@@ -175,7 +184,7 @@ export default function QuestionField({
                   onSave();
                 }
               }}
-              placeholder={placeholder}
+              placeholder={localizedPlaceholder}
               rows={6}
               className={`
                 w-full px-5 py-4 pr-12
@@ -257,13 +266,13 @@ export default function QuestionField({
             {isSaving && (
               <div className="flex items-center gap-1.5 text-xs text-blue-600 dark:text-blue-400">
                 <Loader2 size={12} className="animate-spin" />
-                <span>Saving...</span>
+                <span>{language === 'fr' ? 'Enregistrement...' : 'Saving...'}</span>
               </div>
             )}
             {!isSaving && hasAnswer && (
               <div className="flex items-center gap-1.5 text-xs text-green-600 dark:text-green-400">
                 <Check size={12} />
-                <span>Saved</span>
+                <span>{language === 'fr' ? 'Enregistré' : 'Saved'}</span>
               </div>
             )}
           </div>
@@ -292,7 +301,10 @@ export default function QuestionField({
           {isTooShort && (
             <span className="text-yellow-600 dark:text-yellow-400 flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 bg-yellow-500 rounded-full animate-pulse"></span>
-              Minimum {minLength} characters recommended
+              {language === 'fr'
+                ? `Minimum ${minLength} caractères recommandés`
+                : `Minimum ${minLength} characters recommended`
+              }
             </span>
           )}
         </div>

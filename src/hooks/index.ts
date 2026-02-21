@@ -12,3 +12,6 @@ export { useSectionObserver, useSectionRef } from './useSectionObserver';
 export type { Section } from './useSectionObserver';
 export { useReadingProgress } from './useReadingProgress';
 export { useScrollSpy } from './useScrollSpy';
+export { useCmsUndoRedo } from './useCmsUndoRedo';
+export { useCmsVersionComparison } from './useCmsVersionComparison';
+export type { DiffType, BlockDiff, SectionDiff, VersionComparisonResult } from './useCmsVersionComparison';

@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react';
 import { cmsService } from '../lib/cms-service';
 import { CmsVersionDetail, CmsContentBlock, BulkUpdateContentBlocksRequest } from '../lib/cms-types';
+import { getUserFriendlyError } from '../utils/error-messages';
 
 interface CmsContextType {
   activeVersion: CmsVersionDetail | null;
@@ -33,7 +34,7 @@ export function CmsProvider({ children }: { children: ReactNode }) {
       const version = await cmsService.getActiveVersion();
       setActiveVersion(version);
     } catch (err: any) {
-      setError(err.message || 'Failed to load CMS version');
+      setError(getUserFriendlyError(err, 'load'));
     } finally {
       setIsLoading(false);
     }
@@ -51,7 +52,7 @@ export function CmsProvider({ children }: { children: ReactNode }) {
       setIsDirty(false);
       return version;
     } catch (err: any) {
-      setError(err.message || 'Failed to create version');
+      setError(getUserFriendlyError(err, 'save'));
       throw err;
     }
   }, []);
@@ -67,7 +68,7 @@ export function CmsProvider({ children }: { children: ReactNode }) {
       setActiveVersion(version);
       return blocks;
     } catch (err: any) {
-      setError(err.message || 'Failed to save blocks');
+      setError(getUserFriendlyError(err, 'save'));
       throw err;
     }
   }, []);
@@ -80,7 +81,7 @@ export function CmsProvider({ children }: { children: ReactNode }) {
       setIsDirty(false);
       setLastSaved(null);
     } catch (err: any) {
-      setError(err.message || 'Failed to publish version');
+      setError(getUserFriendlyError(err, 'save'));
       throw err;
     }
   }, []);
@@ -93,7 +94,7 @@ export function CmsProvider({ children }: { children: ReactNode }) {
       setIsDirty(false);
       setLastSaved(null);
     } catch (err: any) {
-      setError(err.message || 'Failed to delete version');
+      setError(getUserFriendlyError(err, 'delete'));
       throw err;
     }
   }, []);

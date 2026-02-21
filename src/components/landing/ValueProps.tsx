@@ -1,5 +1,6 @@
 import { Brain, Target, Users, LayoutGrid } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
+import { usePublishedContent } from '@/hooks/usePublishedContent';
 import { cn } from '@/lib/utils';
 import { ScrollReveal, StaggerContainer, StaggerItem } from '../animations/ScrollReveal';
 
@@ -40,6 +41,7 @@ const valueProps: ValueProp[] = [
 
 export default function ValueProps() {
   const { t } = useTheme();
+  const { getBlockContent } = usePublishedContent();
 
   return (
     <section
@@ -54,7 +56,7 @@ export default function ValueProps() {
             <div className="flex items-center justify-center gap-3 mb-5">
               <span className="h-px w-8 bg-momentum-orange" />
               <span className="text-label-sm uppercase tracking-widest text-gray-500 dark:text-gray-400 font-semibold">
-                {t('landing.valueProps.badge')}
+                {getBlockContent('landing.valueProps.badge', t('landing.valueProps.badge'))}
               </span>
               <span className="h-px w-8 bg-momentum-orange" />
             </div>
@@ -64,15 +66,15 @@ export default function ValueProps() {
               id="value-props-heading"
               className="text-display-md sm:text-display-lg font-heading mb-6 text-strategy-blue dark:text-white"
             >
-              {t('landing.valueProps.title')}{' '}
+              {getBlockContent('landing.valueProps.title', t('landing.valueProps.title'))}{' '}
               <span className="text-momentum-orange">
-                {t('landing.valueProps.title.highlight')}
+                {getBlockContent('landing.valueProps.title.highlight', t('landing.valueProps.title.highlight'))}
               </span>
             </h2>
           </ScrollReveal>
           <ScrollReveal delay={0.15}>
             <p className="text-body-lg text-gray-500 dark:text-gray-400">
-              {t('landing.valueProps.subtitle')}
+              {getBlockContent('landing.valueProps.subtitle', t('landing.valueProps.subtitle'))}
             </p>
           </ScrollReveal>
         </div>
@@ -96,10 +98,10 @@ export default function ValueProps() {
 
                 {/* Content */}
                 <h3 className="text-xl md:text-2xl font-bold font-heading mb-3 text-strategy-blue dark:text-white group-hover:text-momentum-orange transition-colors duration-200">
-                  {t(prop.titleKey)}
+                  {getBlockContent(prop.titleKey, t(prop.titleKey))}
                 </h3>
                 <p className="text-body-sm leading-relaxed text-gray-500 dark:text-gray-400">
-                  {t(prop.descriptionKey)}
+                  {getBlockContent(prop.descriptionKey, t(prop.descriptionKey))}
                 </p>
               </article>
             </StaggerItem>

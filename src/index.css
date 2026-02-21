@@ -706,6 +706,18 @@
   border: 0;
 }
 
+/* Counteract sr-only for focus states */
+.not-sr-only {
+  position: static;
+  width: auto;
+  height: auto;
+  padding: 0;
+  margin: 0;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+}
+
 /* Unused brand utilities removed — all components now use Tailwind tokens
    (text-strategy-blue, text-momentum-orange, bg-white dark:bg-gray-800, etc.)
    and shadcn/ui CSS variables instead of custom .text-brand-*, .bg-brand-*,
@@ -940,4 +952,54 @@
 
 .dark .prose-editor ::selection {
   background-color: #78350f;
+}
+
+/* =============================================================
+   CMS Custom Scrollbar Styles
+   ============================================================= */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #e5e7eb;
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #d1d5db;
+}
+
+.dark .custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #4b5563;
+}
+
+.dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #6b7280;
+}
+
+/* Firefox scrollbar */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #e5e7eb transparent;
+}
+
+.dark .custom-scrollbar {
+  scrollbar-color: #4b5563 transparent;
+}
+
+/* =============================================================
+   Material Symbols Settings
+   ============================================================= */
+.material-symbols-outlined {
+  font-variation-settings:
+    'FILL' 0,
+    'wght' 400,
+    'GRAD' 0,
+    'opsz' 24;
 }

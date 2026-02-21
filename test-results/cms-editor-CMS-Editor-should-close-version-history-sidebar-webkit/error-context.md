@@ -1,0 +1,53 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e2]:
+  - link "Skip to main content" [ref=e3]:
+    - /url: "#main-content"
+  - generic [ref=e4]:
+    - generic [ref=e6]:
+      - generic [ref=e7]:
+        - heading "Welcome back" [level=1] [ref=e8]
+        - paragraph [ref=e9]: Sign in to continue to your dashboard
+      - generic [ref=e10]:
+        - generic [ref=e11]:
+          - generic [ref=e12]: Email Address
+          - textbox "Email Address" [ref=e13]:
+            - /placeholder: you@company.com
+        - generic [ref=e14]:
+          - generic [ref=e15]: Password
+          - generic [ref=e16]:
+            - textbox "Password" [ref=e17]:
+              - /placeholder: Enter your password
+            - button "Show password" [ref=e18] [cursor=pointer]:
+              - img [ref=e19]
+        - generic [ref=e22]:
+          - generic [ref=e23] [cursor=pointer]:
+            - checkbox "Remember me" [ref=e24]
+            - generic [ref=e25]: Remember me
+          - link "Forgot password?" [ref=e26]:
+            - /url: /forgot-password
+        - button "Sign In" [ref=e27] [cursor=pointer]
+      - separator [ref=e29]:
+        - generic [ref=e33]: or continue with
+      - button "Continue with Google" [ref=e36] [cursor=pointer]:
+        - img [ref=e37]
+        - generic [ref=e42]: Continue with Google
+      - paragraph [ref=e44]:
+        - text: Don't have an account?
+        - link "Create one now" [ref=e45]:
+          - /url: /signup
+      - paragraph [ref=e46]:
+        - link "← Back to home" [ref=e47]:
+          - /url: /
+    - generic [ref=e48]:
+      - generic [ref=e51]:
+        - link "Sqordia" [ref=e52]:
+          - /url: /
+          - img [ref=e54]
+          - generic [ref=e64]: Sqordia
+        - heading "AI-Powered Strategic Planning" [level=2] [ref=e65]
+        - paragraph [ref=e66]: Create bank-ready business plans in under 60 minutes
+        - img [ref=e68]
+      - paragraph [ref=e165]: © 2026 Sqordia. All rights reserved.
+```

@@ -1,0 +1,456 @@
+import { Monitor, Tablet, Smartphone, Eye, Star, CheckCircle, ArrowRight, Quote, HelpCircle, ChevronDown } from 'lucide-react';
+import { CmsContentBlock } from '../../lib/cms-types';
+import { cn } from '@/lib/utils';
+
+type PreviewDevice = 'desktop' | 'tablet' | 'mobile';
+
+interface CmsLivePreviewProps {
+  device: PreviewDevice;
+  onDeviceChange: (device: PreviewDevice) => void;
+  blocks: CmsContentBlock[];
+  editedContent: Record<string, string>;
+  sectionKey: string;
+  isDraft?: boolean;
+}
+
+// Device frame dimensions
+const deviceConfig = {
+  desktop: { width: 1280, height: 800, scale: 0.32, frameClass: '' },
+  tablet: { width: 768, height: 1024, scale: 0.38, frameClass: 'rounded-[2rem]' },
+  mobile: { width: 375, height: 812, scale: 0.48, frameClass: 'rounded-[2.5rem]' },
+};
+
+export function CmsLivePreview({
+  device,
+  onDeviceChange,
+  blocks,
+  editedContent,
+  sectionKey,
+  isDraft = true,
+}: CmsLivePreviewProps) {
+  const config = deviceConfig[device];
+
+  // Get content value with edited fallback
+  const getContent = (blockKey: string): string => {
+    // Try exact match first
+    let block = blocks.find(b => b.blockKey === blockKey);
+    // Fallback to suffix match
+    if (!block) {
+      block = blocks.find(b => b.blockKey.endsWith(blockKey) || b.blockKey.endsWith(`.${blockKey}`));
+    }
+    if (block) {
+      return editedContent[block.id] ?? block.content;
+    }
+    return '';
+  };
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Section Renderers
+  // ─────────────────────────────────────────────────────────────────────────────
+
+  const renderHeroPreview = () => (
+    <div className="relative z-10 px-6 py-12 text-center bg-gradient-to-b from-slate-50 to-white">
+      {/* Badge */}
+      <div className="inline-flex items-center px-3 py-1.5 rounded-full bg-orange-50 text-[#FF6B00] text-[9px] font-bold uppercase tracking-wider mb-6 border border-orange-100">
+        {getContent('landing.hero.badge_trusted') || 'AI-Powered Planning'}
+      </div>
+
+      {/* Headline */}
+      <h1 className="text-2xl font-extrabold text-slate-900 leading-tight mb-3 px-2">
+        {getContent('landing.hero.headline_line1') || 'Transform Your Ideas Into'}
+        <span className="block text-[#FF6B00]">
+          {getContent('landing.hero.headline_highlight') || 'Professional Business Plans'}
+        </span>
+      </h1>
+
+      {/* Subheadline */}
+      <p className="text-slate-500 text-[11px] leading-relaxed mb-6 px-4">
+        {(getContent('landing.hero.subheadline') || 'Create bank-ready business plans in under 60 minutes with AI-powered guidance.').slice(0, 120)}
+      </p>
+
+      {/* CTA Buttons */}
+      <div className="flex flex-col sm:flex-row gap-2 justify-center mb-8">
+        <button className="bg-[#FF6B00] text-white px-6 py-2.5 rounded-lg font-bold text-[11px] shadow-lg shadow-orange-200 inline-flex items-center justify-center gap-1.5">
+          {getContent('landing.hero.cta_primary') || 'Start Free Trial'}
+          <ArrowRight size={12} />
+        </button>
+        <button className="bg-white border border-slate-200 text-slate-700 px-6 py-2.5 rounded-lg font-semibold text-[11px]">
+          {getContent('landing.hero.cta_secondary') || 'View Examples'}
+        </button>
+      </div>
+
+      {/* Trust badges */}
+      <div className="flex flex-wrap items-center justify-center gap-4 text-[9px] text-slate-400">
+        <span className="flex items-center gap-1">
+          <CheckCircle size={10} className="text-green-500" />
+          {getContent('landing.hero.trust_nocard') || 'No credit card required'}
+        </span>
+        <span className="flex items-center gap-1">
+          <CheckCircle size={10} className="text-green-500" />
+          {getContent('landing.hero.trust_trial') || '14-day free trial'}
+        </span>
+      </div>
+    </div>
+  );
+
+  const renderFeaturesPreview = () => (
+    <div className="px-4 py-8 bg-slate-50">
+      {/* Header */}
+      <div className="text-center mb-6">
+        <span className="text-[9px] font-bold uppercase tracking-wider text-[#FF6B00] mb-2 block">
+          {getContent('landing.features.badge') || 'How It Works'}
+        </span>
+        <h2 className="text-lg font-bold text-slate-900 mb-1">
+          {getContent('landing.features.title') || 'Three Simple Steps'}
+        </h2>
+        <p className="text-[10px] text-slate-500">
+          {(getContent('landing.features.subtitle') || 'Transform your business idea into a professional plan').slice(0, 60)}...
+        </p>
+      </div>
+
+      {/* Feature cards */}
+      <div className="space-y-3">
+        {[1, 2, 3].map((step) => (
+          <div key={step} className="bg-white rounded-xl p-3 border border-slate-100 shadow-sm">
+            <div className="flex items-start gap-3">
+              <div className="w-7 h-7 rounded-full bg-[#FF6B00] text-white flex items-center justify-center text-[11px] font-bold shrink-0">
+                {step}
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="font-bold text-slate-900 text-[11px] mb-0.5">
+                  {getContent(`landing.features.step${step}.title`) || `Step ${step}`}
+                </h3>
+                <p className="text-[9px] text-slate-500 line-clamp-2">
+                  {getContent(`landing.features.step${step}.description`) || 'Feature description here...'}
+                </p>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
+  const renderValuePropsPreview = () => (
+    <div className="px-4 py-8 bg-white">
+      {/* Header */}
+      <div className="text-center mb-6">
+        <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400 mb-2 block">
+          {getContent('landing.valueProps.badge') || 'Why Sqordia'}
+        </span>
+        <h2 className="text-lg font-bold text-slate-900">
+          {getContent('landing.valueProps.title') || 'Everything You Need'}
+        </h2>
+      </div>
+
+      {/* Value prop cards */}
+      <div className="grid grid-cols-2 gap-2">
+        {[1, 2, 3, 4].map((i) => (
+          <div key={i} className="bg-slate-50 rounded-lg p-3 border border-slate-100">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#FF6B00] to-orange-600 flex items-center justify-center mb-2">
+              <CheckCircle size={14} className="text-white" />
+            </div>
+            <h3 className="font-bold text-slate-900 text-[10px] mb-1">
+              {getContent(`landing.valueProps.${i}.title`) || `Value ${i}`}
+            </h3>
+            <p className="text-[8px] text-slate-500 line-clamp-2">
+              {getContent(`landing.valueProps.${i}.description`) || 'Description...'}
+            </p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
+  const renderStatsPreview = () => (
+    <div className="px-4 py-6 bg-slate-50">
+      <p className="text-center text-[9px] text-slate-400 mb-4">
+        {getContent('landing.stats.heading') || 'Trusted by entrepreneurs worldwide'}
+      </p>
+      <div className="grid grid-cols-4 gap-2">
+        {['plans', 'funding', 'countries', 'rating'].map((stat) => (
+          <div key={stat} className="text-center">
+            <div className="text-base font-bold text-slate-900">
+              {getContent(`landing.stats.${stat}.value`) || '0'}
+            </div>
+            <div className="text-[7px] text-slate-400 uppercase">
+              {getContent(`landing.stats.${stat}.label`) || stat}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
+  const renderFaqPreview = () => (
+    <div className="px-4 py-8 bg-slate-50">
+      {/* Header */}
+      <div className="text-center mb-6">
+        <span className="text-[9px] font-bold uppercase tracking-wider text-amber-600 mb-2 block">
+          {getContent('landing.faq.badge') || 'FAQ'}
+        </span>
+        <h2 className="text-lg font-bold text-slate-900">
+          {getContent('landing.faq.title') || 'Frequently Asked'}{' '}
+          <span className="text-[#FF6B00]">{getContent('landing.faq.title_highlight') || 'Questions'}</span>
+        </h2>
+      </div>
+
+      {/* FAQ items */}
+      <div className="space-y-2">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="bg-white rounded-lg p-3 border border-slate-100">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <HelpCircle size={12} className="text-slate-400" />
+                <span className="text-[10px] font-semibold text-slate-900">Question {i}</span>
+              </div>
+              <ChevronDown size={12} className="text-slate-400" />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
+  const renderTestimonialsPreview = () => (
+    <div className="px-4 py-8 bg-white">
+      {/* Header */}
+      <div className="text-center mb-6">
+        <span className="text-[9px] font-bold uppercase tracking-wider text-emerald-600 mb-2 block">
+          {getContent('landing.testimonials.badge') || 'Success Stories'}
+        </span>
+        <h2 className="text-lg font-bold text-slate-900">
+          {getContent('landing.testimonials.title') || 'Real Results'}
+        </h2>
+      </div>
+
+      {/* Testimonial cards */}
+      <div className="space-y-3">
+        {[1, 2].map((i) => (
+          <div key={i} className="bg-slate-50 rounded-xl p-3 border border-slate-100">
+            <div className="flex items-center gap-1 mb-2">
+              <Quote size={12} className="text-[#FF6B00]" />
+              {[1, 2, 3, 4, 5].map((s) => (
+                <Star key={s} size={10} className="fill-amber-400 text-amber-400" />
+              ))}
+            </div>
+            <p className="text-[9px] text-slate-600 italic mb-2 line-clamp-2">
+              "This is an amazing testimonial quote..."
+            </p>
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 rounded-full bg-slate-300" />
+              <div>
+                <div className="text-[9px] font-semibold text-slate-900">Name</div>
+                <div className="text-[8px] text-slate-400">Role, Company</div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
+  const renderFinalCtaPreview = () => (
+    <div className="px-4 py-10 bg-gradient-to-br from-[#FF6B00] to-orange-600 text-center">
+      <div className="inline-block px-3 py-1 bg-white/10 text-white rounded-full text-[9px] font-medium mb-4 border border-white/20">
+        {getContent('landing.finalCta.badge') || 'Start Free Today'}
+      </div>
+      <h2 className="text-xl font-bold text-white mb-2">
+        {getContent('landing.finalCta.headline') || 'Ready to Build Your Plan?'}
+      </h2>
+      <p className="text-[10px] text-white/80 mb-4">
+        {(getContent('landing.finalCta.subheadline') || 'Join thousands of entrepreneurs').slice(0, 60)}...
+      </p>
+      <button className="bg-white text-[#FF6B00] px-6 py-2.5 rounded-lg font-bold text-[11px] shadow-lg inline-flex items-center gap-1.5">
+        {getContent('landing.finalCta.cta') || 'Get Started Free'}
+        <ArrowRight size={12} />
+      </button>
+    </div>
+  );
+
+  const renderDefaultPreview = () => (
+    <div className="p-8 text-center bg-slate-50 min-h-[200px] flex flex-col items-center justify-center">
+      <div className="w-14 h-14 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+        <Eye size={24} className="text-slate-400" />
+      </div>
+      <p className="text-sm font-medium text-slate-900 mb-1">Preview</p>
+      <p className="text-xs text-slate-400">
+        Section: {sectionKey.split('.').pop()}
+      </p>
+    </div>
+  );
+
+  // Render preview based on section
+  const renderPreview = () => {
+    const section = sectionKey.toLowerCase();
+
+    if (section.includes('hero')) return renderHeroPreview();
+    if (section.includes('features')) return renderFeaturesPreview();
+    if (section.includes('valueprops')) return renderValuePropsPreview();
+    if (section.includes('stats')) return renderStatsPreview();
+    if (section.includes('faq')) return renderFaqPreview();
+    if (section.includes('testimonials')) return renderTestimonialsPreview();
+    if (section.includes('finalcta') || section.includes('cta')) return renderFinalCtaPreview();
+
+    return renderDefaultPreview();
+  };
+
+  return (
+    <aside className="flex w-full h-full border-l border-gray-200 bg-slate-100/50 flex-col">
+      {/* Header */}
+      <div className="h-14 border-b border-gray-200 flex items-center justify-between px-6 bg-white">
+        <div className="flex items-center gap-2">
+          <Eye size={14} className="text-slate-400" />
+          <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+            Live Preview
+          </span>
+          {isDraft && (
+            <span className="px-1.5 py-0.5 bg-amber-100 text-amber-700 text-[9px] font-bold uppercase rounded">
+              Draft
+            </span>
+          )}
+        </div>
+
+        {/* Device toggle */}
+        <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-lg">
+          <button
+            onClick={() => onDeviceChange('desktop')}
+            className={cn(
+              'p-1.5 rounded-md transition-all',
+              device === 'desktop'
+                ? 'bg-white shadow-sm text-[#FF6B00]'
+                : 'text-slate-400 hover:text-slate-600'
+            )}
+            title="Desktop preview"
+          >
+            <Monitor size={16} />
+          </button>
+          <button
+            onClick={() => onDeviceChange('tablet')}
+            className={cn(
+              'p-1.5 rounded-md transition-all',
+              device === 'tablet'
+                ? 'bg-white shadow-sm text-[#FF6B00]'
+                : 'text-slate-400 hover:text-slate-600'
+            )}
+            title="Tablet preview"
+          >
+            <Tablet size={16} />
+          </button>
+          <button
+            onClick={() => onDeviceChange('mobile')}
+            className={cn(
+              'p-1.5 rounded-md transition-all',
+              device === 'mobile'
+                ? 'bg-white shadow-sm text-[#FF6B00]'
+                : 'text-slate-400 hover:text-slate-600'
+            )}
+            title="Mobile preview"
+          >
+            <Smartphone size={16} />
+          </button>
+        </div>
+      </div>
+
+      {/* Preview area */}
+      <div className="flex-1 p-6 overflow-hidden flex items-start justify-center">
+        <div className="relative">
+          {/* Device frame */}
+          <div
+            className={cn(
+              'relative bg-slate-800 shadow-2xl transition-all duration-300',
+              config.frameClass,
+              device === 'mobile' && 'p-2 pt-6 pb-4',
+              device === 'tablet' && 'p-3 pt-4 pb-6',
+              device === 'desktop' && 'rounded-lg'
+            )}
+            style={{
+              width: device === 'desktop' ? config.width * config.scale + 16 : undefined,
+            }}
+          >
+            {/* Mobile notch */}
+            {device === 'mobile' && (
+              <div className="absolute top-2 left-1/2 -translate-x-1/2 w-20 h-5 bg-slate-900 rounded-full flex items-center justify-center z-10">
+                <div className="w-2 h-2 rounded-full bg-slate-700" />
+              </div>
+            )}
+
+            {/* Tablet camera */}
+            {device === 'tablet' && (
+              <div className="absolute top-1.5 left-1/2 -translate-x-1/2 w-2 h-2 bg-slate-700 rounded-full" />
+            )}
+
+            {/* Screen container */}
+            <div
+              className={cn(
+                'bg-white overflow-hidden relative',
+                device === 'mobile' && 'rounded-[1.5rem]',
+                device === 'tablet' && 'rounded-xl',
+                device === 'desktop' && 'rounded-t-lg'
+              )}
+              style={{
+                width: config.width * config.scale,
+                height: config.height * config.scale,
+              }}
+            >
+              {/* Browser chrome for desktop */}
+              {device === 'desktop' && (
+                <div className="h-7 bg-slate-100 border-b border-slate-200 flex items-center px-3 gap-2 shrink-0">
+                  <div className="flex gap-1">
+                    <div className="w-2 h-2 rounded-full bg-red-300" />
+                    <div className="w-2 h-2 rounded-full bg-yellow-300" />
+                    <div className="w-2 h-2 rounded-full bg-green-300" />
+                  </div>
+                  <div className="flex-1 bg-white h-4 rounded border border-slate-200 text-[8px] text-slate-400 flex items-center px-2 mx-2">
+                    sqordia.com/preview
+                  </div>
+                </div>
+              )}
+
+              {/* Scaled content */}
+              <div
+                className="origin-top-left overflow-y-auto overflow-x-hidden"
+                style={{
+                  width: config.width,
+                  height: device === 'desktop' ? config.height - 28 : config.height,
+                  transform: `scale(${config.scale})`,
+                }}
+              >
+                {renderPreview()}
+              </div>
+
+              {/* Draft watermark overlay */}
+              {isDraft && (
+                <div className="absolute inset-0 pointer-events-none flex items-center justify-center overflow-hidden">
+                  <div
+                    className="text-[60px] font-black text-slate-900/[0.03] uppercase tracking-widest whitespace-nowrap"
+                    style={{ transform: 'rotate(-30deg)' }}
+                  >
+                    DRAFT PREVIEW
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Mobile home indicator */}
+            {device === 'mobile' && (
+              <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 w-24 h-1 bg-slate-600 rounded-full" />
+            )}
+
+            {/* Tablet home button */}
+            {device === 'tablet' && (
+              <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-8 h-8 border-2 border-slate-600 rounded-full" />
+            )}
+          </div>
+
+          {/* Device label */}
+          <div className="text-center mt-4">
+            <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wider">
+              {device} • {config.width} × {config.height}
+            </span>
+          </div>
+        </div>
+      </div>
+    </aside>
+  );
+}

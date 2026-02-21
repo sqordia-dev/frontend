@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { adminService } from '../../lib/admin-service';
 import { Server, Database, Cpu, HardDrive, AlertCircle, CheckCircle } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
+import { getUserFriendlyError } from '../../utils/error-messages';
 
 export default function AdminSystemHealthPage() {
   const { t } = useTheme();
@@ -22,7 +23,7 @@ export default function AdminSystemHealthPage() {
       const data = await adminService.getSystemHealth();
       setHealth(data);
     } catch (err: any) {
-      setError(err.message);
+      setError(getUserFriendlyError(err, 'load'));
     } finally {
       setLoading(false);
     }

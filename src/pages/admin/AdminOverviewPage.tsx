@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { adminService } from '../../lib/admin-service';
 import { Users, Building2, FileText, TrendingUp, Activity, AlertCircle } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
+import { getUserFriendlyError } from '../../utils/error-messages';
 
 export default function AdminOverviewPage() {
   const { t } = useTheme();
@@ -22,7 +23,7 @@ export default function AdminOverviewPage() {
       setOverview(data);
     } catch (err: any) {
       console.error('Failed to load overview:', err);
-      setError(err.response?.data?.error?.message || err.message || 'Failed to load dashboard overview');
+      setError(getUserFriendlyError(err, 'load'));
     } finally {
       setLoading(false);
     }

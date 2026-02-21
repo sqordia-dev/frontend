@@ -1,0 +1,47 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e2]:
+  - link "Skip to main content" [ref=e3]:
+    - /url: "#main-content"
+  - generic [ref=e6]:
+    - link "Sqordia" [ref=e8]:
+      - /url: /
+      - img [ref=e10]
+      - generic [ref=e20]: Sqordia
+    - generic [ref=e21]:
+      - heading "Welcome back" [level=1] [ref=e22]
+      - paragraph [ref=e23]: Sign in to continue to your dashboard
+    - generic [ref=e24]:
+      - generic [ref=e25]:
+        - generic [ref=e26]: Email Address
+        - textbox "Email Address" [ref=e27]:
+          - /placeholder: you@company.com
+      - generic [ref=e28]:
+        - generic [ref=e29]: Password
+        - generic [ref=e30]:
+          - textbox "Password" [ref=e31]:
+            - /placeholder: Enter your password
+          - button "Show password" [ref=e32] [cursor=pointer]:
+            - img [ref=e33]
+      - generic [ref=e36]:
+        - generic [ref=e37] [cursor=pointer]:
+          - checkbox "Remember me" [ref=e38]
+          - generic [ref=e39]: Remember me
+        - link "Forgot password?" [ref=e40]:
+          - /url: /forgot-password
+      - button "Sign In" [ref=e41] [cursor=pointer]
+    - separator [ref=e43]:
+      - generic [ref=e47]: or continue with
+    - button "Continue with Google" [ref=e50] [cursor=pointer]:
+      - img [ref=e51]
+      - generic [ref=e56]: Continue with Google
+    - paragraph [ref=e58]:
+      - text: Don't have an account?
+      - link "Create one now" [ref=e59]:
+        - /url: /signup
+    - paragraph [ref=e60]:
+      - link "← Back to home" [ref=e61]:
+        - /url: /
+    - paragraph [ref=e62]: © 2026 Sqordia. All rights reserved.
+```

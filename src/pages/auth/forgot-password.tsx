@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Mail, ArrowRight, ArrowLeft, CheckCircle } from 'lucide-react';
 import { authService } from '../../lib/auth-service';
 import { useCmsContent } from '../../hooks/useCmsContent';
+import { getUserFriendlyError } from '../../utils/error-messages';
 import SEO from '../../components/SEO';
 import { getCanonicalUrl } from '../../utils/seo';
 import { AuthLayout } from '../../components/auth';
@@ -54,7 +55,7 @@ export default function ForgotPasswordPage() {
       await authService.forgotPassword(formData.email);
       setSuccess(true);
     } catch (err: any) {
-      setServerError(err.message || 'Failed to send password reset email. Please try again.');
+      setServerError(getUserFriendlyError(err, 'password'));
     } finally {
       setLoading(false);
     }

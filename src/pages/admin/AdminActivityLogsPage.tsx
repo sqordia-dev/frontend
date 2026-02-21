@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { adminService } from '../../lib/admin-service';
 import { Activity, AlertCircle } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
+import { getUserFriendlyError } from '../../utils/error-messages';
 
 export default function AdminActivityLogsPage() {
   const { t } = useTheme();
@@ -20,7 +21,7 @@ export default function AdminActivityLogsPage() {
       const data = await adminService.getActivityLogs();
       setLogs(data);
     } catch (err: any) {
-      setError(err.message);
+      setError(getUserFriendlyError(err, 'load'));
     } finally {
       setLoading(false);
     }

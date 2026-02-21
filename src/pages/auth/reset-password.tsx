@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { ArrowRight, ArrowLeft, CheckCircle, AlertCircle } from 'lucide-react';
 import { authService } from '../../lib/auth-service';
 import { useCmsContent } from '../../hooks/useCmsContent';
+import { getUserFriendlyError } from '../../utils/error-messages';
 import SEO from '../../components/SEO';
 import { getCanonicalUrl } from '../../utils/seo';
 import { AuthLayout, PasswordInput, PasswordStrengthMeter } from '../../components/auth';
@@ -82,7 +83,7 @@ export default function ResetPasswordPage() {
       await authService.resetPassword(token, formData.password);
       setSuccess(true);
     } catch (err: any) {
-      setServerError(err.message || 'Failed to reset password. The link may have expired. Please request a new one.');
+      setServerError(getUserFriendlyError(err, 'password'));
     } finally {
       setLoading(false);
     }

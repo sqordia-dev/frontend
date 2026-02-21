@@ -42,6 +42,7 @@ import BalanceSheetTable, { BalanceSheetData } from '../components/BalanceSheetT
 import CashFlowTable, { CashFlowData } from '../components/CashFlowTable';
 import PlanViewTour from '../components/PlanViewTour';
 import SEO from '../components/SEO';
+import { getUserFriendlyError } from '../utils/error-messages';
 
 // Markdown parser function
 const parseMarkdown = (markdown: string): string => {
@@ -931,7 +932,7 @@ export default function PlanViewPage() {
     } catch (err: any) {
       console.error('Failed to save section:', err);
       setStatusMessage(t('planView.saveError') || 'Failed to save section');
-      toast.error(t('planView.saveError') || 'Failed to save', err.message || 'Unknown error');
+      toast.error(t('planView.saveError') || 'Failed to save', getUserFriendlyError(err, 'save'));
     } finally {
       setSaving(null);
     }
@@ -1220,7 +1221,7 @@ export default function PlanViewPage() {
       }, 100);
     } catch (error: any) {
       console.error(`Failed to export to ${format}:`, error);
-      toast.error(t('planView.exportError') || `Failed to export to ${format.toUpperCase()}`, error.message || 'Unknown error');
+      toast.error(t('planView.exportError') || `Failed to export to ${format.toUpperCase()}`, getUserFriendlyError(error, 'export'));
     } finally {
       setExporting(null);
     }
@@ -1248,7 +1249,7 @@ export default function PlanViewPage() {
       await loadShares();
     } catch (error: any) {
       console.error('Failed to create public share:', error);
-      toast.error(t('planView.shareError') || 'Share failed', error.message || 'Failed to create public share');
+      toast.error(t('planView.shareError') || 'Share failed', getUserFriendlyError(error, 'share'));
     }
   };
 
@@ -1259,7 +1260,7 @@ export default function PlanViewPage() {
       await loadShares();
     } catch (error: any) {
       console.error('Failed to revoke share:', error);
-      toast.error(t('planView.revokeError') || 'Revoke failed', error.message || 'Failed to revoke share');
+      toast.error(t('planView.revokeError') || 'Revoke failed', getUserFriendlyError(error, 'share'));
     }
   };
 
@@ -2467,7 +2468,7 @@ export default function PlanViewPage() {
                             toast.success(t('planView.shareInvitationSent') || 'Invitation sent');
                           } catch (error: any) {
                             console.error('Failed to share:', error);
-                            toast.error(t('planView.shareFailed') || 'Share failed', error.message);
+                            toast.error(t('planView.shareFailed') || 'Share failed', getUserFriendlyError(error, 'share'));
                           }
                         }}
                         disabled={!shareEmail.trim()}
@@ -2565,7 +2566,7 @@ export default function PlanViewPage() {
                                     toast.success(t('planView.permissionUpdated') || 'Permission updated');
                                   } catch (error: any) {
                                     console.error('Failed to update permission:', error);
-                                    toast.error(t('planView.permissionError') || 'Update failed', error.message);
+                                    toast.error(t('planView.permissionError') || 'Update failed', getUserFriendlyError(error, 'save'));
                                   }
                                 }}
                                 className="px-2 py-1 text-xs border-2 border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
@@ -2761,7 +2762,7 @@ export default function PlanViewPage() {
                         toast.success(t('planView.imageUploaded') || 'Image uploaded');
                       } catch (error: any) {
                         console.error('Failed to upload cover image:', error);
-                        toast.error(t('planView.uploadError') || 'Upload failed', error.message || 'Unknown error');
+                        toast.error(t('planView.uploadError') || 'Upload failed', getUserFriendlyError(error, 'upload'));
                       } finally {
                         setUploadingCoverImage(false);
                       }
@@ -2816,7 +2817,7 @@ export default function PlanViewPage() {
                   } catch (error: any) {
                     console.error('Failed to save cover settings:', error);
                     setStatusMessage(t('planView.coverSaveError') || 'Failed to save cover');
-                    toast.error(t('planView.coverSaveError') || 'Failed to save cover', error.message || 'Unknown error');
+                    toast.error(t('planView.coverSaveError') || 'Failed to save cover', getUserFriendlyError(error, 'save'));
                   } finally {
                     setSavingCover(false);
                   }

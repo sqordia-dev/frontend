@@ -5,6 +5,7 @@ import { authService } from '../../lib/auth-service';
 import { signInWithGoogle } from '../../lib/google-auth';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useCmsContent } from '../../hooks/useCmsContent';
+import { getUserFriendlyError } from '../../utils/error-messages';
 import SEO from '../../components/SEO';
 import { getCanonicalUrl } from '../../utils/seo';
 import { AuthLayout } from '../../components/auth';
@@ -84,7 +85,7 @@ export default function LoginPage() {
         navigate('/dashboard');
       }
     } catch (err: any) {
-      setServerError(err.message || 'Login failed. Please check your credentials.');
+      setServerError(getUserFriendlyError(err, 'login'));
     } finally {
       setLoading(false);
     }
@@ -107,7 +108,7 @@ export default function LoginPage() {
         navigate('/dashboard');
       }
     } catch (err: any) {
-      setServerError(err.message || 'Google sign-in failed. Please try again.');
+      setServerError(getUserFriendlyError(err, 'login'));
     }
   };
 
@@ -117,7 +118,7 @@ export default function LoginPage() {
       await authService.signInWithMicrosoft();
       navigate('/onboarding');
     } catch (err: any) {
-      setServerError(err.message || 'Microsoft sign-in failed. Please try again.');
+      setServerError(getUserFriendlyError(err, 'login'));
     }
   };
 

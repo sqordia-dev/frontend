@@ -1801,9 +1801,10 @@ export default function BlogPostPage() {
           <img
             src={localizedPost.image}
             alt={localizedPost.title}
-            className="w-full h-full object-cover scale-110 transition-transform duration-[20s] ease-out"
+            className="w-full h-full object-cover scale-110 transition-transform ease-out"
             style={{
               transform: isScrolled ? 'scale(1.15)' : 'scale(1.1)',
+              transitionDuration: '20s',
             }}
             width={1200}
             height={630}

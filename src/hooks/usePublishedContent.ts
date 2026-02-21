@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef, createContext, useContext } f
 import { cmsService } from '../lib/cms-service';
 import { CmsContentBlock, PublishedContent } from '../lib/cms-types';
 import { useTheme } from '../contexts/ThemeContext';
+import { getUserFriendlyError } from '../utils/error-messages';
 
 interface UsePublishedContentOptions {
   sectionKey?: string;
@@ -63,7 +64,7 @@ export function usePublishedContent(options: UsePublishedContentOptions = {}): U
       if (mountedRef.current) {
         // Don't set error for 404 - just means no published content yet
         if (err.response?.status !== 404) {
-          setError(err.message || 'Failed to load content');
+          setError(getUserFriendlyError(err, 'load'));
         }
         setContent(null);
       }

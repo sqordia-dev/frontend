@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { businessPlanService } from '../lib/business-plan-service';
 import { useTheme } from '../contexts/ThemeContext';
+import { getUserFriendlyError } from '../utils/error-messages';
 import { useCmsContent } from '../hooks/useCmsContent';
 import { PersonaType } from '../lib/types';
 import SEO from '../components/SEO';
@@ -49,11 +50,24 @@ interface StepInfo {
   number: number;
   title: string;
   titleFr: string;
+  description?: string;
+  descriptionFr?: string;
   timeEstimate: string;
   icon: React.ElementType;
 }
 
-const STEP_INFO: StepInfo[] = [
+interface StepMetadata {
+  id: string;
+  stepNumber: number;
+  title: string;
+  titleEN: string | null;
+  description: string | null;
+  descriptionEN: string | null;
+  questionCount: number;
+}
+
+// Default step info (fallback if API fails)
+const DEFAULT_STEP_INFO: StepInfo[] = [
   {
     number: 1,
     title: 'Identity & Vision',
@@ -91,6 +105,15 @@ const STEP_INFO: StepInfo[] = [
   }
 ];
 
+// Icon mapping for dynamic icons
+const STEP_ICONS: Record<number, React.ElementType> = {
+  1: Target,
+  2: Briefcase,
+  3: TrendingUp,
+  4: Users,
+  5: DollarSign
+};
+
 export default function WizardQuestionnairePage() {
   const { planId } = useParams();
   const navigate = useNavigate();
@@ -115,6 +138,22 @@ export default function WizardQuestionnairePage() {
   const [stepStartTime, setStepStartTime] = useState<number>(Date.now());
   const [showSectionReview, setShowSectionReview] = useState(false);
   const [sectionReviewLoading, setSectionReviewLoading] = useState(false);
+  const [stepMetadata, setStepMetadata] = useState<StepMetadata[]>([]);
+
+  // Merge dynamic step metadata with defaults
+  const STEP_INFO: StepInfo[] = useMemo(() => {
+    if (stepMetadata.length === 0) return DEFAULT_STEP_INFO;
+
+    return stepMetadata.map((meta, index) => ({
+      number: meta.stepNumber,
+      title: meta.titleEN || meta.title,
+      titleFr: meta.title,
+      description: meta.descriptionEN || meta.description || undefined,
+      descriptionFr: meta.description || undefined,
+      timeEstimate: DEFAULT_STEP_INFO[index]?.timeEstimate || '~3 min',
+      icon: STEP_ICONS[meta.stepNumber] || Target
+    }));
+  }, [stepMetadata]);
 
   // Generation state
   const [generating, setGenerating] = useState(false);
@@ -290,6 +329,25 @@ export default function WizardQuestionnairePage() {
   useEffect(() => {
     setStepStartTime(Date.now());
   }, [currentStep]);
+
+  // Fetch step metadata from database
+  useEffect(() => {
+    const fetchStepMetadata = async () => {
+      try {
+        console.log('Fetching step metadata...');
+        const response = await apiClient.get(`/api/v2/questionnaire/steps?language=${language}`);
+        console.log('Step metadata response:', response.data);
+        if (response.data && Array.isArray(response.data)) {
+          setStepMetadata(response.data);
+        }
+      } catch (err) {
+        console.error('Failed to fetch step metadata, using defaults:', err);
+        // Keep using defaults if fetch fails
+      }
+    };
+
+    fetchStepMetadata();
+  }, [language]);
 
   // Fetch questions based on persona
   useEffect(() => {
@@ -493,7 +551,7 @@ export default function WizardQuestionnairePage() {
     } catch (err: any) {
       console.error('Failed to fetch questions:', err);
       console.error('Response data:', err.response?.data);
-      setError(err.response?.data?.errorMessage || err.response?.data?.error?.message || err.message || 'Failed to load questions. Please try again.');
+      setError(getUserFriendlyError(err, 'load'));
     } finally {
       setLoading(false);
     }
@@ -1462,8 +1520,6 @@ export default function WizardQuestionnairePage() {
               const isComplete = isStepComplete(step.number);
               const StepIconComponent = step.icon;
 
-              const canNavigate = isComplete || isActive;
-
               return (
                 <div
                   key={step.number}
@@ -1471,14 +1527,13 @@ export default function WizardQuestionnairePage() {
                 >
                   <button
                     type="button"
-                    onClick={() => canNavigate && setCurrentStep(step.number)}
-                    disabled={!canNavigate}
-                    className={`flex flex-col items-center gap-2 flex-1 ${canNavigate ? 'cursor-pointer group' : 'cursor-default'}`}
+                    onClick={() => setCurrentStep(step.number)}
+                    className="flex flex-col items-center gap-2 flex-1 cursor-pointer group"
                   >
                     <div
                       className={`
                         w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all
-                        ${canNavigate ? 'group-hover:scale-110' : ''}
+                        group-hover:scale-110
                         ${isActive
                           ? 'ring-4 ring-opacity-30 scale-110'
                           : isComplete
@@ -1493,7 +1548,7 @@ export default function WizardQuestionnairePage() {
                     >
                       {isComplete ? <CheckCircle2 size={20} /> : <StepIconComponent size={20} />}
                     </div>
-                    <span className={`text-xs font-medium text-center transition-colors ${canNavigate ? 'group-hover:text-[#FF6B00]' : ''} ${isActive ? 'font-bold' : ''}`} style={{
+                    <span className={`text-xs font-medium text-center transition-colors group-hover:text-[#FF6B00] ${isActive ? 'font-bold' : ''}`} style={{
                       color: isActive
                         ? momentumOrange
                         : undefined

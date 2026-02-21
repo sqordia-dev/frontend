@@ -5,6 +5,7 @@ import { authService } from '../../lib/auth-service';
 import { signInWithGoogle } from '../../lib/google-auth';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useCmsContent } from '../../hooks/useCmsContent';
+import { getUserFriendlyError } from '../../utils/error-messages';
 import SEO from '../../components/SEO';
 import { getCanonicalUrl } from '../../utils/seo';
 import {
@@ -73,7 +74,7 @@ export default function SignupPage() {
       });
       navigate('/login', { state: { message: cms('auth.signup.success', 'register.success') } });
     } catch (err: any) {
-      setServerError(err.message || 'Registration failed. Please try again.');
+      setServerError(getUserFriendlyError(err, 'signup'));
     } finally {
       setLoading(false);
     }
@@ -90,7 +91,7 @@ export default function SignupPage() {
       await authService.googleAuth(tokens);
       navigate('/onboarding');
     } catch (err: any) {
-      setServerError(err.message || 'Google sign-up failed. Please try again.');
+      setServerError(getUserFriendlyError(err, 'signup'));
     }
   };
 
@@ -100,7 +101,7 @@ export default function SignupPage() {
       await authService.signInWithMicrosoft();
       navigate('/onboarding');
     } catch (err: any) {
-      setServerError(err.message || 'Microsoft sign-up failed. Please try again.');
+      setServerError(getUserFriendlyError(err, 'signup'));
     }
   };
 

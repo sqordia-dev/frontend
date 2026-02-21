@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { adminService } from '../../lib/admin-service';
 import { rolesService } from '../../lib/roles-service';
+import { getUserFriendlyError } from '../../utils/error-messages';
 import {
   ArrowLeft, AlertCircle, X, Shield, ShieldCheck, ShieldOff, Loader2,
   CheckCircle2, XCircle, KeyRound, Pencil, Ban, Check, ChevronDown,
@@ -137,7 +138,7 @@ export default function AdminUserDetailPage() {
         isActive: getStatusLabel(data) === 'Active',
       });
     } catch (err: any) {
-      setError(err.message || 'Failed to load user details');
+      setError(getUserFriendlyError(err, 'load'));
     } finally {
       setLoading(false);
     }
@@ -156,7 +157,7 @@ export default function AdminUserDetailPage() {
       const data = await adminService.getUserSessions(userId!);
       setSessions(Array.isArray(data) ? data : []);
     } catch (err: any) {
-      setError(`Failed to load sessions: ${err.message}`);
+      setError(getUserFriendlyError(err, 'load'));
     } finally {
       setLoadingSessions(false);
     }
@@ -168,7 +169,7 @@ export default function AdminUserDetailPage() {
       const data = await adminService.getUserLoginHistory(userId!, 100);
       setLoginHistory(Array.isArray(data) ? data : []);
     } catch (err: any) {
-      setError(`Failed to load login history: ${err.message}`);
+      setError(getUserFriendlyError(err, 'load'));
     } finally {
       setLoadingHistory(false);
     }
@@ -181,7 +182,7 @@ export default function AdminUserDetailPage() {
       setSuccessMsg(`User status changed to ${status}`);
       await loadUser();
     } catch (err: any) {
-      setError(`Failed to update status: ${err.message}`);
+      setError(getUserFriendlyError(err, 'save'));
     }
   };
 
@@ -190,7 +191,7 @@ export default function AdminUserDetailPage() {
       await adminService.resetUserPassword(userId!);
       setSuccessMsg('Password reset successfully. User will be required to change password on next login.');
     } catch (err: any) {
-      setError(`Failed to reset password: ${err.message}`);
+      setError(getUserFriendlyError(err, 'password'));
     }
   };
 
@@ -202,7 +203,7 @@ export default function AdminUserDetailPage() {
       setShowEdit(false);
       await loadUser();
     } catch (err: any) {
-      setError(`Failed to update profile: ${err.message}`);
+      setError(getUserFriendlyError(err, 'save'));
     } finally {
       setSaving(false);
     }
@@ -215,7 +216,7 @@ export default function AdminUserDetailPage() {
       setShowAddRole(false);
       await loadUser();
     } catch (err: any) {
-      setError(`Failed to assign role: ${err.message}`);
+      setError(getUserFriendlyError(err, 'save'));
     }
   };
 
@@ -225,7 +226,7 @@ export default function AdminUserDetailPage() {
       setSuccessMsg('Role removed');
       await loadUser();
     } catch (err: any) {
-      setError(`Failed to remove role: ${err.message}`);
+      setError(getUserFriendlyError(err, 'delete'));
     }
   };
 
@@ -236,7 +237,7 @@ export default function AdminUserDetailPage() {
       await loadSessions();
       await loadUser();
     } catch (err: any) {
-      setError(`Failed to terminate session: ${err.message}`);
+      setError(getUserFriendlyError(err, 'delete'));
     }
   };
 
@@ -247,7 +248,7 @@ export default function AdminUserDetailPage() {
       await loadSessions();
       await loadUser();
     } catch (err: any) {
-      setError(`Failed to terminate sessions: ${err.message}`);
+      setError(getUserFriendlyError(err, 'delete'));
     }
   };
 

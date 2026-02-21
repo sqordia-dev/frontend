@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { adminService } from '../../lib/admin-service';
-import { 
-  Brain, Plus, Edit, Trash, AlertCircle, X, ToggleLeft, ToggleRight, Search, 
-  Save, TestTube, Filter, Download, Upload, FileText, Globe, Building2, 
+import {
+  Brain, Plus, Edit, Trash, AlertCircle, X, ToggleLeft, ToggleRight, Search,
+  Save, TestTube, Filter, Download, Upload, FileText, Globe, Building2,
   Sparkles, CheckCircle, Clock, BarChart3, Copy, RefreshCw, LayoutGrid, List, ArrowLeft
 } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
 import RichTextEditor from '../../components/RichTextEditor';
+import { getUserFriendlyError } from '../../utils/error-messages';
 
 // Section definitions with categories
 const SECTION_CATEGORIES = {
@@ -97,7 +98,7 @@ export default function AdminAIPromptsPage() {
       const data = await adminService.getAIPrompts();
       setPrompts(data || []);
     } catch (err: any) {
-      setError(err.message);
+      setError(getUserFriendlyError(err, 'load'));
     } finally {
       setLoading(false);
     }
@@ -113,10 +114,10 @@ export default function AdminAIPromptsPage() {
       alert(t('admin.promptsStudio.migrateSuccess').replace('{count}', result.migrated.toString()));
       await loadPrompts();
     } catch (err: any) {
-      const errorMessage = err.response?.data?.error || err.message || 'Unknown error occurred';
       console.error('Migration error:', err);
-      setError(`${t('admin.promptsStudio.migrateFailed')} ${errorMessage}`);
-      alert(`${t('admin.promptsStudio.migrateFailed')} ${errorMessage}`);
+      const errorMessage = getUserFriendlyError(err, 'save');
+      setError(errorMessage);
+      alert(errorMessage);
     } finally {
       setMigrating(false);
     }
@@ -181,7 +182,7 @@ export default function AdminAIPromptsPage() {
       await adminService.deleteAIPrompt(promptId);
       await loadPrompts();
     } catch (err: any) {
-      alert(`${t('admin.aiPrompts.failedToDelete')} ${err.message}`);
+      alert(getUserFriendlyError(err, 'delete'));
     }
   };
 
@@ -190,7 +191,7 @@ export default function AdminAIPromptsPage() {
       await adminService.updateAIPromptStatus(promptId, !currentStatus);
       await loadPrompts();
     } catch (err: any) {
-      alert(`${t('admin.aiPrompts.failedToUpdateStatus')} ${err.message}`);
+      alert(getUserFriendlyError(err, 'save'));
     }
   };
 
@@ -246,7 +247,7 @@ export default function AdminAIPromptsPage() {
       resetForm();
       await loadPrompts();
     } catch (err: any) {
-      alert(`${t('admin.aiPrompts.failedToSave')} ${err.message}`);
+      alert(getUserFriendlyError(err, 'save'));
     } finally {
       setSaving(false);
     }
@@ -265,7 +266,7 @@ export default function AdminAIPromptsPage() {
       });
       setTestResult(JSON.stringify(result, null, 2));
     } catch (err: any) {
-      setTestResult(`Error: ${err.message}`);
+      setTestResult(`Error: ${getUserFriendlyError(err, 'ai')}`);
     } finally {
       setTestingPrompt(false);
     }

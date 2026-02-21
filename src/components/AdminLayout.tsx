@@ -12,11 +12,9 @@ import {
   X,
   ChevronLeft,
   ChevronRight,
-  Settings,
   ChevronDown,
-  Activity,
-  HeartPulse,
-  Palette
+  Palette,
+  Database
 } from 'lucide-react';
 import { authService } from '../lib/auth-service';
 import { useTheme } from '../contexts/ThemeContext';
@@ -96,13 +94,9 @@ export default function AdminLayout() {
     { name: t('admin.nav.overview'), href: '/admin', icon: LayoutDashboard },
     { name: t('admin.nav.users'), href: '/admin/users', icon: Users },
     { name: t('admin.nav.businessPlans'), href: '/admin/business-plans', icon: FileText },
-    { name: t('admin.nav.templates'), href: '/admin/templates', icon: FileText },
     { name: 'Content Manager', href: '/admin/cms', icon: Palette },
-    { name: 'Prompts Studio', href: '/admin/prompts-studio', icon: Brain },
+    { name: 'Prompt Registry', href: '/admin/prompt-registry', icon: Database },
     { name: 'AI Configuration', href: '/admin/ai-config', icon: Brain },
-    { name: t('admin.nav.activityLogs') || 'Activity Logs', href: '/admin/activity-logs', icon: Activity },
-    { name: t('admin.nav.systemHealth') || 'System Health', href: '/admin/system-health', icon: HeartPulse },
-    { name: 'Settings', href: '/admin/settings', icon: Settings },
   ];
 
   const getPageTitle = () => {

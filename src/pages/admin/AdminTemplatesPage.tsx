@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { templateService } from '../../lib/template-service';
 import { Search, Plus, Edit, Trash2, Eye, Copy, Archive, CheckCircle, XCircle, Filter, X } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
+import { getUserFriendlyError } from '../../utils/error-messages';
 
 export default function AdminTemplatesPage() {
   const [templates, setTemplates] = useState<any[]>([]);
@@ -60,7 +61,7 @@ export default function AdminTemplatesPage() {
       await templateService.deleteTemplate(id);
       await loadTemplates();
     } catch (err: any) {
-      alert(`${t('admin.templates.failedToDelete')} ${err.message}`);
+      alert(getUserFriendlyError(err, 'delete'));
     }
   };
 
@@ -69,7 +70,7 @@ export default function AdminTemplatesPage() {
       await templateService.publishTemplate(id);
       await loadTemplates();
     } catch (err: any) {
-      alert(`${t('admin.templates.failedToPublish')} ${err.message}`);
+      alert(getUserFriendlyError(err, 'save'));
     }
   };
 
@@ -78,7 +79,7 @@ export default function AdminTemplatesPage() {
       await templateService.archiveTemplate(id);
       await loadTemplates();
     } catch (err: any) {
-      alert(`${t('admin.templates.failedToArchive')} ${err.message}`);
+      alert(getUserFriendlyError(err, 'save'));
     }
   };
 
@@ -90,7 +91,7 @@ export default function AdminTemplatesPage() {
       await templateService.cloneTemplate(id, newName);
       await loadTemplates();
     } catch (err: any) {
-      alert(`${t('admin.templates.failedToClone')} ${err.message}`);
+      alert(getUserFriendlyError(err, 'save'));
     }
   };
 
@@ -148,7 +149,7 @@ export default function AdminTemplatesPage() {
       });
       await loadTemplates();
     } catch (err: any) {
-      alert(`Failed to save template: ${err.message}`);
+      alert(getUserFriendlyError(err, 'save'));
     } finally {
       setSaving(false);
     }

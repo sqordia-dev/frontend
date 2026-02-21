@@ -1,0 +1,58 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e2]:
+  - link "Skip to main content" [ref=e3] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=e4]:
+    - generic [ref=e6]:
+      - generic [ref=e7]:
+        - heading "Welcome back" [level=1] [ref=e8]
+        - paragraph [ref=e9]: Sign in to continue to your dashboard
+      - alert [ref=e10]:
+        - img [ref=e11]
+        - paragraph [ref=e13]: Unable to log in. Please check your credentials and try again.
+      - generic [ref=e14]:
+        - generic [ref=e15]:
+          - generic [ref=e16]: Email Address
+          - textbox "Email Address" [ref=e17]:
+            - /placeholder: you@company.com
+            - text: admin@sqordia.app
+        - generic [ref=e18]:
+          - generic [ref=e19]: Password
+          - generic [ref=e20]:
+            - textbox "Password" [ref=e21]:
+              - /placeholder: Enter your password
+              - text: Sqordia2025!
+            - button "Show password" [ref=e22] [cursor=pointer]:
+              - img [ref=e23]
+        - generic [ref=e26]:
+          - generic [ref=e27] [cursor=pointer]:
+            - checkbox "Remember me" [ref=e28]
+            - generic [ref=e29]: Remember me
+          - link "Forgot password?" [ref=e30] [cursor=pointer]:
+            - /url: /forgot-password
+        - button "Sign In" [ref=e31] [cursor=pointer]
+      - separator [ref=e33]:
+        - generic [ref=e37]: or continue with
+      - button "Continue with Google" [ref=e40] [cursor=pointer]:
+        - img [ref=e41]
+        - generic [ref=e46]: Continue with Google
+      - paragraph [ref=e48]:
+        - text: Don't have an account?
+        - link "Create one now" [ref=e49] [cursor=pointer]:
+          - /url: /signup
+      - paragraph [ref=e50]:
+        - link "← Back to home" [ref=e51] [cursor=pointer]:
+          - /url: /
+    - generic [ref=e52]:
+      - generic [ref=e55]:
+        - link "Sqordia" [ref=e56] [cursor=pointer]:
+          - /url: /
+          - img [ref=e58]
+          - generic [ref=e68]: Sqordia
+        - heading "AI-Powered Strategic Planning" [level=2] [ref=e69]
+        - paragraph [ref=e70]: Create bank-ready business plans in under 60 minutes
+        - img [ref=e72]
+      - paragraph [ref=e169]: © 2026 Sqordia. All rights reserved.
+```

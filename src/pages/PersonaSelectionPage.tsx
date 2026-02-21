@@ -15,6 +15,7 @@ import {
 import { useTheme } from '../contexts/ThemeContext';
 import SEO from '../components/SEO';
 import { getCanonicalUrl } from '../utils/seo';
+import { getUserFriendlyError } from '../utils/error-messages';
 
 interface PersonaOption {
   id: PersonaType;
@@ -121,7 +122,7 @@ export default function PersonaSelectionPage() {
         // Redirect to login after a short delay so the user sees the message
         setTimeout(() => navigate('/login', { replace: true }), 2500);
       } else {
-        setError(err.response?.data?.message || err.response?.data?.errorMessage || err.message || 'Failed to set persona. Please try again.');
+        setError(getUserFriendlyError(err, 'save'));
       }
       setLoading(false);
     }

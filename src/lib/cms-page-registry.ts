@@ -7,7 +7,6 @@ import {
   Globe,
   Building2,
   FileText,
-  ClipboardList,
   LayoutDashboard,
   UserCircle,
   ShieldCheck,
@@ -25,8 +24,10 @@ import {
   Target,
   Layers,
   PenLine,
+  LucideIcon,
 } from 'lucide-react';
 import { createElement } from 'react';
+import { cmsRegistryService, CmsPageRegistryResponse } from './cms-registry-service';
 
 export interface CmsPageDefinition {
   key: string;
@@ -79,16 +80,6 @@ export const CMS_PAGE_REGISTRY: CmsPageDefinition[] = [
     ],
   },
   {
-    key: 'questionnaire',
-    label: 'Questionnaire',
-    icon: icon(ClipboardList),
-    sections: [
-      { key: 'questionnaire.steps', label: 'Step Configuration', icon: icon(Layers), sortOrder: 0 },
-      { key: 'questionnaire.labels', label: 'Labels & Buttons', icon: icon(Type), sortOrder: 1 },
-      { key: 'questionnaire.tips', label: 'Generation Tips', icon: icon(Lightbulb), sortOrder: 2 },
-    ],
-  },
-  {
     key: 'question_templates',
     label: 'Questions',
     icon: icon(HelpCircle),
@@ -102,34 +93,6 @@ export const CMS_PAGE_REGISTRY: CmsPageDefinition[] = [
     ],
   },
   {
-    key: 'create_plan',
-    label: 'Create Plan',
-    icon: icon(PenLine),
-    sections: [
-      { key: 'create_plan.labels', label: 'Labels & Titles', icon: icon(Type), sortOrder: 0 },
-      { key: 'create_plan.types', label: 'Plan Types', icon: icon(Target), sortOrder: 1 },
-    ],
-  },
-  {
-    key: 'subscription',
-    label: 'Subscription Plans',
-    icon: icon(CreditCard),
-    sections: [
-      { key: 'subscription.labels', label: 'Labels & Titles', icon: icon(Type), sortOrder: 0 },
-      { key: 'subscription.plans', label: 'Plan Definitions', icon: icon(CreditCard), sortOrder: 1 },
-    ],
-  },
-  {
-    key: 'onboarding',
-    label: 'Onboarding',
-    icon: icon(Rocket),
-    sections: [
-      { key: 'onboarding.welcome', label: 'Welcome', icon: icon(Rocket), sortOrder: 0 },
-      { key: 'onboarding.steps', label: 'Steps', icon: icon(Layers), sortOrder: 1 },
-      { key: 'onboarding.completion', label: 'Completion', icon: icon(MailCheck), sortOrder: 2 },
-    ],
-  },
-  {
     key: 'auth',
     label: 'Authentication',
     icon: icon(LogIn),
@@ -139,15 +102,6 @@ export const CMS_PAGE_REGISTRY: CmsPageDefinition[] = [
       { key: 'auth.forgot_password', label: 'Forgot Password', icon: icon(KeyRound), sortOrder: 2 },
       { key: 'auth.reset_password', label: 'Reset Password', icon: icon(Lock), sortOrder: 3 },
       { key: 'auth.verify_email', label: 'Email Verification', icon: icon(MailCheck), sortOrder: 4 },
-    ],
-  },
-  {
-    key: 'legal',
-    label: 'Legal Pages',
-    icon: icon(Scale),
-    sections: [
-      { key: 'legal.terms', label: 'Terms of Service', icon: icon(FileText), sortOrder: 0 },
-      { key: 'legal.privacy', label: 'Privacy Policy', icon: icon(Lock), sortOrder: 1 },
     ],
   },
   {
@@ -193,4 +147,111 @@ export function getSectionIcon(sectionKey: string): React.ReactNode {
     if (section) return section.icon;
   }
   return icon(FileText);
+}
+
+/** Icon name to Lucide component mapping */
+const ICON_MAP: Record<string, LucideIcon> = {
+  Type,
+  LayoutGrid,
+  HelpCircle,
+  MessageSquare,
+  Palette,
+  Globe,
+  Building2,
+  FileText,
+  LayoutDashboard,
+  UserCircle,
+  ShieldCheck,
+  Monitor,
+  CreditCard,
+  Rocket,
+  LogIn,
+  UserPlus,
+  KeyRound,
+  MailCheck,
+  Scale,
+  Lock,
+  Navigation,
+  Lightbulb,
+  Target,
+  Layers,
+  PenLine,
+};
+
+/** Get icon from name string */
+function getIconFromName(iconName: string | null): React.ReactNode {
+  if (!iconName) return icon(FileText);
+  const IconComponent = ICON_MAP[iconName];
+  return IconComponent ? icon(IconComponent) : icon(FileText);
+}
+
+/** Pages to exclude from the CMS sidebar */
+const EXCLUDED_PAGES = ['questionnaire', 'create_plan', 'subscription', 'onboarding', 'legal', 'activity_logs', 'system_health', 'settings'];
+
+/** Convert API response to local CmsPageDefinition format */
+function convertApiResponse(apiPages: CmsPageRegistryResponse[]): CmsPageDefinition[] {
+  return apiPages
+    .filter((page) => !EXCLUDED_PAGES.includes(page.key))
+    .map((page) => ({
+      key: page.key,
+      label: page.label,
+      icon: getIconFromName(page.iconName),
+      specialRenderer: page.specialRenderer ?? undefined,
+      sections: page.sections.map((section) => ({
+        key: section.key,
+        label: section.label,
+        icon: getIconFromName(section.iconName),
+        sortOrder: section.sortOrder,
+      })),
+    }));
+}
+
+/** Cache for loaded pages */
+let cachedPages: CmsPageDefinition[] | null = null;
+let loadPromise: Promise<CmsPageDefinition[]> | null = null;
+
+/**
+ * Load CMS pages from the API with fallback to static registry.
+ * Results are cached after first successful load.
+ */
+export async function loadCmsPages(): Promise<CmsPageDefinition[]> {
+  // Return cached if available
+  if (cachedPages) {
+    return cachedPages;
+  }
+
+  // Return existing promise if loading
+  if (loadPromise) {
+    return loadPromise;
+  }
+
+  // Start loading
+  loadPromise = (async () => {
+    try {
+      const apiPages = await cmsRegistryService.getPages();
+      if (apiPages.length > 0) {
+        cachedPages = convertApiResponse(apiPages);
+        return cachedPages;
+      }
+      // Fall back to static if API returned empty
+      cachedPages = CMS_PAGE_REGISTRY;
+      return cachedPages;
+    } catch (error) {
+      console.warn('Failed to load CMS pages from API, using static fallback:', error);
+      cachedPages = CMS_PAGE_REGISTRY;
+      return cachedPages;
+    } finally {
+      loadPromise = null;
+    }
+  })();
+
+  return loadPromise;
+}
+
+/**
+ * Clear the cached pages (useful for admin operations that modify the registry)
+ */
+export function clearCmsPagesCache(): void {
+  cachedPages = null;
+  loadPromise = null;
 }

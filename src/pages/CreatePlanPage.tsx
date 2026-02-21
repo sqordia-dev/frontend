@@ -15,6 +15,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import { useCmsContent } from '../hooks/useCmsContent';
 import SEO from '../components/SEO';
 import { getCanonicalUrl } from '../utils/seo';
+import { getUserFriendlyError } from '../utils/error-messages';
 // Template selection disabled - import removed
 // import { templateService } from '../lib/template-service';
 
@@ -73,7 +74,7 @@ export default function CreatePlanPage() {
       setStep('details');
     } catch (error: any) {
       console.error('Failed to create organization:', error);
-      setError(error.message || cms('create_plan.error_creating_org', 'createPlan.errorCreatingOrg'));
+      setError(getUserFriendlyError(error, 'save'));
     } finally {
       setLoading(false);
     }
@@ -118,7 +119,7 @@ export default function CreatePlanPage() {
       navigate(`/questionnaire/${plan.id}`);
     } catch (error: any) {
       console.error('Failed to create plan:', error);
-      setError(error.message || 'Failed to create business plan. Please try again.');
+      setError(getUserFriendlyError(error, 'save'));
     } finally {
       setLoading(false);
     }

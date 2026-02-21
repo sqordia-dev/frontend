@@ -1,0 +1,52 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e2]:
+  - link "Skip to main content" [ref=e3]:
+    - /url: "#main-content"
+  - generic [ref=e6]:
+    - link "Sqordia" [ref=e8]:
+      - /url: /
+      - img [ref=e10]
+      - generic [ref=e20]: Sqordia
+    - generic [ref=e21]:
+      - heading "Welcome back" [level=1] [ref=e22]
+      - paragraph [ref=e23]: Sign in to continue to your dashboard
+    - alert [ref=e24]:
+      - img [ref=e25]
+      - paragraph [ref=e27]: Unable to log in. Please check your credentials and try again.
+    - generic [ref=e28]:
+      - generic [ref=e29]:
+        - generic [ref=e30]: Email Address
+        - textbox "Email Address" [ref=e31]:
+          - /placeholder: you@company.com
+          - text: admin@sqordia.app
+      - generic [ref=e32]:
+        - generic [ref=e33]: Password
+        - generic [ref=e34]:
+          - textbox "Password" [ref=e35]:
+            - /placeholder: Enter your password
+            - text: Sqordia2025!
+          - button "Show password" [ref=e36] [cursor=pointer]:
+            - img [ref=e37]
+      - generic [ref=e40]:
+        - generic [ref=e41] [cursor=pointer]:
+          - checkbox "Remember me" [ref=e42]
+          - generic [ref=e43]: Remember me
+        - link "Forgot password?" [ref=e44]:
+          - /url: /forgot-password
+      - button "Sign In" [ref=e45] [cursor=pointer]
+    - separator [ref=e47]:
+      - generic [ref=e51]: or continue with
+    - button "Continue with Google" [ref=e54] [cursor=pointer]:
+      - img [ref=e55]
+      - generic [ref=e60]: Continue with Google
+    - paragraph [ref=e62]:
+      - text: Don't have an account?
+      - link "Create one now" [ref=e63]:
+        - /url: /signup
+    - paragraph [ref=e64]:
+      - link "← Back to home" [ref=e65]:
+        - /url: /
+    - paragraph [ref=e66]: © 2026 Sqordia. All rights reserved.
+```

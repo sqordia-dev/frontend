@@ -14,7 +14,6 @@ export interface AdminQuestionTemplate {
   optionsEN: string | null;
   validationRules: string | null;
   conditionalLogic: string | null;
-  icon: string | null;
   isActive: boolean;
   created: string;
   lastModified: string | null;
@@ -31,7 +30,6 @@ export interface CreateQuestionTemplateRequest {
   order: number;
   isRequired: boolean;
   section?: string;
-  icon?: string;
   options?: string;
   optionsEN?: string;
   validationRules?: string;
@@ -49,7 +47,6 @@ export interface UpdateQuestionTemplateRequest {
   order?: number;
   isRequired?: boolean;
   section?: string;
-  icon?: string;
   options?: string;
   optionsEN?: string;
   validationRules?: string;

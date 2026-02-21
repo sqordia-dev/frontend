@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { cmsService } from '../lib/cms-service';
 import { CmsContentBlock, PublishedContent } from '../lib/cms-types';
 import { useTheme } from '../contexts/ThemeContext';
+import { getUserFriendlyError } from '../utils/error-messages';
 
 interface UseCmsContentOptions {
   enabled?: boolean;
@@ -68,7 +69,7 @@ export function useCmsContent(pageKey: string, options: UseCmsContentOptions = {
       if (mountedRef.current) {
         // Don't set error for 404 - just means no published content yet
         if (err.response?.status !== 404) {
-          setError(err.message || 'Failed to load content');
+          setError(getUserFriendlyError(err, 'load'));
         }
         setContent(null);
       }

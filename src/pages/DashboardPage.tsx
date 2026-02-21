@@ -15,6 +15,7 @@ import { BusinessPlan } from '../lib/types';
 import { useToast } from '../contexts/ToastContext';
 import { useCmsContent } from '../hooks/useCmsContent';
 import DashboardTour from '../components/DashboardTour';
+import { getUserFriendlyError } from '../utils/error-messages';
 
 // shadcn/ui components
 import { Button } from '@/components/ui/button';
@@ -106,8 +107,7 @@ export default function DashboardPage() {
       );
     } catch (error: unknown) {
       console.error('Failed to delete plan:', error);
-      const errorMessage = error instanceof Error ? error.message : 'An error occurred';
-      toast.error(cms('dashboard.deleteError', 'dashboard.deleteError') || 'Failed to delete plan', errorMessage);
+      toast.error(cms('dashboard.deleteError', 'dashboard.deleteError') || 'Failed to delete plan', getUserFriendlyError(error, 'delete'));
     } finally {
       setDeletingPlanId(null);
     }
@@ -131,8 +131,7 @@ export default function DashboardPage() {
       );
     } catch (error: unknown) {
       console.error('Failed to duplicate plan:', error);
-      const errorMessage = error instanceof Error ? error.message : 'An error occurred';
-      toast.error(cms('dashboard.duplicateError', 'dashboard.duplicateError') || 'Failed to duplicate plan', errorMessage);
+      toast.error(cms('dashboard.duplicateError', 'dashboard.duplicateError') || 'Failed to duplicate plan', getUserFriendlyError(error, 'save'));
     } finally {
       setDuplicatingPlanId(null);
     }
