@@ -13,7 +13,6 @@ import {
 import {
   Bug,
   Send,
-  Upload,
   X,
   ExternalLink,
   CheckCircle,
@@ -107,15 +106,28 @@ export default function AdminBugReportPage() {
         // Create preview
         const preview = URL.createObjectURL(file);
 
-        // Upload to server
-        const url = await gitHubIssueService.uploadScreenshot(file);
+        // Try to upload to server, but don't block if it fails
+        let url = '';
+        try {
+          url = await gitHubIssueService.uploadScreenshot(file);
+        } catch (uploadErr: any) {
+          // Upload failed - continue with local preview only
+          console.warn('Screenshot upload failed, using local preview only:', uploadErr.message);
+          // Use empty URL - screenshot won't be included in the issue but user can still see preview
+        }
 
         newScreenshots.push({ file, url, preview });
       }
 
       setScreenshots(prev => [...prev, ...newScreenshots]);
+
+      // Warn user if any uploads failed
+      const failedUploads = newScreenshots.filter(s => !s.url);
+      if (failedUploads.length > 0) {
+        setError(`${failedUploads.length} screenshot(s) couldn't be uploaded to the server. They will be shown locally but won't be attached to the GitHub issue.`);
+      }
     } catch (err: any) {
-      setError(err.message || 'Failed to upload screenshot');
+      setError(err.message || 'Failed to process screenshot');
     } finally {
       setUploading(false);
     }
@@ -148,6 +160,9 @@ export default function AdminBugReportPage() {
     setSubmitting(true);
 
     try {
+      // Only include screenshots that were successfully uploaded (have a URL)
+      const uploadedScreenshotUrls = screenshots.map(s => s.url).filter(url => url);
+
       const request: CreateGitHubIssueRequest = {
         title,
         description,
@@ -159,7 +174,7 @@ export default function AdminBugReportPage() {
         operatingSystem: systemInfo?.operatingSystem,
         screenSize: systemInfo?.screenSize,
         currentPageUrl: systemInfo?.currentPageUrl,
-        screenshotUrls: screenshots.length > 0 ? screenshots.map(s => s.url) : undefined,
+        screenshotUrls: uploadedScreenshotUrls.length > 0 ? uploadedScreenshotUrls : undefined,
       };
 
       const response = await gitHubIssueService.createIssue(request);
@@ -477,8 +492,24 @@ export default function AdminBugReportPage() {
                   <img
                     src={screenshot.preview}
                     alt={`Screenshot ${index + 1}`}
-                    className="w-full h-24 object-cover rounded-lg border border-gray-200 dark:border-gray-700"
+                    className={`w-full h-24 object-cover rounded-lg border ${
+                      screenshot.url
+                        ? 'border-gray-200 dark:border-gray-700'
+                        : 'border-amber-400 dark:border-amber-500'
+                    }`}
                   />
+                  {/* Show warning icon for local-only screenshots */}
+                  {!screenshot.url && (
+                    <div className="absolute bottom-1 left-1 p-1 bg-amber-500 text-white rounded-full" title="Local only - won't be attached to issue">
+                      <AlertCircle className="w-3 h-3" />
+                    </div>
+                  )}
+                  {/* Show success icon for uploaded screenshots */}
+                  {screenshot.url && (
+                    <div className="absolute bottom-1 left-1 p-1 bg-green-500 text-white rounded-full" title="Uploaded successfully">
+                      <CheckCircle className="w-3 h-3" />
+                    </div>
+                  )}
                   <button
                     type="button"
                     onClick={() => removeScreenshot(index)}
