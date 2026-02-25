@@ -97,7 +97,7 @@ export default function AdminLayout() {
     // { name: t('admin.nav.businessPlans'), href: '/admin/business-plans', icon: FileText }, // Hidden for now
     { name: 'Content Manager', href: '/admin/cms', icon: Palette },
     { name: 'Prompt Registry', href: '/admin/prompt-registry', icon: Database },
-    { name: 'AI Configuration', href: '/admin/ai-config', icon: Brain },
+    // { name: 'AI Configuration', href: '/admin/ai-config', icon: Brain }, // Hidden for now
     { name: 'Bug Report', href: '/admin/bug-report', icon: Bug },
   ];
 
