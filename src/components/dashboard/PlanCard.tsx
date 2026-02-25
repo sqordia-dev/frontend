@@ -29,6 +29,7 @@ export interface PlanCardProps {
   translations?: {
     resume?: string;
     view?: string;
+    viewPlan?: string;
     noDescription?: string;
     delete?: string;
     duplicate?: string;
@@ -37,20 +38,33 @@ export interface PlanCardProps {
       completed?: string;
       active?: string;
       inProgress?: string;
+      generating?: string;
+      generated?: string;
+      exported?: string;
     };
   };
   className?: string;
 }
 
-const getStatusVariant = (status?: string) => {
+/**
+ * Status badge variants according to user journey:
+ * - Draft: Gray (secondary)
+ * - Generating: Orange (warning)
+ * - Complete: Green (success)
+ * - Exported: Navy (info)
+ */
+const getStatusVariant = (status?: string): "success" | "warning" | "info" | "secondary" | "destructive" | "outline" | "default" => {
   switch (status?.toLowerCase()) {
+    case "complete":
     case "completed":
-    case "active":
       return "success";
-    case "draft":
+    case "generated":
+      return "success";
+    case "generating":
       return "warning";
-    case "inprogress":
+    case "exported":
       return "info";
+    case "draft":
     default:
       return "secondary";
   }
@@ -60,13 +74,20 @@ const getStatusLabel = (
   status?: string,
   translations?: PlanCardProps["translations"]
 ) => {
-  if (!status) return status;
+  if (!status) return "Draft";
   const statusLower = status.toLowerCase();
   switch (statusLower) {
     case "draft":
       return translations?.status?.draft || "Draft";
+    case "generating":
+      return translations?.status?.generating || "Generating";
+    case "generated":
+      return translations?.status?.generated || "Generated";
+    case "complete":
     case "completed":
-      return translations?.status?.completed || "Completed";
+      return translations?.status?.completed || "Complete";
+    case "exported":
+      return translations?.status?.exported || "Exported";
     case "active":
       return translations?.status?.active || "Active";
     case "inprogress":
@@ -92,8 +113,10 @@ export function PlanCard({
   translations,
   className,
 }: PlanCardProps) {
+  const statusLower = status?.toLowerCase();
+  const isGenerated = statusLower === "generated";
   const isDraft =
-    status === "Draft" || status === "draft" || !isComplete;
+    (status === "Draft" || status === "draft" || !isComplete) && !isGenerated;
 
   const handleDelete = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -163,6 +186,13 @@ export function PlanCard({
                   }`}
                 >
                   <span>{translations?.resume || "Resume"}</span>
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
+            ) : isGenerated ? (
+              <Button asChild variant="brand" size="sm">
+                <Link to={`/plans/${id}/preview`}>
+                  <span>{translations?.viewPlan || "View Plan"}</span>
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>

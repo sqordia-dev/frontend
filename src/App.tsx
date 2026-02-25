@@ -40,6 +40,7 @@ import AdminSettingsPage from './pages/admin/AdminSettingsPage';
 import { AdminAIConfigPage } from './pages/admin/AdminAIConfigPage';
 import AdminPromptRegistryPage from './pages/admin/AdminPromptRegistryPage';
 import PromptRegistryDocPage from './pages/admin/PromptRegistryDocPage';
+import AdminBugReportPage from './pages/admin/AdminBugReportPage';
 import CmsEditorPage from './pages/admin/CmsEditorPage';
 import CmsQuestionnairePage from './pages/admin/CmsQuestionnairePage';
 import AdminQuestionnairePreviewPage from './pages/admin/AdminQuestionnairePreviewPage';
@@ -265,6 +266,7 @@ function App() {
           <Route path="ai-config" element={<AdminAIConfigPage />} />
           <Route path="prompt-registry" element={<AdminPromptRegistryPage />} />
           <Route path="prompt-registry/docs" element={<PromptRegistryDocPage />} />
+          <Route path="bug-report" element={<AdminBugReportPage />} />
         </Route>
 
         {/* 404 catch-all route - must be last */}

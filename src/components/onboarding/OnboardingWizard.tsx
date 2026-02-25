@@ -3,23 +3,21 @@ import { useNavigate } from 'react-router-dom';
 import { Brain } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import StepIndicator from './StepIndicator';
-import WelcomeStep from './steps/WelcomeStep';
-import PersonaStep from './steps/PersonaStep';
-import BusinessDetailsStep from './steps/BusinessDetailsStep';
-import TemplateStep from './steps/TemplateStep';
-import CompletionStep from './steps/CompletionStep';
+import CompanyPersonaStep from './steps/CompanyPersonaStep';
+import BusinessContextStep from './steps/BusinessContextStep';
+import GoalsMarketStep from './steps/GoalsMarketStep';
+import FeatureTourStep from './steps/FeatureTourStep';
 import { OnboardingData, OnboardingStep, StepProps } from '../../types/onboarding';
 import { onboardingService } from '../../lib/onboarding-service';
 import { useToast } from '../../contexts/ToastContext';
 import { getUserFriendlyError } from '../../utils/error-messages';
 
-// Define the steps configuration
+// Define the steps configuration - 4 step onboarding flow
 const STEPS: OnboardingStep[] = [
-  { id: 'welcome', title: 'Welcome', component: WelcomeStep },
-  { id: 'persona', title: 'Profile', component: PersonaStep },
-  { id: 'business', title: 'Business', component: BusinessDetailsStep },
-  { id: 'template', title: 'Template', component: TemplateStep },
-  { id: 'completion', title: 'Complete', component: CompletionStep },
+  { id: 'company-persona', title: 'Company', component: CompanyPersonaStep },
+  { id: 'business-context', title: 'Context', component: BusinessContextStep },
+  { id: 'goals-market', title: 'Goals', component: GoalsMarketStep },
+  { id: 'feature-tour', title: 'Start', component: FeatureTourStep },
 ];
 
 interface OnboardingWizardProps {
@@ -98,7 +96,10 @@ export default function OnboardingWizard({
 
   // Handle completing onboarding
   const handleComplete = useCallback(async () => {
-    if (!data.persona || !data.businessName) {
+    // Use companyName or businessName for backward compatibility
+    const businessName = data.companyName || data.businessName;
+
+    if (!data.persona || !businessName) {
       showError('Missing required data', 'Please complete all required fields.');
       return;
     }
@@ -108,10 +109,10 @@ export default function OnboardingWizard({
     try {
       const result = await onboardingService.completeOnboarding({
         persona: data.persona,
-        businessName: data.businessName,
+        businessName: businessName,
         industry: data.industry,
-        description: data.description,
-        templateId: data.templateId === 'scratch' ? undefined : data.templateId,
+        description: data.targetMarket, // Use target market as description
+        templateId: undefined, // No template selection in new flow
       });
 
       showSuccess('Success!', 'Your business plan has been created.');
@@ -172,12 +173,12 @@ export default function OnboardingWizard({
             </span>
           </a>
 
-          {/* Step indicator - hide on first and last step */}
-          {!isFirstStep && !isLastStep && (
+          {/* Step indicator - show on steps 1-3, hide on feature tour (step 4) */}
+          {!isLastStep && (
             <StepIndicator
               currentStep={currentStep}
-              totalSteps={STEPS.length}
-              stepTitles={stepTitles}
+              totalSteps={STEPS.length - 1}
+              stepTitles={stepTitles.slice(0, -1)}
             />
           )}
 

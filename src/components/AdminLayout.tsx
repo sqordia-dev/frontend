@@ -14,7 +14,8 @@ import {
   ChevronRight,
   ChevronDown,
   Palette,
-  Database
+  Database,
+  Bug
 } from 'lucide-react';
 import { authService } from '../lib/auth-service';
 import { useTheme } from '../contexts/ThemeContext';
@@ -97,6 +98,7 @@ export default function AdminLayout() {
     { name: 'Content Manager', href: '/admin/cms', icon: Palette },
     { name: 'Prompt Registry', href: '/admin/prompt-registry', icon: Database },
     { name: 'AI Configuration', href: '/admin/ai-config', icon: Brain },
+    { name: 'Bug Report', href: '/admin/bug-report', icon: Bug },
   ];
 
   const getPageTitle = () => {

@@ -6,13 +6,54 @@ import React from 'react';
 export type OnboardingPersona = 'entrepreneur' | 'consultant' | 'obnl';
 
 /**
+ * Business stage types
+ */
+export type BusinessStage = 'Idea' | 'Startup' | 'Established';
+
+/**
+ * Team size options
+ */
+export type TeamSize = 'Solo' | '2-5' | '6-20' | '20+';
+
+/**
+ * Funding status options
+ */
+export type FundingStatus = 'Bootstrapped' | 'Seeking' | 'Funded';
+
+/**
+ * Goal options for onboarding
+ */
+export const GOAL_OPTIONS = [
+  'Funding',
+  'Growth',
+  'Launch',
+  'Market',
+  'Team',
+  'Strategy',
+  'Partnerships',
+  'Validation',
+] as const;
+
+export type Goal = typeof GOAL_OPTIONS[number];
+
+/**
  * Data collected during onboarding flow
  */
 export interface OnboardingData {
   userName?: string;
-  persona?: OnboardingPersona;
-  businessName?: string;
+  // Step 1: Company & Persona
+  companyName?: string;
   industry?: string;
+  persona?: OnboardingPersona;
+  // Step 2: Business Context
+  businessStage?: BusinessStage;
+  teamSize?: TeamSize;
+  fundingStatus?: FundingStatus;
+  // Step 3: Goals & Target Market
+  goals?: Goal[];
+  targetMarket?: string;
+  // Legacy fields (for backward compatibility)
+  businessName?: string;
   description?: string;
   templateId?: string;
   planId?: string;
@@ -90,22 +131,19 @@ export interface TemplateOption {
 }
 
 /**
- * Industry options for business details step
+ * Industry options for business details step (as per user journey doc)
  */
 export const INDUSTRY_OPTIONS = [
   'Technology',
-  'Retail',
   'Healthcare',
-  'Food & Beverage',
+  'Finance',
+  'Retail',
   'Manufacturing',
-  'Professional Services',
-  'Construction',
+  'Food',
+  'Services',
   'Education',
-  'Finance & Insurance',
-  'Real Estate',
-  'Transportation & Logistics',
-  'Arts & Entertainment',
-  'Non-Profit',
+  'Construction',
+  'Entertainment',
   'Other',
 ] as const;
 

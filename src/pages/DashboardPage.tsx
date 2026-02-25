@@ -5,10 +5,8 @@ import {
   Plus,
   FileText,
   Sparkles,
-  Zap,
-  Target,
-  BarChart3,
   ArrowRight,
+  FolderOpen,
 } from 'lucide-react';
 import { businessPlanService } from '../lib/business-plan-service';
 import { BusinessPlan } from '../lib/types';
@@ -155,10 +153,8 @@ export default function DashboardPage() {
           </div>
 
           {/* Stats skeleton */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[1, 2, 3, 4].map((i) => (
-              <SkeletonStatsCard key={i} />
-            ))}
+          <div className="max-w-sm">
+            <SkeletonStatsCard />
           </div>
 
           {/* Plans skeleton */}
@@ -177,36 +173,15 @@ export default function DashboardPage() {
     );
   }
 
-  const stats = [
-    {
-      title: cms('dashboard.totalPlans', 'dashboard.totalPlans'),
-      value: plans.length,
-      icon: <FileText className="h-6 w-6" />,
-    },
-    {
-      title: cms('dashboard.activePlans', 'dashboard.activePlans'),
-      value: plans.filter(p => p.status === 'active' || !p.status).length,
-      icon: <Target className="h-6 w-6" />,
-    },
-    {
-      title: cms('dashboard.recentPlans', 'dashboard.recentPlans'),
-      value: plans.filter(p => {
-        if (!p.createdAt) return false;
-        const created = new Date(p.createdAt);
-        const weekAgo = new Date();
-        weekAgo.setDate(weekAgo.getDate() - 7);
-        return created > weekAgo;
-      }).length,
-      icon: <Zap className="h-6 w-6" />,
-    },
-    {
-      title: cms('dashboard.completionRate', 'dashboard.completionRate'),
-      value: plans.length > 0
-        ? `${Math.round((plans.filter(p => p.status === 'Completed').length / plans.length) * 100)}%`
-        : '0%',
-      icon: <BarChart3 className="h-6 w-6" />,
-    }
-  ];
+  // Sort plans by updatedAt or createdAt descending
+  const sortedPlans = [...plans].sort((a, b) => {
+    const dateA = new Date(a.updatedAt || a.createdAt || 0);
+    const dateB = new Date(b.updatedAt || b.createdAt || 0);
+    return dateB.getTime() - dateA.getTime();
+  });
+
+  // Show only last 5 recent projects
+  const recentPlans = sortedPlans.slice(0, 5);
 
   return (
     <div className="min-h-screen">
@@ -252,18 +227,14 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Stats Cards Grid */}
-          <StaggerContainer className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 dashboard-stats">
-            {stats.map((stat) => (
-              <StaggerItem key={stat.title}>
-                <StatsCard
-                  title={stat.title}
-                  value={stat.value}
-                  icon={stat.icon}
-                />
-              </StaggerItem>
-            ))}
-          </StaggerContainer>
+          {/* Project Count Card */}
+          <div className="max-w-sm dashboard-stats">
+            <StatsCard
+              title={cms('dashboard.totalProjects', 'dashboard.totalProjects') || 'Total Projects'}
+              value={plans.length}
+              icon={<FolderOpen className="h-6 w-6" />}
+            />
+          </div>
 
           {/* Create New Plan Card */}
           <Card className="overflow-hidden dashboard-create-card group hover:shadow-card-hover transition-shadow border border-momentum-orange/30 rounded-xl bg-strategy-blue">
@@ -296,23 +267,25 @@ export default function DashboardPage() {
             </Link>
           </Card>
 
-          {/* Business Plans Section */}
+          {/* Recent Projects Section */}
           <Card className="dashboard-plans">
             <CardHeader className="border-b">
               <div className="flex items-center justify-between">
                 <div>
                   <CardTitle className="text-2xl">
-                    {cms('dashboard.yourPlans', 'dashboard.yourPlans')}
+                    {cms('dashboard.recentProjects', 'dashboard.recentProjects') || 'Recent Projects'}
                   </CardTitle>
                   <CardDescription>
-                    {plans.length} {plans.length === 1 ? cms('dashboard.plan', 'dashboard.plan') : cms('dashboard.plansTotal', 'dashboard.plansTotal')}
+                    {plans.length > 5
+                      ? `Showing ${recentPlans.length} of ${plans.length} projects`
+                      : `${plans.length} ${plans.length === 1 ? 'project' : 'projects'}`}
                   </CardDescription>
                 </div>
               </div>
             </CardHeader>
 
             <CardContent className="p-0">
-              {plans.length === 0 ? (
+              {recentPlans.length === 0 ? (
                 <div className="text-center py-16 px-6">
                   <div className="flex h-24 w-24 items-center justify-center rounded-lg bg-muted mx-auto mb-6">
                     <FileText className="h-10 w-10 text-muted-foreground" />
@@ -332,7 +305,7 @@ export default function DashboardPage() {
                 </div>
               ) : (
                 <StaggerContainer className="divide-y">
-                  {plans.map((plan) => {
+                  {recentPlans.map((plan) => {
                     const progress = planProgress[plan.id];
                     return (
                       <StaggerItem key={plan.id} className="p-4 lg:p-6">
@@ -352,6 +325,7 @@ export default function DashboardPage() {
                           translations={{
                             resume: cms('dashboard.resume', 'dashboard.resume'),
                             view: cms('dashboard.view', 'dashboard.view'),
+                            viewPlan: cms('dashboard.viewPlan', 'dashboard.viewPlan'),
                             noDescription: cms('dashboard.noDescription', 'dashboard.noDescription'),
                             delete: cms('dashboard.deletePlan', 'dashboard.deletePlan'),
                             duplicate: cms('dashboard.duplicatePlan', 'dashboard.duplicatePlan'),
@@ -360,6 +334,9 @@ export default function DashboardPage() {
                               completed: cms('dashboard.status.completed', 'dashboard.status.completed'),
                               active: cms('dashboard.status.active', 'dashboard.status.active'),
                               inProgress: cms('dashboard.status.inProgress', 'dashboard.status.inProgress'),
+                              generating: cms('dashboard.status.generating', 'dashboard.status.generating'),
+                              generated: cms('dashboard.status.generated', 'dashboard.status.generated'),
+                              exported: cms('dashboard.status.exported', 'dashboard.status.exported'),
                             },
                           }}
                         />

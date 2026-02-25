@@ -19,7 +19,10 @@ import {
   X,
   RefreshCw,
   Lightbulb,
-  XCircle
+  XCircle,
+  Building2,
+  UserPlus,
+  Calculator
 } from 'lucide-react';
 import { businessPlanService } from '../lib/business-plan-service';
 import { useTheme } from '../contexts/ThemeContext';
@@ -66,52 +69,68 @@ interface StepMetadata {
   questionCount: number;
 }
 
-// Default step info (fallback if API fails)
+// Default step info (fallback if API fails) - 7 sections
 const DEFAULT_STEP_INFO: StepInfo[] = [
   {
     number: 1,
-    title: 'Identity & Vision',
-    titleFr: 'Identité et Vision',
+    title: 'Business Information',
+    titleFr: 'Informations sur l\'entreprise',
     timeEstimate: '~3 min',
-    icon: Target
+    icon: Building2
   },
   {
     number: 2,
-    title: 'The Offering',
-    titleFr: 'L\'Offre',
+    title: 'Problem & Solution',
+    titleFr: 'Problème et Solution',
     timeEstimate: '~4 min',
-    icon: Briefcase
+    icon: Lightbulb
   },
   {
     number: 3,
-    title: 'Market Analysis',
-    titleFr: 'Analyse du Marché',
-    timeEstimate: '~5 min',
-    icon: TrendingUp
+    title: 'Market',
+    titleFr: 'Marché',
+    timeEstimate: '~4 min',
+    icon: Target
   },
   {
     number: 4,
-    title: 'Operations & People',
-    titleFr: 'Opérations et Équipe',
-    timeEstimate: '~4 min',
+    title: 'Competition',
+    titleFr: 'Concurrence',
+    timeEstimate: '~3 min',
     icon: Users
   },
   {
     number: 5,
-    title: 'Financials & Risks',
-    titleFr: 'Finances et Risques',
+    title: 'Revenue Model',
+    titleFr: 'Modèle de revenus',
     timeEstimate: '~4 min',
     icon: DollarSign
+  },
+  {
+    number: 6,
+    title: 'Team',
+    titleFr: 'Équipe',
+    timeEstimate: '~3 min',
+    icon: UserPlus
+  },
+  {
+    number: 7,
+    title: 'Financials',
+    titleFr: 'Finances',
+    timeEstimate: '~4 min',
+    icon: Calculator
   }
 ];
 
-// Icon mapping for dynamic icons
+// Icon mapping for dynamic icons - 7 sections
 const STEP_ICONS: Record<number, React.ElementType> = {
-  1: Target,
-  2: Briefcase,
-  3: TrendingUp,
+  1: Building2,
+  2: Lightbulb,
+  3: Target,
   4: Users,
-  5: DollarSign
+  5: DollarSign,
+  6: UserPlus,
+  7: Calculator
 };
 
 export default function WizardQuestionnairePage() {
@@ -335,7 +354,7 @@ export default function WizardQuestionnairePage() {
     const fetchStepMetadata = async () => {
       try {
         console.log('Fetching step metadata...');
-        const response = await apiClient.get(`/api/v2/questionnaire/steps?language=${language}`);
+        const response = await apiClient.get(`/api/v1/questionnaire-v2/steps?language=${language}`);
         console.log('Step metadata response:', response.data);
         if (response.data && Array.isArray(response.data)) {
           setStepMetadata(response.data);
@@ -512,12 +531,12 @@ export default function WizardQuestionnairePage() {
       const savedStep = localStorage.getItem(`questionnaire_step_${planId}`);
       if (savedStep) {
         const stepNum = parseInt(savedStep, 10);
-        if (stepNum >= 1 && stepNum <= 5) {
+        if (stepNum >= 1 && stepNum <= 7) {
           setCurrentStep(stepNum);
         }
       } else {
         // Find the first step with unanswered required questions
-        for (let step = 1; step <= 5; step++) {
+        for (let step = 1; step <= 7; step++) {
           const stepQuestions = mappedQuestions.filter(q => q.stepNumber === step);
           const requiredQuestions = stepQuestions.filter(q => q.isRequired);
           const hasUnanswered = requiredQuestions.some(q => !initialAnswers[q.id] || initialAnswers[q.id].trim().length < 10);
@@ -530,7 +549,7 @@ export default function WizardQuestionnairePage() {
 
       // Mark completed steps based on loaded answers
       const completed = new Set<number>();
-      for (let step = 1; step <= 5; step++) {
+      for (let step = 1; step <= 7; step++) {
         const stepQuestions = mappedQuestions.filter(q => q.stepNumber === step);
         const requiredQuestions = stepQuestions.filter(q => q.isRequired);
         const allAnswered = requiredQuestions.every(q => {
@@ -1080,7 +1099,7 @@ export default function WizardQuestionnairePage() {
   }, []);
 
   const handleNext = async () => {
-    if (canGoNext() && currentStep < 5) {
+    if (canGoNext() && currentStep < 7) {
       // Check if step is being completed for the first time
       if (!completedSteps.has(currentStep)) {
         setCompletedSteps(prev => new Set([...prev, currentStep]));
@@ -1098,7 +1117,7 @@ export default function WizardQuestionnairePage() {
         localStorage.setItem(`questionnaire_step_${planId}`, nextStep.toString());
       }
       setError(null);
-    } else if (currentStep === 5 && canGoNext()) {
+    } else if (currentStep === 7 && canGoNext()) {
       // All steps complete - redirect to generation page
       if (planId) {
         localStorage.removeItem(`questionnaire_step_${planId}`);
@@ -1635,7 +1654,7 @@ export default function WizardQuestionnairePage() {
           {stepInfo && (
             <WizardStep
               stepNumber={currentStep}
-              totalSteps={5}
+              totalSteps={7}
               title={cms('questionnaire.step_' + currentStep + '_title', '') || (language === 'fr' ? stepInfo.titleFr : stepInfo.title)}
               timeEstimate={stepInfo.timeEstimate}
               elapsedTime={elapsedTime}
@@ -1653,8 +1672,8 @@ export default function WizardQuestionnairePage() {
                   </div>
                 ) : (
                   <>
-                    {/* Show Financial Driver Input for Consultant persona in Step 5 */}
-                    {currentStep === 5 && persona === 'Consultant' && (
+                    {/* Show Financial Driver Input for Consultant persona in Financials step (7) */}
+                    {currentStep === 7 && persona === 'Consultant' && (
                       <FinancialDriverInput
                         persona={persona}
                         onCalculate={(projections) => {

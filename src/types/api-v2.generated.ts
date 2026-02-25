@@ -29,7 +29,7 @@ export class Client {
      * @return OK
      */
     audit(businessPlanId: string, section?: string | undefined, language?: string | undefined, signal?: AbortSignal): Promise<void> {
-        let url_ = this.baseUrl + "/api/v2/business-plans/{businessPlanId}/audit?";
+        let url_ = this.baseUrl + "/api/v1/business-plans/{businessPlanId}/audit?";
         if (businessPlanId === undefined || businessPlanId === null)
             throw new globalThis.Error("The parameter 'businessPlanId' must be defined.");
         url_ = url_.replace("{businessPlanId}", encodeURIComponent("" + businessPlanId));
@@ -102,7 +102,7 @@ export class Client {
      * @return OK
      */
     summary(businessPlanId: string, language?: string | undefined, signal?: AbortSignal): Promise<void> {
-        let url_ = this.baseUrl + "/api/v2/business-plans/{businessPlanId}/audit/summary?";
+        let url_ = this.baseUrl + "/api/v1/business-plans/{businessPlanId}/audit/summary?";
         if (businessPlanId === undefined || businessPlanId === null)
             throw new globalThis.Error("The parameter 'businessPlanId' must be defined.");
         url_ = url_.replace("{businessPlanId}", encodeURIComponent("" + businessPlanId));
@@ -163,7 +163,7 @@ export class Client {
      * @return OK
      */
     benchmarks(signal?: AbortSignal): Promise<void> {
-        let url_ = this.baseUrl + "/api/v2/benchmarks";
+        let url_ = this.baseUrl + "/api/v1/benchmarks";
         url_ = url_.replace(/[?&]$/, "");
 
         let options_: AxiosRequestConfig = {
@@ -210,7 +210,7 @@ export class Client {
      * @return OK
      */
     benchmarks2(industryCode: string, signal?: AbortSignal): Promise<void> {
-        let url_ = this.baseUrl + "/api/v2/benchmarks/{industryCode}";
+        let url_ = this.baseUrl + "/api/v1/benchmarks/{industryCode}";
         if (industryCode === undefined || industryCode === null)
             throw new globalThis.Error("The parameter 'industryCode' must be defined.");
         url_ = url_.replace("{industryCode}", encodeURIComponent("" + industryCode));
@@ -268,7 +268,7 @@ export class Client {
      * @return OK
      */
     compare(businessPlanId: string, industryCode?: string | undefined, signal?: AbortSignal): Promise<void> {
-        let url_ = this.baseUrl + "/api/v2/benchmarks/compare/{businessPlanId}?";
+        let url_ = this.baseUrl + "/api/v1/benchmarks/compare/{businessPlanId}?";
         if (businessPlanId === undefined || businessPlanId === null)
             throw new globalThis.Error("The parameter 'businessPlanId' must be defined.");
         url_ = url_.replace("{businessPlanId}", encodeURIComponent("" + businessPlanId));
@@ -331,7 +331,7 @@ export class Client {
      * @return OK
      */
     templates(persona?: string | undefined, language?: string | undefined, signal?: AbortSignal): Promise<void> {
-        let url_ = this.baseUrl + "/api/v2/questionnaire/templates?";
+        let url_ = this.baseUrl + "/api/v1/questionnaire-v2/templates?";
         if (persona === null)
             throw new globalThis.Error("The parameter 'persona' cannot be null.");
         else if (persona !== undefined)
@@ -394,7 +394,7 @@ export class Client {
      * @return OK
      */
     templates2(persona: string, language?: string | undefined, signal?: AbortSignal): Promise<void> {
-        let url_ = this.baseUrl + "/api/v2/questionnaire/templates/{persona}?";
+        let url_ = this.baseUrl + "/api/v1/questionnaire-v2/templates/{persona}?";
         if (persona === undefined || persona === null)
             throw new globalThis.Error("The parameter 'persona' must be defined.");
         url_ = url_.replace("{persona}", encodeURIComponent("" + persona));
@@ -457,7 +457,7 @@ export class Client {
      * @return OK
      */
     steps(stepNumber: number, persona?: string | undefined, language?: string | undefined, signal?: AbortSignal): Promise<void> {
-        let url_ = this.baseUrl + "/api/v2/questionnaire/steps/{stepNumber}?";
+        let url_ = this.baseUrl + "/api/v1/questionnaire-v2/steps/{stepNumber}?";
         if (stepNumber === undefined || stepNumber === null)
             throw new globalThis.Error("The parameter 'stepNumber' must be defined.");
         url_ = url_.replace("{stepNumber}", encodeURIComponent("" + stepNumber));
@@ -523,7 +523,7 @@ export class Client {
      * @return OK
      */
     questions(questionId: string, language?: string | undefined, signal?: AbortSignal): Promise<void> {
-        let url_ = this.baseUrl + "/api/v2/questionnaire/questions/{questionId}?";
+        let url_ = this.baseUrl + "/api/v1/questionnaire-v2/questions/{questionId}?";
         if (questionId === undefined || questionId === null)
             throw new globalThis.Error("The parameter 'questionId' must be defined.");
         url_ = url_.replace("{questionId}", encodeURIComponent("" + questionId));
@@ -585,7 +585,7 @@ export class Client {
      * @return OK
      */
     polishText(body?: PolishTextRequest | undefined, signal?: AbortSignal): Promise<void> {
-        let url_ = this.baseUrl + "/api/v2/questionnaire/polish-text";
+        let url_ = this.baseUrl + "/api/v1/questionnaire-v2/polish-text";
         url_ = url_.replace(/[?&]$/, "");
 
         const content_ = JSON.stringify(body);
@@ -643,7 +643,7 @@ export class Client {
      * @return OK
      */
     readiness(businessPlanId: string, signal?: AbortSignal): Promise<void> {
-        let url_ = this.baseUrl + "/api/v2/business-plans/{businessPlanId}/readiness";
+        let url_ = this.baseUrl + "/api/v1/business-plans/{businessPlanId}/readiness";
         if (businessPlanId === undefined || businessPlanId === null)
             throw new globalThis.Error("The parameter 'businessPlanId' must be defined.");
         url_ = url_.replace("{businessPlanId}", encodeURIComponent("" + businessPlanId));
@@ -700,7 +700,7 @@ export class Client {
      * @return OK
      */
     breakdown(businessPlanId: string, signal?: AbortSignal): Promise<void> {
-        let url_ = this.baseUrl + "/api/v2/business-plans/{businessPlanId}/readiness/breakdown";
+        let url_ = this.baseUrl + "/api/v1/business-plans/{businessPlanId}/readiness/breakdown";
         if (businessPlanId === undefined || businessPlanId === null)
             throw new globalThis.Error("The parameter 'businessPlanId' must be defined.");
         url_ = url_.replace("{businessPlanId}", encodeURIComponent("" + businessPlanId));
@@ -757,7 +757,7 @@ export class Client {
      * @return OK
      */
     recalculate(businessPlanId: string, signal?: AbortSignal): Promise<void> {
-        let url_ = this.baseUrl + "/api/v2/business-plans/{businessPlanId}/readiness/recalculate";
+        let url_ = this.baseUrl + "/api/v1/business-plans/{businessPlanId}/readiness/recalculate";
         if (businessPlanId === undefined || businessPlanId === null)
             throw new globalThis.Error("The parameter 'businessPlanId' must be defined.");
         url_ = url_.replace("{businessPlanId}", encodeURIComponent("" + businessPlanId));
@@ -815,7 +815,7 @@ export class Client {
      * @return OK
      */
     strategyMapPOST(businessPlanId: string, body?: SaveStrategyMapRequest | undefined, signal?: AbortSignal): Promise<void> {
-        let url_ = this.baseUrl + "/api/v2/business-plans/{businessPlanId}/strategy-map";
+        let url_ = this.baseUrl + "/api/v1/business-plans/{businessPlanId}/strategy-map";
         if (businessPlanId === undefined || businessPlanId === null)
             throw new globalThis.Error("The parameter 'businessPlanId' must be defined.");
         url_ = url_.replace("{businessPlanId}", encodeURIComponent("" + businessPlanId));
@@ -883,7 +883,7 @@ export class Client {
      * @return OK
      */
     strategyMapGET(businessPlanId: string, signal?: AbortSignal): Promise<void> {
-        let url_ = this.baseUrl + "/api/v2/business-plans/{businessPlanId}/strategy-map";
+        let url_ = this.baseUrl + "/api/v1/business-plans/{businessPlanId}/strategy-map";
         if (businessPlanId === undefined || businessPlanId === null)
             throw new globalThis.Error("The parameter 'businessPlanId' must be defined.");
         url_ = url_.replace("{businessPlanId}", encodeURIComponent("" + businessPlanId));
@@ -942,7 +942,7 @@ export class Client {
      * @return OK
      */
     view(token: string, viewerEmail?: string | undefined, viewerName?: string | undefined, signal?: AbortSignal): Promise<void> {
-        let url_ = this.baseUrl + "/api/v2/vault/{token}/view?";
+        let url_ = this.baseUrl + "/api/v1/vault/{token}/view?";
         if (token === undefined || token === null)
             throw new globalThis.Error("The parameter 'token' must be defined.");
         url_ = url_.replace("{token}", encodeURIComponent("" + token));
@@ -1015,7 +1015,7 @@ export class Client {
      * @return OK
      */
     validatePassword(token: string, body?: ValidatePasswordRequest | undefined, signal?: AbortSignal): Promise<void> {
-        let url_ = this.baseUrl + "/api/v2/vault/{token}/validate-password";
+        let url_ = this.baseUrl + "/api/v1/vault/{token}/validate-password";
         if (token === undefined || token === null)
             throw new globalThis.Error("The parameter 'token' must be defined.");
         url_ = url_.replace("{token}", encodeURIComponent("" + token));
@@ -1077,7 +1077,7 @@ export class Client {
      * @return OK
      */
     vaultPOST(businessPlanId: string, body?: CreateVaultShareRequest | undefined, signal?: AbortSignal): Promise<void> {
-        let url_ = this.baseUrl + "/api/v2/business-plans/{businessPlanId}/vault";
+        let url_ = this.baseUrl + "/api/v1/business-plans/{businessPlanId}/vault";
         if (businessPlanId === undefined || businessPlanId === null)
             throw new globalThis.Error("The parameter 'businessPlanId' must be defined.");
         url_ = url_.replace("{businessPlanId}", encodeURIComponent("" + businessPlanId));
@@ -1145,7 +1145,7 @@ export class Client {
      * @return OK
      */
     vaultGET(businessPlanId: string, signal?: AbortSignal): Promise<void> {
-        let url_ = this.baseUrl + "/api/v2/business-plans/{businessPlanId}/vault";
+        let url_ = this.baseUrl + "/api/v1/business-plans/{businessPlanId}/vault";
         if (businessPlanId === undefined || businessPlanId === null)
             throw new globalThis.Error("The parameter 'businessPlanId' must be defined.");
         url_ = url_.replace("{businessPlanId}", encodeURIComponent("" + businessPlanId));
@@ -1202,7 +1202,7 @@ export class Client {
      * @return OK
      */
     vaultGET2(businessPlanId: string, shareId: string, signal?: AbortSignal): Promise<void> {
-        let url_ = this.baseUrl + "/api/v2/business-plans/{businessPlanId}/vault/{shareId}";
+        let url_ = this.baseUrl + "/api/v1/business-plans/{businessPlanId}/vault/{shareId}";
         if (businessPlanId === undefined || businessPlanId === null)
             throw new globalThis.Error("The parameter 'businessPlanId' must be defined.");
         url_ = url_.replace("{businessPlanId}", encodeURIComponent("" + businessPlanId));
@@ -1262,7 +1262,7 @@ export class Client {
      * @return OK
      */
     vaultDELETE(businessPlanId: string, shareId: string, signal?: AbortSignal): Promise<void> {
-        let url_ = this.baseUrl + "/api/v2/business-plans/{businessPlanId}/vault/{shareId}";
+        let url_ = this.baseUrl + "/api/v1/business-plans/{businessPlanId}/vault/{shareId}";
         if (businessPlanId === undefined || businessPlanId === null)
             throw new globalThis.Error("The parameter 'businessPlanId' must be defined.");
         url_ = url_.replace("{businessPlanId}", encodeURIComponent("" + businessPlanId));
@@ -1322,7 +1322,7 @@ export class Client {
      * @return OK
      */
     analytics(businessPlanId: string, shareId: string, signal?: AbortSignal): Promise<void> {
-        let url_ = this.baseUrl + "/api/v2/business-plans/{businessPlanId}/vault/{shareId}/analytics";
+        let url_ = this.baseUrl + "/api/v1/business-plans/{businessPlanId}/vault/{shareId}/analytics";
         if (businessPlanId === undefined || businessPlanId === null)
             throw new globalThis.Error("The parameter 'businessPlanId' must be defined.");
         url_ = url_.replace("{businessPlanId}", encodeURIComponent("" + businessPlanId));

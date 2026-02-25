@@ -54,18 +54,46 @@ export const onboardingService = {
       // First, mark onboarding as complete
       await apiClient.post('/api/v1/onboarding/complete', request);
 
-      // Update user persona
+      // Update user persona and store in localStorage
+      const personaCapitalized = request.persona.charAt(0).toUpperCase() + request.persona.slice(1);
+      localStorage.setItem('userPersona', request.persona);
+
       await apiClient.post('/api/v1/user/persona', {
-        persona: request.persona.charAt(0).toUpperCase() + request.persona.slice(1),
+        persona: personaCapitalized,
       });
 
-      // Create the business plan
+      // Get or create organization
+      let organizationId: string;
+      try {
+        const orgsResponse = await apiClient.get<any>('/api/v1/organizations');
+        const orgs = orgsResponse.data?.value || orgsResponse.data || [];
+
+        if (orgs.length > 0) {
+          organizationId = orgs[0].id;
+        } else {
+          // Create a default organization
+          const newOrgResponse = await apiClient.post<any>('/api/v1/organizations', {
+            name: request.businessName || 'My Organization',
+            organizationType: request.persona === 'obnl' ? 'OBNL' : 'Startup',
+          });
+          const newOrg = newOrgResponse.data?.value || newOrgResponse.data;
+          organizationId = newOrg.id;
+        }
+      } catch (orgError) {
+        console.error('Failed to get/create organization:', orgError);
+        throw new Error('Failed to set up organization');
+      }
+
+      // Determine plan type based on persona
+      const planType = request.persona === 'obnl' ? 'StrategicPlan' : 'BusinessPlan';
+
+      // Create the business plan with required fields
       const planResponse = await apiClient.post<{ id: string }>('/api/v1/business-plans', {
         title: request.businessName,
         description: request.description,
-        industry: request.industry,
-        templateId: request.templateId,
-        persona: request.persona.charAt(0).toUpperCase() + request.persona.slice(1),
+        planType: planType,
+        organizationId: organizationId,
+        persona: personaCapitalized,
       });
 
       // Handle wrapped response format

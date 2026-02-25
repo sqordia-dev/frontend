@@ -28,7 +28,7 @@ export default defineConfig({
     // from its iframe; COOP blocks that and causes "COOP policy would block postMessage" errors.
     proxy: {
       '/api': {
-        target: 'http://localhost:5241',
+        target: 'http://localhost:5241',  // Use HTTP for Docker backend
         changeOrigin: true,
         secure: false,
         configure: (proxy, _options) => {

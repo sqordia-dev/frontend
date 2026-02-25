@@ -66,6 +66,8 @@ export interface BusinessPlan {
   persona?: PersonaType;
   status: string;
   createdAt: string;
+  updatedAt?: string;
+  isDeleted?: boolean;
   coverSettings?: {
     backgroundColor?: string;
     accentColor?: string;
@@ -78,6 +80,7 @@ export interface CreateBusinessPlanRequest {
   description?: string;
   industry?: string;
   businessType?: string;
+  planType?: 'BusinessPlan' | 'StrategicPlan';
   organizationId?: string;
   templateId?: string;
   persona?: PersonaType;
