@@ -475,17 +475,25 @@ export const adminService = {
       responseType: 'blob'
     });
 
-    // Check if response is actually a blob/file or an error response
-    if (response.data instanceof Blob) {
+    const data = response.data;
+
+    // Handle different response types
+    if (data instanceof Blob) {
       // Check if it's a JSON error response disguised as blob
-      if (response.data.type === 'application/json') {
-        const text = await response.data.text();
+      if (data.type === 'application/json') {
+        const text = await data.text();
         const errorData = JSON.parse(text);
         throw new Error(errorData.message || 'Export failed');
       }
-      return response.data;
+      return data;
     }
-    throw new Error('Invalid response from export endpoint');
+
+    // If response is not a Blob, try to create one from the data
+    if (data) {
+      return new Blob([data], { type: 'text/csv' });
+    }
+
+    throw new Error('No data received from export endpoint');
   },
 
   async bulkUpdateUserStatus(userIds: string[], status: string, reason: string): Promise<any> {
