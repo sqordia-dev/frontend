@@ -686,7 +686,36 @@ function QuestionnaireEditorContent() {
 
       {/* Content */}
       <main className="max-w-7xl mx-auto px-6 py-6">
-        {isLoading ? (
+        {/* Coming Soon for Consultant and OBNL */}
+        {(personaFilter === 'Consultant' || personaFilter === 'OBNL') ? (
+          <div className="flex flex-col items-center justify-center py-24">
+            <div className="relative">
+              {/* Background decoration */}
+              <div className="absolute -inset-4 bg-gradient-to-r from-slate-100 to-slate-50 rounded-3xl -z-10" />
+
+              {/* Icon */}
+              <div className="w-16 h-16 bg-white rounded-2xl shadow-sm border border-slate-200 flex items-center justify-center mx-auto mb-6">
+                <svg className="w-8 h-8 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+
+              {/* Badge */}
+              <div className="inline-flex items-center gap-2 bg-slate-900 text-white px-4 py-2 rounded-full text-sm font-medium mb-4">
+                <span className="w-2 h-2 bg-amber-400 rounded-full animate-pulse" />
+                Coming Soon
+              </div>
+            </div>
+
+            {/* Text content */}
+            <h3 className="text-xl font-semibold text-slate-900 mb-2 text-center">
+              {personaFilter} Questionnaire
+            </h3>
+            <p className="text-slate-500 text-center max-w-sm leading-relaxed">
+              We're building specialized questions tailored for {personaFilter === 'OBNL' ? 'non-profit organizations' : 'business consultants'}. Check back soon.
+            </p>
+          </div>
+        ) : isLoading ? (
           <div className="flex items-center justify-center py-20">
             <Loader2 size={32} className="animate-spin text-[#FF6B00]" />
           </div>
@@ -703,9 +732,17 @@ function QuestionnaireEditorContent() {
                     className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden"
                   >
                     {/* Step header */}
-                    <button
+                    <div
+                      role="button"
+                      tabIndex={0}
                       onClick={() => toggleStep(step.stepNumber)}
-                      className="w-full px-6 py-4 flex items-center justify-between hover:bg-slate-50 transition-colors group"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          toggleStep(step.stepNumber);
+                        }
+                      }}
+                      className="w-full px-6 py-4 flex items-center justify-between hover:bg-slate-50 transition-colors group cursor-pointer"
                     >
                       <StepTitleEditor
                         step={step}
@@ -714,7 +751,7 @@ function QuestionnaireEditorContent() {
                         onSave={updateStep}
                       />
                       {isExpanded ? <ChevronDown size={20} className="text-slate-400" /> : <ChevronRight size={20} className="text-slate-400" />}
-                    </button>
+                    </div>
 
                     {/* Questions list */}
                     {isExpanded && (
