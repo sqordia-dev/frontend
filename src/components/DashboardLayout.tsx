@@ -2,7 +2,7 @@ import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import {
   LayoutDashboard,
-  FileText,
+  // FileText, // Hidden for now - used by myPlans
   Plus,
   User,
   CreditCard,
@@ -123,7 +123,7 @@ function DashboardSidebar({
   const navigation = [
     { name: t('nav.dashboard'), href: '/dashboard', icon: LayoutDashboard },
     { name: t('nav.createPlan'), href: '/create-plan', icon: Plus },
-    { name: t('nav.myPlans'), href: '/dashboard', icon: FileText },
+    // { name: t('nav.myPlans'), href: '/dashboard', icon: FileText }, // Hidden for now
     { name: t('nav.subscription'), href: '/subscription', icon: CreditCard },
     { name: t('nav.invoices'), href: '/invoices', icon: Receipt },
     { name: t('nav.profile'), href: '/profile', icon: User },
