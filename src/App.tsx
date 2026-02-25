@@ -31,7 +31,7 @@ import AdminOverviewPage from './pages/admin/AdminOverviewPage';
 import AdminUsersPage from './pages/admin/AdminUsersPage';
 import AdminUserDetailPage from './pages/admin/AdminUserDetailPage';
 import AdminOrganizationsPage from './pages/admin/AdminOrganizationsPage';
-import AdminBusinessPlansPage from './pages/admin/AdminBusinessPlansPage';
+// import AdminBusinessPlansPage from './pages/admin/AdminBusinessPlansPage'; // Hidden for now
 import AdminAIPromptsPage from './pages/admin/AdminAIPromptsPage';
 import AdminActivityLogsPage from './pages/admin/AdminActivityLogsPage';
 import AdminSystemHealthPage from './pages/admin/AdminSystemHealthPage';
@@ -256,7 +256,7 @@ function App() {
           <Route path="users" element={<AdminUsersPage />} />
           <Route path="users/:userId" element={<AdminUserDetailPage />} />
           <Route path="organizations" element={<AdminOrganizationsPage />} />
-          <Route path="business-plans" element={<AdminBusinessPlansPage />} />
+          {/* <Route path="business-plans" element={<AdminBusinessPlansPage />} /> Hidden for now */}
           <Route path="templates" element={<AdminTemplatesPage />} />
           <Route path="prompts-studio" element={<AdminAIPromptsPage />} />
           <Route path="ai-prompts" element={<AdminAIPromptsPage />} />

@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import {
   LayoutDashboard,
   Users,
-  FileText,
+  // FileText, // Hidden for now - used by business-plans
   Brain,
   LogOut,
   Sun,
@@ -94,7 +94,7 @@ export default function AdminLayout() {
   const navigation = [
     { name: t('admin.nav.overview'), href: '/admin', icon: LayoutDashboard },
     { name: t('admin.nav.users'), href: '/admin/users', icon: Users },
-    { name: t('admin.nav.businessPlans'), href: '/admin/business-plans', icon: FileText },
+    // { name: t('admin.nav.businessPlans'), href: '/admin/business-plans', icon: FileText }, // Hidden for now
     { name: 'Content Manager', href: '/admin/cms', icon: Palette },
     { name: 'Prompt Registry', href: '/admin/prompt-registry', icon: Database },
     { name: 'AI Configuration', href: '/admin/ai-config', icon: Brain },
