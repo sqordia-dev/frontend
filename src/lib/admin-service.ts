@@ -474,7 +474,18 @@ export const adminService = {
     const response = await apiClient.get(`/api/v1/admin/users/export${queryString}`, {
       responseType: 'blob'
     });
-    return response.data;
+
+    // Check if response is actually a blob/file or an error response
+    if (response.data instanceof Blob) {
+      // Check if it's a JSON error response disguised as blob
+      if (response.data.type === 'application/json') {
+        const text = await response.data.text();
+        const errorData = JSON.parse(text);
+        throw new Error(errorData.message || 'Export failed');
+      }
+      return response.data;
+    }
+    throw new Error('Invalid response from export endpoint');
   },
 
   async bulkUpdateUserStatus(userIds: string[], status: string, reason: string): Promise<any> {
