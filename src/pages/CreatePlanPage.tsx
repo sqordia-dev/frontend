@@ -1,11 +1,14 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import {
   ArrowLeft,
   ArrowRight,
   AlertCircle,
   Sparkles,
   FileText,
+  Lightbulb,
+  Target,
+  Zap,
 } from 'lucide-react';
 import { businessPlanService } from '../lib/business-plan-service';
 import { organizationService } from '../lib/organization-service';
@@ -13,6 +16,12 @@ import { useCmsContent } from '../hooks/useCmsContent';
 import SEO from '../components/SEO';
 import { getCanonicalUrl } from '../utils/seo';
 import { getUserFriendlyError } from '../utils/error-messages';
+
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent } from '@/components/ui/card';
+import { cn } from '@/lib/utils';
 
 export default function CreatePlanPage() {
   const navigate = useNavigate();
@@ -95,8 +104,23 @@ export default function CreatePlanPage() {
     }
   };
 
+  const features = [
+    {
+      icon: <Lightbulb className="h-4 w-4" />,
+      text: "AI-powered content generation",
+    },
+    {
+      icon: <Target className="h-4 w-4" />,
+      text: "Bank-ready formatting",
+    },
+    {
+      icon: <Zap className="h-4 w-4" />,
+      text: "Complete in minutes",
+    },
+  ];
+
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-background">
       <SEO
         title={`${cms('create_plan.seo_title', '') || 'New Project'} | Sqordia`}
         description={
@@ -108,114 +132,136 @@ export default function CreatePlanPage() {
         nofollow={true}
       />
 
-      <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Header */}
-        <div className="mb-8">
-          <button
-            onClick={() => navigate('/dashboard')}
-            className="flex items-center gap-2 mb-8 hover:opacity-70 transition-opacity text-sm font-medium text-gray-500 dark:text-gray-400"
-          >
-            <ArrowLeft size={18} />
-            <span>Back to Dashboard</span>
-          </button>
+      {/* Background Pattern */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-momentum-orange/5 rounded-full blur-3xl" />
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-strategy-blue/5 rounded-full blur-3xl" />
+      </div>
 
-          <div className="text-center">
-            <div className="inline-flex items-center gap-3 px-5 py-2.5 rounded-full text-sm font-bold tracking-wide mb-6 shadow-lg relative overflow-hidden group bg-[#FF6B00] text-white">
-              <div className="absolute inset-0 rounded-full opacity-50 blur-xl group-hover:opacity-75 transition-opacity bg-[#FF6B00]" />
-              <Sparkles
-                size={16}
-                className="relative z-10 animate-pulse text-white"
-              />
-              <span className="relative z-10">AI-Powered</span>
+      <div className="relative max-w-xl mx-auto px-4 sm:px-6 py-8 sm:py-12 lg:py-16">
+        {/* Back Button */}
+        <Button
+          variant="ghost"
+          size="sm"
+          asChild
+          className="mb-8 -ml-2 text-muted-foreground hover:text-foreground"
+        >
+          <Link to="/dashboard">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to Dashboard
+          </Link>
+        </Button>
+
+        <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+          {/* Header */}
+          <div className="text-center mb-8">
+            {/* AI Badge */}
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold tracking-wide mb-6 bg-gradient-to-r from-momentum-orange to-[#ff8533] text-white shadow-lg shadow-momentum-orange/25">
+              <Sparkles className="h-3.5 w-3.5" />
+              <span>AI-Powered</span>
             </div>
 
-            <h1 className="text-3xl sm:text-4xl font-extrabold mb-4 tracking-tight text-[#1A2B47] dark:text-gray-50 font-heading">
-              Create New Project
+            <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground font-heading mb-3">
+              {cms('create_plan.title', '') || 'Create New Project'}
             </h1>
-            <p className="text-lg text-gray-500 dark:text-gray-400">
-              Give your project a name to get started
+            <p className="text-base text-muted-foreground max-w-md mx-auto">
+              {cms('create_plan.subtitle', '') || 'Give your project a name to get started with your AI-powered business plan'}
             </p>
           </div>
-        </div>
 
-        {/* Form Card */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden">
-          <div className="p-8 sm:p-10">
-            <form onSubmit={handleCreateProject} className="space-y-6">
-              {error && (
-                <div className="p-4 bg-red-50 dark:bg-red-900/20 rounded-xl flex items-start gap-3">
-                  <AlertCircle
-                    className="text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5"
-                    size={20}
-                  />
-                  <p className="text-sm text-red-700 dark:text-red-300">
-                    {error}
-                  </p>
-                </div>
-              )}
+          {/* Main Card */}
+          <Card className="border-0 shadow-xl shadow-black/5 bg-card">
+            <CardContent className="p-6 sm:p-8">
+              <form onSubmit={handleCreateProject} className="space-y-6">
+                {/* Error Alert */}
+                {error && (
+                  <div className="flex items-start gap-3 p-4 rounded-xl bg-destructive/10 border border-destructive/20 animate-in fade-in slide-in-from-top-2 duration-300">
+                    <AlertCircle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
+                    <p className="text-sm text-destructive font-medium">{error}</p>
+                  </div>
+                )}
 
-              <div>
-                <label
-                  htmlFor="projectName"
-                  className="block text-base font-bold mb-3 text-[#1A2B47] dark:text-gray-50"
-                >
-                  Project Name <span className="text-red-500">*</span>
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <FileText
-                      size={20}
-                      className="text-gray-400"
-                      aria-hidden="true"
+                {/* Project Name Input */}
+                <div className="space-y-3">
+                  <Label htmlFor="projectName" className="text-sm font-semibold text-foreground">
+                    Project Name <span className="text-destructive">*</span>
+                  </Label>
+                  <div className="relative group">
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                      <FileText className="h-5 w-5 text-muted-foreground/60 group-focus-within:text-momentum-orange transition-colors" />
+                    </div>
+                    <Input
+                      type="text"
+                      id="projectName"
+                      value={projectName}
+                      onChange={(e) => setProjectName(e.target.value)}
+                      placeholder="e.g., My Coffee Shop Business Plan"
+                      autoFocus
+                      className={cn(
+                        "h-12 pl-12 pr-4 text-base rounded-xl border-border/60",
+                        "bg-muted/30 hover:bg-muted/50 focus:bg-background",
+                        "transition-all duration-200",
+                        "focus:ring-2 focus:ring-momentum-orange/20 focus:border-momentum-orange"
+                      )}
                     />
                   </div>
-                  <input
-                    type="text"
-                    id="projectName"
-                    value={projectName}
-                    onChange={(e) => setProjectName(e.target.value)}
-                    placeholder="e.g., My Coffee Shop Business Plan"
-                    autoFocus
-                    className="w-full pl-12 pr-4 py-4 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#FF6B00] focus:border-[#FF6B00] text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 text-base transition-all"
-                  />
+                  <p className="text-xs text-muted-foreground">
+                    You can always change this later
+                  </p>
                 </div>
-                <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                  You can always change this later
-                </p>
+
+                {/* Submit Button */}
+                <Button
+                  type="submit"
+                  disabled={!projectName.trim() || loading || isLoadingOrg}
+                  className={cn(
+                    "w-full h-12 rounded-xl font-semibold text-base gap-2",
+                    "bg-momentum-orange hover:bg-momentum-orange/90 text-white",
+                    "shadow-lg shadow-momentum-orange/25 hover:shadow-xl hover:shadow-momentum-orange/30",
+                    "transition-all duration-200",
+                    "disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
+                  )}
+                >
+                  {loading ? (
+                    <>
+                      <div className="h-5 w-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      Creating...
+                    </>
+                  ) : isLoadingOrg ? (
+                    <>
+                      <div className="h-5 w-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      Loading...
+                    </>
+                  ) : (
+                    <>
+                      Start Building
+                      <ArrowRight className="h-5 w-5" />
+                    </>
+                  )}
+                </Button>
+              </form>
+            </CardContent>
+
+            {/* Features Footer */}
+            <div className="px-6 sm:px-8 py-5 border-t border-border/50 bg-muted/30">
+              <div className="flex flex-wrap justify-center gap-x-6 gap-y-2">
+                {features.map((feature, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center gap-2 text-xs text-muted-foreground"
+                  >
+                    <span className="text-momentum-orange">{feature.icon}</span>
+                    <span>{feature.text}</span>
+                  </div>
+                ))}
               </div>
+            </div>
+          </Card>
 
-              <button
-                type="submit"
-                disabled={!projectName.trim() || loading || isLoadingOrg}
-                className="w-full py-4 rounded-xl font-semibold shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 text-base text-white disabled:opacity-50 disabled:cursor-not-allowed bg-[#FF6B00] hover:bg-[#E55F00]"
-              >
-                {loading ? (
-                  <>
-                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    Creating...
-                  </>
-                ) : isLoadingOrg ? (
-                  <>
-                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    Loading...
-                  </>
-                ) : (
-                  <>
-                    Start Building
-                    <ArrowRight size={20} />
-                  </>
-                )}
-              </button>
-            </form>
-          </div>
-
-          {/* Info footer */}
-          <div className="px-8 sm:px-10 py-5 bg-gray-50 dark:bg-gray-900/50 border-t border-gray-100 dark:border-gray-700">
-            <p className="text-sm text-center text-gray-500 dark:text-gray-400">
-              After creating your project, you'll answer a few questions to help
-              our AI generate your personalized business plan.
-            </p>
-          </div>
+          {/* Help Text */}
+          <p className="text-center text-sm text-muted-foreground mt-6 max-w-sm mx-auto">
+            After creating your project, you'll answer a few questions to help our AI generate your personalized business plan.
+          </p>
         </div>
       </div>
     </div>

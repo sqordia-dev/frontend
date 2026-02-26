@@ -13,11 +13,11 @@ interface CmsLivePreviewProps {
   isDraft?: boolean;
 }
 
-// Device frame dimensions
+// Modern device dimensions (iPhone 15 Pro, iPad Pro 11")
 const deviceConfig = {
-  desktop: { width: 1280, height: 800, scale: 0.32, frameClass: '' },
-  tablet: { width: 768, height: 1024, scale: 0.38, frameClass: 'rounded-[2rem]' },
-  mobile: { width: 375, height: 812, scale: 0.48, frameClass: 'rounded-[2.5rem]' },
+  desktop: { width: 1440, height: 900, scale: 0.28 },
+  tablet: { width: 820, height: 1180, scale: 0.35 },
+  mobile: { width: 393, height: 852, scale: 0.45 },
 };
 
 export function CmsLivePreview({
@@ -32,9 +32,7 @@ export function CmsLivePreview({
 
   // Get content value with edited fallback
   const getContent = (blockKey: string): string => {
-    // Try exact match first
     let block = blocks.find(b => b.blockKey === blockKey);
-    // Fallback to suffix match
     if (!block) {
       block = blocks.find(b => b.blockKey.endsWith(blockKey) || b.blockKey.endsWith(`.${blockKey}`));
     }
@@ -50,25 +48,18 @@ export function CmsLivePreview({
 
   const renderHeroPreview = () => (
     <div className="relative z-10 px-6 py-12 text-center bg-gradient-to-b from-slate-50 to-white">
-      {/* Badge */}
       <div className="inline-flex items-center px-3 py-1.5 rounded-full bg-orange-50 text-[#FF6B00] text-[9px] font-bold uppercase tracking-wider mb-6 border border-orange-100">
         {getContent('landing.hero.badge_trusted') || 'AI-Powered Planning'}
       </div>
-
-      {/* Headline */}
       <h1 className="text-2xl font-extrabold text-slate-900 leading-tight mb-3 px-2">
         {getContent('landing.hero.headline_line1') || 'Transform Your Ideas Into'}
         <span className="block text-[#FF6B00]">
           {getContent('landing.hero.headline_highlight') || 'Professional Business Plans'}
         </span>
       </h1>
-
-      {/* Subheadline */}
       <p className="text-slate-500 text-[11px] leading-relaxed mb-6 px-4">
         {(getContent('landing.hero.subheadline') || 'Create bank-ready business plans in under 60 minutes with AI-powered guidance.').slice(0, 120)}
       </p>
-
-      {/* CTA Buttons */}
       <div className="flex flex-col sm:flex-row gap-2 justify-center mb-8">
         <button className="bg-[#FF6B00] text-white px-6 py-2.5 rounded-lg font-bold text-[11px] shadow-lg shadow-orange-200 inline-flex items-center justify-center gap-1.5">
           {getContent('landing.hero.cta_primary') || 'Start Free Trial'}
@@ -78,8 +69,6 @@ export function CmsLivePreview({
           {getContent('landing.hero.cta_secondary') || 'View Examples'}
         </button>
       </div>
-
-      {/* Trust badges */}
       <div className="flex flex-wrap items-center justify-center gap-4 text-[9px] text-slate-400">
         <span className="flex items-center gap-1">
           <CheckCircle size={10} className="text-green-500" />
@@ -95,7 +84,6 @@ export function CmsLivePreview({
 
   const renderFeaturesPreview = () => (
     <div className="px-4 py-8 bg-slate-50">
-      {/* Header */}
       <div className="text-center mb-6">
         <span className="text-[9px] font-bold uppercase tracking-wider text-[#FF6B00] mb-2 block">
           {getContent('landing.features.badge') || 'How It Works'}
@@ -107,8 +95,6 @@ export function CmsLivePreview({
           {(getContent('landing.features.subtitle') || 'Transform your business idea into a professional plan').slice(0, 60)}...
         </p>
       </div>
-
-      {/* Feature cards */}
       <div className="space-y-3">
         {[1, 2, 3].map((step) => (
           <div key={step} className="bg-white rounded-xl p-3 border border-slate-100 shadow-sm">
@@ -133,7 +119,6 @@ export function CmsLivePreview({
 
   const renderValuePropsPreview = () => (
     <div className="px-4 py-8 bg-white">
-      {/* Header */}
       <div className="text-center mb-6">
         <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400 mb-2 block">
           {getContent('landing.valueProps.badge') || 'Why Sqordia'}
@@ -142,8 +127,6 @@ export function CmsLivePreview({
           {getContent('landing.valueProps.title') || 'Everything You Need'}
         </h2>
       </div>
-
-      {/* Value prop cards */}
       <div className="grid grid-cols-2 gap-2">
         {[1, 2, 3, 4].map((i) => (
           <div key={i} className="bg-slate-50 rounded-lg p-3 border border-slate-100">
@@ -184,7 +167,6 @@ export function CmsLivePreview({
 
   const renderFaqPreview = () => (
     <div className="px-4 py-8 bg-slate-50">
-      {/* Header */}
       <div className="text-center mb-6">
         <span className="text-[9px] font-bold uppercase tracking-wider text-amber-600 mb-2 block">
           {getContent('landing.faq.badge') || 'FAQ'}
@@ -194,8 +176,6 @@ export function CmsLivePreview({
           <span className="text-[#FF6B00]">{getContent('landing.faq.title_highlight') || 'Questions'}</span>
         </h2>
       </div>
-
-      {/* FAQ items */}
       <div className="space-y-2">
         {[1, 2, 3].map((i) => (
           <div key={i} className="bg-white rounded-lg p-3 border border-slate-100">
@@ -214,7 +194,6 @@ export function CmsLivePreview({
 
   const renderTestimonialsPreview = () => (
     <div className="px-4 py-8 bg-white">
-      {/* Header */}
       <div className="text-center mb-6">
         <span className="text-[9px] font-bold uppercase tracking-wider text-emerald-600 mb-2 block">
           {getContent('landing.testimonials.badge') || 'Success Stories'}
@@ -223,8 +202,6 @@ export function CmsLivePreview({
           {getContent('landing.testimonials.title') || 'Real Results'}
         </h2>
       </div>
-
-      {/* Testimonial cards */}
       <div className="space-y-3">
         {[1, 2].map((i) => (
           <div key={i} className="bg-slate-50 rounded-xl p-3 border border-slate-100">
@@ -280,10 +257,8 @@ export function CmsLivePreview({
     </div>
   );
 
-  // Render preview based on section
   const renderPreview = () => {
     const section = sectionKey.toLowerCase();
-
     if (section.includes('hero')) return renderHeroPreview();
     if (section.includes('features')) return renderFeaturesPreview();
     if (section.includes('valueprops')) return renderValuePropsPreview();
@@ -291,162 +266,247 @@ export function CmsLivePreview({
     if (section.includes('faq')) return renderFaqPreview();
     if (section.includes('testimonials')) return renderTestimonialsPreview();
     if (section.includes('finalcta') || section.includes('cta')) return renderFinalCtaPreview();
-
     return renderDefaultPreview();
   };
 
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Device Frame Renderers
+  // ─────────────────────────────────────────────────────────────────────────────
+
+  const renderMobileFrame = () => (
+    <div className="relative">
+      {/* iPhone 15 Pro Frame */}
+      <div className="relative bg-[#1a1a1a] rounded-[3rem] p-[3px] shadow-2xl shadow-black/30">
+        {/* Titanium edge effect */}
+        <div className="absolute inset-0 rounded-[3rem] bg-gradient-to-br from-[#3a3a3a] via-[#1a1a1a] to-[#2a2a2a]" />
+
+        {/* Inner bezel */}
+        <div className="relative bg-black rounded-[2.8rem] p-[10px]">
+          {/* Screen */}
+          <div
+            className="relative bg-white rounded-[2.2rem] overflow-hidden"
+            style={{
+              width: config.width * config.scale,
+              height: config.height * config.scale,
+            }}
+          >
+            {/* Dynamic Island */}
+            <div className="absolute top-2 left-1/2 -translate-x-1/2 z-20 flex items-center justify-center">
+              <div className="w-[90px] h-[28px] bg-black rounded-full flex items-center justify-center gap-2">
+                <div className="w-[10px] h-[10px] rounded-full bg-[#1a1a1a] ring-1 ring-[#2a2a2a]" />
+              </div>
+            </div>
+
+            {/* Status bar */}
+            <div className="absolute top-0 left-0 right-0 h-12 bg-gradient-to-b from-black/5 to-transparent z-10 flex items-end justify-between px-6 pb-1">
+              <span className="text-[10px] font-semibold text-slate-900">9:41</span>
+              <div className="flex items-center gap-1">
+                <div className="flex gap-[2px]">
+                  {[1,2,3,4].map(i => (
+                    <div key={i} className={cn("w-[3px] rounded-sm", i <= 3 ? "bg-slate-900" : "bg-slate-300")} style={{height: 4 + i * 2}} />
+                  ))}
+                </div>
+                <div className="text-[9px] text-slate-900 ml-1">5G</div>
+                <div className="w-6 h-3 rounded-sm bg-slate-900 relative ml-1">
+                  <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-[2px] w-[2px] h-[4px] bg-slate-900 rounded-r-sm" />
+                </div>
+              </div>
+            </div>
+
+            {/* Scaled content */}
+            <div
+              className="origin-top-left overflow-y-auto overflow-x-hidden pt-12"
+              style={{
+                width: config.width,
+                height: config.height,
+                transform: `scale(${config.scale})`,
+              }}
+            >
+              {renderPreview()}
+            </div>
+
+            {/* Home indicator */}
+            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-[120px] h-[4px] bg-black/80 rounded-full" />
+          </div>
+        </div>
+
+        {/* Side buttons */}
+        <div className="absolute left-[-2px] top-[100px] w-[3px] h-[30px] bg-[#2a2a2a] rounded-l-sm" />
+        <div className="absolute left-[-2px] top-[150px] w-[3px] h-[55px] bg-[#2a2a2a] rounded-l-sm" />
+        <div className="absolute left-[-2px] top-[215px] w-[3px] h-[55px] bg-[#2a2a2a] rounded-l-sm" />
+        <div className="absolute right-[-2px] top-[140px] w-[3px] h-[80px] bg-[#2a2a2a] rounded-r-sm" />
+      </div>
+    </div>
+  );
+
+  const renderTabletFrame = () => (
+    <div className="relative">
+      {/* iPad Pro 11" Frame */}
+      <div className="relative bg-[#e4e4e4] rounded-[2rem] p-[2px] shadow-2xl shadow-black/20">
+        {/* Aluminum edge */}
+        <div className="absolute inset-0 rounded-[2rem] bg-gradient-to-br from-[#f0f0f0] via-[#d0d0d0] to-[#e0e0e0]" />
+
+        {/* Inner bezel */}
+        <div className="relative bg-black rounded-[1.9rem] p-[8px]">
+          {/* Screen */}
+          <div
+            className="relative bg-white rounded-[1.2rem] overflow-hidden"
+            style={{
+              width: config.width * config.scale,
+              height: config.height * config.scale,
+            }}
+          >
+            {/* Front camera */}
+            <div className="absolute top-3 left-1/2 -translate-x-1/2 w-[6px] h-[6px] bg-[#1a1a1a] rounded-full z-20 ring-1 ring-[#2a2a2a]" />
+
+            {/* Status bar */}
+            <div className="absolute top-0 left-0 right-0 h-6 bg-white z-10 flex items-center justify-between px-4">
+              <span className="text-[10px] font-semibold text-slate-900">9:41</span>
+              <div className="flex items-center gap-2">
+                <div className="text-[9px] text-slate-900">Wi-Fi</div>
+                <div className="w-5 h-2.5 rounded-sm bg-slate-900 relative">
+                  <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-[2px] w-[2px] h-[4px] bg-slate-900 rounded-r-sm" />
+                </div>
+              </div>
+            </div>
+
+            {/* Scaled content */}
+            <div
+              className="origin-top-left overflow-y-auto overflow-x-hidden pt-6"
+              style={{
+                width: config.width,
+                height: config.height,
+                transform: `scale(${config.scale})`,
+              }}
+            >
+              {renderPreview()}
+            </div>
+
+            {/* Home indicator */}
+            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-[100px] h-[4px] bg-black/60 rounded-full" />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderDesktopFrame = () => (
+    <div className="relative">
+      {/* MacBook-style frame */}
+      <div className="relative">
+        {/* Screen bezel */}
+        <div className="bg-[#1a1a1a] rounded-t-xl p-[6px] pb-0">
+          {/* Camera notch */}
+          <div className="absolute top-[3px] left-1/2 -translate-x-1/2 w-[6px] h-[6px] bg-[#2a2a2a] rounded-full ring-1 ring-[#3a3a3a]" />
+
+          {/* Screen */}
+          <div
+            className="bg-white rounded-t-lg overflow-hidden"
+            style={{
+              width: config.width * config.scale,
+              height: config.height * config.scale,
+            }}
+          >
+            {/* Browser chrome */}
+            <div className="h-8 bg-gradient-to-b from-slate-100 to-slate-50 border-b border-slate-200 flex items-center px-3 gap-3 shrink-0">
+              <div className="flex gap-1.5">
+                <div className="w-3 h-3 rounded-full bg-[#ff5f57] shadow-inner" />
+                <div className="w-3 h-3 rounded-full bg-[#febc2e] shadow-inner" />
+                <div className="w-3 h-3 rounded-full bg-[#28c840] shadow-inner" />
+              </div>
+              <div className="flex-1 max-w-md mx-auto">
+                <div className="bg-white h-5 rounded-md border border-slate-200 text-[9px] text-slate-400 flex items-center justify-center px-3 shadow-inner">
+                  <span className="text-slate-300 mr-1">🔒</span>
+                  sqordia.app
+                </div>
+              </div>
+              <div className="w-16" />
+            </div>
+
+            {/* Scaled content */}
+            <div
+              className="origin-top-left overflow-y-auto overflow-x-hidden"
+              style={{
+                width: config.width,
+                height: config.height - 32,
+                transform: `scale(${config.scale})`,
+              }}
+            >
+              {renderPreview()}
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom chin / hinge */}
+        <div className="h-4 bg-gradient-to-b from-[#1a1a1a] to-[#2a2a2a] rounded-b-sm" />
+
+        {/* Base */}
+        <div className="relative">
+          <div className="h-3 bg-gradient-to-b from-[#c0c0c0] to-[#a0a0a0] rounded-b-lg mx-[-4px]" />
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-20 h-1 bg-[#888] rounded-b-sm" />
+        </div>
+      </div>
+    </div>
+  );
+
   return (
-    <aside className="flex w-full h-full border-l border-gray-200 bg-slate-100/50 flex-col">
+    <aside className="flex w-full h-full border-l border-border/50 bg-muted/30 flex-col">
       {/* Header */}
-      <div className="h-14 border-b border-gray-200 flex items-center justify-between px-6 bg-white">
-        <div className="flex items-center gap-2">
-          <Eye size={14} className="text-slate-400" />
-          <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-            Live Preview
-          </span>
+      <div className="h-14 border-b border-border/50 flex items-center justify-between px-6 bg-card">
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <Eye size={14} />
+            <span className="text-xs font-semibold uppercase tracking-wider">
+              Live Preview
+            </span>
+          </div>
           {isDraft && (
-            <span className="px-1.5 py-0.5 bg-amber-100 text-amber-700 text-[9px] font-bold uppercase rounded">
+            <span className="px-2 py-0.5 bg-amber-100 text-amber-700 text-[10px] font-bold uppercase rounded-md">
               Draft
             </span>
           )}
         </div>
 
         {/* Device toggle */}
-        <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-lg">
-          <button
-            onClick={() => onDeviceChange('desktop')}
-            className={cn(
-              'p-1.5 rounded-md transition-all',
-              device === 'desktop'
-                ? 'bg-white shadow-sm text-[#FF6B00]'
-                : 'text-slate-400 hover:text-slate-600'
-            )}
-            title="Desktop preview"
-          >
-            <Monitor size={16} />
-          </button>
-          <button
-            onClick={() => onDeviceChange('tablet')}
-            className={cn(
-              'p-1.5 rounded-md transition-all',
-              device === 'tablet'
-                ? 'bg-white shadow-sm text-[#FF6B00]'
-                : 'text-slate-400 hover:text-slate-600'
-            )}
-            title="Tablet preview"
-          >
-            <Tablet size={16} />
-          </button>
-          <button
-            onClick={() => onDeviceChange('mobile')}
-            className={cn(
-              'p-1.5 rounded-md transition-all',
-              device === 'mobile'
-                ? 'bg-white shadow-sm text-[#FF6B00]'
-                : 'text-slate-400 hover:text-slate-600'
-            )}
-            title="Mobile preview"
-          >
-            <Smartphone size={16} />
-          </button>
+        <div className="flex items-center gap-1 bg-muted p-1 rounded-lg">
+          {[
+            { key: 'desktop', icon: Monitor, label: 'Desktop' },
+            { key: 'tablet', icon: Tablet, label: 'iPad Pro' },
+            { key: 'mobile', icon: Smartphone, label: 'iPhone 15' },
+          ].map(({ key, icon: Icon, label }) => (
+            <button
+              key={key}
+              onClick={() => onDeviceChange(key as PreviewDevice)}
+              className={cn(
+                'p-2 rounded-md transition-all duration-200',
+                device === key
+                  ? 'bg-card shadow-sm text-momentum-orange'
+                  : 'text-muted-foreground hover:text-foreground'
+              )}
+              title={`${label} preview`}
+            >
+              <Icon size={16} />
+            </button>
+          ))}
         </div>
       </div>
 
       {/* Preview area */}
-      <div className="flex-1 p-6 overflow-hidden flex items-start justify-center">
+      <div className="flex-1 p-8 overflow-auto flex items-start justify-center bg-gradient-to-br from-slate-100 via-slate-50 to-white dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
         <div className="relative">
-          {/* Device frame */}
-          <div
-            className={cn(
-              'relative bg-slate-800 shadow-2xl transition-all duration-300',
-              config.frameClass,
-              device === 'mobile' && 'p-2 pt-6 pb-4',
-              device === 'tablet' && 'p-3 pt-4 pb-6',
-              device === 'desktop' && 'rounded-lg'
-            )}
-            style={{
-              width: device === 'desktop' ? config.width * config.scale + 16 : undefined,
-            }}
-          >
-            {/* Mobile notch */}
-            {device === 'mobile' && (
-              <div className="absolute top-2 left-1/2 -translate-x-1/2 w-20 h-5 bg-slate-900 rounded-full flex items-center justify-center z-10">
-                <div className="w-2 h-2 rounded-full bg-slate-700" />
-              </div>
-            )}
-
-            {/* Tablet camera */}
-            {device === 'tablet' && (
-              <div className="absolute top-1.5 left-1/2 -translate-x-1/2 w-2 h-2 bg-slate-700 rounded-full" />
-            )}
-
-            {/* Screen container */}
-            <div
-              className={cn(
-                'bg-white overflow-hidden relative',
-                device === 'mobile' && 'rounded-[1.5rem]',
-                device === 'tablet' && 'rounded-xl',
-                device === 'desktop' && 'rounded-t-lg'
-              )}
-              style={{
-                width: config.width * config.scale,
-                height: config.height * config.scale,
-              }}
-            >
-              {/* Browser chrome for desktop */}
-              {device === 'desktop' && (
-                <div className="h-7 bg-slate-100 border-b border-slate-200 flex items-center px-3 gap-2 shrink-0">
-                  <div className="flex gap-1">
-                    <div className="w-2 h-2 rounded-full bg-red-300" />
-                    <div className="w-2 h-2 rounded-full bg-yellow-300" />
-                    <div className="w-2 h-2 rounded-full bg-green-300" />
-                  </div>
-                  <div className="flex-1 bg-white h-4 rounded border border-slate-200 text-[8px] text-slate-400 flex items-center px-2 mx-2">
-                    sqordia.com/preview
-                  </div>
-                </div>
-              )}
-
-              {/* Scaled content */}
-              <div
-                className="origin-top-left overflow-y-auto overflow-x-hidden"
-                style={{
-                  width: config.width,
-                  height: device === 'desktop' ? config.height - 28 : config.height,
-                  transform: `scale(${config.scale})`,
-                }}
-              >
-                {renderPreview()}
-              </div>
-
-              {/* Draft watermark overlay */}
-              {isDraft && (
-                <div className="absolute inset-0 pointer-events-none flex items-center justify-center overflow-hidden">
-                  <div
-                    className="text-[60px] font-black text-slate-900/[0.03] uppercase tracking-widest whitespace-nowrap"
-                    style={{ transform: 'rotate(-30deg)' }}
-                  >
-                    DRAFT PREVIEW
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Mobile home indicator */}
-            {device === 'mobile' && (
-              <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 w-24 h-1 bg-slate-600 rounded-full" />
-            )}
-
-            {/* Tablet home button */}
-            {device === 'tablet' && (
-              <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-8 h-8 border-2 border-slate-600 rounded-full" />
-            )}
-          </div>
+          {device === 'mobile' && renderMobileFrame()}
+          {device === 'tablet' && renderTabletFrame()}
+          {device === 'desktop' && renderDesktopFrame()}
 
           {/* Device label */}
-          <div className="text-center mt-4">
-            <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wider">
-              {device} • {config.width} × {config.height}
+          <div className="text-center mt-6">
+            <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
+              {device === 'mobile' && 'iPhone 15 Pro'}
+              {device === 'tablet' && 'iPad Pro 11"'}
+              {device === 'desktop' && 'MacBook Pro'}
+              <span className="text-muted-foreground/50 ml-2">
+                {config.width} × {config.height}
+              </span>
             </span>
           </div>
         </div>

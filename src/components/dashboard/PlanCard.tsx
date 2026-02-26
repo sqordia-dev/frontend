@@ -1,7 +1,6 @@
 import * as React from "react";
 import { Link } from "react-router-dom";
-import { FileText, Calendar, ArrowRight, Trash2, Copy } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
+import { FileText, Calendar, ArrowRight, Trash2, Copy, MoreVertical, CheckCircle2, Clock, Loader2, Download } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -47,34 +46,55 @@ export interface PlanCardProps {
 }
 
 /**
- * Status badge variants according to user journey:
- * - Draft: Gray (secondary)
- * - Generating: Orange (warning)
- * - Complete: Green (success)
- * - Exported: Navy (info)
+ * Status configuration for visual styling
  */
-const getStatusVariant = (status?: string): "success" | "warning" | "info" | "secondary" | "destructive" | "outline" | "default" => {
-  switch (status?.toLowerCase()) {
-    case "complete":
-    case "completed":
-      return "success";
-    case "generated":
-      return "success";
-    case "generating":
-      return "warning";
-    case "exported":
-      return "info";
-    case "draft":
-    default:
-      return "secondary";
-  }
+const statusConfig: Record<string, {
+  variant: "success" | "warning" | "info" | "secondary" | "default";
+  icon: React.ReactNode;
+  dotColor: string;
+}> = {
+  complete: {
+    variant: "success",
+    icon: <CheckCircle2 className="h-3 w-3" />,
+    dotColor: "bg-emerald-500",
+  },
+  completed: {
+    variant: "success",
+    icon: <CheckCircle2 className="h-3 w-3" />,
+    dotColor: "bg-emerald-500",
+  },
+  generated: {
+    variant: "success",
+    icon: <CheckCircle2 className="h-3 w-3" />,
+    dotColor: "bg-emerald-500",
+  },
+  generating: {
+    variant: "warning",
+    icon: <Loader2 className="h-3 w-3 animate-spin" />,
+    dotColor: "bg-amber-500",
+  },
+  exported: {
+    variant: "info",
+    icon: <Download className="h-3 w-3" />,
+    dotColor: "bg-blue-500",
+  },
+  draft: {
+    variant: "secondary",
+    icon: <Clock className="h-3 w-3" />,
+    dotColor: "bg-slate-400",
+  },
+};
+
+const getStatusConfig = (status?: string) => {
+  const key = status?.toLowerCase() || "draft";
+  return statusConfig[key] || statusConfig.draft;
 };
 
 const getStatusLabel = (
   status?: string,
   translations?: PlanCardProps["translations"]
 ) => {
-  if (!status) return "Draft";
+  if (!status) return translations?.status?.draft || "Draft";
   const statusLower = status.toLowerCase();
   switch (statusLower) {
     case "draft":
@@ -115,6 +135,7 @@ export function PlanCard({
 }: PlanCardProps) {
   const statusLower = status?.toLowerCase();
   const isGenerated = statusLower === "generated";
+  const isGenerating = statusLower === "generating";
   const isDraft =
     (status === "Draft" || status === "draft" || !isComplete) && !isGenerated;
 
@@ -130,40 +151,121 @@ export function PlanCard({
     onDuplicate?.(id);
   };
 
+  const config = getStatusConfig(status);
+
+  // Determine the link destination
+  const linkTo = isDraft
+    ? `/questionnaire/${id}${nextQuestionId ? `#question-${nextQuestionId}` : ""}`
+    : isGenerated
+    ? `/plans/${id}/preview`
+    : `/plans/${id}`;
+
+  // Action button text
+  const actionText = isDraft
+    ? translations?.resume || "Resume"
+    : isGenerated
+    ? translations?.viewPlan || "View Plan"
+    : translations?.view || "View";
+
   return (
-    <Card
+    <div
       className={cn(
-        "group relative transition-all hover:shadow-md",
+        "group relative rounded-xl border bg-card transition-all duration-200",
+        "hover:shadow-md hover:border-primary/20",
+        isGenerating && "border-amber-200/50 dark:border-amber-800/30",
         className
       )}
     >
-      <CardContent className="p-6">
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-          <div className="flex-1 min-w-0 flex items-start gap-4">
-            <div className="flex-shrink-0 flex h-12 w-12 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-              <FileText className="h-6 w-6" />
+      {/* Left accent border */}
+      <div className={cn(
+        "absolute left-0 top-0 bottom-0 w-1 rounded-l-xl transition-all duration-200",
+        config.dotColor,
+        "opacity-0 group-hover:opacity-100"
+      )} />
+
+      <div className="p-5 lg:p-6">
+        <div className="flex flex-col lg:flex-row lg:items-center gap-4">
+          {/* Icon and Content */}
+          <div className="flex items-start gap-4 flex-1 min-w-0">
+            {/* Plan Icon */}
+            <div className={cn(
+              "flex h-11 w-11 items-center justify-center rounded-lg shrink-0 transition-all duration-200",
+              "bg-muted/80 text-muted-foreground",
+              "group-hover:bg-strategy-blue group-hover:text-white"
+            )}>
+              <FileText className="h-5 w-5" />
             </div>
 
-            <div className="flex-1 min-w-0">
-              <h3 className="text-lg font-semibold truncate group-hover:text-primary transition-colors">
-                {title || "Untitled Plan"}
-              </h3>
-              <p className="text-sm text-muted-foreground line-clamp-2 mt-1">
+            {/* Content */}
+            <div className="flex-1 min-w-0 space-y-2">
+              <div className="flex items-start justify-between gap-3">
+                <h3 className="text-base font-semibold text-foreground truncate group-hover:text-strategy-blue transition-colors">
+                  {title || "Untitled Plan"}
+                </h3>
+
+                {/* Mobile: Actions */}
+                <div className="flex lg:hidden items-center gap-1">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground">
+                        <span className="sr-only">Open menu</span>
+                        <MoreVertical className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-40">
+                      <DropdownMenuItem asChild>
+                        <Link to={linkTo} className="cursor-pointer">
+                          <ArrowRight className="mr-2 h-4 w-4" />
+                          {actionText}
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        onClick={handleDuplicate}
+                        disabled={isDuplicating}
+                      >
+                        <Copy className="mr-2 h-4 w-4" />
+                        {translations?.duplicate || "Duplicate"}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={handleDelete}
+                        disabled={isDeleting}
+                        className="text-destructive focus:text-destructive"
+                      >
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        {translations?.delete || "Delete"}
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              </div>
+
+              <p className="text-sm text-muted-foreground line-clamp-1">
                 {description || translations?.noDescription || "No description"}
               </p>
 
-              <div className="flex flex-wrap items-center gap-2 mt-3">
-                {status && (
-                  <Badge variant={getStatusVariant(status)}>
-                    {getStatusLabel(status, translations)}
+              {/* Metadata row */}
+              <div className="flex flex-wrap items-center gap-2 pt-1">
+                {/* Status Badge */}
+                <Badge
+                  variant={config.variant}
+                  className="gap-1.5 text-xs font-medium"
+                >
+                  {config.icon}
+                  {getStatusLabel(status, translations)}
+                </Badge>
+
+                {/* Business Type */}
+                {businessType && (
+                  <Badge variant="outline" className="text-xs font-normal">
+                    {businessType}
                   </Badge>
                 )}
-                {businessType && (
-                  <Badge variant="outline">{businessType}</Badge>
-                )}
+
+                {/* Created Date */}
                 {createdAt && (
                   <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                    <Calendar className="h-3.5 w-3.5" />
+                    <Calendar className="h-3 w-3" />
                     <span>
                       {new Date(createdAt).toLocaleDateString("en-US", {
                         month: "short",
@@ -177,59 +279,40 @@ export function PlanCard({
             </div>
           </div>
 
-          <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity lg:opacity-100">
-            {isDraft ? (
-              <Button asChild variant="brand" size="sm">
-                <Link
-                  to={`/questionnaire/${id}${
-                    nextQuestionId ? `#question-${nextQuestionId}` : ""
-                  }`}
-                >
-                  <span>{translations?.resume || "Resume"}</span>
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Link>
-              </Button>
-            ) : isGenerated ? (
-              <Button asChild variant="brand" size="sm">
-                <Link to={`/plans/${id}/preview`}>
-                  <span>{translations?.viewPlan || "View Plan"}</span>
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Link>
-              </Button>
-            ) : (
-              <Button asChild variant="brand" size="sm">
-                <Link to={`/plans/${id}`}>
-                  <span>{translations?.view || "View"}</span>
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Link>
-              </Button>
-            )}
+          {/* Desktop: Actions */}
+          <div className="hidden lg:flex items-center gap-2 shrink-0">
+            <Button
+              asChild
+              size="sm"
+              className={cn(
+                "gap-2 transition-all duration-200",
+                isDraft
+                  ? "bg-momentum-orange hover:bg-momentum-orange/90 text-white"
+                  : "bg-primary hover:bg-primary/90"
+              )}
+            >
+              <Link to={linkTo}>
+                <span>{actionText}</span>
+                <ArrowRight className="h-3.5 w-3.5" />
+              </Link>
+            </Button>
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-8 w-8">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-9 w-9 text-muted-foreground hover:text-foreground"
+                >
                   <span className="sr-only">Open menu</span>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <circle cx="12" cy="12" r="1" />
-                    <circle cx="12" cy="5" r="1" />
-                    <circle cx="12" cy="19" r="1" />
-                  </svg>
+                  <MoreVertical className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
+              <DropdownMenuContent align="end" className="w-40">
                 <DropdownMenuItem
                   onClick={handleDuplicate}
                   disabled={isDuplicating}
+                  className="cursor-pointer"
                 >
                   <Copy className="mr-2 h-4 w-4" />
                   {translations?.duplicate || "Duplicate"}
@@ -238,7 +321,7 @@ export function PlanCard({
                 <DropdownMenuItem
                   onClick={handleDelete}
                   disabled={isDeleting}
-                  className="text-destructive focus:text-destructive"
+                  className="text-destructive focus:text-destructive cursor-pointer"
                 >
                   <Trash2 className="mr-2 h-4 w-4" />
                   {translations?.delete || "Delete"}
@@ -247,7 +330,7 @@ export function PlanCard({
             </DropdownMenu>
           </div>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

@@ -7,6 +7,9 @@ import {
   Sparkles,
   ArrowRight,
   FolderOpen,
+  Layers,
+  TrendingUp,
+  Clock,
 } from 'lucide-react';
 import { businessPlanService } from '../lib/business-plan-service';
 import { BusinessPlan } from '../lib/types';
@@ -30,7 +33,6 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Spinner } from '@/components/ui/spinner';
 import { SkeletonStatsCard, SkeletonPlanCard } from '@/components/ui/skeleton';
-import { FadeIn, StaggerContainer, StaggerItem } from '@/components/ui/page-transition';
 
 // Dashboard components
 import { StatsCard } from '@/components/dashboard/StatsCard';
@@ -135,6 +137,11 @@ export default function DashboardPage() {
     }
   };
 
+  // Calculate stats
+  const draftCount = plans.filter(p => p.status?.toLowerCase() === 'draft' || !planProgress[p.id]?.isComplete).length;
+  const completedCount = plans.filter(p => ['completed', 'generated', 'exported'].includes(p.status?.toLowerCase() || '')).length;
+  const recentActivity = plans.length > 0 ? new Date(Math.max(...plans.map(p => new Date(p.updatedAt || p.createdAt || 0).getTime()))).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : null;
+
   // Loading state with skeletons
   if (loading) {
     return (
@@ -145,29 +152,30 @@ export default function DashboardPage() {
           noindex={true}
           nofollow={true}
         />
-        <div className="space-y-8">
+        <div className="space-y-8 animate-in fade-in duration-500">
           {/* Header skeleton */}
-          <div className="mb-10">
-            <div className="h-12 w-64 bg-muted animate-pulse rounded-lg mb-3" />
-            <div className="h-6 w-96 bg-muted animate-pulse rounded-lg" />
+          <div className="space-y-3">
+            <div className="h-10 w-72 bg-muted/60 animate-pulse rounded-lg" />
+            <div className="h-5 w-96 bg-muted/40 animate-pulse rounded-lg" />
           </div>
 
           {/* Stats skeleton */}
-          <div className="max-w-sm">
-            <SkeletonStatsCard />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {[1, 2, 3, 4].map((i) => (
+              <SkeletonStatsCard key={i} />
+            ))}
           </div>
 
+          {/* CTA skeleton */}
+          <div className="h-32 bg-muted/40 animate-pulse rounded-2xl" />
+
           {/* Plans skeleton */}
-          <Card>
-            <CardHeader>
-              <div className="h-8 w-48 bg-muted animate-pulse rounded-lg" />
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {[1, 2, 3].map((i) => (
-                <SkeletonPlanCard key={i} />
-              ))}
-            </CardContent>
-          </Card>
+          <div className="space-y-4">
+            <div className="h-8 w-48 bg-muted/60 animate-pulse rounded-lg" />
+            {[1, 2, 3].map((i) => (
+              <SkeletonPlanCard key={i} />
+            ))}
+          </div>
         </div>
       </div>
     );
@@ -192,181 +200,218 @@ export default function DashboardPage() {
         nofollow={true}
       />
 
-      <FadeIn>
-        <div className="space-y-8">
-          {/* Header Section */}
-          <div className="mb-10 dashboard-header">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
-              <div>
-                <h1 className="text-3xl lg:text-4xl font-bold tracking-tight mb-2 text-foreground">
-                  {cms('dashboard.welcome', 'dashboard.welcome')}
-                </h1>
-                <p className="text-lg text-muted-foreground">
-                  {cms('dashboard.subtitle', 'dashboard.subtitle')}
-                </p>
-              </div>
-              <div className="flex items-center gap-3">
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    localStorage.removeItem('dashboardTourCompleted');
-                    (window as Window & { startDashboardTour?: () => void }).startDashboardTour?.();
-                  }}
-                  className="hidden sm:flex"
-                >
-                  <Sparkles className="mr-2 h-4 w-4" />
-                  {cms('dashboard.showTour', 'dashboard.showTour')}
-                </Button>
-                <Button asChild variant="brand">
-                  <Link to="/create-plan">
-                    <Plus className="mr-2 h-4 w-4" />
-                    {cms('dashboard.newPlan', 'dashboard.newPlan')}
-                  </Link>
-                </Button>
-              </div>
+      <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        {/* Header Section */}
+        <header className="dashboard-header">
+          <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
+            <div className="space-y-2">
+              <h1 className="text-3xl lg:text-4xl font-bold tracking-tight text-foreground font-heading">
+                {cms('dashboard.welcome', 'dashboard.welcome')}
+              </h1>
+              <p className="text-base lg:text-lg text-muted-foreground max-w-xl">
+                {cms('dashboard.subtitle', 'dashboard.subtitle')}
+              </p>
+            </div>
+            <div className="flex items-center gap-3">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  localStorage.removeItem('dashboardTourCompleted');
+                  (window as Window & { startDashboardTour?: () => void }).startDashboardTour?.();
+                }}
+                className="hidden sm:inline-flex text-muted-foreground hover:text-foreground"
+              >
+                <Sparkles className="mr-2 h-4 w-4" />
+                {cms('dashboard.showTour', 'dashboard.showTour')}
+              </Button>
+              <Button asChild size="default" className="bg-momentum-orange hover:bg-momentum-orange/90 text-white shadow-md hover:shadow-lg transition-all duration-200">
+                <Link to="/create-plan">
+                  <Plus className="mr-2 h-4 w-4" />
+                  {cms('dashboard.newPlan', 'dashboard.newPlan')}
+                </Link>
+              </Button>
             </div>
           </div>
+        </header>
 
-          {/* Project Count Card */}
-          <div className="max-w-sm dashboard-stats">
-            <StatsCard
-              title={cms('dashboard.totalProjects', 'dashboard.totalProjects') || 'Total Projects'}
-              value={plans.length}
-              icon={<FolderOpen className="h-6 w-6" />}
-            />
-          </div>
+        {/* Stats Grid */}
+        <section className="dashboard-stats grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <StatsCard
+            title={cms('dashboard.totalProjects', 'dashboard.totalProjects') || 'Total Projects'}
+            value={plans.length}
+            icon={<Layers className="h-5 w-5" />}
+            variant="primary"
+          />
+          <StatsCard
+            title="In Progress"
+            value={draftCount}
+            icon={<FolderOpen className="h-5 w-5" />}
+            variant="default"
+          />
+          <StatsCard
+            title="Completed"
+            value={completedCount}
+            icon={<TrendingUp className="h-5 w-5" />}
+            variant="success"
+          />
+          <StatsCard
+            title="Last Activity"
+            value={recentActivity || '—'}
+            icon={<Clock className="h-5 w-5" />}
+            variant="default"
+          />
+        </section>
 
-          {/* Create New Plan Card */}
-          <Card className="overflow-hidden dashboard-create-card group hover:shadow-card-hover transition-shadow border border-momentum-orange/30 rounded-xl bg-strategy-blue">
-            <Link to="/create-plan" className="block">
-              <CardContent className="p-8 lg:p-12">
-                <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
-                  <div className="flex items-center gap-6">
-                    <div className="flex h-14 w-14 items-center justify-center rounded-xl shrink-0 bg-momentum-orange">
-                      <Sparkles className="h-7 w-7 text-white" />
-                    </div>
-                    <div>
-                      <h3 className="text-2xl lg:text-3xl font-bold mb-1.5 text-white font-heading">
-                        {cms('dashboard.createNextPlan', 'dashboard.createNextPlan')}
-                      </h3>
-                      <p className="text-base text-gray-300">
-                        {cms('dashboard.createNextPlanDesc', 'dashboard.createNextPlanDesc')}
-                      </p>
-                    </div>
+        {/* Create New Plan Card - Premium CTA */}
+        <section className="dashboard-create-card">
+          <Link to="/create-plan" className="group block">
+            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-strategy-blue via-strategy-blue to-[#0f1a2e] p-8 lg:p-10 transition-all duration-300 hover:shadow-xl hover:shadow-strategy-blue/20">
+              {/* Subtle grid pattern overlay */}
+              <div className="absolute inset-0 opacity-[0.03]" style={{
+                backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+              }} />
+
+              {/* Gradient orb accent */}
+              <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-momentum-orange/20 blur-3xl transition-all duration-500 group-hover:bg-momentum-orange/30" />
+
+              <div className="relative flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+                <div className="flex items-center gap-5">
+                  <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-momentum-orange shadow-lg shadow-momentum-orange/30 transition-transform duration-300 group-hover:scale-105">
+                    <Sparkles className="h-7 w-7 text-white" />
                   </div>
-                  <div className="flex items-center gap-3">
-                    <span className="font-semibold hidden sm:inline text-white">
-                      {cms('dashboard.getStarted', 'dashboard.getStarted')}
-                    </span>
-                    <div className="flex h-11 w-11 items-center justify-center rounded-lg shrink-0 bg-momentum-orange group-hover:bg-[#E55F00] transition-colors">
-                      <ArrowRight className="h-5 w-5 text-white" />
-                    </div>
+                  <div>
+                    <h3 className="text-xl lg:text-2xl font-bold text-white font-heading tracking-tight">
+                      {cms('dashboard.createNextPlan', 'dashboard.createNextPlan')}
+                    </h3>
+                    <p className="text-sm lg:text-base text-white/70 mt-1">
+                      {cms('dashboard.createNextPlanDesc', 'dashboard.createNextPlanDesc')}
+                    </p>
                   </div>
                 </div>
-              </CardContent>
-            </Link>
-          </Card>
-
-          {/* Recent Projects Section */}
-          <Card className="dashboard-plans">
-            <CardHeader className="border-b">
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="text-2xl">
-                    {cms('dashboard.recentProjects', 'dashboard.recentProjects') || 'Recent Projects'}
-                  </CardTitle>
-                  <CardDescription>
-                    {plans.length > 5
-                      ? `Showing ${recentPlans.length} of ${plans.length} projects`
-                      : `${plans.length} ${plans.length === 1 ? 'project' : 'projects'}`}
-                  </CardDescription>
+                <div className="flex items-center gap-3 sm:ml-auto">
+                  <span className="text-sm font-medium text-white/80 hidden sm:inline">
+                    {cms('dashboard.getStarted', 'dashboard.getStarted')}
+                  </span>
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 backdrop-blur-sm border border-white/10 transition-all duration-300 group-hover:bg-momentum-orange group-hover:border-momentum-orange group-hover:scale-110">
+                    <ArrowRight className="h-4 w-4 text-white transition-transform duration-300 group-hover:translate-x-0.5" />
+                  </div>
                 </div>
               </div>
-            </CardHeader>
+            </div>
+          </Link>
+        </section>
 
-            <CardContent className="p-0">
-              {recentPlans.length === 0 ? (
-                <div className="text-center py-16 px-6">
-                  <div className="flex h-24 w-24 items-center justify-center rounded-lg bg-muted mx-auto mb-6">
-                    <FileText className="h-10 w-10 text-muted-foreground" />
-                  </div>
-                  <h3 className="text-2xl font-bold mb-3">
-                    {cms('dashboard.noPlans', 'dashboard.noPlans')}
-                  </h3>
-                  <p className="text-muted-foreground mb-8 max-w-md mx-auto text-lg">
-                    {cms('dashboard.noPlansDesc', 'dashboard.noPlansDesc')}
-                  </p>
-                  <Button asChild variant="brand" size="lg">
-                    <Link to="/create-plan">
-                      <Plus className="mr-2 h-5 w-5" />
-                      {cms('dashboard.createFirstPlan', 'dashboard.createFirstPlan')}
-                    </Link>
-                  </Button>
+        {/* Recent Projects Section */}
+        <section className="dashboard-plans space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-xl font-semibold tracking-tight text-foreground">
+                {cms('dashboard.recentProjects', 'dashboard.recentProjects') || 'Recent Projects'}
+              </h2>
+              <p className="text-sm text-muted-foreground mt-0.5">
+                {plans.length > 5
+                  ? `Showing ${recentPlans.length} of ${plans.length} projects`
+                  : `${plans.length} ${plans.length === 1 ? 'project' : 'projects'}`}
+              </p>
+            </div>
+            {plans.length > 5 && (
+              <Button variant="ghost" size="sm" asChild className="text-muted-foreground hover:text-foreground">
+                <Link to="/projects">
+                  View all
+                  <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
+                </Link>
+              </Button>
+            )}
+          </div>
+
+          {recentPlans.length === 0 ? (
+            /* Empty State */
+            <Card className="border-dashed border-2 bg-muted/30">
+              <CardContent className="flex flex-col items-center justify-center py-16 px-6">
+                <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-muted mb-6">
+                  <FileText className="h-8 w-8 text-muted-foreground/60" />
                 </div>
-              ) : (
-                <StaggerContainer className="divide-y">
-                  {recentPlans.map((plan) => {
-                    const progress = planProgress[plan.id];
-                    return (
-                      <StaggerItem key={plan.id} className="p-4 lg:p-6">
-                        <PlanCard
-                          id={plan.id}
-                          title={plan.title}
-                          description={plan.description}
-                          status={plan.status}
-                          businessType={plan.businessType}
-                          createdAt={plan.createdAt}
-                          isComplete={progress?.isComplete}
-                          nextQuestionId={progress?.nextQuestionId}
-                          onDelete={handleDeleteClick}
-                          onDuplicate={handleDuplicatePlan}
-                          isDeleting={deletingPlanId === plan.id}
-                          isDuplicating={duplicatingPlanId === plan.id}
-                          translations={{
-                            resume: cms('dashboard.resume', 'dashboard.resume'),
-                            view: cms('dashboard.view', 'dashboard.view'),
-                            viewPlan: cms('dashboard.viewPlan', 'dashboard.viewPlan'),
-                            noDescription: cms('dashboard.noDescription', 'dashboard.noDescription'),
-                            delete: cms('dashboard.deletePlan', 'dashboard.deletePlan'),
-                            duplicate: cms('dashboard.duplicatePlan', 'dashboard.duplicatePlan'),
-                            status: {
-                              draft: cms('dashboard.status.draft', 'dashboard.status.draft'),
-                              completed: cms('dashboard.status.completed', 'dashboard.status.completed'),
-                              active: cms('dashboard.status.active', 'dashboard.status.active'),
-                              inProgress: cms('dashboard.status.inProgress', 'dashboard.status.inProgress'),
-                              generating: cms('dashboard.status.generating', 'dashboard.status.generating'),
-                              generated: cms('dashboard.status.generated', 'dashboard.status.generated'),
-                              exported: cms('dashboard.status.exported', 'dashboard.status.exported'),
-                            },
-                          }}
-                        />
-                      </StaggerItem>
-                    );
-                  })}
-                </StaggerContainer>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-      </FadeIn>
+                <h3 className="text-xl font-semibold mb-2 text-foreground">
+                  {cms('dashboard.noPlans', 'dashboard.noPlans')}
+                </h3>
+                <p className="text-muted-foreground mb-8 max-w-sm mx-auto text-center text-sm">
+                  {cms('dashboard.noPlansDesc', 'dashboard.noPlansDesc')}
+                </p>
+                <Button asChild size="lg" className="bg-momentum-orange hover:bg-momentum-orange/90 text-white">
+                  <Link to="/create-plan">
+                    <Plus className="mr-2 h-5 w-5" />
+                    {cms('dashboard.createFirstPlan', 'dashboard.createFirstPlan')}
+                  </Link>
+                </Button>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="space-y-3">
+              {recentPlans.map((plan, index) => {
+                const progress = planProgress[plan.id];
+                return (
+                  <div
+                    key={plan.id}
+                    className="animate-in fade-in slide-in-from-bottom-2 duration-300"
+                    style={{ animationDelay: `${index * 50}ms`, animationFillMode: 'backwards' }}
+                  >
+                    <PlanCard
+                      id={plan.id}
+                      title={plan.title}
+                      description={plan.description}
+                      status={plan.status}
+                      businessType={plan.businessType}
+                      createdAt={plan.createdAt}
+                      isComplete={progress?.isComplete}
+                      nextQuestionId={progress?.nextQuestionId}
+                      onDelete={handleDeleteClick}
+                      onDuplicate={handleDuplicatePlan}
+                      isDeleting={deletingPlanId === plan.id}
+                      isDuplicating={duplicatingPlanId === plan.id}
+                      translations={{
+                        resume: cms('dashboard.resume', 'dashboard.resume'),
+                        view: cms('dashboard.view', 'dashboard.view'),
+                        viewPlan: cms('dashboard.viewPlan', 'dashboard.viewPlan'),
+                        noDescription: cms('dashboard.noDescription', 'dashboard.noDescription'),
+                        delete: cms('dashboard.deletePlan', 'dashboard.deletePlan'),
+                        duplicate: cms('dashboard.duplicatePlan', 'dashboard.duplicatePlan'),
+                        status: {
+                          draft: cms('dashboard.status.draft', 'dashboard.status.draft'),
+                          completed: cms('dashboard.status.completed', 'dashboard.status.completed'),
+                          active: cms('dashboard.status.active', 'dashboard.status.active'),
+                          inProgress: cms('dashboard.status.inProgress', 'dashboard.status.inProgress'),
+                          generating: cms('dashboard.status.generating', 'dashboard.status.generating'),
+                          generated: cms('dashboard.status.generated', 'dashboard.status.generated'),
+                          exported: cms('dashboard.status.exported', 'dashboard.status.exported'),
+                        },
+                      }}
+                    />
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </section>
+      </div>
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={showDeleteModal} onOpenChange={setShowDeleteModal}>
-        <AlertDialogContent>
+        <AlertDialogContent className="sm:max-w-md">
           <AlertDialogHeader>
-            <AlertDialogTitle>
+            <AlertDialogTitle className="text-lg">
               {cms('dashboard.deletePlan', 'dashboard.deletePlan')}
             </AlertDialogTitle>
-            <AlertDialogDescription className="space-y-3">
+            <AlertDialogDescription className="space-y-3 text-sm">
               <p>
-                {cms('dashboard.deleteConfirm', 'dashboard.deleteConfirm')} <strong>"{planToDelete?.title || 'Untitled Plan'}"</strong>?
+                {cms('dashboard.deleteConfirm', 'dashboard.deleteConfirm')} <span className="font-medium text-foreground">"{planToDelete?.title || 'Untitled Plan'}"</span>?
               </p>
               <p className="text-destructive font-medium">
                 {cms('dashboard.deleteWarning', 'dashboard.deleteWarning')}
               </p>
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
+          <AlertDialogFooter className="gap-2 sm:gap-0">
             <AlertDialogCancel onClick={handleDeleteCancel} disabled={!!deletingPlanId}>
               {cms('dashboard.cancel', 'dashboard.cancel')}
             </AlertDialogCancel>

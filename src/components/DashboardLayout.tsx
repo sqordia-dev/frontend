@@ -2,7 +2,6 @@ import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import {
   LayoutDashboard,
-  // FileText, // Hidden for now - used by myPlans
   Plus,
   User,
   CreditCard,
@@ -16,6 +15,10 @@ import {
   Rocket,
   Briefcase,
   Heart,
+  Check,
+  Sparkles,
+  PanelLeftClose,
+  PanelLeft,
 } from 'lucide-react';
 import { Logo } from './ui/Logo';
 import { authService } from '../lib/auth-service';
@@ -59,10 +62,10 @@ const FlagIcon = ({ FlagComponent, size = 20 }: { FlagComponent: React.Component
 );
 
 // ── Persona badge ───────────────────────────────────────────────────────────
-const PERSONA_CONFIG: Record<string, { icon: React.ElementType; colorCls: string; label: string; labelFr: string }> = {
-  Entrepreneur: { icon: Rocket, colorCls: 'bg-momentum-orange', label: 'Entrepreneur', labelFr: 'Entrepreneur' },
-  Consultant:   { icon: Briefcase, colorCls: 'bg-strategy-blue', label: 'Consultant', labelFr: 'Consultant' },
-  OBNL:         { icon: Heart, colorCls: 'bg-emerald-500', label: 'NPO', labelFr: 'OBNL' },
+const PERSONA_CONFIG: Record<string, { icon: React.ElementType; colorCls: string; bgCls: string; label: string; labelFr: string }> = {
+  Entrepreneur: { icon: Rocket, colorCls: 'text-momentum-orange', bgCls: 'bg-momentum-orange/10', label: 'Entrepreneur', labelFr: 'Entrepreneur' },
+  Consultant:   { icon: Briefcase, colorCls: 'text-strategy-blue', bgCls: 'bg-strategy-blue/10', label: 'Consultant', labelFr: 'Consultant' },
+  OBNL:         { icon: Heart, colorCls: 'text-emerald-600 dark:text-emerald-400', bgCls: 'bg-emerald-500/10', label: 'NPO', labelFr: 'OBNL' },
 };
 
 const PersonaBadge = ({ persona, compact, language = 'en' }: { persona?: string | null; compact?: boolean; language?: string }) => {
@@ -74,13 +77,13 @@ const PersonaBadge = ({ persona, compact, language = 'en' }: { persona?: string 
 
   if (compact) {
     return (
-      <div className={cn('flex items-center justify-center w-6 h-6 rounded-full text-white', cfg.colorCls)} title={label}>
+      <div className={cn('flex items-center justify-center w-6 h-6 rounded-md', cfg.bgCls, cfg.colorCls)} title={label}>
         <Icon size={12} />
       </div>
     );
   }
   return (
-    <span className={cn('inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium text-white', cfg.colorCls)}>
+    <span className={cn('inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs font-medium', cfg.bgCls, cfg.colorCls)}>
       <Icon size={10} />
       {label}
     </span>
@@ -90,7 +93,7 @@ const PersonaBadge = ({ persona, compact, language = 'en' }: { persona?: string 
 // ── Constants ───────────────────────────────────────────────────────────────
 const LANGUAGES = [
   { code: 'en' as const, label: 'English', displayCode: 'EN', FlagComponent: CA },
-  { code: 'fr' as const, label: 'Fran\u00e7ais', displayCode: 'FR', FlagComponent: QuebecFlag },
+  { code: 'fr' as const, label: 'Français', displayCode: 'FR', FlagComponent: QuebecFlag },
 ];
 
 // ── Inner sidebar (needs useSidebar context) ────────────────────────────────
@@ -107,7 +110,7 @@ function DashboardSidebar({
 }) {
   const location = useLocation();
   const { theme, toggleTheme, language, setLanguage, t } = useTheme();
-  const { state } = useSidebar();
+  const { state, toggleSidebar } = useSidebar();
   const isCollapsed = state === 'collapsed';
   const [isLangOpen, setIsLangOpen] = useState(false);
 
@@ -122,8 +125,7 @@ function DashboardSidebar({
 
   const navigation = [
     { name: t('nav.dashboard'), href: '/dashboard', icon: LayoutDashboard },
-    { name: t('nav.createPlan'), href: '/create-plan', icon: Plus },
-    // { name: t('nav.myPlans'), href: '/dashboard', icon: FileText }, // Hidden for now
+    { name: t('nav.createPlan'), href: '/create-plan', icon: Plus, accent: true },
     { name: t('nav.subscription'), href: '/subscription', icon: CreditCard },
     { name: t('nav.invoices'), href: '/invoices', icon: Receipt },
     { name: t('nav.settings'), href: '/profile', icon: Settings },
@@ -140,76 +142,102 @@ function DashboardSidebar({
   };
 
   return (
-    <Sidebar collapsible="icon">
+    <Sidebar collapsible="icon" className="border-r-0">
       {/* Header / Logo */}
-      <SidebarHeader className="border-b border-sidebar-border">
+      <SidebarHeader className="p-4">
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton asChild size="lg">
-              <Link to="/dashboard">
-                <Logo size="md" showText={false} />
-                <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-bold font-heading">Sqordia</span>
-                  {user?.persona && (
-                    <span className="truncate text-xs text-muted-foreground">{user.persona}</span>
-                  )}
+            <SidebarMenuButton asChild size="lg" className="hover:bg-transparent group" tooltip="Sqordia">
+              <Link to="/dashboard" className="flex items-center gap-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-strategy-blue to-[#0f1a2e] text-white shadow-md transition-transform duration-200 group-hover:scale-105 shrink-0">
+                  <Sparkles className="h-4 w-4" />
                 </div>
+                {!isCollapsed && (
+                  <span className="text-base font-bold tracking-tight font-heading">Sqordia</span>
+                )}
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
 
-      <SidebarContent>
-        {/* User info */}
-        <SidebarGroup>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild size="lg" className="cursor-default hover:bg-transparent">
-                  <div className="flex items-center gap-3">
-                    {user?.profilePictureUrl && !profileImageError ? (
-                      <img
-                        src={user.profilePictureUrl}
-                        alt={`${user.firstName} ${user.lastName}`}
-                        className="size-8 rounded-lg object-cover border border-border shrink-0"
-                        onError={onProfileImageError}
-                      />
-                    ) : (
-                      <div className="flex size-8 items-center justify-center rounded-lg bg-muted text-muted-foreground shrink-0">
-                        <User size={16} />
-                      </div>
-                    )}
-                    {!isCollapsed && (
-                      <div className="grid flex-1 text-left text-sm leading-tight">
-                        <span className="truncate font-semibold">{user?.firstName} {user?.lastName}</span>
-                        <span className="truncate text-xs text-muted-foreground">{user?.email}</span>
-                        {user?.persona && <div className="mt-1"><PersonaBadge persona={user.persona} language={language} /></div>}
-                      </div>
-                    )}
+      <SidebarContent className="px-2">
+        {/* User Profile Card */}
+        {!isCollapsed && (
+          <SidebarGroup className="py-0">
+            <SidebarGroupContent>
+              <div className={cn(
+                "rounded-xl p-3 mb-2 transition-colors",
+                "bg-muted/50 hover:bg-muted/70"
+              )}>
+                <div className="flex items-center gap-3">
+                  {user?.profilePictureUrl && !profileImageError ? (
+                    <img
+                      src={user.profilePictureUrl}
+                      alt={`${user.firstName} ${user.lastName}`}
+                      className="h-10 w-10 rounded-lg object-cover ring-2 ring-background shrink-0"
+                      onError={onProfileImageError}
+                    />
+                  ) : (
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-strategy-blue/20 to-strategy-blue/5 text-strategy-blue shrink-0">
+                      <User className="h-5 w-5" />
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-foreground truncate">
+                      {user?.firstName} {user?.lastName}
+                    </p>
+                    <p className="text-xs text-muted-foreground truncate">
+                      {user?.email}
+                    </p>
                   </div>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        <SidebarSeparator />
+                </div>
+                {user?.persona && (
+                  <div className="mt-3 pt-3 border-t border-border/50">
+                    <PersonaBadge persona={user.persona} language={language} />
+                  </div>
+                )}
+              </div>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
 
         {/* Main nav */}
         <SidebarGroup>
-          <SidebarGroupLabel>{t('nav.mainMenu') || 'Main Menu'}</SidebarGroupLabel>
+          {!isCollapsed && (
+            <SidebarGroupLabel className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70 px-3">
+              {t('nav.mainMenu') || 'Main Menu'}
+            </SidebarGroupLabel>
+          )}
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu className="gap-1">
               {navigation.map((item, idx) => {
                 const Icon = item.icon;
                 const active = isActive(item.href, idx, navigation);
+                const isAccent = (item as any).accent;
                 return (
                   <SidebarMenuItem key={`${item.href}-${idx}`}>
-                    <SidebarMenuButton asChild isActive={active} tooltip={item.name}>
-                      <Link to={item.href}>
-                        <Icon className="size-4" />
+                    <SidebarMenuButton
+                      asChild
+                      isActive={active}
+                      tooltip={item.name}
+                      className={cn(
+                        "h-10 rounded-lg font-medium transition-all duration-150",
+                        active && "bg-primary/10 text-primary font-semibold",
+                        !active && "hover:bg-muted/80",
+                        isAccent && !active && "text-momentum-orange hover:bg-momentum-orange/10"
+                      )}
+                    >
+                      <Link to={item.href} className="flex items-center gap-3">
+                        <Icon className={cn(
+                          "h-4 w-4 shrink-0",
+                          active && "text-primary",
+                          isAccent && !active && "text-momentum-orange"
+                        )} />
                         <span>{item.name}</span>
+                        {active && (
+                          <div className="ml-auto h-1.5 w-1.5 rounded-full bg-primary" />
+                        )}
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -221,65 +249,85 @@ function DashboardSidebar({
 
         {/* Admin */}
         {(user as any)?.roles?.includes('Admin') && (
-          <>
-            <SidebarSeparator />
-            <SidebarGroup>
-              <SidebarGroupLabel>{t('nav.admin') || 'Administration'}</SidebarGroupLabel>
-              <SidebarGroupContent>
-                <SidebarMenu>
-                  {adminNavigation.map((item, idx) => {
-                    const Icon = item.icon;
-                    const active = isActive(item.href, idx, adminNavigation);
-                    return (
-                      <SidebarMenuItem key={item.href}>
-                        <SidebarMenuButton asChild isActive={active} tooltip={item.name}>
-                          <Link to={item.href}>
-                            <Icon className="size-4" />
-                            <span>{item.name}</span>
-                          </Link>
-                        </SidebarMenuButton>
-                      </SidebarMenuItem>
-                    );
-                  })}
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </SidebarGroup>
-          </>
+          <SidebarGroup>
+            {!isCollapsed && (
+              <SidebarGroupLabel className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70 px-3">
+                {t('nav.admin') || 'Administration'}
+              </SidebarGroupLabel>
+            )}
+            <SidebarGroupContent>
+              <SidebarMenu className="gap-1">
+                {adminNavigation.map((item, idx) => {
+                  const Icon = item.icon;
+                  const active = isActive(item.href, idx, adminNavigation);
+                  return (
+                    <SidebarMenuItem key={item.href}>
+                      <SidebarMenuButton
+                        asChild
+                        isActive={active}
+                        tooltip={item.name}
+                        className={cn(
+                          "h-10 rounded-lg font-medium transition-all duration-150",
+                          active && "bg-primary/10 text-primary font-semibold",
+                          !active && "hover:bg-muted/80"
+                        )}
+                      >
+                        <Link to={item.href} className="flex items-center gap-3">
+                          <Icon className={cn("h-4 w-4 shrink-0", active && "text-primary")} />
+                          <span>{item.name}</span>
+                          {active && (
+                            <div className="ml-auto h-1.5 w-1.5 rounded-full bg-primary" />
+                          )}
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  );
+                })}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
         )}
       </SidebarContent>
 
       {/* Footer: Language, Theme, Logout */}
-      <SidebarFooter className="border-t border-sidebar-border">
-        <SidebarMenu>
+      <SidebarFooter className="p-2 border-t border-border/50">
+        <SidebarMenu className="gap-1">
           {/* Language selector */}
           <SidebarMenuItem>
             <div className="relative lang-sel">
-              <SidebarMenuButton onClick={() => setIsLangOpen(!isLangOpen)} tooltip={currentLang?.label || 'Language'}>
-                <div className="w-5 h-3.5 rounded-[2px] overflow-hidden shrink-0">
-                  {currentLang?.FlagComponent && <FlagIcon FlagComponent={currentLang.FlagComponent} size={20} />}
+              <SidebarMenuButton
+                onClick={() => setIsLangOpen(!isLangOpen)}
+                tooltip={currentLang?.label || 'Language'}
+                className="h-10 rounded-lg hover:bg-muted/80 transition-colors"
+              >
+                <div className="flex h-5 w-7 items-center justify-center rounded overflow-hidden border border-border/50 shrink-0">
+                  {currentLang?.FlagComponent && <FlagIcon FlagComponent={currentLang.FlagComponent} size={28} />}
                 </div>
-                <span className="flex-1 text-left">{currentLang?.label}</span>
-                <ChevronDown size={14} className={cn('transition-transform duration-200', isLangOpen && 'rotate-180')} />
+                <span className="flex-1 text-left text-sm">{currentLang?.label}</span>
+                <ChevronDown className={cn(
+                  "h-4 w-4 text-muted-foreground transition-transform duration-200",
+                  isLangOpen && "rotate-180"
+                )} />
               </SidebarMenuButton>
 
               {isLangOpen && !isCollapsed && (
-                <div className="absolute bottom-full left-0 right-0 mb-1 bg-popover border border-border rounded-lg shadow-elevated overflow-hidden z-50 animate-scale-in origin-bottom-left">
+                <div className="absolute bottom-full left-0 right-0 mb-1.5 bg-popover border border-border rounded-xl shadow-lg overflow-hidden z-50 animate-in fade-in slide-in-from-bottom-2 duration-200">
                   {LANGUAGES.map((lang) => (
                     <button
                       key={lang.code}
                       onClick={() => { setLanguage(lang.code); setIsLangOpen(false); }}
                       className={cn(
-                        'w-full flex items-center gap-3 px-3.5 py-2.5 text-sm transition-colors',
+                        'w-full flex items-center gap-3 px-3 py-2.5 text-sm transition-colors',
                         language === lang.code
-                          ? 'bg-accent text-accent-foreground font-semibold'
-                          : 'text-popover-foreground hover:bg-accent/50',
+                          ? 'bg-primary/10 text-primary font-medium'
+                          : 'text-foreground hover:bg-muted',
                       )}
                     >
-                      <div className="w-6 h-4 rounded-[2px] overflow-hidden shrink-0">
+                      <div className="flex h-4 w-6 items-center justify-center rounded-sm overflow-hidden border border-border/30 shrink-0">
                         <FlagIcon FlagComponent={lang.FlagComponent} size={24} />
                       </div>
                       <span className="flex-1 text-left">{lang.label}</span>
-                      {language === lang.code && <div className="w-1.5 h-1.5 rounded-full bg-momentum-orange" />}
+                      {language === lang.code && <Check className="h-4 w-4 text-primary" />}
                     </button>
                   ))}
                 </div>
@@ -289,17 +337,48 @@ function DashboardSidebar({
 
           {/* Theme toggle */}
           <SidebarMenuItem>
-            <SidebarMenuButton onClick={toggleTheme} tooltip={theme === 'light' ? t('nav.darkMode') : t('nav.lightMode')}>
-              {theme === 'light' ? <Moon className="size-4" /> : <Sun className="size-4" />}
-              <span>{theme === 'light' ? t('nav.darkMode') : t('nav.lightMode')}</span>
+            <SidebarMenuButton
+              onClick={toggleTheme}
+              tooltip={theme === 'light' ? t('nav.darkMode') : t('nav.lightMode')}
+              className="h-10 rounded-lg hover:bg-muted/80 transition-colors"
+            >
+              <div className={cn(
+                "flex h-5 w-5 items-center justify-center rounded-md transition-colors",
+                theme === 'light' ? "bg-slate-900/10 text-slate-700" : "bg-amber-500/10 text-amber-500"
+              )}>
+                {theme === 'light' ? <Moon className="h-3.5 w-3.5" /> : <Sun className="h-3.5 w-3.5" />}
+              </div>
+              <span className="text-sm">{theme === 'light' ? t('nav.darkMode') : t('nav.lightMode')}</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+
+          <SidebarSeparator className="my-1" />
+
+          {/* Collapse Toggle */}
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              onClick={toggleSidebar}
+              tooltip={isCollapsed ? 'Expand' : 'Collapse'}
+              className="h-10 rounded-lg hover:bg-muted/80 transition-colors"
+            >
+              {isCollapsed ? (
+                <PanelLeft className="h-4 w-4" />
+              ) : (
+                <PanelLeftClose className="h-4 w-4" />
+              )}
+              <span className="text-sm">{isCollapsed ? 'Expand' : 'Collapse'}</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
 
           {/* Logout */}
           <SidebarMenuItem>
-            <SidebarMenuButton onClick={onLogout} tooltip={t('nav.logout')}>
-              <LogOut className="size-4" />
-              <span>{t('nav.logout')}</span>
+            <SidebarMenuButton
+              onClick={onLogout}
+              tooltip={t('nav.logout')}
+              className="h-10 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+            >
+              <LogOut className="h-4 w-4" />
+              <span className="text-sm">{t('nav.logout')}</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
@@ -358,16 +437,7 @@ export default function DashboardLayout() {
             onLogout={handleLogout}
           />
 
-          <SidebarInset>
-            {/* Top bar with sidebar trigger */}
-            <header className="flex h-14 items-center gap-2 border-b border-border px-4 lg:px-6">
-              <SidebarTrigger className="-ml-1" />
-              <div className="h-4 w-px bg-border" />
-              <span className="text-sm text-muted-foreground font-medium truncate">
-                {user?.firstName ? `${user.firstName} ${user.lastName}` : ''}
-              </span>
-            </header>
-
+          <SidebarInset className="flex flex-col">
             <main id="main-content" className="flex-1 p-4 sm:p-6 lg:p-8" tabIndex={-1}>
               <Outlet />
             </main>
