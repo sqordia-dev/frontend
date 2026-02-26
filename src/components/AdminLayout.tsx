@@ -15,7 +15,9 @@ import {
   ChevronDown,
   Palette,
   Database,
-  Bug
+  Bug,
+  ArrowLeft,
+  Home
 } from 'lucide-react';
 import { authService } from '../lib/auth-service';
 import { useTheme } from '../contexts/ThemeContext';
@@ -159,8 +161,20 @@ export default function AdminLayout() {
             </button>
           </div>
 
+          {/* Back to Dashboard */}
+          <div className="px-3 pt-4 pb-2">
+            <Link
+              to="/dashboard"
+              className={`flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 ${!sidebarOpen ? 'justify-center' : ''}`}
+              title={!sidebarOpen ? 'Back to Dashboard' : undefined}
+            >
+              <ArrowLeft className={`w-5 h-5 ${sidebarOpen ? 'mr-3' : ''} flex-shrink-0`} />
+              {sidebarOpen && <span className="truncate">Back to Dashboard</span>}
+            </Link>
+          </div>
+
           {/* Navigation */}
-          <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+          <nav className="flex-1 px-3 py-2 space-y-1 overflow-y-auto">
             {navigation.map((item) => {
               const Icon = item.icon;
               const isActive = location.pathname === item.href;
@@ -285,7 +299,13 @@ export default function AdminLayout() {
               </h2>
             </div>
             <div className="flex items-center gap-3">
-              {/* Add search or other header actions here if needed */}
+              <Link
+                to="/dashboard"
+                className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+              >
+                <Home className="w-4 h-4" />
+                <span className="hidden sm:inline">Dashboard</span>
+              </Link>
             </div>
           </div>
         </header>
