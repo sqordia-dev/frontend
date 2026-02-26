@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useTheme } from '../../contexts/ThemeContext';
 import { gitHubIssueService } from '../../lib/github-issue-service';
 import {
   CreateGitHubIssueRequest,
@@ -10,6 +9,7 @@ import {
   IssueCategory,
   TargetRepository,
 } from '../../lib/github-issue-types';
+import { RichTextEditor } from '../../components/editor/RichTextEditor';
 import {
   Bug,
   Send,
@@ -22,8 +22,12 @@ import {
   Sparkles,
   FileText,
   Zap,
-  ArrowLeft,
-  Image,
+  Upload,
+  Laptop,
+  Server,
+  ChevronDown,
+  Github,
+  Plus,
 } from 'lucide-react';
 
 interface UploadedScreenshot {
@@ -34,28 +38,27 @@ interface UploadedScreenshot {
 
 export default function AdminBugReportPage() {
   const navigate = useNavigate();
-  const { t } = useTheme();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Translated options
+  // Options
   const SEVERITY_OPTIONS = [
-    { value: 'Low' as IssueSeverity, label: t('admin.bugReport.severity.low'), description: 'Minor issue with easy workaround' },
-    { value: 'Medium' as IssueSeverity, label: t('admin.bugReport.severity.medium'), description: 'Affects functionality but has workaround' },
-    { value: 'High' as IssueSeverity, label: t('admin.bugReport.severity.high'), description: 'Significant impact on functionality' },
-    { value: 'Critical' as IssueSeverity, label: t('admin.bugReport.severity.critical'), description: 'System is unusable or data loss' },
+    { value: 'Low' as IssueSeverity, label: 'Low', color: 'bg-slate-100 text-slate-700 border-slate-200 hover:bg-slate-200' },
+    { value: 'Medium' as IssueSeverity, label: 'Medium', color: 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100' },
+    { value: 'High' as IssueSeverity, label: 'High', color: 'bg-orange-50 text-orange-700 border-orange-200 hover:bg-orange-100' },
+    { value: 'Critical' as IssueSeverity, label: 'Critical', color: 'bg-red-50 text-red-700 border-red-200 hover:bg-red-100' },
   ];
 
   const CATEGORY_OPTIONS = [
-    { value: 'Bug' as IssueCategory, label: t('admin.bugReport.category.bug') },
-    { value: 'Feature' as IssueCategory, label: t('admin.bugReport.category.feature') },
-    { value: 'Enhancement' as IssueCategory, label: t('admin.bugReport.category.enhancement') },
-    { value: 'Documentation' as IssueCategory, label: t('admin.bugReport.category.documentation') },
-    { value: 'Performance' as IssueCategory, label: t('admin.bugReport.category.performance') },
+    { value: 'Bug' as IssueCategory, label: 'Bug', icon: Bug, color: 'text-red-500' },
+    { value: 'Feature' as IssueCategory, label: 'Feature', icon: Lightbulb, color: 'text-amber-500' },
+    { value: 'Enhancement' as IssueCategory, label: 'Enhancement', icon: Sparkles, color: 'text-purple-500' },
+    { value: 'Documentation' as IssueCategory, label: 'Docs', icon: FileText, color: 'text-blue-500' },
+    { value: 'Performance' as IssueCategory, label: 'Performance', icon: Zap, color: 'text-green-500' },
   ];
 
   const REPOSITORY_OPTIONS = [
-    { value: 'frontend' as TargetRepository, label: t('admin.bugReport.frontend'), description: t('admin.bugReport.frontendDesc') },
-    { value: 'backend' as TargetRepository, label: t('admin.bugReport.backend'), description: t('admin.bugReport.backendDesc') },
+    { value: 'frontend' as TargetRepository, label: 'Frontend', icon: Laptop, desc: 'UI, components, pages' },
+    { value: 'backend' as TargetRepository, label: 'Backend', icon: Server, desc: 'API, database, services' },
   ];
 
   // Form state
@@ -66,8 +69,9 @@ export default function AdminBugReportPage() {
   const [repository, setRepository] = useState<TargetRepository>('frontend');
   const [reproductionSteps, setReproductionSteps] = useState('');
   const [screenshots, setScreenshots] = useState<UploadedScreenshot[]>([]);
+  const [showSystemInfo, setShowSystemInfo] = useState(false);
 
-  // System info (auto-captured)
+  // System info
   const [systemInfo, setSystemInfo] = useState<SystemInfo | null>(null);
 
   // UI state
@@ -75,14 +79,13 @@ export default function AdminBugReportPage() {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<GitHubIssueResponse | null>(null);
+  const [dragActive, setDragActive] = useState(false);
 
-  // Capture system info on mount
   useEffect(() => {
     const info = gitHubIssueService.getSystemInfo();
     setSystemInfo(info);
   }, []);
 
-  // Handle file upload
   const handleFileSelect = useCallback(async (files: FileList | null) => {
     if (!files || files.length === 0) return;
 
@@ -93,27 +96,19 @@ export default function AdminBugReportPage() {
       const newScreenshots: UploadedScreenshot[] = [];
 
       for (const file of Array.from(files)) {
-        // Validate file type
         if (!file.type.startsWith('image/')) {
           throw new Error(`File "${file.name}" is not an image`);
         }
-
-        // Validate file size (10MB max)
         if (file.size > 10 * 1024 * 1024) {
           throw new Error(`File "${file.name}" exceeds 10MB limit`);
         }
 
-        // Create preview
         const preview = URL.createObjectURL(file);
-
-        // Try to upload to server, but don't block if it fails
         let url = '';
         try {
           url = await gitHubIssueService.uploadScreenshot(file);
         } catch (uploadErr: any) {
-          // Upload failed - continue with local preview only
-          console.warn('Screenshot upload failed, using local preview only:', uploadErr.message);
-          // Use empty URL - screenshot won't be included in the issue but user can still see preview
+          console.warn('Screenshot upload failed:', uploadErr.message);
         }
 
         newScreenshots.push({ file, url, preview });
@@ -121,10 +116,9 @@ export default function AdminBugReportPage() {
 
       setScreenshots(prev => [...prev, ...newScreenshots]);
 
-      // Warn user if any uploads failed
       const failedUploads = newScreenshots.filter(s => !s.url);
       if (failedUploads.length > 0) {
-        setError(`${failedUploads.length} screenshot(s) couldn't be uploaded to the server. They will be shown locally but won't be attached to the GitHub issue.`);
+        setError(`${failedUploads.length} screenshot(s) won't be attached to the GitHub issue.`);
       }
     } catch (err: any) {
       setError(err.message || 'Failed to process screenshot');
@@ -133,17 +127,22 @@ export default function AdminBugReportPage() {
     }
   }, []);
 
-  // Handle drag and drop
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
+    setDragActive(false);
     handleFileSelect(e.dataTransfer.files);
   }, [handleFileSelect]);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
+    setDragActive(true);
   }, []);
 
-  // Remove screenshot
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setDragActive(false);
+  }, []);
+
   const removeScreenshot = useCallback((index: number) => {
     setScreenshots(prev => {
       const newScreenshots = [...prev];
@@ -153,14 +152,12 @@ export default function AdminBugReportPage() {
     });
   }, []);
 
-  // Submit form
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setSubmitting(true);
 
     try {
-      // Only include screenshots that were successfully uploaded (have a URL)
       const uploadedScreenshotUrls = screenshots.map(s => s.url).filter(url => url);
 
       const request: CreateGitHubIssueRequest = {
@@ -186,7 +183,6 @@ export default function AdminBugReportPage() {
     }
   };
 
-  // Reset form
   const resetForm = () => {
     setTitle('');
     setDescription('');
@@ -200,83 +196,52 @@ export default function AdminBugReportPage() {
     setError(null);
   };
 
-  // Get icon for category
-  const getCategoryIcon = (cat: IssueCategory) => {
-    switch (cat) {
-      case 'Bug': return <Bug className="w-4 h-4" />;
-      case 'Feature': return <Lightbulb className="w-4 h-4" />;
-      case 'Enhancement': return <Sparkles className="w-4 h-4" />;
-      case 'Documentation': return <FileText className="w-4 h-4" />;
-      case 'Performance': return <Zap className="w-4 h-4" />;
-    }
-  };
-
-  // Get severity color
-  const getSeverityColor = (sev: IssueSeverity) => {
-    switch (sev) {
-      case 'Low': return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300';
-      case 'Medium': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300';
-      case 'High': return 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300';
-      case 'Critical': return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300';
-    }
-  };
+  // Strip HTML tags for character count validation
+  const getPlainTextLength = (html: string) => html.replace(/<[^>]*>/g, '').length;
+  const isFormValid = title.length >= 5 && getPlainTextLength(description) >= 20;
 
   // Success view
   if (success) {
     return (
-      <div className="space-y-6">
-        <div className="flex items-center gap-4">
-          <button
-            onClick={() => navigate('/admin')}
-            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-          >
-            <ArrowLeft className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-          </button>
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{t('admin.bugReport.title')}</h1>
-            <p className="mt-1 text-gray-600 dark:text-gray-400">{t('admin.bugReport.subtitle')}</p>
+      <div className="max-w-2xl mx-auto">
+        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-8 text-center">
+          <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
+            <CheckCircle className="w-8 h-8 text-green-600 dark:text-green-400" />
           </div>
-        </div>
 
-        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-8">
-          <div className="text-center">
-            <div className="mx-auto w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mb-4">
-              <CheckCircle className="w-8 h-8 text-green-600 dark:text-green-400" />
-            </div>
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">{t('admin.bugReport.successTitle')}</h2>
-            <p className="text-gray-600 dark:text-gray-400 mb-6">
-              {t('admin.bugReport.successMessage').replace('{issueNumber}', String(success.issueNumber)).replace('{repository}', success.repository)}
-            </p>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Issue Created!</h2>
+          <p className="text-gray-500 dark:text-gray-400 mb-6">
+            Issue #{success.issueNumber} has been created in the {success.repository} repository.
+          </p>
 
-            <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 mb-6 text-left">
-              <div className="flex items-start gap-3">
-                <Bug className="w-5 h-5 text-gray-600 dark:text-gray-400 mt-0.5" />
-                <div>
-                  <p className="font-semibold text-gray-900 dark:text-white">{success.title}</p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                    {t('admin.bugReport.created')} {new Date(success.createdAt).toLocaleString()}
-                  </p>
-                </div>
+          <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4 mb-6 text-left">
+            <div className="flex items-start gap-3">
+              <Github className="w-5 h-5 text-gray-400 mt-0.5" />
+              <div className="flex-1 min-w-0">
+                <p className="font-medium text-gray-900 dark:text-white truncate">{success.title}</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                  Created {new Date(success.createdAt).toLocaleString()}
+                </p>
               </div>
             </div>
+          </div>
 
-            <div className="flex items-center justify-center gap-4">
-              <a
-                href={success.htmlUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-4 py-2 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-lg hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors"
-              >
-                <ExternalLink className="w-4 h-4" />
-                {t('admin.bugReport.viewOnGitHub')}
-              </a>
-              <button
-                onClick={resetForm}
-                className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-              >
-                {t('admin.bugReport.reportAnother')}
-              </button>
-            </div>
+          <div className="flex items-center justify-center gap-3">
+            <a
+              href={success.htmlUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#1e3a5f] text-white rounded-lg hover:bg-[#2d4a6f] transition-colors font-medium"
+            >
+              <ExternalLink className="w-4 h-4" />
+              View on GitHub
+            </a>
+            <button
+              onClick={resetForm}
+              className="px-5 py-2.5 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors font-medium"
+            >
+              Report Another
+            </button>
           </div>
         </div>
       </div>
@@ -284,173 +249,182 @@ export default function AdminBugReportPage() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center gap-4">
-        <button
-          onClick={() => navigate('/admin')}
-          className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-        >
-          <ArrowLeft className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-        </button>
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{t('admin.bugReport.title')}</h1>
-          <p className="mt-1 text-gray-600 dark:text-gray-400">{t('admin.bugReport.subtitle')}</p>
-        </div>
-      </div>
-
-      {/* Error message */}
+    <div className="max-w-4xl mx-auto">
+      {/* Error Banner */}
       {error && (
-        <div className="flex items-center gap-3 p-4 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
-          <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400" />
-          <p className="text-red-800 dark:text-red-300">{error}</p>
-          <button onClick={() => setError(null)} className="ml-auto">
-            <X className="w-4 h-4 text-red-600 dark:text-red-400" />
+        <div className="mb-6 flex items-center gap-3 p-4 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
+          <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
+          <p className="text-sm text-red-700 dark:text-red-300 flex-1">{error}</p>
+          <button onClick={() => setError(null)} className="text-red-500 hover:text-red-700">
+            <X className="w-4 h-4" />
           </button>
         </div>
       )}
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Repository Selection */}
-        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{t('admin.bugReport.targetRepository')}</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {REPOSITORY_OPTIONS.map(option => (
-              <button
-                key={option.value}
-                type="button"
-                onClick={() => setRepository(option.value)}
-                className={`p-4 rounded-lg border-2 text-left transition-all ${
-                  repository === option.value
-                    ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-                    : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
-                }`}
-              >
-                <div className="font-semibold text-gray-900 dark:text-white">{option.label}</div>
-                <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">{option.description}</div>
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Issue Details */}
-        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6 space-y-6">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{t('admin.bugReport.issueDetails')}</h2>
-
-          {/* Title */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              {t('admin.bugReport.titleLabel')} <span className="text-red-500">{t('admin.bugReport.required')}</span>
+        {/* Top Row: Repository & Category */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Repository */}
+          <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5">
+            <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-3">
+              Target Repository
             </label>
-            <input
-              type="text"
-              value={title}
-              onChange={e => setTitle(e.target.value)}
-              placeholder={t('admin.bugReport.titlePlaceholder')}
-              required
-              minLength={5}
-              maxLength={256}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{title.length}/256 {t('admin.bugReport.titleCharacters')}</p>
+            <div className="grid grid-cols-2 gap-3">
+              {REPOSITORY_OPTIONS.map(opt => {
+                const Icon = opt.icon;
+                const isSelected = repository === opt.value;
+                return (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => setRepository(opt.value)}
+                    className={`p-4 rounded-xl border-2 text-left transition-all ${
+                      isSelected
+                        ? 'border-[#FF6B00] bg-orange-50 dark:bg-orange-900/20'
+                        : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+                    }`}
+                  >
+                    <Icon className={`w-5 h-5 mb-2 ${isSelected ? 'text-[#FF6B00]' : 'text-gray-400'}`} />
+                    <div className={`font-semibold ${isSelected ? 'text-[#FF6B00]' : 'text-gray-900 dark:text-white'}`}>
+                      {opt.label}
+                    </div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{opt.desc}</div>
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
           {/* Category & Severity */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5 space-y-4">
             {/* Category */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                {t('admin.bugReport.category')} <span className="text-red-500">{t('admin.bugReport.required')}</span>
+              <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-3">
+                Category
               </label>
               <div className="flex flex-wrap gap-2">
-                {CATEGORY_OPTIONS.map(option => (
-                  <button
-                    key={option.value}
-                    type="button"
-                    onClick={() => setCategory(option.value)}
-                    className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg border transition-all ${
-                      category === option.value
-                        ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300'
-                        : 'border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
-                    }`}
-                  >
-                    {getCategoryIcon(option.value)}
-                    {option.label}
-                  </button>
-                ))}
+                {CATEGORY_OPTIONS.map(opt => {
+                  const Icon = opt.icon;
+                  const isSelected = category === opt.value;
+                  return (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => setCategory(opt.value)}
+                      className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg border text-sm font-medium transition-all ${
+                        isSelected
+                          ? 'border-[#FF6B00] bg-orange-50 dark:bg-orange-900/20 text-[#FF6B00]'
+                          : 'border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:border-gray-300'
+                      }`}
+                    >
+                      <Icon className={`w-4 h-4 ${isSelected ? 'text-[#FF6B00]' : opt.color}`} />
+                      {opt.label}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
             {/* Severity */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                {t('admin.bugReport.severity')} <span className="text-red-500">{t('admin.bugReport.required')}</span>
+              <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-3">
+                Severity
               </label>
               <div className="flex flex-wrap gap-2">
-                {SEVERITY_OPTIONS.map(option => (
-                  <button
-                    key={option.value}
-                    type="button"
-                    onClick={() => setSeverity(option.value)}
-                    title={option.description}
-                    className={`px-3 py-2 rounded-lg border transition-all ${
-                      severity === option.value
-                        ? `border-transparent ${getSeverityColor(option.value)}`
-                        : 'border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
-                    }`}
-                  >
-                    {option.label}
-                  </button>
-                ))}
+                {SEVERITY_OPTIONS.map(opt => {
+                  const isSelected = severity === opt.value;
+                  return (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => setSeverity(opt.value)}
+                      className={`px-3 py-2 rounded-lg border text-sm font-medium transition-all ${
+                        isSelected
+                          ? opt.color + ' border-current'
+                          : 'border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:border-gray-300'
+                      }`}
+                    >
+                      {opt.label}
+                    </button>
+                  );
+                })}
               </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Main Form */}
+        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5 space-y-5">
+          {/* Title */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">
+              Title <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              value={title}
+              onChange={e => setTitle(e.target.value)}
+              placeholder="Brief summary of the issue..."
+              className="w-full px-4 py-3 border border-gray-200 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-[#FF6B00]/20 focus:border-[#FF6B00] transition-all outline-none"
+            />
+            <div className="flex justify-between mt-1.5">
+              <p className="text-xs text-gray-400">Min 5 characters</p>
+              <p className={`text-xs ${title.length >= 5 ? 'text-green-500' : 'text-gray-400'}`}>
+                {title.length}/256
+              </p>
             </div>
           </div>
 
           {/* Description */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              {t('admin.bugReport.description')} <span className="text-red-500">{t('admin.bugReport.required')}</span>
+            <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">
+              Description <span className="text-red-500">*</span>
             </label>
-            <textarea
-              value={description}
-              onChange={e => setDescription(e.target.value)}
-              placeholder={t('admin.bugReport.descriptionPlaceholder')}
-              required
-              minLength={20}
-              maxLength={10000}
-              rows={6}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-y"
+            <RichTextEditor
+              content={description}
+              onChange={setDescription}
+              placeholder="Describe the issue in detail. What happened? What did you expect?"
+              className="rounded-xl overflow-hidden [&_.prose-editor]:min-h-[150px] [&_.prose-editor]:max-h-[300px] [&_.prose-editor]:overflow-y-auto border-gray-200 dark:border-gray-700 focus-within:ring-2 focus-within:ring-[#FF6B00]/20 focus-within:border-[#FF6B00]"
             />
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{description.length}/10000 {t('admin.bugReport.titleCharacters')}</p>
+            <div className="flex justify-between mt-1.5">
+              <p className="text-xs text-gray-400">Min 20 characters (plain text)</p>
+              <p className={`text-xs ${getPlainTextLength(description) >= 20 ? 'text-green-500' : 'text-gray-400'}`}>
+                {getPlainTextLength(description)}/10000
+              </p>
+            </div>
           </div>
 
-          {/* Reproduction Steps (shown for Bug category) */}
+          {/* Reproduction Steps (for Bug category) */}
           {category === 'Bug' && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                {t('admin.bugReport.stepsToReproduce')}
+              <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">
+                Steps to Reproduce <span className="text-gray-400 font-normal">(optional)</span>
               </label>
-              <textarea
-                value={reproductionSteps}
-                onChange={e => setReproductionSteps(e.target.value)}
-                placeholder={t('admin.bugReport.stepsPlaceholder')}
-                maxLength={5000}
-                rows={4}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-y"
+              <RichTextEditor
+                content={reproductionSteps}
+                onChange={setReproductionSteps}
+                placeholder="1. Go to...  2. Click on...  3. See error"
+                className="rounded-xl overflow-hidden [&_.prose-editor]:min-h-[100px] [&_.prose-editor]:max-h-[200px] [&_.prose-editor]:overflow-y-auto border-gray-200 dark:border-gray-700 focus-within:ring-2 focus-within:ring-[#FF6B00]/20 focus-within:border-[#FF6B00]"
               />
             </div>
           )}
         </div>
 
         {/* Screenshots */}
-        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{t('admin.bugReport.screenshots')}</h2>
+        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5">
+          <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-3">
+            Screenshots <span className="text-gray-400 font-normal">(optional)</span>
+          </label>
 
-          {/* Upload area */}
           <div
             onDrop={handleDrop}
             onDragOver={handleDragOver}
-            className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-8 text-center hover:border-gray-400 dark:hover:border-gray-500 transition-colors"
+            onDragLeave={handleDragLeave}
+            className={`relative border-2 border-dashed rounded-xl p-6 text-center transition-all ${
+              dragActive
+                ? 'border-[#FF6B00] bg-orange-50 dark:bg-orange-900/10'
+                : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+            }`}
           >
             <input
               ref={fileInputRef}
@@ -460,134 +434,149 @@ export default function AdminBugReportPage() {
               onChange={e => handleFileSelect(e.target.files)}
               className="hidden"
             />
-            <Image className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-600 dark:text-gray-400 mb-2">
-              {t('admin.bugReport.dragDropImages')}{' '}
+
+            <Upload className={`w-8 h-8 mx-auto mb-3 ${dragActive ? 'text-[#FF6B00]' : 'text-gray-400'}`} />
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              Drag and drop images here, or{' '}
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="text-blue-600 dark:text-blue-400 hover:underline"
+                className="text-[#FF6B00] hover:underline font-medium"
               >
-                {t('admin.bugReport.browse')}
+                browse
               </button>
             </p>
-            <p className="text-sm text-gray-500 dark:text-gray-500">
-              {t('admin.bugReport.imageFormats')}
-            </p>
+            <p className="text-xs text-gray-400 mt-1">PNG, JPG, GIF up to 10MB</p>
           </div>
 
-          {/* Uploading indicator */}
+          {/* Uploading */}
           {uploading && (
-            <div className="flex items-center gap-3 mt-4 text-gray-600 dark:text-gray-400">
-              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-500"></div>
-              {t('admin.bugReport.uploading')}
+            <div className="flex items-center gap-2 mt-3 text-sm text-gray-500">
+              <div className="animate-spin rounded-full h-4 w-4 border-2 border-[#FF6B00] border-t-transparent"></div>
+              Uploading...
             </div>
           )}
 
           {/* Screenshot previews */}
           {screenshots.length > 0 && (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
+            <div className="flex flex-wrap gap-3 mt-4">
               {screenshots.map((screenshot, index) => (
                 <div key={index} className="relative group">
                   <img
                     src={screenshot.preview}
                     alt={`Screenshot ${index + 1}`}
-                    className={`w-full h-24 object-cover rounded-lg border ${
-                      screenshot.url
-                        ? 'border-gray-200 dark:border-gray-700'
-                        : 'border-amber-400 dark:border-amber-500'
-                    }`}
+                    className="w-20 h-20 object-cover rounded-lg border border-gray-200 dark:border-gray-700"
                   />
-                  {/* Show warning icon for local-only screenshots */}
-                  {!screenshot.url && (
-                    <div className="absolute bottom-1 left-1 p-1 bg-amber-500 text-white rounded-full" title="Local only - won't be attached to issue">
-                      <AlertCircle className="w-3 h-3" />
+                  {screenshot.url ? (
+                    <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
+                      <CheckCircle className="w-3 h-3 text-white" />
                     </div>
-                  )}
-                  {/* Show success icon for uploaded screenshots */}
-                  {screenshot.url && (
-                    <div className="absolute bottom-1 left-1 p-1 bg-green-500 text-white rounded-full" title="Uploaded successfully">
-                      <CheckCircle className="w-3 h-3" />
+                  ) : (
+                    <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-amber-500 rounded-full flex items-center justify-center" title="Won't be attached">
+                      <AlertCircle className="w-3 h-3 text-white" />
                     </div>
                   )}
                   <button
                     type="button"
                     onClick={() => removeScreenshot(index)}
-                    className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
                   >
-                    <X className="w-4 h-4" />
+                    <X className="w-3 h-3" />
                   </button>
                 </div>
               ))}
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="w-20 h-20 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-lg flex items-center justify-center text-gray-400 hover:border-gray-300 hover:text-gray-500 transition-colors"
+              >
+                <Plus className="w-5 h-5" />
+              </button>
             </div>
           )}
         </div>
 
-        {/* System Information */}
+        {/* System Info (Collapsible) */}
         {systemInfo && (
-          <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6">
-            <div className="flex items-center gap-3 mb-4">
-              <Monitor className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{t('admin.bugReport.systemInfo')}</h2>
-              <span className="text-xs text-gray-500 dark:text-gray-400">{t('admin.bugReport.autoCaptured')}</span>
-            </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">{t('admin.bugReport.browser')}</p>
-                <p className="font-medium text-gray-900 dark:text-white">{systemInfo.browser}</p>
+          <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden">
+            <button
+              type="button"
+              onClick={() => setShowSystemInfo(!showSystemInfo)}
+              className="w-full flex items-center justify-between p-5 text-left"
+            >
+              <div className="flex items-center gap-3">
+                <Monitor className="w-5 h-5 text-gray-400" />
+                <span className="text-sm font-semibold text-gray-900 dark:text-white">System Information</span>
+                <span className="text-xs text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded">Auto-captured</span>
               </div>
-              <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">{t('admin.bugReport.operatingSystem')}</p>
-                <p className="font-medium text-gray-900 dark:text-white">{systemInfo.operatingSystem}</p>
+              <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform ${showSystemInfo ? 'rotate-180' : ''}`} />
+            </button>
+
+            {showSystemInfo && (
+              <div className="px-5 pb-5 grid grid-cols-2 md:grid-cols-4 gap-4 border-t border-gray-100 dark:border-gray-800 pt-4">
+                <div>
+                  <p className="text-xs text-gray-400 mb-1">Browser</p>
+                  <p className="text-sm font-medium text-gray-900 dark:text-white">{systemInfo.browser}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-400 mb-1">OS</p>
+                  <p className="text-sm font-medium text-gray-900 dark:text-white">{systemInfo.operatingSystem}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-400 mb-1">Screen</p>
+                  <p className="text-sm font-medium text-gray-900 dark:text-white">{systemInfo.screenSize}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-400 mb-1">Page</p>
+                  <p className="text-sm font-medium text-gray-900 dark:text-white truncate" title={systemInfo.currentPageUrl}>
+                    {systemInfo.currentPageUrl.replace(/^https?:\/\/[^/]+/, '')}
+                  </p>
+                </div>
               </div>
-              <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">{t('admin.bugReport.screenSize')}</p>
-                <p className="font-medium text-gray-900 dark:text-white">{systemInfo.screenSize}</p>
-              </div>
-              <div className="col-span-2 md:col-span-1">
-                <p className="text-sm text-gray-500 dark:text-gray-400">{t('admin.bugReport.currentPage')}</p>
-                <p className="font-medium text-gray-900 dark:text-white truncate" title={systemInfo.currentPageUrl}>
-                  {systemInfo.currentPageUrl}
-                </p>
-              </div>
-            </div>
+            )}
           </div>
         )}
 
-        {/* Submit Button */}
-        <div className="flex items-center justify-end gap-4">
-          {/* Show validation hints when button would be disabled */}
-          {(!title || title.length < 5 || !description || description.length < 20) && (
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              {!title || title.length < 5 ? 'Title required (min 5 chars)' : ''}
-              {(!title || title.length < 5) && (!description || description.length < 20) ? ' • ' : ''}
-              {!description || description.length < 20 ? 'Description required (min 20 chars)' : ''}
-            </p>
-          )}
-          <button
-            type="button"
-            onClick={() => navigate('/admin')}
-            className="px-6 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-          >
-            {t('admin.bugReport.cancel')}
-          </button>
-          <button
-            type="submit"
-            disabled={submitting || !title || !description || title.length < 5 || description.length < 20}
-            className="inline-flex items-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
-            {submitting ? (
-              <>
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                {t('admin.bugReport.creatingIssue')}
-              </>
-            ) : (
-              <>
-                <Send className="w-4 h-4" />
-                {t('admin.bugReport.createIssue')}
-              </>
+        {/* Submit */}
+        <div className="flex items-center justify-between bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5">
+          <div className="text-sm text-gray-500">
+            {!isFormValid && (
+              <span className="flex items-center gap-2">
+                <AlertCircle className="w-4 h-4" />
+                {title.length < 5 && getPlainTextLength(description) < 20
+                  ? 'Title and description required'
+                  : title.length < 5
+                  ? 'Title too short (min 5 chars)'
+                  : 'Description too short (min 20 chars)'}
+              </span>
             )}
-          </button>
+          </div>
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => navigate('/admin')}
+              className="px-5 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={submitting || !isFormValid}
+              className="inline-flex items-center gap-2 px-6 py-2.5 bg-[#FF6B00] text-white rounded-lg hover:bg-[#e55f00] disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
+            >
+              {submitting ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                  Creating...
+                </>
+              ) : (
+                <>
+                  <Send className="w-4 h-4" />
+                  Create Issue
+                </>
+              )}
+            </button>
+          </div>
         </div>
       </form>
     </div>

@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { Logo, DashboardButton } from '../ui/Logo';
 
 type Language = 'en' | 'fr';
 
@@ -49,12 +50,7 @@ export function CmsHeader({
         </button>
 
         {/* Logo */}
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 bg-[#FF6B00] rounded-lg flex items-center justify-center shadow-sm shadow-orange-200">
-            <span className="text-white font-bold text-lg">S</span>
-          </div>
-          <span className="font-bold text-xl tracking-tight text-slate-800 hidden sm:block">Sqordia</span>
-        </div>
+        <Logo size="md" showText={true} className="[&_span]:hidden sm:[&_span]:inline [&_span]:text-slate-800" />
 
         <div className="hidden md:block h-6 w-px bg-gray-200" />
 
@@ -85,6 +81,9 @@ export function CmsHeader({
 
       {/* Right side */}
       <div className="flex items-center gap-5">
+        {/* Dashboard button */}
+        <DashboardButton />
+
         {/* Version History button */}
         <button
           onClick={onOpenVersionHistory}

@@ -10,7 +10,6 @@ import {
   LogOut,
   Settings,
   Receipt,
-  Brain,
   Sun,
   Moon,
   ChevronDown,
@@ -18,6 +17,7 @@ import {
   Briefcase,
   Heart,
 } from 'lucide-react';
+import { Logo } from './ui/Logo';
 import { authService } from '../lib/auth-service';
 import { User as UserType } from '../lib/types';
 import { useTheme } from '../contexts/ThemeContext';
@@ -148,9 +148,7 @@ function DashboardSidebar({
           <SidebarMenuItem>
             <SidebarMenuButton asChild size="lg">
               <Link to="/dashboard">
-                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-strategy-blue text-white">
-                  <Brain className="size-4" />
-                </div>
+                <Logo size="md" showText={false} />
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-bold font-heading">Sqordia</span>
                   {user?.persona && (

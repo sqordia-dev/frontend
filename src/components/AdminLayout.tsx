@@ -4,7 +4,7 @@ import {
   LayoutDashboard,
   Users,
   // FileText, // Hidden for now - used by business-plans
-  Brain,
+  // Brain, // Used via Logo component
   LogOut,
   Sun,
   Moon,
@@ -17,8 +17,8 @@ import {
   Database,
   Bug,
   ArrowLeft,
-  Home
 } from 'lucide-react';
+import { Logo, DashboardButton } from './ui/Logo';
 import { authService } from '../lib/auth-service';
 import { useTheme } from '../contexts/ThemeContext';
 import CA from 'country-flag-icons/react/3x2/CA';
@@ -127,20 +127,10 @@ export default function AdminLayout() {
         <div className="flex flex-col h-full">
           {/* Logo/Header */}
           <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200 dark:border-gray-800">
-            {sidebarOpen && (
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-[#FF6B00]">
-                  <Brain className="w-5 h-5 text-white" />
-                </div>
-                <h1 className="text-lg font-semibold text-gray-900 dark:text-white">
-                  {t('admin.title')}
-                </h1>
-              </div>
-            )}
-            {!sidebarOpen && (
-              <div className="w-10 h-10 rounded-lg flex items-center justify-center mx-auto bg-[#FF6B00]">
-                <Brain className="w-6 h-6 text-white" />
-              </div>
+            {sidebarOpen ? (
+              <Logo size="md" showText={true} />
+            ) : (
+              <Logo size="lg" showText={false} className="mx-auto" />
             )}
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -299,13 +289,7 @@ export default function AdminLayout() {
               </h2>
             </div>
             <div className="flex items-center gap-3">
-              <Link
-                to="/dashboard"
-                className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-              >
-                <Home className="w-4 h-4" />
-                <span className="hidden sm:inline">Dashboard</span>
-              </Link>
+              <DashboardButton />
             </div>
           </div>
         </header>
