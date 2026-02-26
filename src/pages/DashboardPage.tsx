@@ -143,7 +143,14 @@ export default function DashboardPage() {
   const draftCount = plans.filter(p => p.status?.toLowerCase() === 'draft' || !planProgress[p.id]?.isComplete).length;
   const completedCount = plans.filter(p => ['completed', 'generated', 'exported'].includes(p.status?.toLowerCase() || '')).length;
   const dateLocale = language === 'fr' ? 'fr-CA' : 'en-US';
-  const recentActivity = plans.length > 0 ? new Date(Math.max(...plans.map(p => new Date(p.updatedAt || p.createdAt || 0).getTime()))).toLocaleDateString(dateLocale, { month: 'short', day: 'numeric' }) : null;
+
+  // Get the most recent activity date, filtering out invalid dates
+  const validDates = plans
+    .map(p => new Date(p.updatedAt || p.createdAt || 0).getTime())
+    .filter(time => time > 86400000); // Filter out dates before Jan 2, 1970 (invalid/epoch dates)
+  const recentActivity = validDates.length > 0
+    ? new Date(Math.max(...validDates)).toLocaleDateString(dateLocale, { month: 'short', day: 'numeric' })
+    : null;
 
   // Loading state with skeletons
   if (loading) {
