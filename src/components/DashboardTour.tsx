@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { X, ArrowRight, ArrowLeft, Sparkles, FileText, BarChart3, Plus, Check } from 'lucide-react';
+import { X, ArrowRight, ArrowLeft, Sparkles, FileText, BarChart3, Plus, Check, Rocket } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
+import { cn } from '@/lib/utils';
 
 interface TourStep {
   id: string;
@@ -9,6 +10,7 @@ interface TourStep {
   target: string;
   position: 'top' | 'bottom' | 'left' | 'right' | 'center';
   icon: any;
+  accent: string;
 }
 
 interface DashboardTourProps {
@@ -34,6 +36,7 @@ export default function DashboardTour({ onStartTour }: DashboardTourProps = {}) 
   const prevElementRef = useRef<HTMLElement | null>(null);
 
   const BRAND_ORANGE = '#FF6B00';
+  const BRAND_BLUE = '#1A2B47';
 
   const steps: TourStep[] = [
     {
@@ -42,7 +45,8 @@ export default function DashboardTour({ onStartTour }: DashboardTourProps = {}) 
       description: t('dashboard.tour.welcome.description'),
       target: '.dashboard-header',
       position: 'bottom',
-      icon: Sparkles,
+      icon: Rocket,
+      accent: 'orange',
     },
     {
       id: 'stats',
@@ -51,6 +55,7 @@ export default function DashboardTour({ onStartTour }: DashboardTourProps = {}) 
       target: '.dashboard-stats',
       position: 'bottom',
       icon: BarChart3,
+      accent: 'blue',
     },
     {
       id: 'create-plan',
@@ -59,6 +64,7 @@ export default function DashboardTour({ onStartTour }: DashboardTourProps = {}) 
       target: '.dashboard-create-card',
       position: 'top',
       icon: Plus,
+      accent: 'green',
     },
     {
       id: 'plans-list',
@@ -67,6 +73,7 @@ export default function DashboardTour({ onStartTour }: DashboardTourProps = {}) 
       target: '.dashboard-plans',
       position: 'top',
       icon: FileText,
+      accent: 'purple',
     },
   ];
 
@@ -282,35 +289,39 @@ export default function DashboardTour({ onStartTour }: DashboardTourProps = {}) 
     return 'none';
   };
 
-  // Arrow rendering
+  // Arrow rendering with improved styling
   const renderArrow = () => {
     const p = popupPosition.position;
-    const arrowSize = 10;
-    const cardBg = theme === 'dark' ? '#1f2937' : '#ffffff';
-    const base: React.CSSProperties = { position: 'absolute', width: 0, height: 0 };
+    const arrowSize = 12;
+    const cardBg = theme === 'dark' ? 'hsl(var(--card))' : 'hsl(var(--card))';
+    const base: React.CSSProperties = { position: 'absolute', width: 0, height: 0, zIndex: 10 };
 
     if (p === 'bottom') return (
-      <div style={{ ...base, top: -arrowSize, left: '50%', transform: 'translateX(-50%)',
+      <div style={{ ...base, top: -arrowSize + 1, left: '50%', transform: 'translateX(-50%)',
         borderLeft: `${arrowSize}px solid transparent`, borderRight: `${arrowSize}px solid transparent`,
-        borderBottom: `${arrowSize}px solid ${cardBg}`,
+        borderBottom: `${arrowSize}px solid ${theme === 'dark' ? '#1c1c1e' : '#ffffff'}`,
+        filter: 'drop-shadow(0 -2px 3px rgba(0,0,0,0.05))',
       }} />
     );
     if (p === 'top') return (
-      <div style={{ ...base, bottom: -arrowSize, left: '50%', transform: 'translateX(-50%)',
+      <div style={{ ...base, bottom: -arrowSize + 1, left: '50%', transform: 'translateX(-50%)',
         borderLeft: `${arrowSize}px solid transparent`, borderRight: `${arrowSize}px solid transparent`,
-        borderTop: `${arrowSize}px solid ${cardBg}`,
+        borderTop: `${arrowSize}px solid ${theme === 'dark' ? '#1c1c1e' : '#ffffff'}`,
+        filter: 'drop-shadow(0 2px 3px rgba(0,0,0,0.05))',
       }} />
     );
     if (p === 'right') return (
-      <div style={{ ...base, left: -arrowSize, top: '50%', transform: 'translateY(-50%)',
+      <div style={{ ...base, left: -arrowSize + 1, top: '50%', transform: 'translateY(-50%)',
         borderTop: `${arrowSize}px solid transparent`, borderBottom: `${arrowSize}px solid transparent`,
-        borderRight: `${arrowSize}px solid ${cardBg}`,
+        borderRight: `${arrowSize}px solid ${theme === 'dark' ? '#1c1c1e' : '#ffffff'}`,
+        filter: 'drop-shadow(-2px 0 3px rgba(0,0,0,0.05))',
       }} />
     );
     if (p === 'left') return (
-      <div style={{ ...base, right: -arrowSize, top: '50%', transform: 'translateY(-50%)',
+      <div style={{ ...base, right: -arrowSize + 1, top: '50%', transform: 'translateY(-50%)',
         borderTop: `${arrowSize}px solid transparent`, borderBottom: `${arrowSize}px solid transparent`,
-        borderLeft: `${arrowSize}px solid ${cardBg}`,
+        borderLeft: `${arrowSize}px solid ${theme === 'dark' ? '#1c1c1e' : '#ffffff'}`,
+        filter: 'drop-shadow(2px 0 3px rgba(0,0,0,0.05))',
       }} />
     );
     return null;
@@ -360,48 +371,58 @@ export default function DashboardTour({ onStartTour }: DashboardTourProps = {}) 
           transform: getTransform(),
           maxWidth: `${popupWidth}px`,
           width: '92%',
-          minWidth: '300px',
-          animation: 'tourCardEnter 250ms ease-out both',
+          minWidth: '320px',
+          animation: 'tourCardEnter 300ms cubic-bezier(0.34, 1.56, 0.64, 1) both',
         }}
       >
         <div
-          className="bg-white dark:bg-gray-800 rounded-2xl overflow-hidden relative"
+          className={cn(
+            "rounded-2xl overflow-hidden relative",
+            "bg-card border border-border/50",
+          )}
           style={{
             boxShadow: theme === 'dark'
-              ? '0 25px 60px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.06)'
-              : '0 25px 60px -12px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(0, 0, 0, 0.04)',
+              ? '0 25px 50px -12px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.05)'
+              : '0 25px 50px -12px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.03)',
           }}
           onClick={(e) => e.stopPropagation()}
         >
           {/* Arrow */}
           {renderArrow()}
 
-          {/* Gradient accent bar */}
-          <div
-            className="h-[3px] w-full"
-            style={{ background: `linear-gradient(90deg, ${BRAND_ORANGE}, #F59E0B)` }}
-          />
-
           {/* Content */}
-          <div className="p-5">
+          <div className="p-6">
             {/* Header */}
-            <div className="flex items-start justify-between gap-3 mb-3">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 bg-orange-50 dark:bg-orange-900/30">
-                  <Icon className="text-[#FF6B00]" size={20} />
+            <div className="flex items-start justify-between gap-4 mb-4">
+              <div className="flex items-start gap-4">
+                {/* Icon with gradient background */}
+                <div
+                  className="relative w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg"
+                  style={{
+                    background: `linear-gradient(135deg, ${BRAND_ORANGE} 0%, #F59E0B 100%)`,
+                  }}
+                >
+                  <Icon className="text-white" size={22} strokeWidth={2.5} />
+                  {/* Subtle inner glow */}
+                  <div className="absolute inset-0 rounded-2xl bg-white/10" />
                 </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white leading-tight">
+                <div className="pt-0.5">
+                  <h3 className="text-lg font-bold text-foreground leading-tight tracking-tight">
                     {step.title}
                   </h3>
-                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
-                    {t('dashboard.tour.step')} {currentStep + 1} {t('dashboard.tour.of')} {steps.length}
-                  </p>
+                  <div className="flex items-center gap-2 mt-1.5">
+                    <span className="text-xs font-semibold text-momentum-orange">
+                      Step {currentStep + 1}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      of {steps.length}
+                    </span>
+                  </div>
                 </div>
               </div>
               <button
                 onClick={completeTour}
-                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg flex-shrink-0"
+                className="text-muted-foreground hover:text-foreground transition-colors p-2 hover:bg-muted rounded-xl flex-shrink-0 -mt-1 -mr-1"
                 aria-label="Close tour"
               >
                 <X size={18} />
@@ -409,62 +430,73 @@ export default function DashboardTour({ onStartTour }: DashboardTourProps = {}) 
             </div>
 
             {/* Description */}
-            <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed mb-4">
+            <p className="text-sm text-muted-foreground leading-relaxed mb-5 pl-0.5">
               {step.description}
             </p>
 
-            {/* Progress dots */}
-            <div className="flex items-center justify-center gap-1.5 mb-4">
-              {steps.map((_, i) => (
-                <div
-                  key={i}
-                  className="rounded-full transition-all duration-300"
-                  style={{
-                    width: i === currentStep ? 10 : 8,
-                    height: i === currentStep ? 10 : 8,
-                    backgroundColor: i <= currentStep ? BRAND_ORANGE : 'transparent',
-                    border: i <= currentStep ? 'none' : `1.5px solid ${theme === 'dark' ? '#4B5563' : '#D1D5DB'}`,
-                  }}
-                />
-              ))}
+            {/* Progress bar */}
+            <div className="mb-5">
+              <div className="flex items-center gap-2">
+                {steps.map((_, i) => (
+                  <div
+                    key={i}
+                    className={cn(
+                      "h-1.5 rounded-full transition-all duration-500 flex-1",
+                      i < currentStep && "bg-momentum-orange",
+                      i === currentStep && "bg-momentum-orange",
+                      i > currentStep && "bg-muted"
+                    )}
+                    style={{
+                      opacity: i <= currentStep ? 1 : 0.4,
+                    }}
+                  />
+                ))}
+              </div>
             </div>
-          </div>
 
-          {/* Footer */}
-          <div className="px-5 py-3 flex items-center justify-between bg-gray-50/80 dark:bg-gray-900/50 border-t border-gray-100 dark:border-gray-700/50">
-            <button
-              onClick={completeTour}
-              className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 font-medium transition-colors"
-            >
-              {t('dashboard.tour.skip')}
-            </button>
-            <div className="flex items-center gap-2">
-              {!isFirstStep && (
-                <button
-                  onClick={prevStep}
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg font-medium hover:bg-gray-50 dark:hover:bg-gray-600 transition-all"
-                >
-                  <ArrowLeft size={15} />
-                  <span>{t('dashboard.tour.previous')}</span>
-                </button>
-              )}
+            {/* Footer Actions */}
+            <div className="flex items-center justify-between pt-1">
               <button
-                onClick={isLastStep ? completeTour : nextStep}
-                className="flex items-center gap-1.5 px-4 py-1.5 text-sm text-white rounded-lg font-semibold transition-all hover:brightness-110 active:scale-[0.97]"
-                style={{ backgroundColor: BRAND_ORANGE }}
+                onClick={completeTour}
+                className="text-sm text-muted-foreground hover:text-foreground font-medium transition-colors px-1 py-1"
               >
-                {isLastStep ? (
-                  <>
-                    <Check size={15} />
-                    <span>{t('dashboard.tour.finish')}</span>
-                  </>
-                ) : (
-                  <>
-                    <span>{t('dashboard.tour.next')}</span>
-                    <ArrowRight size={15} />
-                  </>
-                )}
+                {t('dashboard.tour.skip')}
               </button>
+              <div className="flex items-center gap-2">
+                {!isFirstStep && (
+                  <button
+                    onClick={prevStep}
+                    className={cn(
+                      "flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-xl transition-all",
+                      "text-foreground bg-muted hover:bg-muted/80 border border-border/50"
+                    )}
+                  >
+                    <ArrowLeft size={15} />
+                    <span>Back</span>
+                  </button>
+                )}
+                <button
+                  onClick={isLastStep ? completeTour : nextStep}
+                  className={cn(
+                    "flex items-center gap-1.5 px-5 py-2 text-sm text-white rounded-xl font-semibold transition-all",
+                    "hover:brightness-110 active:scale-[0.97]",
+                    "shadow-lg shadow-momentum-orange/25"
+                  )}
+                  style={{ backgroundColor: BRAND_ORANGE }}
+                >
+                  {isLastStep ? (
+                    <>
+                      <Check size={15} strokeWidth={2.5} />
+                      <span>Get Started</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>Next</span>
+                      <ArrowRight size={15} strokeWidth={2.5} />
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -475,15 +507,20 @@ export default function DashboardTour({ onStartTour }: DashboardTourProps = {}) 
         @keyframes tourCardEnter {
           from {
             opacity: 0;
-            transform: ${getTransform()} translateY(8px) scale(0.97);
+            transform: ${getTransform()} translateY(12px) scale(0.95);
           }
           to {
             opacity: 1;
             transform: ${getTransform()} translateY(0) scale(1);
           }
         }
+        @keyframes tourPulse {
+          0%, 100% { box-shadow: 0 0 0 0 rgba(255, 107, 0, 0.4); }
+          50% { box-shadow: 0 0 0 8px rgba(255, 107, 0, 0); }
+        }
         .tour-spotlight-target {
-          border-radius: 8px;
+          border-radius: 12px;
+          animation: tourPulse 2s ease-in-out infinite;
         }
       `}</style>
     </>

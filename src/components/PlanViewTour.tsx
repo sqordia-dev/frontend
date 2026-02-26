@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { X, ArrowRight, ArrowLeft, Sparkles, Download, BookOpen, Pencil, Check } from 'lucide-react';
+import { X, ArrowRight, ArrowLeft, Sparkles, Download, BookOpen, Pencil, Check, Rocket } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
+import { cn } from '@/lib/utils';
 
 interface TourStep {
   id: string;
@@ -44,7 +45,7 @@ export default function PlanViewTour({ onStartTour }: PlanViewTourProps = {}) {
         : 'This page allows you to view, edit, and export your business plan. Let\'s explore the main features.',
       target: '.plan-view-header',
       position: 'bottom',
-      icon: Sparkles,
+      icon: Rocket,
     },
     {
       id: 'export',
@@ -341,32 +342,36 @@ export default function PlanViewTour({ onStartTour }: PlanViewTourProps = {}) {
   const renderArrow = () => {
     if (popupPosition.position === 'center' || !highlightedElement) return null;
     const p = popupPosition.position;
-    const arrowSize = isMobile ? 8 : 10;
-    const cardBg = theme === 'dark' ? '#1f2937' : '#ffffff';
-    const base: React.CSSProperties = { position: 'absolute', width: 0, height: 0 };
+    const arrowSize = isMobile ? 10 : 12;
+    const cardBg = theme === 'dark' ? '#1c1c1e' : '#ffffff';
+    const base: React.CSSProperties = { position: 'absolute', width: 0, height: 0, zIndex: 10 };
 
     if (p === 'bottom') return (
-      <div style={{ ...base, top: -arrowSize, left: '50%', transform: 'translateX(-50%)',
+      <div style={{ ...base, top: -arrowSize + 1, left: '50%', transform: 'translateX(-50%)',
         borderLeft: `${arrowSize}px solid transparent`, borderRight: `${arrowSize}px solid transparent`,
         borderBottom: `${arrowSize}px solid ${cardBg}`,
+        filter: 'drop-shadow(0 -2px 3px rgba(0,0,0,0.05))',
       }} />
     );
     if (p === 'top') return (
-      <div style={{ ...base, bottom: -arrowSize, left: '50%', transform: 'translateX(-50%)',
+      <div style={{ ...base, bottom: -arrowSize + 1, left: '50%', transform: 'translateX(-50%)',
         borderLeft: `${arrowSize}px solid transparent`, borderRight: `${arrowSize}px solid transparent`,
         borderTop: `${arrowSize}px solid ${cardBg}`,
+        filter: 'drop-shadow(0 2px 3px rgba(0,0,0,0.05))',
       }} />
     );
     if (p === 'right') return (
-      <div style={{ ...base, left: -arrowSize, top: '50%', transform: 'translateY(-50%)',
+      <div style={{ ...base, left: -arrowSize + 1, top: '50%', transform: 'translateY(-50%)',
         borderTop: `${arrowSize}px solid transparent`, borderBottom: `${arrowSize}px solid transparent`,
         borderRight: `${arrowSize}px solid ${cardBg}`,
+        filter: 'drop-shadow(-2px 0 3px rgba(0,0,0,0.05))',
       }} />
     );
     if (p === 'left') return (
-      <div style={{ ...base, right: -arrowSize, top: '50%', transform: 'translateY(-50%)',
+      <div style={{ ...base, right: -arrowSize + 1, top: '50%', transform: 'translateY(-50%)',
         borderTop: `${arrowSize}px solid transparent`, borderBottom: `${arrowSize}px solid transparent`,
         borderLeft: `${arrowSize}px solid ${cardBg}`,
+        filter: 'drop-shadow(2px 0 3px rgba(0,0,0,0.05))',
       }} />
     );
     return null;
@@ -417,48 +422,63 @@ export default function PlanViewTour({ onStartTour }: PlanViewTourProps = {}) {
           transform: isMobile && popupPosition.position !== 'center' ? 'none' : getTransform(),
           maxWidth: `${maxPopupWidth}px`,
           width: isMobile ? 'calc(100vw - 24px)' : '92%',
-          minWidth: isMobile ? '280px' : '300px',
-          animation: 'tourCardEnter 250ms ease-out both',
+          minWidth: isMobile ? '280px' : '320px',
+          animation: 'tourCardEnter 300ms cubic-bezier(0.34, 1.56, 0.64, 1) both',
         }}
       >
         <div
-          className="bg-white dark:bg-gray-800 rounded-2xl overflow-hidden relative"
+          className={cn(
+            "rounded-2xl overflow-hidden relative",
+            "bg-card border border-border/50",
+          )}
           style={{
             boxShadow: theme === 'dark'
-              ? '0 25px 60px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.06)'
-              : '0 25px 60px -12px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(0, 0, 0, 0.04)',
+              ? '0 25px 50px -12px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.05)'
+              : '0 25px 50px -12px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.03)',
           }}
           onClick={(e) => e.stopPropagation()}
         >
           {/* Arrow */}
           {renderArrow()}
 
-          {/* Gradient accent bar */}
-          <div
-            className="h-[3px] w-full"
-            style={{ background: `linear-gradient(90deg, ${BRAND_ORANGE}, #F59E0B)` }}
-          />
-
           {/* Content */}
-          <div className={isMobile ? 'p-4' : 'p-5'}>
+          <div className={isMobile ? 'p-5' : 'p-6'}>
             {/* Header */}
-            <div className="flex items-start justify-between gap-3 mb-3">
-              <div className="flex items-center gap-3">
-                <div className={`${isMobile ? 'w-9 h-9' : 'w-10 h-10'} rounded-xl flex items-center justify-center flex-shrink-0 bg-orange-50 dark:bg-orange-900/30`}>
-                  <Icon className="text-[#FF6B00]" size={isMobile ? 18 : 20} />
+            <div className="flex items-start justify-between gap-4 mb-4">
+              <div className="flex items-start gap-4">
+                {/* Icon with gradient background */}
+                <div
+                  className={cn(
+                    "relative rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg",
+                    isMobile ? "w-10 h-10" : "w-12 h-12"
+                  )}
+                  style={{
+                    background: `linear-gradient(135deg, ${BRAND_ORANGE} 0%, #F59E0B 100%)`,
+                  }}
+                >
+                  <Icon className="text-white" size={isMobile ? 18 : 22} strokeWidth={2.5} />
+                  <div className="absolute inset-0 rounded-2xl bg-white/10" />
                 </div>
-                <div>
-                  <h3 className={`${isMobile ? 'text-base' : 'text-lg'} font-semibold text-gray-900 dark:text-white leading-tight`}>
+                <div className="pt-0.5">
+                  <h3 className={cn(
+                    "font-bold text-foreground leading-tight tracking-tight",
+                    isMobile ? "text-base" : "text-lg"
+                  )}>
                     {step.title}
                   </h3>
-                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
-                    {language === 'fr' ? 'Étape' : 'Step'} {currentStep + 1} {language === 'fr' ? 'sur' : 'of'} {steps.length}
-                  </p>
+                  <div className="flex items-center gap-2 mt-1.5">
+                    <span className="text-xs font-semibold text-momentum-orange">
+                      {language === 'fr' ? 'Étape' : 'Step'} {currentStep + 1}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {language === 'fr' ? 'sur' : 'of'} {steps.length}
+                    </span>
+                  </div>
                 </div>
               </div>
               <button
                 onClick={completeTour}
-                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg flex-shrink-0"
+                className="text-muted-foreground hover:text-foreground transition-colors p-2 hover:bg-muted rounded-xl flex-shrink-0 -mt-1 -mr-1"
                 aria-label="Close tour"
               >
                 <X size={isMobile ? 16 : 18} />
@@ -466,62 +486,76 @@ export default function PlanViewTour({ onStartTour }: PlanViewTourProps = {}) {
             </div>
 
             {/* Description */}
-            <p className={`${isMobile ? 'text-xs' : 'text-sm'} text-gray-600 dark:text-gray-400 leading-relaxed mb-4`}>
+            <p className={cn(
+              "text-muted-foreground leading-relaxed mb-5 pl-0.5",
+              isMobile ? "text-xs" : "text-sm"
+            )}>
               {step.description}
             </p>
 
-            {/* Progress dots */}
-            <div className="flex items-center justify-center gap-1.5 mb-3">
-              {steps.map((_, i) => (
-                <div
-                  key={i}
-                  className="rounded-full transition-all duration-300"
-                  style={{
-                    width: i === currentStep ? 10 : 8,
-                    height: i === currentStep ? 10 : 8,
-                    backgroundColor: i <= currentStep ? BRAND_ORANGE : 'transparent',
-                    border: i <= currentStep ? 'none' : `1.5px solid ${theme === 'dark' ? '#4B5563' : '#D1D5DB'}`,
-                  }}
-                />
-              ))}
+            {/* Progress bar */}
+            <div className="mb-5">
+              <div className="flex items-center gap-2">
+                {steps.map((_, i) => (
+                  <div
+                    key={i}
+                    className={cn(
+                      "h-1.5 rounded-full transition-all duration-500 flex-1",
+                      i <= currentStep ? "bg-momentum-orange" : "bg-muted"
+                    )}
+                    style={{
+                      opacity: i <= currentStep ? 1 : 0.4,
+                    }}
+                  />
+                ))}
+              </div>
             </div>
-          </div>
 
-          {/* Footer */}
-          <div className={`${isMobile ? 'px-4 py-2.5' : 'px-5 py-3'} flex items-center justify-between bg-gray-50/80 dark:bg-gray-900/50 border-t border-gray-100 dark:border-gray-700/50`}>
-            <button
-              onClick={completeTour}
-              className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 font-medium transition-colors"
-            >
-              {language === 'fr' ? 'Passer' : 'Skip'}
-            </button>
-            <div className="flex items-center gap-2">
-              {!isFirstStep && (
-                <button
-                  onClick={prevStep}
-                  className={`flex items-center gap-1.5 ${isMobile ? 'px-2.5 py-1.5 text-xs' : 'px-3 py-1.5 text-sm'} text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg font-medium hover:bg-gray-50 dark:hover:bg-gray-600 transition-all`}
-                >
-                  <ArrowLeft size={isMobile ? 13 : 15} />
-                  <span>{language === 'fr' ? 'Précédent' : 'Previous'}</span>
-                </button>
-              )}
+            {/* Footer Actions */}
+            <div className="flex items-center justify-between pt-1">
               <button
-                onClick={isLastStep ? completeTour : nextStep}
-                className={`flex items-center gap-1.5 ${isMobile ? 'px-3 py-1.5 text-xs' : 'px-4 py-1.5 text-sm'} text-white rounded-lg font-semibold transition-all hover:brightness-110 active:scale-[0.97]`}
-                style={{ backgroundColor: BRAND_ORANGE }}
+                onClick={completeTour}
+                className="text-sm text-muted-foreground hover:text-foreground font-medium transition-colors px-1 py-1"
               >
-                {isLastStep ? (
-                  <>
-                    <Check size={isMobile ? 13 : 15} />
-                    <span>{language === 'fr' ? 'Terminer' : 'Finish'}</span>
-                  </>
-                ) : (
-                  <>
-                    <span>{language === 'fr' ? 'Suivant' : 'Next'}</span>
-                    <ArrowRight size={isMobile ? 13 : 15} />
-                  </>
-                )}
+                {language === 'fr' ? 'Passer' : 'Skip Tour'}
               </button>
+              <div className="flex items-center gap-2">
+                {!isFirstStep && (
+                  <button
+                    onClick={prevStep}
+                    className={cn(
+                      "flex items-center gap-1.5 font-medium rounded-xl transition-all",
+                      "text-foreground bg-muted hover:bg-muted/80 border border-border/50",
+                      isMobile ? "px-3 py-2 text-xs" : "px-4 py-2 text-sm"
+                    )}
+                  >
+                    <ArrowLeft size={isMobile ? 13 : 15} />
+                    <span>{language === 'fr' ? 'Retour' : 'Back'}</span>
+                  </button>
+                )}
+                <button
+                  onClick={isLastStep ? completeTour : nextStep}
+                  className={cn(
+                    "flex items-center gap-1.5 text-white rounded-xl font-semibold transition-all",
+                    "hover:brightness-110 active:scale-[0.97]",
+                    "shadow-lg shadow-momentum-orange/25",
+                    isMobile ? "px-4 py-2 text-xs" : "px-5 py-2 text-sm"
+                  )}
+                  style={{ backgroundColor: BRAND_ORANGE }}
+                >
+                  {isLastStep ? (
+                    <>
+                      <Check size={isMobile ? 13 : 15} strokeWidth={2.5} />
+                      <span>{language === 'fr' ? 'Commencer' : 'Get Started'}</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>{language === 'fr' ? 'Suivant' : 'Next'}</span>
+                      <ArrowRight size={isMobile ? 13 : 15} strokeWidth={2.5} />
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -532,15 +566,20 @@ export default function PlanViewTour({ onStartTour }: PlanViewTourProps = {}) {
         @keyframes tourCardEnter {
           from {
             opacity: 0;
-            transform: ${getTransform()} translateY(8px) scale(0.97);
+            transform: ${getTransform()} translateY(12px) scale(0.95);
           }
           to {
             opacity: 1;
             transform: ${getTransform()} translateY(0) scale(1);
           }
         }
+        @keyframes tourPulse {
+          0%, 100% { box-shadow: 0 0 0 0 rgba(255, 107, 0, 0.4); }
+          50% { box-shadow: 0 0 0 8px rgba(255, 107, 0, 0); }
+        }
         .tour-spotlight-target {
-          border-radius: 8px;
+          border-radius: 12px;
+          animation: tourPulse 2s ease-in-out infinite;
         }
       `}</style>
     </>
