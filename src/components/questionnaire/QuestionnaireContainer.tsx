@@ -1,8 +1,8 @@
-import React, { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Loader2, AlertCircle } from 'lucide-react';
-import { QuestionnaireContainerProps, Answer, SaveStatus } from '../../types/questionnaire';
+import { Loader2, AlertCircle, Sparkles } from 'lucide-react';
+import { QuestionnaireContainerProps, Answer } from '../../types/questionnaire';
 import { useQuestionnaireProgress } from '../../hooks/useQuestionnaireProgress';
 import { useAutoSave } from '../../hooks/useAutoSave';
 import { questionnaireService } from '../../lib/questionnaire-service';
@@ -10,11 +10,12 @@ import QuestionnaireHeader from './QuestionnaireHeader';
 import QuestionnaireProgress from './QuestionnaireProgress';
 import QuestionCard from './QuestionCard';
 import QuestionnaireNavigation from './QuestionnaireNavigation';
+import { cn } from '@/lib/utils';
+import { useTheme } from '../../contexts/ThemeContext';
 
 /**
  * QuestionnaireContainer Component
- * Main container that orchestrates the questionnaire flow
- * Manages state, auto-save, navigation, and animations
+ * Main container orchestrating the questionnaire flow with refined design
  */
 export default function QuestionnaireContainer({
   planId,
@@ -22,6 +23,7 @@ export default function QuestionnaireContainer({
   initialAnswers,
 }: QuestionnaireContainerProps) {
   const navigate = useNavigate();
+  const { t } = useTheme();
 
   // Use questionnaire progress hook
   const {
@@ -34,7 +36,6 @@ export default function QuestionnaireContainer({
     updateAnswer,
     isCurrentAnswered,
     isComplete,
-    progressPercentage,
     estimatedMinutesRemaining,
   } = useQuestionnaireProgress({
     planId,
@@ -80,7 +81,6 @@ export default function QuestionnaireContainer({
   // Scroll to top when initial loading completes
   useEffect(() => {
     if (!isLoading && questions.length > 0) {
-      // Use requestAnimationFrame to ensure DOM has updated after autoFocus
       requestAnimationFrame(() => {
         if (containerRef.current) {
           containerRef.current.scrollTo({ top: 0, behavior: 'instant' });
@@ -103,9 +103,8 @@ export default function QuestionnaireContainer({
 
   // Navigate to next question
   const handleNext = useCallback(() => {
-    // Validate required question
     if (currentQuestion?.required && !isCurrentAnswered) {
-      setError('Please answer this question before continuing.');
+      setError(t('questionnaire.answerRequired'));
       return;
     }
 
@@ -113,7 +112,7 @@ export default function QuestionnaireContainer({
       setCurrentIndex(currentIndex + 1);
       setError(null);
     }
-  }, [currentQuestion, isCurrentAnswered, currentIndex, questions.length, setCurrentIndex]);
+  }, [currentQuestion, isCurrentAnswered, currentIndex, questions.length, setCurrentIndex, t]);
 
   // Navigate to previous question
   const handlePrevious = useCallback(() => {
@@ -133,9 +132,8 @@ export default function QuestionnaireContainer({
 
   // Complete questionnaire
   const handleComplete = useCallback(async () => {
-    // Validate all required questions
     if (!isComplete) {
-      setError('Please answer all required questions before completing.');
+      setError(t('questionnaire.completeAllRequired'));
       return;
     }
 
@@ -143,17 +141,12 @@ export default function QuestionnaireContainer({
     setError(null);
 
     try {
-      // Save any pending answers
       await saveNow();
-
-      // Submit questionnaire (trigger generation)
       await questionnaireService.submitQuestionnaire(planId);
 
-      // Call onComplete callback
       if (onComplete) {
         onComplete();
       } else {
-        // Navigate to generation/plan view page
         navigate(`/plans/${planId}`);
       }
     } catch (err) {
@@ -161,36 +154,35 @@ export default function QuestionnaireContainer({
       setError(
         err instanceof Error
           ? err.message
-          : 'Failed to submit questionnaire. Please try again.'
+          : t('questionnaire.submitFailed')
       );
     } finally {
       setIsSubmitting(false);
     }
-  }, [isComplete, saveNow, planId, onComplete, navigate]);
+  }, [isComplete, saveNow, planId, onComplete, navigate, t]);
 
   // Handle back navigation
   const handleBack = useCallback(() => {
-    // Warn about unsaved changes
     if (saveStatus === 'unsaved') {
-      const confirm = window.confirm(
-        'You have unsaved changes. Are you sure you want to leave?'
-      );
+      const confirm = window.confirm(t('questionnaire.unsavedWarning'));
       if (!confirm) return;
     }
     navigate('/dashboard');
-  }, [saveStatus, navigate]);
+  }, [saveStatus, navigate, t]);
 
   // Loading state
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+      <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
-          <Loader2
-            size={48}
-            className="animate-spin mx-auto mb-4 text-[#FF6B00]"
-          />
-          <p className="text-gray-600 dark:text-gray-400">
-            Loading your questionnaire...
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+          >
+            <Loader2 className="w-10 h-10 text-momentum-orange mx-auto mb-4" />
+          </motion.div>
+          <p className="text-muted-foreground">
+            {t('questionnaire.loading')}
           </p>
         </div>
       </div>
@@ -200,28 +192,27 @@ export default function QuestionnaireContainer({
   // Error state
   if (loadError) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
+      <div className="min-h-screen flex items-center justify-center bg-background px-4">
         <div className="text-center max-w-md">
-          <AlertCircle
-            size={48}
-            className="mx-auto mb-4 text-red-500"
-          />
-          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-            Failed to load questionnaire
+          <div className="w-16 h-16 rounded-2xl bg-destructive/10 flex items-center justify-center mx-auto mb-4">
+            <AlertCircle className="w-8 h-8 text-destructive" />
+          </div>
+          <h2 className="text-xl font-semibold text-foreground mb-2">
+            {t('questionnaire.loadFailed')}
           </h2>
-          <p className="text-gray-600 dark:text-gray-400 mb-4">
+          <p className="text-muted-foreground mb-6">
             {loadError}
           </p>
           <button
             onClick={() => window.location.reload()}
-            className="
-              px-6 py-3 rounded-xl
-              bg-orange-500 hover:bg-orange-600
-              text-white font-semibold
-              transition-colors
-            "
+            className={cn(
+              "px-6 py-3 rounded-xl",
+              "bg-momentum-orange hover:bg-momentum-orange/90",
+              "text-white font-semibold",
+              "transition-colors"
+            )}
           >
-            Try Again
+            {t('questionnaire.tryAgain')}
           </button>
         </div>
       </div>
@@ -231,24 +222,24 @@ export default function QuestionnaireContainer({
   // No questions state
   if (questions.length === 0) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
+      <div className="min-h-screen flex items-center justify-center bg-background px-4">
         <div className="text-center max-w-md">
-          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-            No questions found
+          <h2 className="text-xl font-semibold text-foreground mb-2">
+            {t('questionnaire.noQuestions')}
           </h2>
-          <p className="text-gray-600 dark:text-gray-400 mb-4">
-            The questionnaire template is empty. Please contact support.
+          <p className="text-muted-foreground mb-6">
+            {t('questionnaire.templateEmpty')}
           </p>
           <button
             onClick={() => navigate('/dashboard')}
-            className="
-              px-6 py-3 rounded-xl
-              bg-orange-500 hover:bg-orange-600
-              text-white font-semibold
-              transition-colors
-            "
+            className={cn(
+              "px-6 py-3 rounded-xl",
+              "bg-momentum-orange hover:bg-momentum-orange/90",
+              "text-white font-semibold",
+              "transition-colors"
+            )}
           >
-            Back to Dashboard
+            {t('questionnaire.backToDashboard')}
           </button>
         </div>
       </div>
@@ -256,7 +247,13 @@ export default function QuestionnaireContainer({
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-background">
+      {/* Subtle background gradient */}
+      <div className="fixed inset-0 pointer-events-none">
+        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-momentum-orange/[0.02] rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+        <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-strategy-blue/[0.02] rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
+      </div>
+
       {/* Header */}
       <QuestionnaireHeader
         saveStatus={saveStatus}
@@ -266,16 +263,11 @@ export default function QuestionnaireContainer({
       {/* Main Content */}
       <div
         ref={containerRef}
-        className="
-          flex flex-col
-          min-h-[calc(100vh-64px)]
-          pb-24
-          overflow-y-auto
-        "
+        className="relative flex flex-col min-h-[calc(100vh-64px)] pb-28 overflow-y-auto"
       >
         {/* Progress Section */}
-        <div className="sticky top-0 bg-gray-50 dark:bg-gray-900 z-30 px-4 py-4 border-b border-gray-200 dark:border-gray-800">
-          <div className="max-w-3xl mx-auto">
+        <div className="sticky top-0 bg-background/80 backdrop-blur-xl z-30 px-4 py-4 border-b border-border/30">
+          <div className="max-w-2xl mx-auto">
             <QuestionnaireProgress
               currentIndex={currentIndex}
               totalQuestions={questions.length}
@@ -291,24 +283,14 @@ export default function QuestionnaireContainer({
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
-              className="max-w-3xl mx-auto px-4 mt-4"
+              className="max-w-2xl mx-auto px-4 mt-4"
             >
-              <div
-                className="
-                  flex items-center gap-3
-                  p-4 rounded-xl
-                  bg-red-50 dark:bg-red-900/20
-                  border border-red-200 dark:border-red-800
-                "
-                role="alert"
-              >
-                <AlertCircle
-                  size={20}
-                  className="text-red-600 dark:text-red-400 flex-shrink-0"
-                />
-                <p className="text-sm text-red-700 dark:text-red-300">
-                  {error}
-                </p>
+              <div className={cn(
+                "flex items-center gap-3 p-4 rounded-xl",
+                "bg-destructive/10 border border-destructive/20"
+              )} role="alert">
+                <AlertCircle className="w-5 h-5 text-destructive flex-shrink-0" />
+                <p className="text-sm text-destructive font-medium">{error}</p>
               </div>
             </motion.div>
           )}
@@ -352,32 +334,32 @@ export default function QuestionnaireContainer({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="
-              fixed inset-0 z-50
-              bg-black/50 backdrop-blur-sm
-              flex items-center justify-center
-            "
+            className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center"
           >
-            <div
-              className="
-                bg-white dark:bg-gray-800
-                rounded-2xl p-8
-                text-center
-                shadow-2xl
-                max-w-sm mx-4
-              "
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className={cn(
+                "bg-card rounded-2xl p-8",
+                "text-center shadow-2xl border border-border/50",
+                "max-w-sm mx-4"
+              )}
             >
-              <Loader2
-                size={48}
-                className="animate-spin mx-auto mb-4 text-[#FF6B00]"
-              />
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
-                Submitting your responses...
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+                className="w-12 h-12 mx-auto mb-4"
+              >
+                <Sparkles className="w-12 h-12 text-momentum-orange" />
+              </motion.div>
+              <h3 className="text-lg font-semibold text-foreground mb-2">
+                {t('questionnaire.submitting')}
               </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                Please wait while we process your answers.
+              <p className="text-sm text-muted-foreground">
+                {t('questionnaire.processingAnswers')}
               </p>
-            </div>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
