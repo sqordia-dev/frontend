@@ -15,6 +15,7 @@ import { businessPlanService } from '../lib/business-plan-service';
 import { BusinessPlan } from '../lib/types';
 import { useToast } from '../contexts/ToastContext';
 import { useCmsContent } from '../hooks/useCmsContent';
+import { useTheme } from '../contexts/ThemeContext';
 import DashboardTour from '../components/DashboardTour';
 import { getUserFriendlyError } from '../utils/error-messages';
 
@@ -40,6 +41,7 @@ import { PlanCard } from '@/components/dashboard/PlanCard';
 
 export default function DashboardPage() {
   const { getContent: cms } = useCmsContent('dashboard');
+  const { t, language } = useTheme();
   const toast = useToast();
   const [plans, setPlans] = useState<BusinessPlan[]>([]);
   const [loading, setLoading] = useState(true);
@@ -140,7 +142,8 @@ export default function DashboardPage() {
   // Calculate stats
   const draftCount = plans.filter(p => p.status?.toLowerCase() === 'draft' || !planProgress[p.id]?.isComplete).length;
   const completedCount = plans.filter(p => ['completed', 'generated', 'exported'].includes(p.status?.toLowerCase() || '')).length;
-  const recentActivity = plans.length > 0 ? new Date(Math.max(...plans.map(p => new Date(p.updatedAt || p.createdAt || 0).getTime()))).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : null;
+  const dateLocale = language === 'fr' ? 'fr-CA' : 'en-US';
+  const recentActivity = plans.length > 0 ? new Date(Math.max(...plans.map(p => new Date(p.updatedAt || p.createdAt || 0).getTime()))).toLocaleDateString(dateLocale, { month: 'short', day: 'numeric' }) : null;
 
   // Loading state with skeletons
   if (loading) {
@@ -238,25 +241,25 @@ export default function DashboardPage() {
         {/* Stats Grid */}
         <section className="dashboard-stats grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <StatsCard
-            title={cms('dashboard.totalProjects', 'dashboard.totalProjects') || 'Total Projects'}
+            title={cms('dashboard.totalProjects', 'dashboard.totalProjects') || t('dashboard.totalProjects')}
             value={plans.length}
             icon={<Layers className="h-5 w-5" />}
             variant="primary"
           />
           <StatsCard
-            title="In Progress"
+            title={cms('dashboard.inProgress', 'dashboard.inProgress') || t('dashboard.inProgress')}
             value={draftCount}
             icon={<FolderOpen className="h-5 w-5" />}
             variant="default"
           />
           <StatsCard
-            title="Completed"
+            title={cms('dashboard.completed', 'dashboard.completed') || t('dashboard.completed')}
             value={completedCount}
             icon={<TrendingUp className="h-5 w-5" />}
             variant="success"
           />
           <StatsCard
-            title="Last Activity"
+            title={cms('dashboard.lastActivity', 'dashboard.lastActivity') || t('dashboard.lastActivity')}
             value={recentActivity || '—'}
             icon={<Clock className="h-5 w-5" />}
             variant="default"
@@ -307,18 +310,20 @@ export default function DashboardPage() {
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-xl font-semibold tracking-tight text-foreground">
-                {cms('dashboard.recentProjects', 'dashboard.recentProjects') || 'Recent Projects'}
+                {cms('dashboard.recentProjects', 'dashboard.recentProjects') || t('dashboard.recentProjects')}
               </h2>
               <p className="text-sm text-muted-foreground mt-0.5">
                 {plans.length > 5
-                  ? `Showing ${recentPlans.length} of ${plans.length} projects`
-                  : `${plans.length} ${plans.length === 1 ? 'project' : 'projects'}`}
+                  ? t('dashboard.showingProjects').replace('{shown}', String(recentPlans.length)).replace('{total}', String(plans.length))
+                  : plans.length === 1
+                    ? t('dashboard.projectCount').replace('{count}', String(plans.length))
+                    : t('dashboard.projectsCount').replace('{count}', String(plans.length))}
               </p>
             </div>
             {plans.length > 5 && (
               <Button variant="ghost" size="sm" asChild className="text-muted-foreground hover:text-foreground">
                 <Link to="/projects">
-                  View all
+                  {t('dashboard.viewAll')}
                   <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
                 </Link>
               </Button>

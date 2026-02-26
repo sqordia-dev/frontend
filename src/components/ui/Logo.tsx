@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Brain, Home } from 'lucide-react';
+import { Sparkles, Home } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface LogoProps {
@@ -15,9 +15,9 @@ interface DashboardButtonProps {
 }
 
 const SIZES = {
-  sm: { container: 'w-8 h-8', icon: 'w-4 h-4', text: 'text-lg' },
-  md: { container: 'w-8 h-8', icon: 'w-5 h-5', text: 'text-xl' },
-  lg: { container: 'w-10 h-10', icon: 'w-6 h-6', text: 'text-2xl' },
+  sm: { container: 'h-8 w-8', icon: 'h-4 w-4', text: 'text-lg' },
+  md: { container: 'h-9 w-9', icon: 'h-4 w-4', text: 'text-xl' },
+  lg: { container: 'h-10 w-10', icon: 'h-5 w-5', text: 'text-2xl' },
 };
 
 export function Logo({ showText = true, size = 'md', linkTo, className }: LogoProps) {
@@ -26,14 +26,14 @@ export function Logo({ showText = true, size = 'md', linkTo, className }: LogoPr
   const content = (
     <div className={cn('flex items-center gap-3', className)}>
       <div className={cn(
-        'bg-[#1e3a5f] rounded-lg flex items-center justify-center',
+        'bg-gradient-to-br from-strategy-blue to-[#0f1a2e] rounded-xl flex items-center justify-center text-white shadow-md',
         sizeConfig.container
       )}>
-        <Brain className={cn('text-white', sizeConfig.icon)} />
+        <Sparkles className={sizeConfig.icon} />
       </div>
       {showText && (
         <span className={cn(
-          'font-bold tracking-tight text-gray-900 dark:text-white',
+          'font-bold tracking-tight text-foreground font-heading',
           sizeConfig.text
         )}>
           Sqordia
@@ -44,7 +44,7 @@ export function Logo({ showText = true, size = 'md', linkTo, className }: LogoPr
 
   if (linkTo) {
     return (
-      <Link to={linkTo} className="flex items-center">
+      <Link to={linkTo} className="flex items-center group">
         {content}
       </Link>
     );

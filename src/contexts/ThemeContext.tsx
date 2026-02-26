@@ -831,6 +831,15 @@ const translations = {
     'dashboard.duplicateError': 'Failed to duplicate plan',
     'dashboard.duplicatePlan': 'Duplicate plan',
     'dashboard.closeModal': 'Close modal',
+    'dashboard.totalProjects': 'Total Projects',
+    'dashboard.inProgress': 'In Progress',
+    'dashboard.completed': 'Completed',
+    'dashboard.lastActivity': 'Last Activity',
+    'dashboard.recentProjects': 'Recent Projects',
+    'dashboard.showingProjects': 'Showing {shown} of {total} projects',
+    'dashboard.projectCount': '{count} project',
+    'dashboard.projectsCount': '{count} projects',
+    'dashboard.viewAll': 'View all',
     // Dashboard Tour
     'dashboard.tour.welcome.title': 'Welcome to Your Dashboard!',
     'dashboard.tour.welcome.description': 'This is your command center. Here you can view all your business plans, track progress, and create new plans.',
@@ -2053,6 +2062,15 @@ const translations = {
     'dashboard.duplicateError': 'Échec de la duplication du plan',
     'dashboard.duplicatePlan': 'Dupliquer le plan',
     'dashboard.closeModal': 'Fermer la fenêtre',
+    'dashboard.totalProjects': 'Total des projets',
+    'dashboard.inProgress': 'En cours',
+    'dashboard.completed': 'Complétés',
+    'dashboard.lastActivity': 'Dernière activité',
+    'dashboard.recentProjects': 'Projets récents',
+    'dashboard.showingProjects': 'Affichage de {shown} sur {total} projets',
+    'dashboard.projectCount': '{count} projet',
+    'dashboard.projectsCount': '{count} projets',
+    'dashboard.viewAll': 'Voir tout',
     // Dashboard Tour
     'dashboard.tour.welcome.title': 'Bienvenue sur votre tableau de bord!',
     'dashboard.tour.welcome.description': 'C\'est votre centre de commande. Ici, vous pouvez voir tous vos plans d\'affaires, suivre la progression et créer de nouveaux plans.',
@@ -2470,7 +2488,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   const [language, setLanguageState] = useState<Language>(() => {
     const saved = localStorage.getItem('language');
-    return (saved as Language) || 'en';
+    return (saved as Language) || 'fr';
   });
 
   const [themeColorId, setThemeColorId] = useState<string>(() => {
