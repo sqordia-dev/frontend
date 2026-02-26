@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Check, X } from 'lucide-react';
+import { Check, X, Sparkles, Zap, Crown, Building2, ArrowLeft } from 'lucide-react';
 import { apiClient } from '../lib/api-client';
 import { useNavigate } from 'react-router-dom';
 import { organizationService } from '../lib/organization-service';
@@ -32,7 +32,7 @@ interface SubscriptionPlan {
 
 export default function SubscriptionPlansPage() {
   const navigate = useNavigate();
-  const { language } = useTheme();
+  const { language, theme } = useTheme();
   const { getContent: cms } = useCmsContent('subscription');
   const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
   const [loading, setLoading] = useState(true);
@@ -46,6 +46,12 @@ export default function SubscriptionPlansPage() {
   const [needsOrganization, setNeedsOrganization] = useState(false);
   const [subscribingPlanId, setSubscribingPlanId] = useState<string | null>(null);
 
+  // Brand colors
+  const strategyBlue = '#1A2B47';
+  const momentumOrange = '#FF6B00';
+  const momentumOrangeHover = '#E55F00';
+  const lightAIGrey = '#F4F7FA';
+
   useEffect(() => {
     checkOrganizations();
     loadPlans();
@@ -56,8 +62,6 @@ export default function SubscriptionPlansPage() {
       setLoadingOrgs(true);
       const token = localStorage.getItem('accessToken');
       if (!token) {
-        // No token means user is not logged in - don't check organizations
-        // Don't show organization creation screen for unauthenticated users
         setLoadingOrgs(false);
         setNeedsOrganization(false);
         setOrganizations([]);
@@ -66,24 +70,19 @@ export default function SubscriptionPlansPage() {
 
       try {
         const orgsResponse = await apiClient.get('/api/v1/organizations');
-        const orgs = orgsResponse.data?.isSuccess 
-          ? orgsResponse.data.value 
+        const orgs = orgsResponse.data?.isSuccess
+          ? orgsResponse.data.value
           : (Array.isArray(orgsResponse.data) ? orgsResponse.data : []);
         setOrganizations(orgs);
         setNeedsOrganization(orgs.length === 0);
       } catch (e: any) {
-        // Handle errors gracefully - don't show alerts, just log
         const status = e.response?.status;
         console.log('Error fetching organizations:', status, e.message);
-        
+
         if (status === 401 || status === 400) {
-          // 401 = Unauthorized, 400 = Bad Request (often means invalid/missing auth)
-          // User is not properly authenticated - don't show organization creation
-          // The API client interceptor should handle redirecting to login
           setNeedsOrganization(false);
           setOrganizations([]);
         } else if (status === 404) {
-          // Endpoint not found or no organizations - treat as no organizations
           const errorData = e.response?.data;
           if (errorData?.isSuccess && Array.isArray(errorData.value)) {
             setOrganizations(errorData.value);
@@ -96,20 +95,15 @@ export default function SubscriptionPlansPage() {
             setNeedsOrganization(true);
           }
         } else {
-          // Server errors (500, etc.) or network errors - silently treat as no organizations
-          // User can still create one if needed (if they're authenticated)
           console.warn('Server error when fetching organizations, assuming none exist:', status || 'network error');
           setOrganizations([]);
-          // Only show organization creation if we have a token (user is logged in)
           setNeedsOrganization(!!token);
         }
       }
     } catch (err) {
-      // Catch any unexpected errors
       console.error('Unexpected error checking organizations:', err);
       const token = localStorage.getItem('accessToken');
       setOrganizations([]);
-      // Only show organization creation if user is logged in
       setNeedsOrganization(!!token);
     } finally {
       setLoadingOrgs(false);
@@ -130,12 +124,9 @@ export default function SubscriptionPlansPage() {
         organizationType: 'Startup',
         description: orgDescription || undefined
       });
-      
-      // Update organizations list
+
       setOrganizations([...organizations, newOrg]);
       setNeedsOrganization(false);
-      
-      // Clear form
       setOrgName('');
       setOrgDescription('');
     } catch (err: any) {
@@ -146,16 +137,14 @@ export default function SubscriptionPlansPage() {
     }
   };
 
-
   const loadPlans = async () => {
     try {
       setLoading(true);
       setError(null);
       const response = await apiClient.get('/api/v1/subscriptions/plans');
-      
-      // Handle different response formats
+
       let plansData: SubscriptionPlan[] = [];
-      
+
       if (response.data?.isSuccess && response.data.value) {
         plansData = Array.isArray(response.data.value) ? response.data.value : [];
       } else if (Array.isArray(response.data)) {
@@ -163,24 +152,21 @@ export default function SubscriptionPlansPage() {
       } else if (response.data?.value && Array.isArray(response.data.value)) {
         plansData = response.data.value;
       }
-      
-      // Sort plans by displayOrder if available, otherwise by planType
+
       plansData.sort((a, b) => {
         const orderA = (a as any).displayOrder ?? getPlanOrder(a.planType);
         const orderB = (b as any).displayOrder ?? getPlanOrder(b.planType);
         return orderA - orderB;
       });
-      
+
       setPlans(plansData);
-      
+
       if (plansData.length === 0) {
         setError('No subscription plans available. Please contact support.');
       }
     } catch (err: any) {
       console.error('Failed to load plans:', err);
-      // Handle 400/404 as "endpoint not available" - use default plans
       if (err.response?.status === 400 || err.response?.status === 404) {
-        // Provide default plans when endpoint doesn't exist
         const defaultPlans: SubscriptionPlan[] = [
           {
             id: 'free',
@@ -259,6 +245,17 @@ export default function SubscriptionPlansPage() {
     }
   };
 
+  const getPlanIcon = (planType: string) => {
+    switch (planType.toLowerCase()) {
+      case 'pro':
+        return <Crown className="w-8 h-8" />;
+      case 'enterprise':
+        return <Sparkles className="w-8 h-8" />;
+      default:
+        return <Zap className="w-8 h-8" />;
+    }
+  };
+
   const formatPrice = (price: number, currency: string = 'CAD') => {
     return new Intl.NumberFormat('en-CA', {
       style: 'currency',
@@ -276,51 +273,149 @@ export default function SubscriptionPlansPage() {
     return yearlyFromMonthly - plan.yearlyPrice;
   };
 
+  const handleSubscribe = async (plan: SubscriptionPlan) => {
+    try {
+      setSubscribingPlanId(plan.id);
+
+      const token = localStorage.getItem('accessToken');
+      if (!token) {
+        alert(cms('subscription.login_required', 'subscription.loginRequired') || 'Please log in to subscribe to a plan.');
+        navigate('/login');
+        return;
+      }
+
+      if (organizations.length === 0) {
+        alert(cms('subscription.org_required', 'subscription.orgRequired') || 'Please create an organization first. Refreshing page...');
+        window.location.reload();
+        return;
+      }
+
+      const organizationId = organizations[0].id;
+
+      let existingSubscription = null;
+      try {
+        existingSubscription = await subscriptionService.getCurrent();
+      } catch (e) {
+        console.log('No existing subscription found');
+      }
+
+      if (plan.planType === 'Free') {
+        if (existingSubscription) {
+          await subscriptionService.changePlan(plan.id, billingCycle === 'yearly');
+          alert(cms('subscription.plan_changed', 'subscription.planChanged') || `Successfully changed to ${plan.name}!`);
+          navigate('/subscription');
+        } else {
+          await subscriptionService.subscribe(plan.id, organizationId, billingCycle === 'yearly');
+          alert(cms('subscription.subscribed', 'subscription.subscribed') || `Successfully subscribed to ${plan.name}!`);
+          navigate('/subscription');
+        }
+        return;
+      }
+
+      const checkoutUrl = await subscriptionService.createCheckoutSession(
+        plan.id,
+        organizationId,
+        billingCycle === 'yearly'
+      );
+
+      window.location.href = checkoutUrl;
+    } catch (err: any) {
+      console.error('Failed to subscribe:', err);
+      const errorMessage = err.message ||
+                         err.response?.data?.message ||
+                         err.response?.data?.errorMessage ||
+                         'Failed to subscribe';
+      alert(cms('subscription.error', 'subscription.error') || `Failed to subscribe: ${errorMessage}`);
+    } finally {
+      setSubscribingPlanId(null);
+    }
+  };
+
   if (loading || loadingOrgs) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: theme === 'dark' ? '#111827' : lightAIGrey }}>
+        <div className="text-center">
+          <div className="relative w-16 h-16 mx-auto mb-4">
+            <div
+              className="absolute inset-0 rounded-full border-4"
+              style={{ borderColor: theme === 'dark' ? '#374151' : '#E5E7EB' }}
+            />
+            <div
+              className="absolute inset-0 rounded-full border-4 border-t-transparent animate-spin"
+              style={{ borderColor: `${momentumOrange} transparent transparent transparent` }}
+            />
+          </div>
+          <p className="text-gray-600 dark:text-gray-400 font-medium">Loading plans...</p>
+        </div>
       </div>
     );
   }
 
-  // Show organization creation step first if needed
+  // Organization Creation Screen
   if (needsOrganization) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="min-h-screen py-12 px-4 sm:px-6 lg:px-8" style={{ backgroundColor: theme === 'dark' ? '#111827' : lightAIGrey }}>
         <div className="max-w-2xl mx-auto">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8">
+          <div
+            className="rounded-2xl shadow-xl border-2 p-8"
+            style={{
+              backgroundColor: theme === 'dark' ? '#1F2937' : '#FFFFFF',
+              borderColor: theme === 'dark' ? '#374151' : strategyBlue
+            }}
+          >
             <div className="text-center mb-8">
-              <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-blue-100 dark:bg-blue-900 mb-4">
-                <svg className="h-8 w-8 text-blue-600 dark:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                </svg>
+              <div
+                className="mx-auto flex items-center justify-center h-16 w-16 rounded-xl mb-4"
+                style={{ backgroundColor: strategyBlue }}
+              >
+                <Building2 className="h-8 w-8 text-white" />
               </div>
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+              <h1
+                className="text-3xl font-bold mb-2"
+                style={{ color: theme === 'dark' ? '#FFFFFF' : strategyBlue }}
+              >
                 Create an Organization First
               </h1>
-              <p className="text-gray-600 dark:text-gray-300">
+              <p className="text-gray-600 dark:text-gray-400">
                 You need to create an organization before you can subscribe to a plan. This helps us organize your business plans and team members.
               </p>
             </div>
 
             {error && (
-              <div className="mb-6 p-4 bg-red-100 dark:bg-red-900 border border-red-400 text-red-700 dark:text-red-300 rounded-lg">
+              <div
+                className="mb-6 p-4 rounded-xl border-2"
+                style={{
+                  backgroundColor: theme === 'dark' ? 'rgba(239, 68, 68, 0.1)' : '#FEF2F2',
+                  borderColor: theme === 'dark' ? 'rgba(239, 68, 68, 0.3)' : '#FECACA',
+                  color: theme === 'dark' ? '#FCA5A5' : '#DC2626'
+                }}
+              >
                 {error}
               </div>
             )}
 
             <div className="space-y-6">
               <div>
-                <label htmlFor="orgName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Organization Name <span className="text-red-500">*</span>
+                <label
+                  htmlFor="orgName"
+                  className="block text-sm font-semibold mb-2"
+                  style={{ color: theme === 'dark' ? '#D1D5DB' : strategyBlue }}
+                >
+                  Organization Name <span style={{ color: '#DC2626' }}>*</span>
                 </label>
                 <input
                   id="orgName"
                   type="text"
                   value={orgName}
                   onChange={(e) => setOrgName(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                  className="w-full px-4 py-3 rounded-xl border-2 focus:outline-none transition-all"
+                  style={{
+                    backgroundColor: theme === 'dark' ? '#374151' : '#FFFFFF',
+                    borderColor: theme === 'dark' ? '#4B5563' : '#E5E7EB',
+                    color: theme === 'dark' ? '#FFFFFF' : strategyBlue
+                  }}
+                  onFocus={(e) => e.currentTarget.style.borderColor = momentumOrange}
+                  onBlur={(e) => e.currentTarget.style.borderColor = theme === 'dark' ? '#4B5563' : '#E5E7EB'}
                   placeholder="Enter your organization name"
                   disabled={creatingOrg}
                   onKeyPress={(e) => {
@@ -332,36 +427,57 @@ export default function SubscriptionPlansPage() {
               </div>
 
               <div>
-                <label htmlFor="orgDescription" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label
+                  htmlFor="orgDescription"
+                  className="block text-sm font-semibold mb-2"
+                  style={{ color: theme === 'dark' ? '#D1D5DB' : strategyBlue }}
+                >
                   Description (Optional)
                 </label>
                 <textarea
                   id="orgDescription"
                   value={orgDescription}
                   onChange={(e) => setOrgDescription(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                  className="w-full px-4 py-3 rounded-xl border-2 focus:outline-none transition-all resize-none"
+                  style={{
+                    backgroundColor: theme === 'dark' ? '#374151' : '#FFFFFF',
+                    borderColor: theme === 'dark' ? '#4B5563' : '#E5E7EB',
+                    color: theme === 'dark' ? '#FFFFFF' : strategyBlue
+                  }}
+                  onFocus={(e) => e.currentTarget.style.borderColor = momentumOrange}
+                  onBlur={(e) => e.currentTarget.style.borderColor = theme === 'dark' ? '#4B5563' : '#E5E7EB'}
                   placeholder="Tell us about your organization"
                   rows={4}
                   disabled={creatingOrg}
                 />
               </div>
 
-              <div className="flex justify-end space-x-3">
+              <div className="flex justify-end gap-3 pt-4">
                 <button
                   onClick={() => navigate('/dashboard')}
-                  className="px-6 py-3 text-gray-700 dark:text-gray-300 bg-gray-200 dark:bg-gray-700 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+                  className="px-6 py-3 rounded-xl font-semibold transition-all border-2"
+                  style={{
+                    borderColor: theme === 'dark' ? '#4B5563' : '#E5E7EB',
+                    color: theme === 'dark' ? '#D1D5DB' : '#6B7280',
+                    backgroundColor: 'transparent'
+                  }}
                   disabled={creatingOrg}
                 >
                   Go to Dashboard
                 </button>
                 <button
                   onClick={handleCreateOrganization}
-                  className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center space-x-2"
+                  className="px-6 py-3 rounded-xl font-semibold text-white transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                  style={{ backgroundColor: momentumOrange }}
+                  onMouseEnter={(e) => {
+                    if (!creatingOrg && orgName.trim()) e.currentTarget.style.backgroundColor = momentumOrangeHover;
+                  }}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = momentumOrange}
                   disabled={creatingOrg || !orgName.trim()}
                 >
                   {creatingOrg ? (
                     <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                      <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
                       <span>Creating...</span>
                     </>
                   ) : (
@@ -378,12 +494,15 @@ export default function SubscriptionPlansPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-red-600 dark:text-red-400 mb-4">Error: {error}</p>
+      <div className="min-h-screen flex items-center justify-center px-4" style={{ backgroundColor: theme === 'dark' ? '#111827' : lightAIGrey }}>
+        <div className="text-center max-w-md">
+          <p className="mb-4" style={{ color: theme === 'dark' ? '#FCA5A5' : '#DC2626' }}>Error: {error}</p>
           <button
             onClick={loadPlans}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            className="px-6 py-3 rounded-xl font-semibold text-white transition-all shadow-lg hover:shadow-xl"
+            style={{ backgroundColor: momentumOrange }}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = momentumOrangeHover}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = momentumOrange}
           >
             Retry
           </button>
@@ -393,7 +512,7 @@ export default function SubscriptionPlansPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen py-12 px-4 sm:px-6 lg:px-8" style={{ backgroundColor: theme === 'dark' ? '#111827' : lightAIGrey }}>
       <SEO
         title={cms('subscription.seo_title', '') || (language === 'fr'
           ? "Plans d'Abonnement | Sqordia"
@@ -405,41 +524,70 @@ export default function SubscriptionPlansPage() {
         noindex={true}
         nofollow={true}
       />
+
       <div className="max-w-7xl mx-auto">
+        {/* Back Button */}
+        <button
+          onClick={() => navigate(-1)}
+          className="inline-flex items-center gap-2 mb-8 transition-all group"
+          style={{ color: theme === 'dark' ? '#D1D5DB' : strategyBlue }}
+        >
+          <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+          <span className="font-medium">Back</span>
+        </button>
+
+        {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
+          <h1
+            className="text-4xl md:text-5xl font-bold mb-4"
+            style={{ color: theme === 'dark' ? '#FFFFFF' : strategyBlue }}
+          >
             {cms('subscription.page_title', '') || 'Choose Your Plan'}
           </h1>
-          <p className="text-xl text-gray-600 dark:text-gray-400 mb-8">
+          <p className="text-xl text-gray-600 dark:text-gray-400 mb-8 max-w-2xl mx-auto">
             Select the perfect plan for your business needs
           </p>
 
           {/* Billing Cycle Toggle */}
-          <div className="flex items-center justify-center gap-4 mb-8">
-            <span className={`text-sm font-medium ${billingCycle === 'monthly' ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400'}`}>
+          <div className="inline-flex items-center gap-4 p-2 rounded-xl" style={{ backgroundColor: theme === 'dark' ? '#1F2937' : '#FFFFFF' }}>
+            <span
+              className={`text-sm font-semibold transition-colors ${billingCycle === 'monthly' ? '' : 'opacity-50'}`}
+              style={{ color: billingCycle === 'monthly' ? momentumOrange : (theme === 'dark' ? '#9CA3AF' : '#6B7280') }}
+            >
               {cms('subscription.monthly', '') || 'Monthly'}
             </span>
             <button
               onClick={() => setBillingCycle(billingCycle === 'monthly' ? 'yearly' : 'monthly')}
-              className="relative inline-flex h-6 w-11 items-center rounded-full bg-blue-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              className="relative inline-flex h-7 w-12 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2"
+              style={{ backgroundColor: momentumOrange, outlineColor: momentumOrange }}
             >
               <span
-                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-md transition-transform ${
                   billingCycle === 'yearly' ? 'translate-x-6' : 'translate-x-1'
                 }`}
               />
             </button>
-            <span className={`text-sm font-medium ${billingCycle === 'yearly' ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400'}`}>
+            <span
+              className={`text-sm font-semibold transition-colors ${billingCycle === 'yearly' ? '' : 'opacity-50'}`}
+              style={{ color: billingCycle === 'yearly' ? momentumOrange : (theme === 'dark' ? '#9CA3AF' : '#6B7280') }}
+            >
               {cms('subscription.yearly', '') || 'Yearly'}
             </span>
             {billingCycle === 'yearly' && (
-              <span className="px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 text-xs font-semibold rounded-full">
+              <span
+                className="px-3 py-1 rounded-full text-xs font-bold"
+                style={{
+                  backgroundColor: theme === 'dark' ? 'rgba(255, 107, 0, 0.2)' : '#FFF4ED',
+                  color: momentumOrange
+                }}
+              >
                 Save up to 17%
               </span>
             )}
           </div>
         </div>
 
+        {/* Plans Grid */}
         {plans.length === 0 && !loading && !error ? (
           <div className="text-center py-12">
             <p className="text-gray-600 dark:text-gray-400 mb-4">
@@ -447,242 +595,199 @@ export default function SubscriptionPlansPage() {
             </p>
             <button
               onClick={loadPlans}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              className="px-6 py-3 rounded-xl font-semibold text-white transition-all shadow-lg hover:shadow-xl"
+              style={{ backgroundColor: momentumOrange }}
             >
               Refresh
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
             {plans.map((plan) => {
-            const price = getPrice(plan);
-            const savings = getYearlySavings(plan);
-            const isPopular = plan.planType === 'Pro';
+              const price = getPrice(plan);
+              const savings = getYearlySavings(plan);
+              const isPopular = plan.planType === 'Pro';
 
-            return (
-              <div
-                key={plan.id}
-                className={`relative bg-white dark:bg-gray-800 rounded-2xl shadow-lg border-2 ${
-                  isPopular
-                    ? 'border-blue-500 scale-105'
-                    : 'border-gray-200 dark:border-gray-700'
-                } overflow-hidden`}
-              >
-                {isPopular && (
-                  <div className="absolute top-0 left-0 right-0 bg-blue-600 text-white text-center py-1 text-sm font-semibold">
-                    {cms('subscription.popular', '') || 'Most Popular'}
-                  </div>
-                )}
-
-                <div className={`p-8 ${isPopular ? 'pt-12' : ''}`}>
-                  <div className="mb-6">
-                    <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                      {plan.name}
-                    </h3>
-                    <p className="text-gray-600 dark:text-gray-400 text-sm">
-                      {plan.description}
-                    </p>
-                  </div>
-
-                  <div className="mb-6">
-                    <div className="flex items-baseline">
-                      <span className="text-4xl font-bold text-gray-900 dark:text-white">
-                        {formatPrice(price, plan.currency)}
-                      </span>
-                      <span className="text-gray-500 dark:text-gray-400 ml-2">
-                        /{billingCycle === 'yearly' ? 'year' : 'month'}
-                      </span>
+              return (
+                <div
+                  key={plan.id}
+                  className={`relative rounded-2xl shadow-xl border-2 overflow-hidden transition-all hover:shadow-2xl ${
+                    isPopular ? 'md:scale-105 md:-my-4' : ''
+                  }`}
+                  style={{
+                    backgroundColor: theme === 'dark' ? '#1F2937' : '#FFFFFF',
+                    borderColor: isPopular ? momentumOrange : (theme === 'dark' ? '#374151' : '#E5E7EB')
+                  }}
+                >
+                  {/* Popular Badge */}
+                  {isPopular && (
+                    <div
+                      className="absolute top-0 left-0 right-0 text-center py-2 text-sm font-bold text-white"
+                      style={{ backgroundColor: momentumOrange }}
+                    >
+                      {cms('subscription.popular', '') || 'Most Popular'}
                     </div>
-                    {billingCycle === 'yearly' && savings > 0 && (
-                      <p className="text-sm text-green-600 dark:text-green-400 mt-1">
-                        Save {formatPrice(savings, plan.currency)} per year
+                  )}
+
+                  <div className={`p-8 ${isPopular ? 'pt-14' : ''}`}>
+                    {/* Plan Header */}
+                    <div className="mb-6">
+                      <div
+                        className="w-14 h-14 rounded-xl flex items-center justify-center mb-4"
+                        style={{
+                          backgroundColor: isPopular ? momentumOrange : (theme === 'dark' ? '#374151' : lightAIGrey),
+                          color: isPopular ? '#FFFFFF' : momentumOrange
+                        }}
+                      >
+                        {getPlanIcon(plan.planType)}
+                      </div>
+                      <h3
+                        className="text-2xl font-bold mb-2"
+                        style={{ color: theme === 'dark' ? '#FFFFFF' : strategyBlue }}
+                      >
+                        {plan.name}
+                      </h3>
+                      <p className="text-gray-600 dark:text-gray-400 text-sm">
+                        {plan.description}
                       </p>
-                    )}
-                  </div>
+                    </div>
 
-                  <button
-                    className={`w-full py-3 px-6 rounded-lg font-semibold transition-colors mb-6 ${
-                      isPopular
-                        ? 'bg-blue-600 text-white hover:bg-blue-700'
-                        : 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-600'
-                    }`}
-                    onClick={async () => {
-                      try {
-                        setSubscribingPlanId(plan.id);
-                        
-                        // Check if user is logged in
-                        const token = localStorage.getItem('accessToken');
-                        if (!token) {
-                          alert(cms('subscription.login_required', 'subscription.loginRequired') || 'Please log in to subscribe to a plan.');
-                          navigate('/login');
-                          return;
+                    {/* Price */}
+                    <div className="mb-6">
+                      <div className="flex items-baseline gap-1">
+                        <span
+                          className="text-4xl font-bold"
+                          style={{ color: momentumOrange }}
+                        >
+                          {formatPrice(price, plan.currency)}
+                        </span>
+                        <span className="text-gray-500 dark:text-gray-400 text-sm">
+                          /{billingCycle === 'yearly' ? 'year' : 'month'}
+                        </span>
+                      </div>
+                      {billingCycle === 'yearly' && savings > 0 && (
+                        <p
+                          className="text-sm mt-1 font-medium"
+                          style={{ color: theme === 'dark' ? '#34D399' : '#059669' }}
+                        >
+                          Save {formatPrice(savings, plan.currency)} per year
+                        </p>
+                      )}
+                    </div>
+
+                    {/* CTA Button */}
+                    <button
+                      onClick={() => handleSubscribe(plan)}
+                      disabled={subscribingPlanId === plan.id}
+                      className={`w-full py-3.5 px-6 rounded-xl font-semibold transition-all mb-6 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed ${
+                        isPopular ? 'text-white shadow-lg hover:shadow-xl' : ''
+                      }`}
+                      style={{
+                        backgroundColor: isPopular ? momentumOrange : 'transparent',
+                        borderWidth: isPopular ? 0 : 2,
+                        borderColor: momentumOrange,
+                        color: isPopular ? '#FFFFFF' : momentumOrange
+                      }}
+                      onMouseEnter={(e) => {
+                        if (isPopular) {
+                          e.currentTarget.style.backgroundColor = momentumOrangeHover;
+                        } else {
+                          e.currentTarget.style.backgroundColor = momentumOrange;
+                          e.currentTarget.style.color = '#FFFFFF';
                         }
-
-                        // Use the organizations we already have from page load
-                        if (organizations.length === 0) {
-                          alert(cms('subscription.org_required', 'subscription.orgRequired') || 'Please create an organization first. Refreshing page...');
-                          window.location.reload();
-                          return;
+                      }}
+                      onMouseLeave={(e) => {
+                        if (isPopular) {
+                          e.currentTarget.style.backgroundColor = momentumOrange;
+                        } else {
+                          e.currentTarget.style.backgroundColor = 'transparent';
+                          e.currentTarget.style.color = momentumOrange;
                         }
+                      }}
+                    >
+                      {subscribingPlanId === plan.id ? (
+                        <>
+                          <div className="animate-spin rounded-full h-5 w-5 border-2 border-current border-t-transparent"></div>
+                          <span>{cms('subscription.processing', '') || 'Processing...'}</span>
+                        </>
+                      ) : plan.planType === 'Free' ? (
+                        cms('subscription.get_started', '') || 'Get Started'
+                      ) : (
+                        cms('subscription.subscribe', '') || 'Subscribe'
+                      )}
+                    </button>
 
-                        const organizationId = organizations[0].id;
-                        
-                        // Check if user already has a subscription
-                        let existingSubscription = null;
-                        try {
-                          existingSubscription = await subscriptionService.getCurrent();
-                        } catch (e) {
-                          console.log('No existing subscription found');
-                        }
+                    {/* Gradient Divider */}
+                    <div
+                      className="h-px mb-6"
+                      style={{
+                        background: `linear-gradient(to right, transparent, ${theme === 'dark' ? '#374151' : '#E5E7EB'}, transparent)`
+                      }}
+                    />
 
-                        // For Free plan, use direct subscription (no Stripe)
-                        if (plan.planType === 'Free') {
-                          if (existingSubscription) {
-                            // Change plan
-                            await subscriptionService.changePlan(plan.id, billingCycle === 'yearly');
-                            alert(cms('subscription.plan_changed', 'subscription.planChanged') || `Successfully changed to ${plan.name}!`);
-                            navigate('/subscription');
-                          } else {
-                            // Subscribe directly
-                            await subscriptionService.subscribe(plan.id, organizationId, billingCycle === 'yearly');
-                            alert(cms('subscription.subscribed', 'subscription.subscribed') || `Successfully subscribed to ${plan.name}!`);
-                            navigate('/subscription');
-                          }
-                          return;
-                        }
-
-                        // For paid plans, use Stripe checkout
-                        const successUrl = `${window.location.origin}/checkout/success?session_id={CHECKOUT_SESSION_ID}`;
-                        const cancelUrl = `${window.location.origin}/checkout/cancel`;
-
-                        const checkoutUrl = await subscriptionService.createCheckoutSession(
-                          plan.id,
-                          organizationId,
-                          billingCycle === 'yearly'
-                        );
-
-                        // Redirect to Stripe Checkout
-                        window.location.href = checkoutUrl;
-                      } catch (err: any) {
-                        console.error('Failed to subscribe:', err);
-                        const errorMessage = err.message || 
-                                           err.response?.data?.message || 
-                                           err.response?.data?.errorMessage || 
-                                           'Failed to subscribe';
-                        alert(cms('subscription.error', 'subscription.error') || `Failed to subscribe: ${errorMessage}`);
-                      } finally {
-                        setSubscribingPlanId(null);
-                      }
-                    }}
-                    disabled={subscribingPlanId === plan.id}
-                  >
-                    {subscribingPlanId === plan.id
-                      ? (cms('subscription.processing', 'subscription.processing') || 'Processing...')
-                      : plan.planType === 'Free'
-                        ? (cms('subscription.get_started', 'subscription.getStarted') || 'Get Started')
-                        : (cms('subscription.subscribe', 'subscription.subscribe') || 'Subscribe')
-                    }
-                  </button>
-
-                  <div className="space-y-4">
-                    <div className="flex items-start">
-                      <Check className="w-5 h-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" />
-                      <span className="text-sm text-gray-700 dark:text-gray-300">
-                        {plan.maxBusinessPlans === 999999 ? 'Unlimited' : plan.maxBusinessPlans} Business Plans
-                      </span>
-                    </div>
-                    <div className="flex items-start">
-                      <Check className="w-5 h-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" />
-                      <span className="text-sm text-gray-700 dark:text-gray-300">
-                        {plan.maxOrganizations === 999999 ? 'Unlimited' : plan.maxOrganizations} Organizations
-                      </span>
-                    </div>
-                    <div className="flex items-start">
-                      <Check className="w-5 h-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" />
-                      <span className="text-sm text-gray-700 dark:text-gray-300">
-                        {plan.maxTeamMembers === 999999 ? 'Unlimited' : plan.maxTeamMembers} Team Members
-                      </span>
-                    </div>
-                    <div className="flex items-start">
-                      {plan.hasAdvancedAI ? (
-                        <Check className="w-5 h-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" />
-                      ) : (
-                        <X className="w-5 h-5 text-gray-400 mr-2 flex-shrink-0 mt-0.5" />
-                      )}
-                      <span className={`text-sm ${plan.hasAdvancedAI ? 'text-gray-700 dark:text-gray-300' : 'text-gray-400'}`}>
-                        Advanced AI Features
-                      </span>
-                    </div>
-                    <div className="flex items-start">
-                      {plan.hasExportPDF ? (
-                        <Check className="w-5 h-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" />
-                      ) : (
-                        <X className="w-5 h-5 text-gray-400 mr-2 flex-shrink-0 mt-0.5" />
-                      )}
-                      <span className={`text-sm ${plan.hasExportPDF ? 'text-gray-700 dark:text-gray-300' : 'text-gray-400'}`}>
-                        Export to PDF
-                      </span>
-                    </div>
-                    <div className="flex items-start">
-                      {plan.hasExportWord ? (
-                        <Check className="w-5 h-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" />
-                      ) : (
-                        <X className="w-5 h-5 text-gray-400 mr-2 flex-shrink-0 mt-0.5" />
-                      )}
-                      <span className={`text-sm ${plan.hasExportWord ? 'text-gray-700 dark:text-gray-300' : 'text-gray-400'}`}>
-                        Export to Word
-                      </span>
-                    </div>
-                    <div className="flex items-start">
-                      {plan.hasExportExcel ? (
-                        <Check className="w-5 h-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" />
-                      ) : (
-                        <X className="w-5 h-5 text-gray-400 mr-2 flex-shrink-0 mt-0.5" />
-                      )}
-                      <span className={`text-sm ${plan.hasExportExcel ? 'text-gray-700 dark:text-gray-300' : 'text-gray-400'}`}>
-                        Export to Excel
-                      </span>
-                    </div>
-                    <div className="flex items-start">
-                      {plan.hasPrioritySupport ? (
-                        <Check className="w-5 h-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" />
-                      ) : (
-                        <X className="w-5 h-5 text-gray-400 mr-2 flex-shrink-0 mt-0.5" />
-                      )}
-                      <span className={`text-sm ${plan.hasPrioritySupport ? 'text-gray-700 dark:text-gray-300' : 'text-gray-400'}`}>
-                        Priority Support
-                      </span>
-                    </div>
-                    <div className="flex items-start">
-                      {plan.hasCustomBranding ? (
-                        <Check className="w-5 h-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" />
-                      ) : (
-                        <X className="w-5 h-5 text-gray-400 mr-2 flex-shrink-0 mt-0.5" />
-                      )}
-                      <span className={`text-sm ${plan.hasCustomBranding ? 'text-gray-700 dark:text-gray-300' : 'text-gray-400'}`}>
-                        Custom Branding
-                      </span>
-                    </div>
-                    <div className="flex items-start">
-                      {plan.hasAPIAccess ? (
-                        <Check className="w-5 h-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" />
-                      ) : (
-                        <X className="w-5 h-5 text-gray-400 mr-2 flex-shrink-0 mt-0.5" />
-                      )}
-                      <span className={`text-sm ${plan.hasAPIAccess ? 'text-gray-700 dark:text-gray-300' : 'text-gray-400'}`}>
-                        API Access
-                      </span>
+                    {/* Features */}
+                    <div className="space-y-3">
+                      <FeatureItem
+                        enabled={true}
+                        theme={theme}
+                        text={`${plan.maxBusinessPlans === 999999 ? 'Unlimited' : plan.maxBusinessPlans} Business Plans`}
+                      />
+                      <FeatureItem
+                        enabled={true}
+                        theme={theme}
+                        text={`${plan.maxOrganizations === 999999 ? 'Unlimited' : plan.maxOrganizations} Organizations`}
+                      />
+                      <FeatureItem
+                        enabled={true}
+                        theme={theme}
+                        text={`${plan.maxTeamMembers === 999999 ? 'Unlimited' : plan.maxTeamMembers} Team Members`}
+                      />
+                      <FeatureItem enabled={plan.hasAdvancedAI} theme={theme} text="Advanced AI Features" />
+                      <FeatureItem enabled={plan.hasExportPDF} theme={theme} text="Export to PDF" />
+                      <FeatureItem enabled={plan.hasExportWord} theme={theme} text="Export to Word" />
+                      <FeatureItem enabled={plan.hasExportExcel} theme={theme} text="Export to Excel" />
+                      <FeatureItem enabled={plan.hasPrioritySupport} theme={theme} text="Priority Support" />
+                      <FeatureItem enabled={plan.hasCustomBranding} theme={theme} text="Custom Branding" />
+                      <FeatureItem enabled={plan.hasAPIAccess} theme={theme} text="API Access" />
                     </div>
                   </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
           </div>
         )}
       </div>
-
     </div>
   );
 }
 
+// Feature Item Component
+function FeatureItem({ enabled, theme, text }: { enabled: boolean; theme: string; text: string }) {
+  const momentumOrange = '#FF6B00';
+
+  return (
+    <div className="flex items-start gap-3">
+      {enabled ? (
+        <div
+          className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
+          style={{ backgroundColor: theme === 'dark' ? 'rgba(255, 107, 0, 0.2)' : '#FFF4ED' }}
+        >
+          <Check className="w-3 h-3" style={{ color: momentumOrange }} />
+        </div>
+      ) : (
+        <div
+          className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
+          style={{ backgroundColor: theme === 'dark' ? 'rgba(107, 114, 128, 0.2)' : '#F3F4F6' }}
+        >
+          <X className="w-3 h-3" style={{ color: theme === 'dark' ? '#6B7280' : '#9CA3AF' }} />
+        </div>
+      )}
+      <span
+        className={`text-sm ${enabled ? '' : 'opacity-50'}`}
+        style={{ color: theme === 'dark' ? (enabled ? '#D1D5DB' : '#6B7280') : (enabled ? '#374151' : '#9CA3AF') }}
+      >
+        {text}
+      </span>
+    </div>
+  );
+}

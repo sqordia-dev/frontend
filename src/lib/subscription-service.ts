@@ -153,17 +153,22 @@ class SubscriptionService {
   async getCurrent(): Promise<any> {
     try {
       const response = await apiClient.get('/api/v1/subscriptions/current');
-      
+
+      // Handle new 200 response format: { subscription: null, message: "No subscription found" }
+      if (response.data?.subscription === null) {
+        return null;
+      }
+
       if (response.data?.isSuccess && response.data.value) {
         return response.data.value;
       } else if (response.data?.id) {
         return response.data;
       }
-      
+
       return null;
     } catch (error: any) {
       if (error.response?.status === 400 || error.response?.status === 404) {
-        return null; // No subscription
+        return null; // No subscription (legacy handling)
       }
       throw error;
     }

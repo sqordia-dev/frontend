@@ -1,5 +1,16 @@
 import { apiClient } from './api-client';
 import { ApiResponse } from './types';
+import { getUserFriendlyError } from '../utils/error-messages';
+
+export class ProfileValidationError extends Error {
+  fieldErrors: Record<string, string>;
+
+  constructor(message: string, fieldErrors: Record<string, string>) {
+    super(message);
+    this.name = 'ProfileValidationError';
+    this.fieldErrors = fieldErrors;
+  }
+}
 
 export const profileService = {
   async getProfile(): Promise<any> {
@@ -8,8 +19,27 @@ export const profileService = {
   },
 
   async updateProfile(data: any): Promise<any> {
-    const response = await apiClient.put('/api/v1/profile', data);
-    return response.data;
+    try {
+      const response = await apiClient.put('/api/v1/profile', data);
+      return response.data;
+    } catch (error: any) {
+      const responseData = error.response?.data;
+
+      // Extract field-specific errors from ASP.NET validation response
+      if (responseData?.errors && typeof responseData.errors === 'object') {
+        const fieldErrors: Record<string, string> = {};
+        Object.entries(responseData.errors).forEach(([field, messages]) => {
+          // Normalize field name to lowercase for matching
+          const normalizedField = field.toLowerCase();
+          fieldErrors[normalizedField] = (messages as string[])[0] || 'Invalid value';
+        });
+
+        const allMessages = Object.values(fieldErrors).join('. ');
+        throw new ProfileValidationError(allMessages, fieldErrors);
+      }
+
+      throw new Error(getUserFriendlyError(error, 'profile'));
+    }
   },
 
   async uploadProfilePicture(file: File): Promise<string> {
@@ -79,10 +109,7 @@ export const profileService = {
         throw new Error(data.errorMessage);
       }
     } catch (error: any) {
-      if (error.response?.data?.errorMessage) {
-        throw new Error(error.response.data.errorMessage);
-      }
-      throw new Error(error.message || 'Failed to change password.');
+      throw new Error(getUserFriendlyError(error, 'password'));
     }
   }
 };

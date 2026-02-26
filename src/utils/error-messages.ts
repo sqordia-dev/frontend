@@ -467,11 +467,13 @@ function extractApiErrorMessage(data: ApiErrorResponse, lang: Language): string 
     }
   }
 
-  // Handle validation errors object
+  // Handle validation errors object (ASP.NET Core format)
   if (data.errors && typeof data.errors === 'object') {
-    const firstError = Object.values(data.errors)[0];
-    if (Array.isArray(firstError) && firstError.length > 0) {
-      return firstError[0];
+    const allErrors = Object.entries(data.errors)
+      .flatMap(([_field, messages]) => messages as string[])
+      .filter(Boolean);
+    if (allErrors.length > 0) {
+      return allErrors.join('. ');
     }
   }
 

@@ -126,7 +126,6 @@ function DashboardSidebar({
     // { name: t('nav.myPlans'), href: '/dashboard', icon: FileText }, // Hidden for now
     { name: t('nav.subscription'), href: '/subscription', icon: CreditCard },
     { name: t('nav.invoices'), href: '/invoices', icon: Receipt },
-    { name: t('nav.profile'), href: '/profile', icon: User },
     { name: t('nav.settings'), href: '/profile', icon: Settings },
   ];
 

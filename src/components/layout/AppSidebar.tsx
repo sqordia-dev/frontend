@@ -62,8 +62,7 @@ const defaultNavigation: NavItem[] = [
   { name: "My Plans", href: "/plans", icon: FileText },
   { name: "Subscription", href: "/subscription", icon: CreditCard },
   { name: "Invoices", href: "/invoices", icon: Receipt },
-  { name: "Profile", href: "/profile", icon: User },
-  { name: "Settings", href: "/settings", icon: Settings },
+  { name: "Settings", href: "/profile", icon: Settings },
 ];
 
 const defaultAdminNavigation: NavItem[] = [

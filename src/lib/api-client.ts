@@ -74,10 +74,12 @@ class ApiClient {
           requestData: error.config?.data ? (typeof error.config.data === 'string' ? JSON.parse(error.config.data) : error.config.data) : null
         };
 
-        // Don't log expected 404s from CMS content endpoints (no published version yet)
-        const isCmsContent404 = error.response?.status === 404 &&
-          error.config?.url?.includes('/api/v1/content/');
-        if (!isCmsContent404) {
+        // Don't log expected 404s from endpoints where "not found" is normal
+        const isExpected404 = error.response?.status === 404 && (
+          error.config?.url?.includes('/api/v1/content/') ||  // CMS content (no published version)
+          error.config?.url?.includes('/api/v1/subscriptions/current')  // No subscription
+        );
+        if (!isExpected404) {
           console.error('API Error:', errorDetails);
         }
         
@@ -128,7 +130,7 @@ class ApiClient {
         }
         
         // Also log the full error response data for debugging
-        if (error.response?.data && !isCmsContent404) {
+        if (error.response?.data && !isExpected404) {
           console.error('Full error response:', JSON.stringify(error.response.data, null, 2));
         }
 

@@ -67,7 +67,7 @@ export default function SubscriptionPage() {
   const [showChangePlanModal, setShowChangePlanModal] = useState(false);
   const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
   const [loadingPlans, setLoadingPlans] = useState(false);
-  const [changingPlan, setChangingPlan] = useState(false);
+  const [changingPlanId, setChangingPlanId] = useState<string | null>(null);
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
 
   // Theme colors
@@ -316,7 +316,7 @@ export default function SubscriptionPage() {
     if (!subscription) return;
 
     try {
-      setChangingPlan(true);
+      setChangingPlanId(newPlanId);
       setError(null);
 
       const newPlan = plans.find(p => p.id === newPlanId);
@@ -379,7 +379,7 @@ export default function SubscriptionPage() {
         setError(getUserFriendlyError(err, 'subscription'));
       }
     } finally {
-      setChangingPlan(false);
+      setChangingPlanId(null);
     }
   };
 
@@ -744,144 +744,264 @@ export default function SubscriptionPage() {
 
       {/* Change Plan Modal */}
       {showChangePlanModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto border-2" style={{ borderColor: theme === 'dark' ? '#374151' : strategyBlue }}>
-            <div className="sticky top-0 bg-white dark:bg-gray-800 border-b-2 px-6 py-4 flex items-center justify-between" style={{ borderColor: theme === 'dark' ? '#374151' : lightAIGrey }}>
-              <h2 className="text-2xl font-bold" style={{ color: theme === 'dark' ? '#FFFFFF' : strategyBlue }}>Change Subscription Plan</h2>
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div
+            className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-5xl w-full max-h-[90vh] overflow-y-auto"
+            style={{
+              boxShadow: theme === 'dark'
+                ? '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
+                : '0 25px 50px -12px rgba(26, 43, 71, 0.25)'
+            }}
+          >
+            {/* Header */}
+            <div
+              className="sticky top-0 z-10 px-8 py-6 flex items-center justify-between"
+              style={{
+                background: theme === 'dark'
+                  ? 'linear-gradient(135deg, #1F2937 0%, #111827 100%)'
+                  : `linear-gradient(135deg, ${strategyBlue} 0%, #0F1A2B 100%)`
+              }}
+            >
+              <div>
+                <h2 className="text-2xl font-bold text-white mb-1">Change Subscription Plan</h2>
+                <p className="text-white/70 text-sm">Select the plan that best fits your needs</p>
+              </div>
               <button
                 onClick={() => setShowChangePlanModal(false)}
-                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                className="w-10 h-10 rounded-full flex items-center justify-center transition-all hover:bg-white/10"
               >
-                <XCircle className="w-6 h-6" />
+                <X className="w-5 h-5 text-white" />
               </button>
             </div>
 
-            <div className="p-6">
+            <div className="p-8">
               {error && (
-                <div className="mb-6 border-2 rounded-xl p-4" style={{ borderColor: theme === 'dark' ? '#7F1D1D' : '#FEE2E2', backgroundColor: theme === 'dark' ? '#7F1D1D' : '#FEE2E2' }}>
-                  <div className="flex items-center gap-2" style={{ color: theme === 'dark' ? '#FCA5A5' : '#DC2626' }}>
-                    <AlertCircle className="w-5 h-5" />
-                    <span className="font-semibold">{error}</span>
-                  </div>
+                <div className="mb-6 border-2 rounded-xl p-4 flex items-center gap-3" style={{ borderColor: theme === 'dark' ? '#7F1D1D' : '#FECACA', backgroundColor: theme === 'dark' ? 'rgba(127, 29, 29, 0.3)' : '#FEF2F2' }}>
+                  <AlertCircle className="w-5 h-5 flex-shrink-0" style={{ color: theme === 'dark' ? '#FCA5A5' : '#DC2626' }} />
+                  <span className="font-medium" style={{ color: theme === 'dark' ? '#FCA5A5' : '#DC2626' }}>{error}</span>
                 </div>
               )}
 
               {/* Billing Cycle Toggle */}
-              <div className="flex items-center justify-center gap-4 mb-8">
-                <span className={`text-sm font-medium ${billingCycle === 'monthly' ? 'font-bold' : 'text-gray-500 dark:text-gray-400'}`} style={billingCycle === 'monthly' ? { color: momentumOrange } : {}}>
-                  Monthly
-                </span>
-                <button
-                  onClick={() => setBillingCycle(billingCycle === 'monthly' ? 'yearly' : 'monthly')}
-                  className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2"
-                  style={{ backgroundColor: momentumOrange, focusRingColor: momentumOrange }}
+              <div className="flex items-center justify-center mb-10">
+                <div
+                  className="inline-flex items-center gap-1 p-1.5 rounded-full"
+                  style={{ backgroundColor: theme === 'dark' ? '#1F2937' : lightAIGrey }}
                 >
-                  <span
-                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                      billingCycle === 'yearly' ? 'translate-x-6' : 'translate-x-1'
-                    }`}
-                  />
-                </button>
-                <span className={`text-sm font-medium ${billingCycle === 'yearly' ? 'font-bold' : 'text-gray-500 dark:text-gray-400'}`} style={billingCycle === 'yearly' ? { color: momentumOrange } : {}}>
-                  Yearly
-                </span>
-                {billingCycle === 'yearly' && (
-                  <span className="px-3 py-1 rounded-full text-xs font-semibold" style={{ backgroundColor: theme === 'dark' ? '#CC4A00' : '#FFE4CC', color: theme === 'dark' ? '#FF8C42' : '#CC4A00' }}>
-                    Save up to 17%
-                  </span>
-                )}
+                  <button
+                    onClick={() => setBillingCycle('monthly')}
+                    className="px-5 py-2.5 rounded-full text-sm font-semibold transition-all"
+                    style={{
+                      backgroundColor: billingCycle === 'monthly' ? (theme === 'dark' ? strategyBlue : '#FFFFFF') : 'transparent',
+                      color: billingCycle === 'monthly' ? (theme === 'dark' ? '#FFFFFF' : strategyBlue) : (theme === 'dark' ? '#9CA3AF' : '#6B7280'),
+                      boxShadow: billingCycle === 'monthly' ? '0 2px 8px rgba(0,0,0,0.1)' : 'none'
+                    }}
+                  >
+                    Monthly
+                  </button>
+                  <button
+                    onClick={() => setBillingCycle('yearly')}
+                    className="px-5 py-2.5 rounded-full text-sm font-semibold transition-all flex items-center gap-2"
+                    style={{
+                      backgroundColor: billingCycle === 'yearly' ? (theme === 'dark' ? strategyBlue : '#FFFFFF') : 'transparent',
+                      color: billingCycle === 'yearly' ? (theme === 'dark' ? '#FFFFFF' : strategyBlue) : (theme === 'dark' ? '#9CA3AF' : '#6B7280'),
+                      boxShadow: billingCycle === 'yearly' ? '0 2px 8px rgba(0,0,0,0.1)' : 'none'
+                    }}
+                  >
+                    Yearly
+                    <span
+                      className="px-2 py-0.5 rounded-full text-xs font-bold"
+                      style={{
+                        backgroundColor: billingCycle === 'yearly' ? momentumOrange : (theme === 'dark' ? '#374151' : '#E5E7EB'),
+                        color: billingCycle === 'yearly' ? '#FFFFFF' : (theme === 'dark' ? '#9CA3AF' : '#6B7280')
+                      }}
+                    >
+                      -17%
+                    </span>
+                  </button>
+                </div>
               </div>
 
               {loadingPlans ? (
-                <div className="flex items-center justify-center py-12">
-                  <div className="animate-spin rounded-full h-8 w-8 border-4" style={{ borderColor: lightAIGrey, borderTopColor: momentumOrange }}></div>
+                <div className="flex flex-col items-center justify-center py-16">
+                  <div className="relative w-16 h-16 mb-4">
+                    <div className="absolute inset-0 rounded-full border-4" style={{ borderColor: theme === 'dark' ? '#374151' : '#E5E7EB' }} />
+                    <div className="absolute inset-0 rounded-full border-4 border-t-transparent animate-spin" style={{ borderColor: `${momentumOrange} transparent transparent transparent` }} />
+                  </div>
+                  <p className="text-gray-500 dark:text-gray-400 font-medium">Loading plans...</p>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {plans.map((plan) => {
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {/* Sort plans: Free, Pro, Enterprise */}
+                  {[...plans].sort((a, b) => {
+                    const order: Record<string, number> = { 'Free': 0, 'Pro': 1, 'Enterprise': 2 };
+                    return (order[a.planType] ?? 99) - (order[b.planType] ?? 99);
+                  }).map((plan) => {
                     const price = getPrice(plan);
                     const isCurrentPlan = subscription?.subscriptionPlanId === plan.id;
                     const isCurrentBilling = subscription?.isYearly === (billingCycle === 'yearly');
+                    const isPro = plan.planType === 'Pro';
 
                     return (
                       <div
                         key={plan.id}
-                        className={`relative rounded-xl border-2 p-6 transition-all ${
-                          isCurrentPlan && isCurrentBilling
-                            ? 'cursor-default'
-                            : 'cursor-pointer hover:shadow-lg'
+                        className={`relative rounded-2xl transition-all duration-300 ${
+                          (isCurrentPlan && isCurrentBilling) || changingPlanId
+                            ? ''
+                            : 'hover:scale-[1.02] hover:shadow-xl cursor-pointer'
                         }`}
                         style={{
-                          borderColor: isCurrentPlan && isCurrentBilling 
-                            ? momentumOrange 
-                            : (theme === 'dark' ? '#374151' : '#E5E7EB'),
-                          backgroundColor: isCurrentPlan && isCurrentBilling
-                            ? (theme === 'dark' ? '#1F2937' : lightAIGrey)
-                            : 'transparent'
+                          border: isCurrentPlan && isCurrentBilling
+                            ? `3px solid ${momentumOrange}`
+                            : isPro
+                              ? `2px solid ${momentumOrange}`
+                              : `2px solid ${theme === 'dark' ? '#374151' : '#E5E7EB'}`,
+                          backgroundColor: theme === 'dark' ? '#1F2937' : '#FFFFFF',
+                          boxShadow: isPro && !(isCurrentPlan && isCurrentBilling)
+                            ? `0 8px 32px ${theme === 'dark' ? 'rgba(255, 107, 0, 0.15)' : 'rgba(255, 107, 0, 0.2)'}`
+                            : undefined
                         }}
-                        onClick={() => !isCurrentPlan && handleChangePlan(plan.id)}
+                        onClick={() => !(isCurrentPlan && isCurrentBilling) && !changingPlanId && handleChangePlan(plan.id)}
                       >
-                        {isCurrentPlan && isCurrentBilling && (
-                          <div className="absolute top-4 right-4">
-                            <span className="px-2 py-1 rounded-full text-xs font-semibold text-white" style={{ backgroundColor: momentumOrange }}>
-                              Current
+                        {/* Popular Badge for Pro */}
+                        {isPro && !(isCurrentPlan && isCurrentBilling) && (
+                          <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                            <span
+                              className="px-4 py-1 rounded-full text-xs font-bold text-white shadow-lg"
+                              style={{ backgroundColor: momentumOrange }}
+                            >
+                              MOST POPULAR
                             </span>
                           </div>
                         )}
 
-                        <div className="mb-4">
-                          <h3 className="text-xl font-bold mb-1" style={{ color: theme === 'dark' ? '#FFFFFF' : strategyBlue }}>
-                            {plan.name}
-                          </h3>
-                          <p className="text-sm text-gray-600 dark:text-gray-400">
-                            {plan.description}
-                          </p>
-                        </div>
-
-                        <div className="mb-4">
-                          <div className="text-3xl font-bold" style={{ color: momentumOrange }}>
-                            {formatPrice(price, plan.currency)}
-                          </div>
-                          <div className="text-sm text-gray-500 dark:text-gray-400">
-                            /{billingCycle === 'yearly' ? 'year' : 'month'}
-                          </div>
-                        </div>
-
-                        <button
-                          onClick={() => handleChangePlan(plan.id)}
-                          disabled={isCurrentPlan && isCurrentBilling || changingPlan}
-                          className={`w-full py-2.5 rounded-lg font-semibold transition-all ${
-                            isCurrentPlan && isCurrentBilling
-                              ? 'cursor-not-allowed opacity-50'
-                              : ''
-                          } disabled:opacity-50 disabled:cursor-not-allowed text-white`}
-                          style={{ 
-                            backgroundColor: isCurrentPlan && isCurrentBilling 
-                              ? '#9CA3AF' 
-                              : momentumOrange 
-                          }}
-                          onMouseEnter={(e) => {
-                            if (!isCurrentPlan || !isCurrentBilling) {
-                              e.currentTarget.style.backgroundColor = momentumOrangeHover;
-                            }
-                          }}
-                          onMouseLeave={(e) => {
-                            if (!isCurrentPlan || !isCurrentBilling) {
-                              e.currentTarget.style.backgroundColor = momentumOrange;
-                            }
-                          }}
-                        >
-                          {changingPlan ? (
-                            <span className="flex items-center justify-center gap-2">
-                              <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
-                              Processing...
+                        {/* Current Badge */}
+                        {isCurrentPlan && isCurrentBilling && (
+                          <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                            <span
+                              className="px-4 py-1 rounded-full text-xs font-bold text-white shadow-lg flex items-center gap-1.5"
+                              style={{ backgroundColor: momentumOrange }}
+                            >
+                              <CheckCircle2 className="w-3.5 h-3.5" />
+                              CURRENT PLAN
                             </span>
-                          ) : isCurrentPlan && isCurrentBilling ? (
-                            'Current Plan'
-                          ) : (
-                            'Select Plan'
-                          )}
-                        </button>
+                          </div>
+                        )}
+
+                        <div className="p-6 pt-8">
+                          {/* Plan Icon & Name */}
+                          <div className="flex items-center gap-3 mb-4">
+                            <div
+                              className="w-12 h-12 rounded-xl flex items-center justify-center"
+                              style={{ backgroundColor: theme === 'dark' ? '#374151' : lightAIGrey }}
+                            >
+                              {plan.planType === 'Free' && <Zap className="w-6 h-6" style={{ color: momentumOrange }} />}
+                              {plan.planType === 'Pro' && <Crown className="w-6 h-6" style={{ color: momentumOrange }} />}
+                              {plan.planType === 'Enterprise' && <Shield className="w-6 h-6" style={{ color: momentumOrange }} />}
+                            </div>
+                            <div>
+                              <h3 className="text-xl font-bold" style={{ color: theme === 'dark' ? '#FFFFFF' : strategyBlue }}>
+                                {plan.name}
+                              </h3>
+                              <p className="text-sm text-gray-500 dark:text-gray-400">
+                                {plan.description}
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* Price */}
+                          <div className="mb-6 pb-6 border-b-2" style={{ borderColor: theme === 'dark' ? '#374151' : lightAIGrey }}>
+                            <div className="flex items-baseline gap-1">
+                              <span className="text-4xl font-bold" style={{ color: momentumOrange }}>
+                                {formatPrice(price, plan.currency).replace(/\.00$/, '')}
+                              </span>
+                              <span className="text-gray-500 dark:text-gray-400 text-sm">
+                                /{billingCycle === 'yearly' ? 'year' : 'month'}
+                              </span>
+                            </div>
+                            {billingCycle === 'yearly' && plan.planType !== 'Free' && (
+                              <p className="text-xs mt-1" style={{ color: momentumOrange }}>
+                                Save {formatPrice(plan.monthlyPrice * 12 - plan.yearlyPrice, plan.currency)} annually
+                              </p>
+                            )}
+                          </div>
+
+                          {/* Features Preview */}
+                          <div className="space-y-3 mb-6">
+                            <div className="flex items-center gap-2 text-sm">
+                              <CheckCircle2 className="w-4 h-4 flex-shrink-0" style={{ color: momentumOrange }} />
+                              <span style={{ color: theme === 'dark' ? '#D1D5DB' : '#374151' }}>
+                                {plan.maxBusinessPlans === -1 ? 'Unlimited' : plan.maxBusinessPlans} business plans
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-2 text-sm">
+                              <CheckCircle2 className="w-4 h-4 flex-shrink-0" style={{ color: momentumOrange }} />
+                              <span style={{ color: theme === 'dark' ? '#D1D5DB' : '#374151' }}>
+                                {plan.maxTeamMembers === -1 ? 'Unlimited' : plan.maxTeamMembers} team members
+                              </span>
+                            </div>
+                            {plan.hasAdvancedAI && (
+                              <div className="flex items-center gap-2 text-sm">
+                                <CheckCircle2 className="w-4 h-4 flex-shrink-0" style={{ color: momentumOrange }} />
+                                <span style={{ color: theme === 'dark' ? '#D1D5DB' : '#374151' }}>Advanced AI features</span>
+                              </div>
+                            )}
+                            {plan.hasPrioritySupport && (
+                              <div className="flex items-center gap-2 text-sm">
+                                <CheckCircle2 className="w-4 h-4 flex-shrink-0" style={{ color: momentumOrange }} />
+                                <span style={{ color: theme === 'dark' ? '#D1D5DB' : '#374151' }}>Priority support</span>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Action Button */}
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleChangePlan(plan.id);
+                            }}
+                            disabled={(isCurrentPlan && isCurrentBilling) || !!changingPlanId}
+                            className="w-full py-3.5 rounded-xl font-semibold transition-all disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                            style={{
+                              backgroundColor: isCurrentPlan && isCurrentBilling
+                                ? (theme === 'dark' ? '#374151' : '#E5E7EB')
+                                : momentumOrange,
+                              color: isCurrentPlan && isCurrentBilling
+                                ? (theme === 'dark' ? '#9CA3AF' : '#6B7280')
+                                : '#FFFFFF',
+                              boxShadow: !(isCurrentPlan && isCurrentBilling) ? '0 4px 14px rgba(255, 107, 0, 0.4)' : 'none'
+                            }}
+                            onMouseEnter={(e) => {
+                              if (!(isCurrentPlan && isCurrentBilling) && !changingPlanId) {
+                                e.currentTarget.style.backgroundColor = momentumOrangeHover;
+                                e.currentTarget.style.transform = 'translateY(-1px)';
+                              }
+                            }}
+                            onMouseLeave={(e) => {
+                              if (!(isCurrentPlan && isCurrentBilling) && !changingPlanId) {
+                                e.currentTarget.style.backgroundColor = momentumOrange;
+                                e.currentTarget.style.transform = 'translateY(0)';
+                              }
+                            }}
+                          >
+                            {changingPlanId === plan.id ? (
+                              <>
+                                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                Processing...
+                              </>
+                            ) : isCurrentPlan && isCurrentBilling ? (
+                              <>
+                                <CheckCircle2 className="w-5 h-5" />
+                                Current Plan
+                              </>
+                            ) : (
+                              <>
+                                <Sparkles className="w-5 h-5" />
+                                Select Plan
+                              </>
+                            )}
+                          </button>
+                        </div>
                       </div>
                     );
                   })}

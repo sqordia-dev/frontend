@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { User, Mail, Building2, Phone, MapPin, Save, ArrowLeft, Shield, Lock, Key, AlertCircle, Upload, Image as ImageIcon, X, Rocket, Briefcase, Heart, ExternalLink, Download, Trash2, FileText, CheckCircle, Clock, Monitor, Smartphone, Globe, Eye, EyeOff } from 'lucide-react';
 import { authService } from '../lib/auth-service';
-import { profileService } from '../lib/profile-service';
+import { profileService, ProfileValidationError } from '../lib/profile-service';
 import { securityService } from '../lib/security-service';
 import { privacyService, ConsentItem, DeletionType } from '../lib/privacy-service';
 import { PersonaType } from '../lib/types';
@@ -53,6 +53,7 @@ export default function ProfilePage() {
     address: '',
     profilePictureUrl: ''
   });
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [profilePicturePreview, setProfilePicturePreview] = useState<string | null>(null);
   const [profileImageError, setProfileImageError] = useState(false);
   const [uploadingPicture, setUploadingPicture] = useState(false);
@@ -192,6 +193,7 @@ export default function ProfilePage() {
       setSaving(true);
       setError(null);
       setSuccess(null);
+      setFieldErrors({});
       await profileService.updateProfile({
         firstName: profile.firstName,
         lastName: profile.lastName,
@@ -201,6 +203,9 @@ export default function ProfilePage() {
       setSuccess('Profile updated successfully');
       setTimeout(() => setSuccess(null), 5000);
     } catch (err: any) {
+      if (err instanceof ProfileValidationError) {
+        setFieldErrors(err.fieldErrors);
+      }
       setError(err.message);
     } finally {
       setSaving(false);
@@ -581,26 +586,48 @@ export default function ProfilePage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <label className="block text-label-md text-gray-700 dark:text-gray-300">
-                      {cms('profile.first_name_label', '') || 'First Name'}
+                      {cms('profile.first_name_label', '') || 'First Name'} <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="text"
                       value={profile.firstName}
-                      onChange={(e) => setProfile({ ...profile, firstName: e.target.value })}
-                      className="w-full px-4 py-3 text-body-md rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-momentum-orange focus:ring-2 focus:ring-momentum-orange/20 outline-none transition-all"
+                      onChange={(e) => {
+                        setProfile({ ...profile, firstName: e.target.value });
+                        if (fieldErrors.firstname) setFieldErrors({ ...fieldErrors, firstname: '' });
+                      }}
+                      required
+                      className={`w-full px-4 py-3 text-body-md rounded-lg border bg-white dark:bg-gray-800 text-gray-900 dark:text-white outline-none transition-all ${
+                        fieldErrors.firstname
+                          ? 'border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-500/20'
+                          : 'border-gray-300 dark:border-gray-600 focus:border-momentum-orange focus:ring-2 focus:ring-momentum-orange/20'
+                      }`}
                     />
+                    {fieldErrors.firstname && (
+                      <p className="text-body-xs text-red-500">{fieldErrors.firstname}</p>
+                    )}
                   </div>
 
                   <div className="space-y-2">
                     <label className="block text-label-md text-gray-700 dark:text-gray-300">
-                      {cms('profile.last_name_label', '') || 'Last Name'}
+                      {cms('profile.last_name_label', '') || 'Last Name'} <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="text"
                       value={profile.lastName}
-                      onChange={(e) => setProfile({ ...profile, lastName: e.target.value })}
-                      className="w-full px-4 py-3 text-body-md rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-momentum-orange focus:ring-2 focus:ring-momentum-orange/20 outline-none transition-all"
+                      onChange={(e) => {
+                        setProfile({ ...profile, lastName: e.target.value });
+                        if (fieldErrors.lastname) setFieldErrors({ ...fieldErrors, lastname: '' });
+                      }}
+                      required
+                      className={`w-full px-4 py-3 text-body-md rounded-lg border bg-white dark:bg-gray-800 text-gray-900 dark:text-white outline-none transition-all ${
+                        fieldErrors.lastname
+                          ? 'border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-500/20'
+                          : 'border-gray-300 dark:border-gray-600 focus:border-momentum-orange focus:ring-2 focus:ring-momentum-orange/20'
+                      }`}
                     />
+                    {fieldErrors.lastname && (
+                      <p className="text-body-xs text-red-500">{fieldErrors.lastname}</p>
+                    )}
                   </div>
                 </div>
 
@@ -630,14 +657,25 @@ export default function ProfilePage() {
                       {cms('profile.phone_number_label', '') || 'Phone Number'}
                     </label>
                     <div className="relative">
-                      <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                      <Phone className={`absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 ${fieldErrors.phonenumber ? 'text-red-400' : 'text-gray-400'}`} />
                       <input
                         type="tel"
                         value={profile.phoneNumber}
-                        onChange={(e) => setProfile({ ...profile, phoneNumber: e.target.value })}
-                        className="w-full pl-11 pr-4 py-3 text-body-md rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-momentum-orange focus:ring-2 focus:ring-momentum-orange/20 outline-none transition-all"
+                        onChange={(e) => {
+                          setProfile({ ...profile, phoneNumber: e.target.value });
+                          if (fieldErrors.phonenumber) setFieldErrors({ ...fieldErrors, phonenumber: '' });
+                        }}
+                        placeholder="+1 (555) 123-4567"
+                        className={`w-full pl-11 pr-4 py-3 text-body-md rounded-lg border bg-white dark:bg-gray-800 text-gray-900 dark:text-white outline-none transition-all ${
+                          fieldErrors.phonenumber
+                            ? 'border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-500/20'
+                            : 'border-gray-300 dark:border-gray-600 focus:border-momentum-orange focus:ring-2 focus:ring-momentum-orange/20'
+                        }`}
                       />
                     </div>
+                    {fieldErrors.phonenumber && (
+                      <p className="text-body-xs text-red-500">{fieldErrors.phonenumber}</p>
+                    )}
                   </div>
 
                   <div className="space-y-2">

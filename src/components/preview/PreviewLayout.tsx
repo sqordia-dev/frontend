@@ -238,7 +238,6 @@ export default function PreviewLayout({
     { name: t('nav.myPlans'), href: '/dashboard', icon: FileText },
     { name: t('nav.subscription'), href: '/subscription', icon: CreditCard },
     { name: t('nav.invoices'), href: '/invoices', icon: Receipt },
-    { name: t('nav.profile'), href: '/profile', icon: User },
     { name: t('nav.settings'), href: '/profile', icon: Settings },
   ];
 
