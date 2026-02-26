@@ -556,6 +556,14 @@ export default function AdminBugReportPage() {
 
         {/* Submit Button */}
         <div className="flex items-center justify-end gap-4">
+          {/* Show validation hints when button would be disabled */}
+          {(!title || title.length < 5 || !description || description.length < 20) && (
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              {!title || title.length < 5 ? 'Title required (min 5 chars)' : ''}
+              {(!title || title.length < 5) && (!description || description.length < 20) ? ' • ' : ''}
+              {!description || description.length < 20 ? 'Description required (min 20 chars)' : ''}
+            </p>
+          )}
           <button
             type="button"
             onClick={() => navigate('/admin')}
