@@ -13,6 +13,7 @@ import {
 import { businessPlanService } from '../lib/business-plan-service';
 import { organizationService } from '../lib/organization-service';
 import { useCmsContent } from '../hooks/useCmsContent';
+import { useTheme } from '../contexts/ThemeContext';
 import SEO from '../components/SEO';
 import { getCanonicalUrl } from '../utils/seo';
 import { getUserFriendlyError } from '../utils/error-messages';
@@ -26,6 +27,7 @@ import { cn } from '@/lib/utils';
 export default function CreatePlanPage() {
   const navigate = useNavigate();
   const { getContent: cms } = useCmsContent('create_plan');
+  const { t } = useTheme();
 
   const [projectName, setProjectName] = useState('');
   const [loading, setLoading] = useState(false);
@@ -107,15 +109,15 @@ export default function CreatePlanPage() {
   const features = [
     {
       icon: <Lightbulb className="h-4 w-4" />,
-      text: "AI-powered content generation",
+      text: t('createPlan.featureAI'),
     },
     {
       icon: <Target className="h-4 w-4" />,
-      text: "Bank-ready formatting",
+      text: t('createPlan.featureBank'),
     },
     {
       icon: <Zap className="h-4 w-4" />,
-      text: "Complete in minutes",
+      text: t('createPlan.featureMinutes'),
     },
   ];
 
@@ -148,7 +150,7 @@ export default function CreatePlanPage() {
         >
           <Link to="/dashboard">
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Dashboard
+            {t('createPlan.back')}
           </Link>
         </Button>
 
@@ -158,14 +160,14 @@ export default function CreatePlanPage() {
             {/* AI Badge */}
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold tracking-wide mb-6 bg-gradient-to-r from-momentum-orange to-[#ff8533] text-white shadow-lg shadow-momentum-orange/25">
               <Sparkles className="h-3.5 w-3.5" />
-              <span>AI-Powered</span>
+              <span>{t('createPlan.aiBadge')}</span>
             </div>
 
             <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground font-heading mb-3">
-              {cms('create_plan.title', '') || 'Create New Project'}
+              {cms('create_plan.title', '') || t('createPlan.title')}
             </h1>
             <p className="text-base text-muted-foreground max-w-md mx-auto">
-              {cms('create_plan.subtitle', '') || 'Give your project a name to get started with your AI-powered business plan'}
+              {cms('create_plan.subtitle', '') || t('createPlan.subtitle')}
             </p>
           </div>
 
@@ -184,7 +186,7 @@ export default function CreatePlanPage() {
                 {/* Project Name Input */}
                 <div className="space-y-3">
                   <Label htmlFor="projectName" className="text-sm font-semibold text-foreground">
-                    Project Name <span className="text-destructive">*</span>
+                    {t('createPlan.projectName')} <span className="text-destructive">*</span>
                   </Label>
                   <div className="relative group">
                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -195,7 +197,7 @@ export default function CreatePlanPage() {
                       id="projectName"
                       value={projectName}
                       onChange={(e) => setProjectName(e.target.value)}
-                      placeholder="e.g., My Coffee Shop Business Plan"
+                      placeholder={t('createPlan.projectNamePlaceholder')}
                       autoFocus
                       className={cn(
                         "h-12 pl-12 pr-4 text-base rounded-xl border-border/60",
@@ -206,7 +208,7 @@ export default function CreatePlanPage() {
                     />
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    You can always change this later
+                    {t('createPlan.projectNameHint')}
                   </p>
                 </div>
 
@@ -225,16 +227,16 @@ export default function CreatePlanPage() {
                   {loading ? (
                     <>
                       <div className="h-5 w-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      Creating...
+                      {t('createPlan.creating')}
                     </>
                   ) : isLoadingOrg ? (
                     <>
                       <div className="h-5 w-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      Loading...
+                      {t('createPlan.loading')}
                     </>
                   ) : (
                     <>
-                      Start Building
+                      {t('createPlan.startBuilding')}
                       <ArrowRight className="h-5 w-5" />
                     </>
                   )}
@@ -260,7 +262,7 @@ export default function CreatePlanPage() {
 
           {/* Help Text */}
           <p className="text-center text-sm text-muted-foreground mt-6 max-w-sm mx-auto">
-            After creating your project, you'll answer a few questions to help our AI generate your personalized business plan.
+            {t('createPlan.helpText')}
           </p>
         </div>
       </div>
