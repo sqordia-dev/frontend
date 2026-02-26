@@ -136,7 +136,7 @@ const STEP_ICONS: Record<number, React.ElementType> = {
 export default function WizardQuestionnairePage() {
   const { planId } = useParams();
   const navigate = useNavigate();
-  const { theme, language } = useTheme();
+  const { theme, language, t } = useTheme();
   const { getContent: cms } = useCmsContent('questionnaire');
   const strategyBlue = '#1A2B47';
   const momentumOrange = '#FF6B00';
@@ -1733,11 +1733,11 @@ export default function WizardQuestionnairePage() {
               <div className="mb-4 flex items-center justify-between">
                 <h3 className="text-lg font-semibold flex items-center gap-2">
                   <FileText size={20} />
-                  {cms('questionnaire.live_preview', '') || 'Live Preview'}
+                  {cms('questionnaire.live_preview', '') || t('questionnaire.livePreview')}
                 </h3>
                 <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
                   <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-                  {cms('questionnaire.auto_updating', '') || 'Auto-updating'}
+                  {cms('questionnaire.auto_updating', '') || t('questionnaire.autoUpdating')}
                 </span>
               </div>
               
@@ -1758,7 +1758,7 @@ export default function WizardQuestionnairePage() {
                 ) : (
                   <div className="text-center py-12">
                     <FileText size={48} className="mx-auto mb-4 text-gray-300 dark:text-gray-600" />
-                    <p className="text-gray-400 dark:text-gray-500 text-lg">{cms('questionnaire.empty_preview', '') || 'Start answering questions to see your preview here...'}</p>
+                    <p className="text-gray-400 dark:text-gray-500 text-lg">{cms('questionnaire.empty_preview', '') || t('questionnaire.emptyPreview')}</p>
                   </div>
                 )}
               </div>

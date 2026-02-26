@@ -1152,6 +1152,9 @@ const translations = {
     'questionnaire.templateEmpty': 'The questionnaire template is empty. Please contact support.',
     'questionnaire.submitting': 'Submitting your responses...',
     'questionnaire.processingAnswers': 'Please wait while we process your answers.',
+    'questionnaire.livePreview': 'Live Preview',
+    'questionnaire.autoUpdating': 'Auto-updating',
+    'questionnaire.emptyPreview': 'Start answering questions to see your preview here...',
     // Bug Report
     'admin.bugReport.title': 'Bug Report',
     'admin.bugReport.subtitle': 'Create GitHub issues directly from the admin panel',
@@ -2431,6 +2434,9 @@ const translations = {
     'questionnaire.templateEmpty': 'Le modèle de questionnaire est vide. Veuillez contacter le support.',
     'questionnaire.submitting': 'Soumission de vos réponses...',
     'questionnaire.processingAnswers': 'Veuillez patienter pendant le traitement de vos réponses.',
+    'questionnaire.livePreview': 'Aperçu en direct',
+    'questionnaire.autoUpdating': 'Mise à jour automatique',
+    'questionnaire.emptyPreview': 'Commencez à répondre aux questions pour voir votre aperçu ici...',
     // Bug Report
     'admin.bugReport.title': 'Rapport de bogue',
     'admin.bugReport.subtitle': 'Créer des issues GitHub directement depuis le panneau d\'administration',
