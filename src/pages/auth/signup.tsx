@@ -70,6 +70,9 @@ export default function SignupPage() {
         lastName: formData.lastName,
         email: formData.email,
         password: formData.password,
+        confirmPassword: formData.confirmPassword,
+        userName: formData.email, // Use email as username
+        userType: 'Entrepreneur', // Default to Entrepreneur, can be changed in onboarding
         organizationName: formData.organizationName || undefined,
       });
       navigate('/login', { state: { message: cms('auth.signup.success', 'register.success') } });

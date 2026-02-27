@@ -29,8 +29,11 @@ export interface LoginRequest {
 export interface RegisterRequest {
   email: string;
   password: string;
+  confirmPassword: string;
   firstName: string;
   lastName: string;
+  userName: string;
+  userType: PersonaType;
   organizationName?: string;
 }
 

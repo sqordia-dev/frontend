@@ -62,11 +62,29 @@ export const authService = {
 
   async register(userData: RegisterRequest): Promise<User> {
     try {
-      const response = await apiClient.post<ApiResponse<User>>('/api/v1/auth/register', userData);
+      const response = await apiClient.post('/api/v1/auth/register', userData);
       const data = response.data;
 
+      // Handle wrapped response format (isSuccess/value)
       if (data.isSuccess && data.value) {
-        return data.value;
+        // If value contains user directly
+        if (data.value.id && data.value.email) {
+          return data.value;
+        }
+        // If value contains auth response with user
+        if (data.value.user) {
+          return data.value.user;
+        }
+      }
+
+      // Handle direct auth response format (token/user at root level)
+      if (data.token && data.user) {
+        return data.user;
+      }
+
+      // Handle direct user response format
+      if (data.id && data.email) {
+        return data;
       }
 
       if (data.errors && Array.isArray(data.errors)) {

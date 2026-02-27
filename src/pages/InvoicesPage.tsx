@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Download, Calendar, CheckCircle, XCircle, Clock, AlertCircle, ArrowLeft, FileText, Receipt, CreditCard } from 'lucide-react';
+import { Download, CheckCircle, XCircle, Clock, AlertCircle, ArrowLeft, FileText, Receipt, CreditCard } from 'lucide-react';
 import { apiClient } from '../lib/api-client';
 import { useTheme } from '../contexts/ThemeContext';
 import SEO from '../components/SEO';
@@ -13,7 +13,7 @@ interface Invoice {
   invoiceNumber: string;
   issueDate: string;
   dueDate: string;
-  paidDate?: string;
+  paidDate?: string | null;
   subtotal: number;
   tax: number;
   total: number;
@@ -22,7 +22,7 @@ interface Invoice {
   periodStart: string;
   periodEnd: string;
   description: string;
-  pdfUrl?: string;
+  pdfUrl?: string | null;
 }
 
 export default function InvoicesPage() {
@@ -45,11 +45,15 @@ export default function InvoicesPage() {
   const loadInvoices = async () => {
     try {
       setLoading(true);
-      const response = await apiClient.get('/api/v1/subscriptions/invoices');
-      if (response.data?.isSuccess && response.data.value) {
-        setInvoices(response.data.value);
-      } else if (Array.isArray(response.data)) {
-        setInvoices(response.data);
+      const response = await apiClient.get<Invoice[] | { isSuccess: boolean; value: Invoice[] }>('/api/v1/subscriptions/invoices');
+      const data = response.data;
+
+      // Handle wrapped response format (isSuccess/value)
+      if (data && typeof data === 'object' && 'isSuccess' in data && data.isSuccess && data.value) {
+        setInvoices(data.value);
+      } else if (Array.isArray(data)) {
+        // Handle direct array response
+        setInvoices(data);
       } else {
         setInvoices([]);
       }
@@ -69,12 +73,27 @@ export default function InvoicesPage() {
 
       // Call the backend endpoint to generate and download PDF
       const response = await apiClient.get(`/api/v1/subscriptions/invoices/${invoice.id}/download`, {
-        responseType: 'blob'
+        responseType: 'blob',
+        timeout: 30000 // 30 second timeout for PDF generation
       });
 
+      // Verify we received actual PDF data
+      const blob = response.data as Blob;
+      if (!blob || blob.size === 0) {
+        throw new Error('Received empty PDF response');
+      }
+
+      // Check if the response is actually a PDF (not an error message)
+      if (blob.type && !blob.type.includes('pdf')) {
+        // Try to read as text to get error message
+        const text = await blob.text();
+        console.error('Unexpected response type:', blob.type, text);
+        throw new Error('Failed to generate PDF. Please try again.');
+      }
+
       // Create a blob URL and trigger download
-      const blob = new Blob([response.data], { type: 'application/pdf' });
-      const url = window.URL.createObjectURL(blob);
+      const pdfBlob = new Blob([blob], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(pdfBlob);
       const link = document.createElement('a');
       link.href = url;
       link.download = `Invoice-${invoice.invoiceNumber}.pdf`;
@@ -90,8 +109,19 @@ export default function InvoicesPage() {
     }
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
+  const formatDate = (dateString: string | null | undefined) => {
+    if (!dateString) {
+      return 'N/A';
+    }
+
+    const date = new Date(dateString);
+
+    // Check for invalid date or epoch 0 (Dec 31, 1969 / Jan 1, 1970)
+    if (isNaN(date.getTime()) || date.getTime() < 86400000) {
+      return 'N/A';
+    }
+
+    return date.toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
       day: 'numeric'
@@ -338,7 +368,7 @@ export default function InvoicesPage() {
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y" style={{ divideColor: theme === 'dark' ? '#374151' : '#E5E7EB' }}>
+                  <tbody className={`divide-y ${theme === 'dark' ? 'divide-gray-700' : 'divide-gray-200'}`}>
                     {invoices.map((invoice) => {
                       const statusConfig = getStatusConfig(invoice.status);
                       const StatusIcon = statusConfig.icon;
@@ -451,7 +481,7 @@ export default function InvoicesPage() {
               </div>
 
               {/* Mobile Cards */}
-              <div className="md:hidden divide-y" style={{ divideColor: theme === 'dark' ? '#374151' : '#E5E7EB' }}>
+              <div className={`md:hidden divide-y ${theme === 'dark' ? 'divide-gray-700' : 'divide-gray-200'}`}>
                 {invoices.map((invoice) => {
                   const statusConfig = getStatusConfig(invoice.status);
                   const StatusIcon = statusConfig.icon;
