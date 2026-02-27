@@ -25,12 +25,69 @@ interface Invoice {
   pdfUrl?: string | null;
 }
 
+// Translations
+const translations = {
+  en: {
+    loadingInvoices: 'Loading invoices...',
+    backToSubscription: 'Back to Subscription',
+    invoiceHistory: 'Invoice History',
+    viewAndDownload: 'View and download your billing invoices',
+    noInvoicesYet: 'No Invoices Yet',
+    noInvoicesDescription: 'Your invoices will appear here once you have an active paid subscription.',
+    viewPlans: 'View Plans',
+    totalInvoices: 'Total Invoices',
+    paid: 'Paid',
+    totalSpent: 'Total Spent',
+    invoice: 'Invoice',
+    date: 'Date',
+    period: 'Period',
+    amount: 'Amount',
+    status: 'Status',
+    actions: 'Actions',
+    paidOn: 'Paid:',
+    tax: 'Tax:',
+    downloading: 'Downloading...',
+    download: 'Download',
+    pending: 'pending',
+    failed: 'failed',
+    refunded: 'refunded',
+  },
+  fr: {
+    loadingInvoices: 'Chargement des factures...',
+    backToSubscription: 'Retour à l\'abonnement',
+    invoiceHistory: 'Historique des factures',
+    viewAndDownload: 'Consultez et téléchargez vos factures',
+    noInvoicesYet: 'Aucune facture',
+    noInvoicesDescription: 'Vos factures apparaîtront ici une fois que vous aurez un abonnement payant actif.',
+    viewPlans: 'Voir les forfaits',
+    totalInvoices: 'Total des factures',
+    paid: 'Payé',
+    totalSpent: 'Total dépensé',
+    invoice: 'Facture',
+    date: 'Date',
+    period: 'Période',
+    amount: 'Montant',
+    status: 'Statut',
+    actions: 'Actions',
+    paidOn: 'Payé le :',
+    tax: 'Taxe :',
+    downloading: 'Téléchargement...',
+    download: 'Télécharger',
+    pending: 'en attente',
+    failed: 'échoué',
+    refunded: 'remboursé',
+  }
+};
+
 export default function InvoicesPage() {
   const navigate = useNavigate();
   const { theme, language } = useTheme();
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Get translations for current language
+  const t = translations[language as keyof typeof translations] || translations.en;
 
   // Brand colors
   const strategyBlue = '#1A2B47';
@@ -121,7 +178,8 @@ export default function InvoicesPage() {
       return 'N/A';
     }
 
-    return date.toLocaleDateString('en-US', {
+    const locale = language === 'fr' ? 'fr-CA' : 'en-US';
+    return date.toLocaleDateString(locale, {
       year: 'numeric',
       month: 'short',
       day: 'numeric'
@@ -129,10 +187,20 @@ export default function InvoicesPage() {
   };
 
   const formatPrice = (price: number, currency: string = 'CAD') => {
-    return new Intl.NumberFormat('en-CA', {
+    const locale = language === 'fr' ? 'fr-CA' : 'en-CA';
+    return new Intl.NumberFormat(locale, {
       style: 'currency',
       currency: currency,
     }).format(price);
+  };
+
+  const getTranslatedStatus = (status: string) => {
+    const statusKey = status.toLowerCase() as keyof typeof translations.en;
+    if (statusKey in t) {
+      return t[statusKey as keyof typeof t];
+    }
+    // Capitalize first letter for unknown statuses
+    return status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
   };
 
   const getStatusConfig = (status: string) => {
@@ -189,7 +257,7 @@ export default function InvoicesPage() {
               style={{ borderColor: `${momentumOrange} transparent transparent transparent` }}
             />
           </div>
-          <p className="text-gray-600 dark:text-gray-400 font-medium">Loading invoices...</p>
+          <p className="text-gray-600 dark:text-gray-400 font-medium">{t.loadingInvoices}</p>
         </div>
       </div>
     );
@@ -214,7 +282,7 @@ export default function InvoicesPage() {
             style={{ color: theme === 'dark' ? '#D1D5DB' : strategyBlue }}
           >
             <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-            <span className="font-medium">Back to Subscription</span>
+            <span className="font-medium">{t.backToSubscription}</span>
           </button>
 
           <div className="flex items-center gap-4 mb-2">
@@ -229,10 +297,10 @@ export default function InvoicesPage() {
                 className="text-3xl font-bold"
                 style={{ color: theme === 'dark' ? '#FFFFFF' : strategyBlue }}
               >
-                Invoice History
+                {t.invoiceHistory}
               </h1>
               <p className="text-gray-600 dark:text-gray-400">
-                View and download your billing invoices
+                {t.viewAndDownload}
               </p>
             </div>
           </div>
@@ -271,10 +339,10 @@ export default function InvoicesPage() {
               className="text-2xl font-bold mb-3"
               style={{ color: theme === 'dark' ? '#FFFFFF' : strategyBlue }}
             >
-              No Invoices Yet
+              {t.noInvoicesYet}
             </h3>
             <p className="text-gray-600 dark:text-gray-400 mb-6 max-w-md mx-auto">
-              Your invoices will appear here once you have an active paid subscription.
+              {t.noInvoicesDescription}
             </p>
             <button
               onClick={() => navigate('/subscription-plans')}
@@ -284,7 +352,7 @@ export default function InvoicesPage() {
               onMouseLeave={(e) => e.currentTarget.style.backgroundColor = momentumOrange}
             >
               <CreditCard className="w-5 h-5" />
-              View Plans
+              {t.viewPlans}
             </button>
           </div>
         ) : (
@@ -299,7 +367,7 @@ export default function InvoicesPage() {
                   borderColor: theme === 'dark' ? '#374151' : '#E5E7EB'
                 }}
               >
-                <div className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Total Invoices</div>
+                <div className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">{t.totalInvoices}</div>
                 <div className="text-2xl font-bold" style={{ color: theme === 'dark' ? '#FFFFFF' : strategyBlue }}>
                   {invoices.length}
                 </div>
@@ -311,7 +379,7 @@ export default function InvoicesPage() {
                   borderColor: theme === 'dark' ? '#374151' : '#E5E7EB'
                 }}
               >
-                <div className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Paid</div>
+                <div className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">{t.paid}</div>
                 <div className="text-2xl font-bold" style={{ color: momentumOrange }}>
                   {invoices.filter(i => i.status.toLowerCase() === 'paid').length}
                 </div>
@@ -323,7 +391,7 @@ export default function InvoicesPage() {
                   borderColor: theme === 'dark' ? '#374151' : '#E5E7EB'
                 }}
               >
-                <div className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Total Spent</div>
+                <div className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">{t.totalSpent}</div>
                 <div className="text-2xl font-bold" style={{ color: theme === 'dark' ? '#FFFFFF' : strategyBlue }}>
                   {formatPrice(
                     invoices
@@ -349,22 +417,22 @@ export default function InvoicesPage() {
                   <thead>
                     <tr style={{ backgroundColor: theme === 'dark' ? '#111827' : lightAIGrey }}>
                       <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider w-[28%]" style={{ color: theme === 'dark' ? '#9CA3AF' : strategyBlue }}>
-                        Invoice
+                        {t.invoice}
                       </th>
                       <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider w-[15%]" style={{ color: theme === 'dark' ? '#9CA3AF' : strategyBlue }}>
-                        Date
+                        {t.date}
                       </th>
                       <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider w-[20%]" style={{ color: theme === 'dark' ? '#9CA3AF' : strategyBlue }}>
-                        Period
+                        {t.period}
                       </th>
                       <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider w-[12%]" style={{ color: theme === 'dark' ? '#9CA3AF' : strategyBlue }}>
-                        Amount
+                        {t.amount}
                       </th>
                       <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider w-[10%]" style={{ color: theme === 'dark' ? '#9CA3AF' : strategyBlue }}>
-                        Status
+                        {t.status}
                       </th>
                       <th className="px-4 py-3 text-right text-xs font-bold uppercase tracking-wider w-[15%]" style={{ color: theme === 'dark' ? '#9CA3AF' : strategyBlue }}>
-                        Actions
+                        {t.actions}
                       </th>
                     </tr>
                   </thead>
@@ -405,7 +473,7 @@ export default function InvoicesPage() {
                             </div>
                             {invoice.paidDate && (
                               <div className="text-xs text-gray-500 dark:text-gray-400">
-                                Paid: {formatDate(invoice.paidDate)}
+                                {t.paidOn} {formatDate(invoice.paidDate)}
                               </div>
                             )}
                           </td>
@@ -420,7 +488,7 @@ export default function InvoicesPage() {
                             </div>
                             {invoice.tax > 0 && (
                               <div className="text-xs text-gray-500 dark:text-gray-400">
-                                Tax: {formatPrice(invoice.tax, invoice.currency)}
+                                {t.tax} {formatPrice(invoice.tax, invoice.currency)}
                               </div>
                             )}
                           </td>
@@ -434,7 +502,7 @@ export default function InvoicesPage() {
                               }}
                             >
                               <StatusIcon className="w-3.5 h-3.5" />
-                              {invoice.status}
+                              {getTranslatedStatus(invoice.status)}
                             </div>
                           </td>
                           <td className="px-4 py-4 text-right">
@@ -463,12 +531,12 @@ export default function InvoicesPage() {
                               {downloadingId === invoice.id ? (
                                 <>
                                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                                  Downloading...
+                                  {t.downloading}
                                 </>
                               ) : (
                                 <>
                                   <Download className="w-4 h-4" />
-                                  Download
+                                  {t.download}
                                 </>
                               )}
                             </button>
@@ -514,7 +582,7 @@ export default function InvoicesPage() {
                           }}
                         >
                           <StatusIcon className="w-3.5 h-3.5" />
-                          {invoice.status}
+                          {getTranslatedStatus(invoice.status)}
                         </div>
                       </div>
 
@@ -540,12 +608,12 @@ export default function InvoicesPage() {
                           {downloadingId === invoice.id ? (
                             <>
                               <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                              Downloading...
+                              {t.downloading}
                             </>
                           ) : (
                             <>
                               <Download className="w-4 h-4" />
-                              Download
+                              {t.download}
                             </>
                           )}
                         </button>
