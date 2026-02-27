@@ -1,13 +1,13 @@
 import { useEffect, useCallback } from 'react';
-import { ArrowLeft, ArrowRight, SkipForward, CheckCircle2, Command } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { ArrowLeft, ArrowRight, SkipForward, CheckCircle2, CornerDownLeft } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { QuestionnaireNavigationProps } from '../../types/questionnaire';
 import { cn } from '@/lib/utils';
 import { useTheme } from '../../contexts/ThemeContext';
 
 /**
  * QuestionnaireNavigation Component
- * Refined bottom navigation with keyboard shortcuts
+ * Modern bottom navigation with touch-friendly buttons and keyboard hints
  */
 export default function QuestionnaireNavigation({
   canGoNext,
@@ -28,8 +28,12 @@ export default function QuestionnaireNavigation({
   // Keyboard navigation handler
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
-      // Cmd/Ctrl + Enter to continue
-      if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+      // Enter to continue (no modifier needed for better UX)
+      if (e.key === 'Enter' && !e.shiftKey) {
+        // Don't trigger if user is typing in a textarea
+        const target = e.target as HTMLElement;
+        if (target.tagName === 'TEXTAREA') return;
+
         e.preventDefault();
         if (isLastQuestion && canGoNext) {
           onComplete();
@@ -39,8 +43,14 @@ export default function QuestionnaireNavigation({
           onSkip();
         }
       }
+
+      // Arrow keys for navigation
+      if (e.key === 'ArrowLeft' && e.altKey && canGoPrevious) {
+        e.preventDefault();
+        onPrevious();
+      }
     },
-    [canGoNext, isLastQuestion, isRequired, onComplete, onNext, onSkip]
+    [canGoNext, canGoPrevious, isLastQuestion, isRequired, onComplete, onNext, onPrevious, onSkip]
   );
 
   // Register keyboard listener
@@ -55,14 +65,15 @@ export default function QuestionnaireNavigation({
     <nav
       className={cn(
         "fixed bottom-0 left-0 right-0 z-40",
-        "bg-background/80 backdrop-blur-xl",
-        "border-t border-border/50"
+        "bg-background/90 backdrop-blur-2xl",
+        "border-t border-border/30",
+        "safe-area-inset-bottom"
       )}
       role="navigation"
       aria-label="Question navigation"
     >
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4">
-        <div className="flex items-center justify-between gap-3">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-4 sm:py-5">
+        <div className="flex items-center justify-between gap-4">
           {/* Previous Button */}
           <motion.button
             whileHover={{ scale: canGoPrevious ? 1.02 : 1 }}
@@ -71,13 +82,13 @@ export default function QuestionnaireNavigation({
             disabled={!canGoPrevious}
             className={cn(
               "flex items-center gap-2",
-              "px-4 py-2.5 rounded-xl",
+              "px-4 sm:px-5 py-3 sm:py-3.5 rounded-xl sm:rounded-2xl",
               "text-sm font-medium",
               "transition-all duration-200",
-              "focus:outline-none focus-visible:ring-2 focus-visible:ring-momentum-orange focus-visible:ring-offset-2",
+              "focus:outline-none focus-visible:ring-2 focus-visible:ring-momentum-orange/50 focus-visible:ring-offset-2",
               canGoPrevious
-                ? "bg-muted/80 text-foreground hover:bg-muted"
-                : "bg-muted/30 text-muted-foreground/50 cursor-not-allowed"
+                ? "bg-muted/60 hover:bg-muted text-foreground border border-border/50 hover:border-border"
+                : "bg-transparent text-muted-foreground/40 cursor-not-allowed"
             )}
             aria-label={t('questionnaire.previous')}
           >
@@ -85,96 +96,132 @@ export default function QuestionnaireNavigation({
             <span className="hidden sm:inline">{t('questionnaire.previous')}</span>
           </motion.button>
 
-          {/* Center: Skip + Keyboard Hint */}
-          <div className="flex-1 flex items-center justify-center gap-4">
+          {/* Center Section: Skip + Keyboard Hint */}
+          <div className="flex-1 flex items-center justify-center gap-6">
             {/* Skip Button */}
-            {!isRequired && !isLastQuestion && (
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={onSkip}
-                className={cn(
-                  "flex items-center gap-1.5",
-                  "px-3 py-1.5 rounded-lg",
-                  "text-sm text-muted-foreground",
-                  "hover:text-foreground hover:bg-muted/50",
-                  "transition-all duration-200",
-                  "focus:outline-none focus-visible:ring-2 focus-visible:ring-momentum-orange focus-visible:ring-offset-2"
-                )}
-                aria-label={t('questionnaire.skip')}
-              >
-                <SkipForward className="w-3.5 h-3.5" />
-                <span>{t('questionnaire.skip')}</span>
-              </motion.button>
-            )}
+            <AnimatePresence>
+              {!isRequired && !isLastQuestion && (
+                <motion.button
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={onSkip}
+                  className={cn(
+                    "flex items-center gap-2",
+                    "px-4 py-2.5 rounded-xl",
+                    "text-sm font-medium text-muted-foreground",
+                    "hover:text-foreground hover:bg-muted/50",
+                    "transition-all duration-200",
+                    "focus:outline-none focus-visible:ring-2 focus-visible:ring-momentum-orange/50"
+                  )}
+                  aria-label={t('questionnaire.skip')}
+                >
+                  <SkipForward className="w-4 h-4" />
+                  <span>{t('questionnaire.skip')}</span>
+                </motion.button>
+              )}
+            </AnimatePresence>
 
             {/* Keyboard Hint - Desktop */}
-            <div className="hidden md:flex items-center gap-2 text-xs text-muted-foreground/60">
+            <div className="hidden lg:flex items-center gap-2.5 text-muted-foreground/50">
               <kbd className={cn(
-                "inline-flex items-center gap-1 px-2 py-1",
-                "rounded-md bg-muted/60 border border-border/50",
-                "font-mono text-[10px]"
+                "inline-flex items-center gap-1.5 px-2.5 py-1.5",
+                "rounded-lg bg-muted/50 border border-border/40",
+                "font-mono text-[11px] font-medium",
+                "shadow-sm"
               )}>
-                {isMac ? <Command className="w-3 h-3" /> : 'Ctrl'}
-                <span>+</span>
+                <CornerDownLeft className="w-3.5 h-3.5" />
                 <span>Enter</span>
               </kbd>
-              <span>{t('questionnaire.toContinue')}</span>
+              <span className="text-xs">{t('questionnaire.toContinue')}</span>
             </div>
           </div>
 
           {/* Next/Complete Button */}
-          {isLastQuestion ? (
-            <motion.button
-              whileHover={{ scale: canGoNext ? 1.03 : 1 }}
-              whileTap={{ scale: canGoNext ? 0.97 : 1 }}
-              onClick={onComplete}
-              disabled={!canGoNext}
-              className={cn(
-                "flex items-center gap-2",
-                "px-5 py-2.5 rounded-xl",
-                "text-sm font-semibold",
-                "transition-all duration-200",
-                "focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2",
-                canGoNext
-                  ? "bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-500/20"
-                  : "bg-muted text-muted-foreground/50 cursor-not-allowed"
-              )}
-              aria-label={t('questionnaire.complete')}
-            >
-              <CheckCircle2 className="w-4 h-4" />
-              <span>{t('questionnaire.complete')}</span>
-            </motion.button>
-          ) : (
-            <motion.button
-              whileHover={{ scale: canGoNext ? 1.03 : 1 }}
-              whileTap={{ scale: canGoNext ? 0.97 : 1 }}
-              onClick={onNext}
-              disabled={!canGoNext}
-              className={cn(
-                "flex items-center gap-2",
-                "px-5 py-2.5 rounded-xl",
-                "text-sm font-semibold",
-                "transition-all duration-200",
-                "focus:outline-none focus-visible:ring-2 focus-visible:ring-momentum-orange focus-visible:ring-offset-2",
-                canGoNext
-                  ? "bg-momentum-orange hover:bg-momentum-orange/90 text-white shadow-lg shadow-momentum-orange/20"
-                  : "bg-muted text-muted-foreground/50 cursor-not-allowed"
-              )}
-              aria-label={t('questionnaire.next')}
-            >
-              <span>{t('questionnaire.next')}</span>
-              <ArrowRight className="w-4 h-4" />
-            </motion.button>
-          )}
+          <AnimatePresence mode="wait">
+            {isLastQuestion ? (
+              <motion.button
+                key="complete"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                whileHover={{ scale: canGoNext ? 1.03 : 1 }}
+                whileTap={{ scale: canGoNext ? 0.97 : 1 }}
+                onClick={onComplete}
+                disabled={!canGoNext}
+                className={cn(
+                  "group flex items-center gap-2.5",
+                  "px-5 sm:px-7 py-3 sm:py-3.5 rounded-xl sm:rounded-2xl",
+                  "text-sm font-semibold",
+                  "transition-all duration-300",
+                  "focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50 focus-visible:ring-offset-2",
+                  canGoNext
+                    ? [
+                        "bg-gradient-to-r from-emerald-600 to-emerald-500",
+                        "hover:from-emerald-500 hover:to-emerald-400",
+                        "text-white",
+                        "shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/35"
+                      ]
+                    : "bg-muted text-muted-foreground/50 cursor-not-allowed"
+                )}
+                aria-label={t('questionnaire.complete')}
+              >
+                <CheckCircle2 className={cn(
+                  "w-5 h-5 transition-transform duration-300",
+                  canGoNext && "group-hover:scale-110"
+                )} />
+                <span>{t('questionnaire.complete')}</span>
+              </motion.button>
+            ) : (
+              <motion.button
+                key="next"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                whileHover={{ scale: canGoNext ? 1.03 : 1 }}
+                whileTap={{ scale: canGoNext ? 0.97 : 1 }}
+                onClick={onNext}
+                disabled={!canGoNext}
+                className={cn(
+                  "group flex items-center gap-2.5",
+                  "px-5 sm:px-7 py-3 sm:py-3.5 rounded-xl sm:rounded-2xl",
+                  "text-sm font-semibold",
+                  "transition-all duration-300",
+                  "focus:outline-none focus-visible:ring-2 focus-visible:ring-momentum-orange/50 focus-visible:ring-offset-2",
+                  canGoNext
+                    ? [
+                        "bg-gradient-to-r from-momentum-orange to-[#FF8533]",
+                        "hover:from-[#FF8533] hover:to-momentum-orange",
+                        "text-white",
+                        "shadow-lg shadow-momentum-orange/25 hover:shadow-momentum-orange/35"
+                      ]
+                    : "bg-muted text-muted-foreground/50 cursor-not-allowed"
+                )}
+                aria-label={t('questionnaire.next')}
+              >
+                <span>{t('questionnaire.next')}</span>
+                <ArrowRight className={cn(
+                  "w-4 h-4 transition-transform duration-300",
+                  canGoNext && "group-hover:translate-x-0.5"
+                )} />
+              </motion.button>
+            )}
+          </AnimatePresence>
         </div>
 
         {/* Mobile Keyboard Hint */}
-        <div className="md:hidden flex justify-center mt-3">
-          <span className="text-[10px] text-muted-foreground/50">
-            {isMac ? '⌘' : 'Ctrl'}+Enter {t('questionnaire.toContinue')}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5 }}
+          className="lg:hidden flex justify-center mt-3 pb-safe"
+        >
+          <span className="text-[11px] text-muted-foreground/40 font-medium">
+            {isMac ? '⏎' : 'Enter'} {t('questionnaire.toContinue')}
           </span>
-        </div>
+        </motion.div>
       </div>
     </nav>
   );

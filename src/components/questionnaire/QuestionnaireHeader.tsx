@@ -4,10 +4,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { QuestionnaireHeaderProps } from '../../types/questionnaire';
 import { Logo } from '../ui/Logo';
 import { cn } from '@/lib/utils';
+import { useTheme } from '../../contexts/ThemeContext';
 
 /**
  * QuestionnaireHeader Component
- * Refined header with back link, save status indicator, and branding
+ * Clean header with elegant back button and animated save status
  */
 export default function QuestionnaireHeader({
   planTitle,
@@ -15,6 +16,7 @@ export default function QuestionnaireHeader({
   onBack,
 }: QuestionnaireHeaderProps) {
   const navigate = useNavigate();
+  const { t } = useTheme();
 
   const handleBack = () => {
     if (onBack) {
@@ -24,10 +26,10 @@ export default function QuestionnaireHeader({
     }
   };
 
-  // Save status configurations
+  // Save status configurations with translations
   const statusConfig: Record<string, {
     icon: typeof Check;
-    text: string;
+    textKey: string;
     bgClass: string;
     textClass: string;
     iconClass: string;
@@ -35,14 +37,14 @@ export default function QuestionnaireHeader({
   }> = {
     saved: {
       icon: Check,
-      text: 'Saved',
+      textKey: 'questionnaire.statusSaved',
       bgClass: 'bg-emerald-500/10 border-emerald-500/20',
       textClass: 'text-emerald-600 dark:text-emerald-400',
       iconClass: 'text-emerald-500',
     },
     saving: {
       icon: Loader2,
-      text: 'Saving...',
+      textKey: 'questionnaire.statusSaving',
       bgClass: 'bg-blue-500/10 border-blue-500/20',
       textClass: 'text-blue-600 dark:text-blue-400',
       iconClass: 'text-blue-500',
@@ -50,14 +52,14 @@ export default function QuestionnaireHeader({
     },
     unsaved: {
       icon: CloudOff,
-      text: 'Unsaved',
+      textKey: 'questionnaire.statusUnsaved',
       bgClass: 'bg-amber-500/10 border-amber-500/20',
       textClass: 'text-amber-600 dark:text-amber-400',
       iconClass: 'text-amber-500',
     },
     error: {
       icon: AlertCircle,
-      text: 'Save failed',
+      textKey: 'questionnaire.statusError',
       bgClass: 'bg-red-500/10 border-red-500/20',
       textClass: 'text-red-600 dark:text-red-400',
       iconClass: 'text-red-500',
@@ -68,35 +70,43 @@ export default function QuestionnaireHeader({
   const StatusIcon = currentStatus.icon;
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-background/80 backdrop-blur-xl border-b border-border/50">
+    <header className={cn(
+      "sticky top-0 z-50 w-full",
+      "bg-background/90 backdrop-blur-2xl",
+      "border-b border-border/30"
+    )}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex items-center justify-between h-16 sm:h-[72px]">
           {/* Left: Back Button */}
           <motion.button
             onClick={handleBack}
-            whileHover={{ x: -2 }}
-            whileTap={{ scale: 0.98 }}
+            whileHover={{ x: -3 }}
+            whileTap={{ scale: 0.97 }}
             className={cn(
-              "flex items-center gap-2.5 px-3 py-2 -ml-2",
+              "group flex items-center gap-2.5 px-3 py-2 -ml-2",
               "rounded-xl text-muted-foreground",
               "hover:text-foreground hover:bg-muted/50",
-              "transition-colors duration-200",
-              "focus:outline-none focus-visible:ring-2 focus-visible:ring-momentum-orange focus-visible:ring-offset-2"
+              "transition-all duration-200",
+              "focus:outline-none focus-visible:ring-2 focus-visible:ring-momentum-orange/50 focus-visible:ring-offset-2"
             )}
-            aria-label="Back to Dashboard"
+            aria-label={t('questionnaire.backToDashboard')}
           >
-            <ArrowLeft className="w-4.5 h-4.5" />
+            <ArrowLeft className="w-5 h-5 transition-transform duration-200 group-hover:-translate-x-0.5" />
             <span className="text-sm font-medium hidden sm:inline">
-              Dashboard
+              {t('questionnaire.dashboard')}
             </span>
           </motion.button>
 
           {/* Center: Logo or Plan Title */}
           <div className="absolute left-1/2 transform -translate-x-1/2 hidden md:block">
             {planTitle ? (
-              <h1 className="text-sm font-semibold text-foreground truncate max-w-[280px]">
+              <motion.h1
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="text-sm font-semibold text-foreground truncate max-w-[300px]"
+              >
                 {planTitle}
-              </h1>
+              </motion.h1>
             ) : (
               <Logo showText={false} size="sm" />
             )}
@@ -106,31 +116,35 @@ export default function QuestionnaireHeader({
           <AnimatePresence mode="wait">
             <motion.div
               key={saveStatus}
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              transition={{ duration: 0.15 }}
+              initial={{ opacity: 0, scale: 0.9, y: -5 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 5 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
               className={cn(
-                "flex items-center gap-2 px-3 py-1.5",
-                "rounded-full border",
+                "flex items-center gap-2 px-3.5 py-2",
+                "rounded-xl border",
                 currentStatus.bgClass
               )}
               role="status"
               aria-live="polite"
-              aria-label={`Save status: ${currentStatus.text}`}
+              aria-label={`${t('questionnaire.saveStatus')}: ${t(currentStatus.textKey)}`}
             >
-              <StatusIcon
-                className={cn(
-                  "w-3.5 h-3.5",
-                  currentStatus.iconClass,
-                  currentStatus.animate && "animate-spin"
-                )}
-              />
+              <motion.div
+                animate={currentStatus.animate ? { rotate: 360 } : {}}
+                transition={currentStatus.animate ? { duration: 1, repeat: Infinity, ease: "linear" } : {}}
+              >
+                <StatusIcon
+                  className={cn(
+                    "w-4 h-4",
+                    currentStatus.iconClass
+                  )}
+                />
+              </motion.div>
               <span className={cn(
-                "text-xs font-medium hidden sm:inline",
+                "text-xs font-semibold hidden sm:inline",
                 currentStatus.textClass
               )}>
-                {currentStatus.text}
+                {t(currentStatus.textKey)}
               </span>
             </motion.div>
           </AnimatePresence>
