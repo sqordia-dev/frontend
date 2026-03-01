@@ -189,13 +189,15 @@ const FinancialTable: React.FC<FinancialTableProps> = ({
       </div>
 
       {/* Scroll Hint for Mobile */}
-      <div className="lg:hidden mt-2 text-center">
-        <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center justify-center gap-1">
-          <span>←</span>
-          <span>Swipe to view more columns</span>
-          <span>→</span>
-        </p>
-      </div>
+      {showRightIndicator && (
+        <div className="md:hidden mt-2 text-center animate-pulse">
+          <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center justify-center gap-1.5 bg-gray-100 dark:bg-gray-800 rounded-full py-1.5 px-3 w-fit mx-auto">
+            <span className="text-momentum-orange">←</span>
+            <span>Swipe to see more</span>
+            <span className="text-momentum-orange">→</span>
+          </p>
+        </div>
+      )}
 
       {/* Bottom border line */}
       <div className="mt-4 h-0.5 bg-[#1A2B47]"></div>

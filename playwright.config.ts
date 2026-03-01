@@ -1,72 +1,139 @@
-import { defineConfig, devices } from 'playwright/test';
+import { defineConfig, devices } from '@playwright/test';
+import path from 'path';
 
 /**
  * Playwright configuration for Sqordia frontend E2E tests
  * @see https://playwright.dev/docs/test-configuration
  */
-export default defineConfig({
-  testDir: './e2e',
-  /* Run tests in files in parallel */
-  fullyParallel: true,
-  /* Fail the build on CI if you accidentally left test.only in the source code. */
-  forbidOnly: !!process.env.CI,
-  /* Retry on CI only */
-  retries: process.env.CI ? 2 : 0,
-  /* Opt out of parallel tests on CI. */
-  workers: process.env.CI ? 1 : undefined,
-  /* Reporter to use. See https://playwright.dev/docs/test-reporters */
-  reporter: [
-    ['html', { outputFolder: 'playwright-report' }],
-    ['list']
-  ],
-  /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
-  use: {
-    /* Base URL to use in actions like `await page.goto('/')`. */
+
+// Environment configuration
+const env = process.env.TEST_ENV || 'local';
+const envConfig = {
+  local: {
     baseURL: 'http://localhost:5173',
+    apiURL: 'http://localhost:5241',
+  },
+  staging: {
+    baseURL: process.env.STAGING_URL || 'https://staging.sqordia.app',
+    apiURL: process.env.STAGING_API_URL || 'https://api.staging.sqordia.app',
+  },
+  production: {
+    baseURL: process.env.PROD_URL || 'https://sqordia.app',
+    apiURL: process.env.PROD_API_URL || 'https://api.sqordia.app',
+  },
+};
 
-    /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
-    trace: 'on-first-retry',
+const currentEnv = envConfig[env as keyof typeof envConfig] || envConfig.local;
 
-    /* Take screenshot on failure */
-    screenshot: 'only-on-failure',
+// App version for screenshot organization
+const APP_VERSION = process.env.APP_VERSION || 'dev';
 
-    /* Video recording */
-    video: 'on-first-retry',
+export default defineConfig({
+  // Test directory - specs are organized by feature
+  testDir: './e2e/specs',
+
+  // Global setup and teardown
+  globalSetup: './e2e/global-setup.ts',
+  globalTeardown: './e2e/global-teardown.ts',
+
+  // Test execution settings
+  fullyParallel: true,
+  forbidOnly: !!process.env.CI,
+  retries: process.env.CI ? 2 : 0,
+  workers: process.env.CI ? 4 : undefined,
+
+  // Timeout configuration
+  timeout: 60000,
+  expect: {
+    timeout: 10000,
+    toHaveScreenshot: {
+      maxDiffPixels: 100,
+      threshold: 0.2,
+    },
   },
 
-  /* Configure projects for major browsers */
+  // Reporter configuration
+  reporter: [
+    ['html', { outputFolder: 'playwright-report', open: 'never' }],
+    ['list'],
+    ['json', { outputFile: 'playwright-report/results.json' }],
+    ...(process.env.CI ? [['github'] as const] : []),
+  ],
+
+  // Shared settings
+  use: {
+    baseURL: currentEnv.baseURL,
+    trace: process.env.CI ? 'on-first-retry' : 'retain-on-failure',
+    screenshot: 'only-on-failure',
+    video: process.env.CI ? 'on-first-retry' : 'off',
+
+    // Custom metadata
+    extraHTTPHeaders: {
+      'X-Test-Environment': env,
+    },
+
+    // Viewport defaults
+    viewport: { width: 1280, height: 720 },
+
+    // Action settings
+    actionTimeout: 15000,
+    navigationTimeout: 30000,
+  },
+
+  // Project configurations
   projects: [
+    // Desktop browsers
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
     },
-
     {
       name: 'firefox',
       use: { ...devices['Desktop Firefox'] },
     },
-
     {
       name: 'webkit',
       use: { ...devices['Desktop Safari'] },
     },
 
-    /* Test against mobile viewports. */
+    // Mobile browsers
     {
-      name: 'Mobile Chrome',
+      name: 'mobile-chrome',
       use: { ...devices['Pixel 5'] },
     },
     {
-      name: 'Mobile Safari',
+      name: 'mobile-safari',
       use: { ...devices['iPhone 12'] },
+    },
+
+    // Visual regression project
+    {
+      name: 'visual-regression',
+      testMatch: /visual\/.*\.spec\.ts/,
+      use: {
+        ...devices['Desktop Chrome'],
+        screenshot: 'on',
+      },
+    },
+
+    // Smoke tests (quick CI validation)
+    {
+      name: 'smoke',
+      testMatch: /.*\.spec\.ts/,
+      grep: /@smoke/,
+      use: { ...devices['Desktop Chrome'] },
     },
   ],
 
-  /* Run your local dev server before starting the tests */
-  webServer: {
+  // Web server configuration (only for local environment)
+  webServer: env === 'local' ? {
     command: 'npm run dev',
     url: 'http://localhost:5173',
     reuseExistingServer: !process.env.CI,
     timeout: 120 * 1000,
-  },
+  } : undefined,
+
+  // Output directories
+  outputDir: 'test-results',
+  snapshotDir: 'screenshots/visual-baselines',
 });

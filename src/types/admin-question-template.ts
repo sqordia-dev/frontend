@@ -14,6 +14,12 @@ export interface AdminQuestionTemplate {
   optionsEN: string | null;
   validationRules: string | null;
   conditionalLogic: string | null;
+  // Expert Tips (Conseil d'expert)
+  expertAdviceFR: string | null;
+  expertAdviceEN: string | null;
+  // AI Coach Prompts
+  coachPromptFR: string | null;
+  coachPromptEN: string | null;
   isActive: boolean;
   created: string;
   lastModified: string | null;
@@ -34,6 +40,12 @@ export interface CreateQuestionTemplateRequest {
   optionsEN?: string;
   validationRules?: string;
   conditionalLogic?: string;
+  // Expert Tips (Conseil d'expert)
+  expertAdviceFR?: string;
+  expertAdviceEN?: string;
+  // AI Coach Prompts
+  coachPromptFR?: string;
+  coachPromptEN?: string;
 }
 
 export interface UpdateQuestionTemplateRequest {
@@ -51,6 +63,12 @@ export interface UpdateQuestionTemplateRequest {
   optionsEN?: string;
   validationRules?: string;
   conditionalLogic?: string;
+  // Expert Tips (Conseil d'expert)
+  expertAdviceFR?: string;
+  expertAdviceEN?: string;
+  // AI Coach Prompts
+  coachPromptFR?: string;
+  coachPromptEN?: string;
   isActive?: boolean;
 }
 

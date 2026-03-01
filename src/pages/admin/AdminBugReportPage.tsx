@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { gitHubIssueService } from '../../lib/github-issue-service';
 import {
   CreateGitHubIssueRequest,
@@ -10,6 +11,8 @@ import {
   TargetRepository,
 } from '../../lib/github-issue-types';
 import { RichTextEditor } from '../../components/editor/RichTextEditor';
+import { useTheme } from '../../contexts/ThemeContext';
+import { cn } from '../../lib/utils';
 import {
   Bug,
   Send,
@@ -28,6 +31,8 @@ import {
   ChevronDown,
   Github,
   Plus,
+  ArrowLeft,
+  Image,
 } from 'lucide-react';
 
 interface UploadedScreenshot {
@@ -38,6 +43,7 @@ interface UploadedScreenshot {
 
 export default function AdminBugReportPage() {
   const navigate = useNavigate();
+  const { language } = useTheme();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Options
@@ -203,71 +209,130 @@ export default function AdminBugReportPage() {
   // Success view
   if (success) {
     return (
-      <div className="max-w-2xl mx-auto">
-        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-8 text-center">
-          <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
-            <CheckCircle className="w-8 h-8 text-green-600 dark:text-green-400" />
-          </div>
-
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Issue Created!</h2>
-          <p className="text-gray-500 dark:text-gray-400 mb-6">
-            Issue #{success.issueNumber} has been created in the {success.repository} repository.
-          </p>
-
-          <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4 mb-6 text-left">
-            <div className="flex items-start gap-3">
-              <Github className="w-5 h-5 text-gray-400 mt-0.5" />
-              <div className="flex-1 min-w-0">
-                <p className="font-medium text-gray-900 dark:text-white truncate">{success.title}</p>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                  Created {new Date(success.createdAt).toLocaleString()}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex items-center justify-center gap-3">
-            <a
-              href={success.htmlUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#1e3a5f] text-white rounded-lg hover:bg-[#2d4a6f] transition-colors font-medium"
-            >
-              <ExternalLink className="w-4 h-4" />
-              View on GitHub
-            </a>
-            <button
-              onClick={resetForm}
-              className="px-5 py-2.5 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors font-medium"
-            >
-              Report Another
-            </button>
+      <div className="space-y-6">
+        {/* Page Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+              {language === 'fr' ? 'Rapport de bug' : 'Bug Report'}
+            </h1>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+              {language === 'fr' ? 'Créer des issues GitHub pour le suivi' : 'Create GitHub issues for tracking'}
+            </p>
           </div>
         </div>
+
+        {/* Success Card */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="max-w-2xl mx-auto"
+        >
+          <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-8 text-center shadow-sm">
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ type: 'spring', stiffness: 200, delay: 0.1 }}
+              className="w-16 h-16 bg-emerald-100 dark:bg-emerald-900/30 rounded-full flex items-center justify-center mx-auto mb-6"
+            >
+              <CheckCircle className="w-8 h-8 text-emerald-600 dark:text-emerald-400" />
+            </motion.div>
+
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+              {language === 'fr' ? 'Issue créée!' : 'Issue Created!'}
+            </h2>
+            <p className="text-gray-500 dark:text-gray-400 mb-6">
+              {language === 'fr'
+                ? `L'issue #${success.issueNumber} a été créée dans le dépôt ${success.repository}.`
+                : `Issue #${success.issueNumber} has been created in the ${success.repository} repository.`}
+            </p>
+
+            <div className="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-4 mb-6 text-left border border-gray-100 dark:border-gray-700/50">
+              <div className="flex items-start gap-3">
+                <div className="p-2 rounded-lg bg-gray-900 dark:bg-white">
+                  <Github className="w-4 h-4 text-white dark:text-gray-900" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium text-gray-900 dark:text-white truncate">{success.title}</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                    {language === 'fr' ? 'Créé le' : 'Created'} {new Date(success.createdAt).toLocaleString()}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-center gap-3">
+              <a
+                href={success.htmlUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-xl hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors font-medium shadow-sm"
+              >
+                <ExternalLink className="w-4 h-4" />
+                {language === 'fr' ? 'Voir sur GitHub' : 'View on GitHub'}
+              </a>
+              <button
+                onClick={resetForm}
+                className="px-5 py-2.5 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors font-medium"
+              >
+                {language === 'fr' ? 'Autre rapport' : 'Report Another'}
+              </button>
+            </div>
+          </div>
+        </motion.div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-4xl mx-auto">
-      {/* Error Banner */}
-      {error && (
-        <div className="mb-6 flex items-center gap-3 p-4 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
-          <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
-          <p className="text-sm text-red-700 dark:text-red-300 flex-1">{error}</p>
-          <button onClick={() => setError(null)} className="text-red-500 hover:text-red-700">
-            <X className="w-4 h-4" />
-          </button>
+    <div className="space-y-6">
+      {/* Page Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+            {language === 'fr' ? 'Rapport de bug' : 'Bug Report'}
+          </h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            {language === 'fr'
+              ? 'Signaler un problème ou demander une fonctionnalité'
+              : 'Report an issue or request a feature'}
+          </p>
         </div>
-      )}
+        <button
+          type="button"
+          onClick={() => navigate('/admin')}
+          className="inline-flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          {language === 'fr' ? 'Retour' : 'Back'}
+        </button>
+      </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Error Banner */}
+      <AnimatePresence>
+        {error && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="flex items-center gap-3 p-4 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800"
+          >
+            <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
+            <p className="text-sm text-red-700 dark:text-red-300 flex-1">{error}</p>
+            <button onClick={() => setError(null)} className="text-red-500 hover:text-red-700 transition-colors">
+              <X className="w-4 h-4" />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <form onSubmit={handleSubmit} className="space-y-6 max-w-4xl">
         {/* Top Row: Repository & Category */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Repository */}
-          <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5">
+          <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5 shadow-sm">
             <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-3">
-              Target Repository
+              {language === 'fr' ? 'Dépôt cible' : 'Target Repository'}
             </label>
             <div className="grid grid-cols-2 gap-3">
               {REPOSITORY_OPTIONS.map(opt => {
@@ -278,14 +343,25 @@ export default function AdminBugReportPage() {
                     key={opt.value}
                     type="button"
                     onClick={() => setRepository(opt.value)}
-                    className={`p-4 rounded-xl border-2 text-left transition-all ${
+                    className={cn(
+                      "p-4 rounded-xl border-2 text-left transition-all",
                       isSelected
-                        ? 'border-[#FF6B00] bg-orange-50 dark:bg-orange-900/20'
+                        ? 'border-momentum-orange bg-momentum-orange/5 dark:bg-momentum-orange/10'
                         : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
-                    }`}
+                    )}
                   >
-                    <Icon className={`w-5 h-5 mb-2 ${isSelected ? 'text-[#FF6B00]' : 'text-gray-400'}`} />
-                    <div className={`font-semibold ${isSelected ? 'text-[#FF6B00]' : 'text-gray-900 dark:text-white'}`}>
+                    <div className={cn(
+                      "w-10 h-10 rounded-lg flex items-center justify-center mb-3",
+                      isSelected
+                        ? 'bg-momentum-orange/10 text-momentum-orange'
+                        : 'bg-gray-100 dark:bg-gray-800 text-gray-400'
+                    )}>
+                      <Icon className="w-5 h-5" />
+                    </div>
+                    <div className={cn(
+                      "font-semibold",
+                      isSelected ? 'text-momentum-orange' : 'text-gray-900 dark:text-white'
+                    )}>
                       {opt.label}
                     </div>
                     <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{opt.desc}</div>
@@ -296,11 +372,11 @@ export default function AdminBugReportPage() {
           </div>
 
           {/* Category & Severity */}
-          <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5 space-y-4">
+          <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5 space-y-5 shadow-sm">
             {/* Category */}
             <div>
               <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-3">
-                Category
+                {language === 'fr' ? 'Catégorie' : 'Category'}
               </label>
               <div className="flex flex-wrap gap-2">
                 {CATEGORY_OPTIONS.map(opt => {
@@ -311,13 +387,14 @@ export default function AdminBugReportPage() {
                       key={opt.value}
                       type="button"
                       onClick={() => setCategory(opt.value)}
-                      className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg border text-sm font-medium transition-all ${
+                      className={cn(
+                        "inline-flex items-center gap-2 px-3 py-2 rounded-lg border text-sm font-medium transition-all",
                         isSelected
-                          ? 'border-[#FF6B00] bg-orange-50 dark:bg-orange-900/20 text-[#FF6B00]'
-                          : 'border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:border-gray-300'
-                      }`}
+                          ? 'border-momentum-orange bg-momentum-orange/5 dark:bg-momentum-orange/10 text-momentum-orange'
+                          : 'border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:border-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
+                      )}
                     >
-                      <Icon className={`w-4 h-4 ${isSelected ? 'text-[#FF6B00]' : opt.color}`} />
+                      <Icon className={cn("w-4 h-4", isSelected ? 'text-momentum-orange' : opt.color)} />
                       {opt.label}
                     </button>
                   );
@@ -328,7 +405,7 @@ export default function AdminBugReportPage() {
             {/* Severity */}
             <div>
               <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-3">
-                Severity
+                {language === 'fr' ? 'Sévérité' : 'Severity'}
               </label>
               <div className="flex flex-wrap gap-2">
                 {SEVERITY_OPTIONS.map(opt => {
@@ -338,11 +415,12 @@ export default function AdminBugReportPage() {
                       key={opt.value}
                       type="button"
                       onClick={() => setSeverity(opt.value)}
-                      className={`px-3 py-2 rounded-lg border text-sm font-medium transition-all ${
+                      className={cn(
+                        "px-3 py-2 rounded-lg border text-sm font-medium transition-all",
                         isSelected
                           ? opt.color + ' border-current'
-                          : 'border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:border-gray-300'
-                      }`}
+                          : 'border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:border-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
+                      )}
                     >
                       {opt.label}
                     </button>
@@ -354,22 +432,24 @@ export default function AdminBugReportPage() {
         </div>
 
         {/* Main Form */}
-        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5 space-y-5">
+        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5 space-y-5 shadow-sm">
           {/* Title */}
           <div>
             <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">
-              Title <span className="text-red-500">*</span>
+              {language === 'fr' ? 'Titre' : 'Title'} <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
               value={title}
               onChange={e => setTitle(e.target.value)}
-              placeholder="Brief summary of the issue..."
-              className="w-full px-4 py-3 border border-gray-200 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-[#FF6B00]/20 focus:border-[#FF6B00] transition-all outline-none"
+              placeholder={language === 'fr' ? 'Résumé bref du problème...' : 'Brief summary of the issue...'}
+              className="w-full px-4 py-3 border border-gray-200 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-momentum-orange/20 focus:border-momentum-orange transition-all outline-none"
             />
             <div className="flex justify-between mt-1.5">
-              <p className="text-xs text-gray-400">Min 5 characters</p>
-              <p className={`text-xs ${title.length >= 5 ? 'text-green-500' : 'text-gray-400'}`}>
+              <p className="text-xs text-gray-400">
+                {language === 'fr' ? 'Min 5 caractères' : 'Min 5 characters'}
+              </p>
+              <p className={cn("text-xs", title.length >= 5 ? 'text-emerald-500' : 'text-gray-400')}>
                 {title.length}/256
               </p>
             </div>
@@ -383,48 +463,71 @@ export default function AdminBugReportPage() {
             <RichTextEditor
               content={description}
               onChange={setDescription}
-              placeholder="Describe the issue in detail. What happened? What did you expect?"
-              className="rounded-xl overflow-hidden [&_.prose-editor]:min-h-[150px] [&_.prose-editor]:max-h-[300px] [&_.prose-editor]:overflow-y-auto border-gray-200 dark:border-gray-700 focus-within:ring-2 focus-within:ring-[#FF6B00]/20 focus-within:border-[#FF6B00]"
+              placeholder={language === 'fr'
+                ? 'Décrivez le problème en détail. Que s\'est-il passé? Que devrait-il se passer?'
+                : 'Describe the issue in detail. What happened? What did you expect?'}
+              className="rounded-xl overflow-hidden [&_.prose-editor]:min-h-[150px] [&_.prose-editor]:max-h-[300px] [&_.prose-editor]:overflow-y-auto border-gray-200 dark:border-gray-700 focus-within:ring-2 focus-within:ring-momentum-orange/20 focus-within:border-momentum-orange"
             />
             <div className="flex justify-between mt-1.5">
-              <p className="text-xs text-gray-400">Min 20 characters (plain text)</p>
-              <p className={`text-xs ${getPlainTextLength(description) >= 20 ? 'text-green-500' : 'text-gray-400'}`}>
+              <p className="text-xs text-gray-400">
+                {language === 'fr' ? 'Min 20 caractères (texte brut)' : 'Min 20 characters (plain text)'}
+              </p>
+              <p className={cn("text-xs", getPlainTextLength(description) >= 20 ? 'text-emerald-500' : 'text-gray-400')}>
                 {getPlainTextLength(description)}/10000
               </p>
             </div>
           </div>
 
           {/* Reproduction Steps (for Bug category) */}
-          {category === 'Bug' && (
-            <div>
-              <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">
-                Steps to Reproduce <span className="text-gray-400 font-normal">(optional)</span>
-              </label>
-              <RichTextEditor
-                content={reproductionSteps}
-                onChange={setReproductionSteps}
-                placeholder="1. Go to...  2. Click on...  3. See error"
-                className="rounded-xl overflow-hidden [&_.prose-editor]:min-h-[100px] [&_.prose-editor]:max-h-[200px] [&_.prose-editor]:overflow-y-auto border-gray-200 dark:border-gray-700 focus-within:ring-2 focus-within:ring-[#FF6B00]/20 focus-within:border-[#FF6B00]"
-              />
-            </div>
-          )}
+          <AnimatePresence>
+            {category === 'Bug' && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">
+                  {language === 'fr' ? 'Étapes pour reproduire' : 'Steps to Reproduce'}{' '}
+                  <span className="text-gray-400 font-normal">
+                    ({language === 'fr' ? 'optionnel' : 'optional'})
+                  </span>
+                </label>
+                <RichTextEditor
+                  content={reproductionSteps}
+                  onChange={setReproductionSteps}
+                  placeholder={language === 'fr'
+                    ? '1. Aller à...  2. Cliquer sur...  3. Voir l\'erreur'
+                    : '1. Go to...  2. Click on...  3. See error'}
+                  className="rounded-xl overflow-hidden [&_.prose-editor]:min-h-[100px] [&_.prose-editor]:max-h-[200px] [&_.prose-editor]:overflow-y-auto border-gray-200 dark:border-gray-700 focus-within:ring-2 focus-within:ring-momentum-orange/20 focus-within:border-momentum-orange"
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
         {/* Screenshots */}
-        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5">
-          <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-3">
-            Screenshots <span className="text-gray-400 font-normal">(optional)</span>
-          </label>
+        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5 shadow-sm">
+          <div className="flex items-center gap-2 mb-3">
+            <Image className="w-4 h-4 text-gray-400" />
+            <label className="text-sm font-semibold text-gray-900 dark:text-white">
+              {language === 'fr' ? 'Captures d\'écran' : 'Screenshots'}{' '}
+              <span className="text-gray-400 font-normal">
+                ({language === 'fr' ? 'optionnel' : 'optional'})
+              </span>
+            </label>
+          </div>
 
           <div
             onDrop={handleDrop}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
-            className={`relative border-2 border-dashed rounded-xl p-6 text-center transition-all ${
+            className={cn(
+              "relative border-2 border-dashed rounded-xl p-8 text-center transition-all",
               dragActive
-                ? 'border-[#FF6B00] bg-orange-50 dark:bg-orange-900/10'
-                : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
-            }`}
+                ? 'border-momentum-orange bg-momentum-orange/5 dark:bg-momentum-orange/10'
+                : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800/50'
+            )}
           >
             <input
               ref={fileInputRef}
@@ -435,144 +538,227 @@ export default function AdminBugReportPage() {
               className="hidden"
             />
 
-            <Upload className={`w-8 h-8 mx-auto mb-3 ${dragActive ? 'text-[#FF6B00]' : 'text-gray-400'}`} />
+            <div className={cn(
+              "w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-3",
+              dragActive
+                ? 'bg-momentum-orange/10 text-momentum-orange'
+                : 'bg-gray-100 dark:bg-gray-800 text-gray-400'
+            )}>
+              <Upload className="w-6 h-6" />
+            </div>
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              Drag and drop images here, or{' '}
+              {language === 'fr' ? 'Glissez-déposez des images ici, ou' : 'Drag and drop images here, or'}{' '}
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="text-[#FF6B00] hover:underline font-medium"
+                className="text-momentum-orange hover:underline font-medium"
               >
-                browse
+                {language === 'fr' ? 'parcourir' : 'browse'}
               </button>
             </p>
-            <p className="text-xs text-gray-400 mt-1">PNG, JPG, GIF up to 10MB</p>
+            <p className="text-xs text-gray-400 mt-1">
+              {language === 'fr' ? 'PNG, JPG, GIF jusqu\'à 10Mo' : 'PNG, JPG, GIF up to 10MB'}
+            </p>
           </div>
 
           {/* Uploading */}
-          {uploading && (
-            <div className="flex items-center gap-2 mt-3 text-sm text-gray-500">
-              <div className="animate-spin rounded-full h-4 w-4 border-2 border-[#FF6B00] border-t-transparent"></div>
-              Uploading...
-            </div>
-          )}
+          <AnimatePresence>
+            {uploading && (
+              <motion.div
+                initial={{ opacity: 0, y: -5 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                className="flex items-center gap-2 mt-3 text-sm text-gray-500"
+              >
+                <div className="animate-spin rounded-full h-4 w-4 border-2 border-momentum-orange border-t-transparent"></div>
+                {language === 'fr' ? 'Téléversement...' : 'Uploading...'}
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* Screenshot previews */}
-          {screenshots.length > 0 && (
-            <div className="flex flex-wrap gap-3 mt-4">
-              {screenshots.map((screenshot, index) => (
-                <div key={index} className="relative group">
-                  <img
-                    src={screenshot.preview}
-                    alt={`Screenshot ${index + 1}`}
-                    className="w-20 h-20 object-cover rounded-lg border border-gray-200 dark:border-gray-700"
-                  />
-                  {screenshot.url ? (
-                    <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
-                      <CheckCircle className="w-3 h-3 text-white" />
-                    </div>
-                  ) : (
-                    <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-amber-500 rounded-full flex items-center justify-center" title="Won't be attached">
-                      <AlertCircle className="w-3 h-3 text-white" />
-                    </div>
-                  )}
-                  <button
-                    type="button"
-                    onClick={() => removeScreenshot(index)}
-                    className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                </div>
-              ))}
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                className="w-20 h-20 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-lg flex items-center justify-center text-gray-400 hover:border-gray-300 hover:text-gray-500 transition-colors"
+          <AnimatePresence>
+            {screenshots.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="flex flex-wrap gap-3 mt-4"
               >
-                <Plus className="w-5 h-5" />
-              </button>
-            </div>
-          )}
+                {screenshots.map((screenshot, index) => (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.8 }}
+                    className="relative group"
+                  >
+                    <img
+                      src={screenshot.preview}
+                      alt={`Screenshot ${index + 1}`}
+                      className="w-20 h-20 object-cover rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm"
+                    />
+                    {screenshot.url ? (
+                      <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-emerald-500 rounded-full flex items-center justify-center shadow-sm">
+                        <CheckCircle className="w-3 h-3 text-white" />
+                      </div>
+                    ) : (
+                      <div
+                        className="absolute -bottom-1 -right-1 w-5 h-5 bg-amber-500 rounded-full flex items-center justify-center shadow-sm"
+                        title={language === 'fr' ? 'Ne sera pas attaché' : "Won't be attached"}
+                      >
+                        <AlertCircle className="w-3 h-3 text-white" />
+                      </div>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => removeScreenshot(index)}
+                      className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center shadow-sm"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </motion.div>
+                ))}
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="w-20 h-20 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-lg flex items-center justify-center text-gray-400 hover:border-momentum-orange hover:text-momentum-orange transition-colors"
+                >
+                  <Plus className="w-5 h-5" />
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
         {/* System Info (Collapsible) */}
         {systemInfo && (
-          <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden">
+          <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden shadow-sm">
             <button
               type="button"
               onClick={() => setShowSystemInfo(!showSystemInfo)}
-              className="w-full flex items-center justify-between p-5 text-left"
+              className="w-full flex items-center justify-between p-5 text-left hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
             >
               <div className="flex items-center gap-3">
-                <Monitor className="w-5 h-5 text-gray-400" />
-                <span className="text-sm font-semibold text-gray-900 dark:text-white">System Information</span>
-                <span className="text-xs text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded">Auto-captured</span>
+                <div className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                  <Monitor className="w-4 h-4 text-gray-500" />
+                </div>
+                <div>
+                  <span className="text-sm font-semibold text-gray-900 dark:text-white block">
+                    {language === 'fr' ? 'Informations système' : 'System Information'}
+                  </span>
+                  <span className="text-xs text-gray-400">
+                    {language === 'fr' ? 'Capturé automatiquement' : 'Auto-captured'}
+                  </span>
+                </div>
               </div>
-              <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform ${showSystemInfo ? 'rotate-180' : ''}`} />
+              <ChevronDown className={cn(
+                "w-5 h-5 text-gray-400 transition-transform duration-200",
+                showSystemInfo && 'rotate-180'
+              )} />
             </button>
 
-            {showSystemInfo && (
-              <div className="px-5 pb-5 grid grid-cols-2 md:grid-cols-4 gap-4 border-t border-gray-100 dark:border-gray-800 pt-4">
-                <div>
-                  <p className="text-xs text-gray-400 mb-1">Browser</p>
-                  <p className="text-sm font-medium text-gray-900 dark:text-white">{systemInfo.browser}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-gray-400 mb-1">OS</p>
-                  <p className="text-sm font-medium text-gray-900 dark:text-white">{systemInfo.operatingSystem}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-gray-400 mb-1">Screen</p>
-                  <p className="text-sm font-medium text-gray-900 dark:text-white">{systemInfo.screenSize}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-gray-400 mb-1">Page</p>
-                  <p className="text-sm font-medium text-gray-900 dark:text-white truncate" title={systemInfo.currentPageUrl}>
-                    {systemInfo.currentPageUrl.replace(/^https?:\/\/[^/]+/, '')}
-                  </p>
-                </div>
-              </div>
-            )}
+            <AnimatePresence>
+              {showSystemInfo && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="overflow-hidden"
+                >
+                  <div className="px-5 pb-5 grid grid-cols-2 md:grid-cols-4 gap-4 border-t border-gray-100 dark:border-gray-800 pt-4">
+                    <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3">
+                      <p className="text-xs text-gray-400 mb-1">
+                        {language === 'fr' ? 'Navigateur' : 'Browser'}
+                      </p>
+                      <p className="text-sm font-medium text-gray-900 dark:text-white">{systemInfo.browser}</p>
+                    </div>
+                    <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3">
+                      <p className="text-xs text-gray-400 mb-1">
+                        {language === 'fr' ? 'Système' : 'OS'}
+                      </p>
+                      <p className="text-sm font-medium text-gray-900 dark:text-white">{systemInfo.operatingSystem}</p>
+                    </div>
+                    <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3">
+                      <p className="text-xs text-gray-400 mb-1">
+                        {language === 'fr' ? 'Écran' : 'Screen'}
+                      </p>
+                      <p className="text-sm font-medium text-gray-900 dark:text-white">{systemInfo.screenSize}</p>
+                    </div>
+                    <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3">
+                      <p className="text-xs text-gray-400 mb-1">Page</p>
+                      <p className="text-sm font-medium text-gray-900 dark:text-white truncate" title={systemInfo.currentPageUrl}>
+                        {systemInfo.currentPageUrl.replace(/^https?:\/\/[^/]+/, '')}
+                      </p>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         )}
 
         {/* Submit */}
-        <div className="flex items-center justify-between bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5 shadow-sm">
           <div className="text-sm text-gray-500">
-            {!isFormValid && (
-              <span className="flex items-center gap-2">
-                <AlertCircle className="w-4 h-4" />
-                {title.length < 5 && getPlainTextLength(description) < 20
-                  ? 'Title and description required'
-                  : title.length < 5
-                  ? 'Title too short (min 5 chars)'
-                  : 'Description too short (min 20 chars)'}
-              </span>
-            )}
+            <AnimatePresence mode="wait">
+              {!isFormValid ? (
+                <motion.span
+                  key="invalid"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="flex items-center gap-2 text-amber-600 dark:text-amber-400"
+                >
+                  <AlertCircle className="w-4 h-4" />
+                  {title.length < 5 && getPlainTextLength(description) < 20
+                    ? (language === 'fr' ? 'Titre et description requis' : 'Title and description required')
+                    : title.length < 5
+                    ? (language === 'fr' ? 'Titre trop court (min 5 car.)' : 'Title too short (min 5 chars)')
+                    : (language === 'fr' ? 'Description trop courte (min 20 car.)' : 'Description too short (min 20 chars)')}
+                </motion.span>
+              ) : (
+                <motion.span
+                  key="valid"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400"
+                >
+                  <CheckCircle className="w-4 h-4" />
+                  {language === 'fr' ? 'Prêt à soumettre' : 'Ready to submit'}
+                </motion.span>
+              )}
+            </AnimatePresence>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 w-full sm:w-auto">
             <button
               type="button"
               onClick={() => navigate('/admin')}
-              className="px-5 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+              className="flex-1 sm:flex-none px-5 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors border border-gray-200 dark:border-gray-700"
             >
-              Cancel
+              {language === 'fr' ? 'Annuler' : 'Cancel'}
             </button>
             <button
               type="submit"
               disabled={submitting || !isFormValid}
-              className="inline-flex items-center gap-2 px-6 py-2.5 bg-[#FF6B00] text-white rounded-lg hover:bg-[#e55f00] disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
+              className={cn(
+                "flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl font-medium transition-all",
+                "bg-momentum-orange text-white shadow-sm",
+                "hover:bg-momentum-orange/90 hover:shadow-md",
+                "disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
+              )}
             >
               {submitting ? (
                 <>
                   <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
-                  Creating...
+                  {language === 'fr' ? 'Création...' : 'Creating...'}
                 </>
               ) : (
                 <>
                   <Send className="w-4 h-4" />
-                  Create Issue
+                  {language === 'fr' ? 'Créer l\'issue' : 'Create Issue'}
                 </>
               )}
             </button>

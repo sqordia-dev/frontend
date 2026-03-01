@@ -3,15 +3,31 @@ import { adminService } from '../../lib/admin-service';
 import { Search, FileText, RefreshCw, AlertCircle, LayoutGrid, List } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { getUserFriendlyError } from '../../utils/error-messages';
+import { useIsMobile } from '../../hooks';
+import { cn } from '../../lib/utils';
 
 export default function AdminBusinessPlansPage() {
   const { t } = useTheme();
+  const isMobile = useIsMobile();
   const [plans, setPlans] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [regenerating, setRegenerating] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'card' | 'list'>('list');
+  const [userOverrodeViewMode, setUserOverrodeViewMode] = useState(false);
+
+  // Auto-switch view mode based on screen size
+  useEffect(() => {
+    if (!userOverrodeViewMode) {
+      setViewMode(isMobile ? 'card' : 'list');
+    }
+  }, [isMobile, userOverrodeViewMode]);
+
+  const handleViewModeChange = (mode: 'list' | 'card') => {
+    setViewMode(mode);
+    setUserOverrodeViewMode(true);
+  };
 
   useEffect(() => {
     loadPlans();
@@ -72,8 +88,8 @@ export default function AdminBusinessPlansPage() {
       )}
 
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-        <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-          <div className="flex items-center gap-4">
+        <div className="p-3 sm:p-4 border-b border-gray-200 dark:border-gray-700">
+          <div className="flex flex-col sm:flex-row gap-3">
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               <input
@@ -81,28 +97,31 @@ export default function AdminBusinessPlansPage() {
                 placeholder={t('admin.businessPlans.search')}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500 focus:border-transparent"
               />
             </div>
-            <div className="flex items-center gap-2 border border-gray-300 dark:border-gray-600 rounded-lg p-1 bg-white dark:bg-gray-700">
+            {/* View Toggle - hidden on mobile since we auto-switch */}
+            <div className="hidden md:flex items-center gap-2 border border-gray-300 dark:border-gray-600 rounded-lg p-1 bg-white dark:bg-gray-700">
               <button
-                onClick={() => setViewMode('list')}
-                className={`p-2 rounded transition-colors ${
+                onClick={() => handleViewModeChange('list')}
+                className={cn(
+                  'p-2 rounded transition-colors',
                   viewMode === 'list'
                     ? 'text-white bg-[#FF6B00]'
                     : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-600'
-                }`}
+                )}
                 title="List View"
               >
                 <List className="w-5 h-5" />
               </button>
               <button
-                onClick={() => setViewMode('card')}
-                className={`p-2 rounded transition-colors ${
+                onClick={() => handleViewModeChange('card')}
+                className={cn(
+                  'p-2 rounded transition-colors',
                   viewMode === 'card'
                     ? 'text-white bg-[#FF6B00]'
                     : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-600'
-                }`}
+                )}
                 title="Card View"
               >
                 <LayoutGrid className="w-5 h-5" />
@@ -116,22 +135,22 @@ export default function AdminBusinessPlansPage() {
             <table className="w-full">
               <thead className="bg-gray-50 dark:bg-gray-700/50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                     {t('admin.businessPlans.plan')}
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider hidden lg:table-cell">
                     {t('admin.businessPlans.organization')}
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                     {t('admin.businessPlans.status')}
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider hidden xl:table-cell">
                     {t('admin.businessPlans.type')}
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider hidden md:table-cell">
                     {t('admin.businessPlans.created')}
                   </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  <th className="px-4 lg:px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                     Actions
                   </th>
                 </tr>
@@ -146,53 +165,58 @@ export default function AdminBusinessPlansPage() {
                 ) : (
                   filteredPlans.map((plan) => (
                     <tr key={plan.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                      <td className="px-6 py-4">
+                      <td className="px-4 lg:px-6 py-4">
                         <div className="flex items-center">
                           <div className="flex-shrink-0 bg-purple-100 dark:bg-purple-900/20 p-2 rounded">
                             <FileText className="w-5 h-5 text-purple-600 dark:text-purple-400" />
                           </div>
-                          <div className="ml-4">
-                            <div className="text-sm font-medium text-gray-900 dark:text-white">
+                          <div className="ml-3 lg:ml-4 min-w-0">
+                            <div className="text-sm font-medium text-gray-900 dark:text-white truncate max-w-[150px] sm:max-w-[200px] lg:max-w-none">
                               {plan.title}
                             </div>
                             {plan.description && (
-                              <div className="text-sm text-gray-500 dark:text-gray-400 line-clamp-1">
+                              <div className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 line-clamp-1">
                                 {plan.description}
                               </div>
                             )}
+                            {/* Show organization on mobile below title */}
+                            <div className="lg:hidden text-xs text-gray-400 dark:text-gray-500 mt-1">
+                              {plan.organizationName || '-'}
+                            </div>
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                      <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white hidden lg:table-cell">
                         {plan.organizationName || '-'}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                      <td className="px-4 lg:px-6 py-4 whitespace-nowrap">
+                        <span className={cn(
+                          'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium',
                           plan.status === 'Completed' || plan.status === 'completed'
                             ? 'bg-[#FF6B00] text-white'
                             : plan.status === 'In Progress' || plan.status === 'inProgress'
                             ? 'bg-blue-500/[0.08] text-blue-500'
                             : 'bg-gray-500/[0.08] text-gray-500'
-                        }`}>
+                        )}>
                           {plan.status === 'Completed' ? t('admin.businessPlans.completed') :
                            plan.status === 'InProgress' ? t('admin.businessPlans.inProgress') :
                            t('admin.businessPlans.draft')}
                         </span>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                      <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 hidden xl:table-cell">
                         {plan.planType || plan.businessType || 'Standard'}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                      <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 hidden md:table-cell">
                         {plan.createdAt ? new Date(plan.createdAt).toLocaleDateString() : '-'}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <button
                           onClick={() => handleRegenerate(plan.id)}
                           disabled={regenerating === plan.id}
                           className="inline-flex items-center transition-colors disabled:opacity-50 text-[#FF6B00] hover:text-[#E55F00]"
                         >
-                          <RefreshCw className={`w-4 h-4 mr-1 ${regenerating === plan.id ? 'animate-spin' : ''}`} />
-                          {t('admin.businessPlans.regenerate')}
+                          <RefreshCw className={cn('w-4 h-4', regenerating === plan.id && 'animate-spin')} />
+                          <span className="hidden sm:inline ml-1">{t('admin.businessPlans.regenerate')}</span>
                         </button>
                       </td>
                     </tr>

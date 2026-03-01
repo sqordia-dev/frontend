@@ -38,12 +38,14 @@ const buttonVariants = cva(
           "bg-green-600 text-white shadow-md shadow-green-600/25 hover:bg-green-700 hover:shadow-lg",
       },
       size: {
-        default: "h-10 px-5 py-2",
-        sm: "h-9 rounded-lg px-4 text-xs",
-        lg: "h-12 rounded-xl px-8 text-base",
+        // Mobile-first: 44px touch target, 40px on desktop
+        default: "min-h-[44px] sm:min-h-0 h-11 sm:h-10 px-5 py-2",
+        sm: "min-h-[44px] sm:min-h-0 h-11 sm:h-9 rounded-lg px-4 text-xs",
+        lg: "min-h-[44px] sm:min-h-0 h-12 rounded-xl px-8 text-base",
         xl: "h-14 rounded-xl px-10 text-lg",
-        icon: "h-10 w-10 rounded-lg",
-        "icon-sm": "h-8 w-8 rounded-lg",
+        // Icon buttons with touch-friendly sizing
+        icon: "min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 h-11 w-11 sm:h-10 sm:w-10 rounded-lg",
+        "icon-sm": "min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 h-11 w-11 sm:h-8 sm:w-8 rounded-lg",
         "icon-lg": "h-12 w-12 rounded-xl",
       },
     },

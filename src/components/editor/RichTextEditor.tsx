@@ -182,12 +182,12 @@ export function RichTextEditor({
 
     // If editor is empty but we have content to show, set it
     if (htmlContent && isEmpty) {
-      editor.commands.setContent(htmlContent, false);
+      editor.commands.setContent(htmlContent, { emitUpdate: false });
     }
     // If content differs from editor (e.g., AI assist update)
     else if (htmlContent && htmlContent !== currentHTML) {
       // Use setContent with emitUpdate to ensure proper HTML parsing
-      editor.commands.setContent(htmlContent, true);
+      editor.commands.setContent(htmlContent, { emitUpdate: true });
     }
   }, [htmlContent, editor]);
 

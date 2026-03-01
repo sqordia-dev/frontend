@@ -34,11 +34,11 @@ const LANGUAGES = [
 export const THEME_ORANGE = '#FF6B00';
 
 interface LanguageDropdownProps {
-  textColor: string;
+  textColor?: string;
   isDark?: boolean;
   className?: string;
-  /** Compact for mobile nav (icon-only or smaller) */
-  variant?: 'default' | 'compact';
+  /** Compact for mobile nav (icon-only or smaller), toggle for simple EN|FR buttons */
+  variant?: 'default' | 'compact' | 'toggle';
   /** Called after language is selected (e.g. close mobile menu) */
   onSelect?: () => void;
 }
@@ -66,6 +66,29 @@ export default function LanguageDropdown({
     }
     onSelect?.();
   };
+
+  // Simple toggle variant - EN | FR buttons (matches CMS questionnaire design)
+  if (variant === 'toggle') {
+    return (
+      <div className={cn('flex items-center bg-muted rounded-lg p-0.5', className)}>
+        {LANGUAGES.map((lang) => (
+          <button
+            key={lang.code}
+            type="button"
+            onClick={() => handleSelect(lang.code)}
+            className={cn(
+              'px-2.5 py-1 text-xs font-semibold rounded-md transition-all',
+              language === lang.code
+                ? 'bg-card text-momentum-orange shadow-sm'
+                : 'text-muted-foreground hover:text-foreground'
+            )}
+          >
+            {lang.label}
+          </button>
+        ))}
+      </div>
+    );
+  }
 
   return (
     <DropdownMenu>

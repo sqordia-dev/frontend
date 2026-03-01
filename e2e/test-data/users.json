@@ -1,0 +1,52 @@
+{
+  "admin": {
+    "email": "admin@sqordia.app",
+    "password": "Sqordia2025!",
+    "firstName": "Admin",
+    "lastName": "User",
+    "role": "admin"
+  },
+  "regularUser": {
+    "email": "testuser@sqordia.app",
+    "password": "TestUser2025!",
+    "firstName": "Test",
+    "lastName": "User",
+    "role": "user"
+  },
+  "consultant": {
+    "email": "consultant@sqordia.app",
+    "password": "Consultant2025!",
+    "firstName": "Consultant",
+    "lastName": "User",
+    "role": "consultant",
+    "persona": "consultant"
+  },
+  "entrepreneur": {
+    "email": "entrepreneur@sqordia.app",
+    "password": "Entrepreneur2025!",
+    "firstName": "Entrepreneur",
+    "lastName": "User",
+    "role": "user",
+    "persona": "entrepreneur"
+  },
+  "obnl": {
+    "email": "obnl@sqordia.app",
+    "password": "OBNL2025!",
+    "firstName": "OBNL",
+    "lastName": "User",
+    "role": "user",
+    "persona": "obnl"
+  },
+  "invalidUser": {
+    "email": "invalid@test.com",
+    "password": "wrongpassword",
+    "role": "none"
+  },
+  "newUser": {
+    "email": "newuser@test.com",
+    "password": "NewUser2025!",
+    "firstName": "New",
+    "lastName": "User",
+    "role": "user"
+  }
+}

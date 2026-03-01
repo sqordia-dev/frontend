@@ -1,0 +1,64 @@
+{
+  "sampleBusinessPlan": {
+    "name": "Test Business Plan",
+    "type": "BusinessPlan",
+    "industry": "Technology",
+    "description": "A comprehensive business plan for a technology startup",
+    "organizationName": "Test Organization"
+  },
+  "leanCanvas": {
+    "name": "Test Lean Canvas",
+    "type": "LeanCanvas",
+    "industry": "Healthcare",
+    "description": "A lean canvas for a healthcare innovation project"
+  },
+  "strategicPlan": {
+    "name": "Test Strategic Plan",
+    "type": "StrategicPlan",
+    "industry": "Finance",
+    "description": "A strategic plan for financial services expansion"
+  },
+  "restaurantPlan": {
+    "name": "Restaurant Business Plan",
+    "type": "BusinessPlan",
+    "industry": "Food & Beverage",
+    "description": "Business plan for a new restaurant concept"
+  },
+  "ecommercePlan": {
+    "name": "E-commerce Platform Plan",
+    "type": "BusinessPlan",
+    "industry": "E-commerce",
+    "description": "Business plan for an online marketplace"
+  },
+  "nonprofitPlan": {
+    "name": "Nonprofit Organization Plan",
+    "type": "BusinessPlan",
+    "industry": "Nonprofit",
+    "description": "Business plan for a nonprofit organization",
+    "persona": "obnl"
+  },
+  "questionnaireSampleAnswers": {
+    "businessName": "Sample Business Inc.",
+    "industry": "Technology",
+    "targetMarket": "Small to medium businesses",
+    "productDescription": "SaaS platform for business management",
+    "revenueModel": "Monthly subscription",
+    "competitiveAdvantage": "AI-powered automation",
+    "fundingNeeds": "$500,000",
+    "teamSize": "5-10 employees"
+  },
+  "sections": {
+    "executiveSummary": {
+      "title": "Executive Summary",
+      "content": "This is a sample executive summary for testing purposes."
+    },
+    "marketAnalysis": {
+      "title": "Market Analysis",
+      "content": "The target market is growing at 15% annually."
+    },
+    "financialProjections": {
+      "title": "Financial Projections",
+      "content": "Projected revenue of $1M in year one."
+    }
+  }
+}

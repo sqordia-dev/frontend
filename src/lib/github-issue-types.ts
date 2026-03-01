@@ -26,6 +26,84 @@ export interface GitHubIssueResponse {
   createdAt: string;
 }
 
+export type IssueState = 'open' | 'closed' | 'all';
+
+export interface GitHubLabel {
+  name: string;
+  color: string;
+  description?: string;
+}
+
+export interface GitHubUser {
+  login: string;
+  avatarUrl: string;
+  htmlUrl: string;
+}
+
+export interface GitHubIssueListItem {
+  issueNumber: number;
+  htmlUrl: string;
+  title: string;
+  state: string;
+  repository: string;
+  createdAt: string;
+  updatedAt?: string;
+  labels: GitHubLabel[];
+  author?: GitHubUser;
+  commentsCount: number;
+  priority?: string;
+  category?: string;
+}
+
+export interface GitHubIssueListResponse {
+  issues: GitHubIssueListItem[];
+  totalCount: number;
+  page: number;
+  pageSize: number;
+  hasMore: boolean;
+}
+
+export interface GitHubIssueDetailResponse {
+  issueNumber: number;
+  issueUrl: string;
+  htmlUrl: string;
+  title: string;
+  body: string;
+  state: string;
+  repository: string;
+  createdAt: string;
+  updatedAt?: string;
+  closedAt?: string;
+  labels: GitHubLabel[];
+  author?: GitHubUser;
+  assignee?: GitHubUser;
+  commentsCount: number;
+}
+
+export interface GitHubIssueStats {
+  totalOpen: number;
+  totalClosed: number;
+  frontendOpen: number;
+  frontendClosed: number;
+  backendOpen: number;
+  backendClosed: number;
+  criticalCount: number;
+  highCount: number;
+  mediumCount: number;
+  lowCount: number;
+}
+
+export interface ListIssuesParams {
+  repository?: 'frontend' | 'backend' | 'all';
+  state?: IssueState;
+  label?: string;
+  search?: string;
+  page?: number;
+  pageSize?: number;
+  sort?: 'created' | 'updated';
+  direction?: 'asc' | 'desc';
+}
+
 export interface SystemInfo {
   browser: string;
   operatingSystem: string;

@@ -15,3 +15,22 @@ export { useScrollSpy } from './useScrollSpy';
 export { useCmsUndoRedo } from './useCmsUndoRedo';
 export { useCmsVersionComparison } from './useCmsVersionComparison';
 export type { DiffType, BlockDiff, SectionDiff, VersionComparisonResult } from './useCmsVersionComparison';
+
+// Responsive hooks
+export {
+  useMediaQuery,
+  useIsMobile,
+  useIsTablet,
+  useIsDesktop,
+  useIsLargeDesktop,
+  usePrefersReducedMotion,
+  useIsPortrait,
+  useIsTouchDevice
+} from './useMediaQuery';
+export {
+  useBreakpoint,
+  useBreakpointValue,
+  useResponsiveValue,
+  BREAKPOINTS
+} from './useBreakpoint';
+export type { Breakpoint } from './useBreakpoint';

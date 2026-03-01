@@ -436,7 +436,7 @@ export default function ProfilePage() {
         <div className="bg-white dark:bg-gray-800/50 rounded-2xl shadow-card border border-gray-200/80 dark:border-gray-700/50 overflow-hidden backdrop-blur-sm">
           {/* Tab Navigation */}
           <div className="border-b border-gray-200 dark:border-gray-700/50 bg-gray-50/50 dark:bg-gray-800/30">
-            <nav className="flex gap-1 px-4 py-2 overflow-x-auto scrollbar-hide" aria-label="Settings tabs">
+            <nav className="flex gap-1 px-3 sm:px-4 py-2 overflow-x-auto scrollbar-hide -mx-px" aria-label="Settings tabs">
               {tabs.map((tab) => {
                 const Icon = tab.icon;
                 const isActive = activeTab === tab.id;
@@ -445,15 +445,16 @@ export default function ProfilePage() {
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
                     className={`
-                      flex items-center gap-2 px-4 py-2.5 rounded-lg text-label-md whitespace-nowrap transition-all duration-200
+                      flex items-center justify-center gap-2 px-3 sm:px-4 py-2.5 rounded-lg text-label-md whitespace-nowrap transition-all duration-200 min-h-[44px] min-w-[44px] sm:min-w-0
                       ${isActive
                         ? 'bg-white dark:bg-gray-700 text-strategy-blue dark:text-white shadow-sm'
                         : 'text-gray-600 dark:text-gray-400 hover:text-strategy-blue dark:hover:text-white hover:bg-white/50 dark:hover:bg-gray-700/50'
                       }
                     `}
                     aria-current={isActive ? 'page' : undefined}
+                    aria-label={cms(`profile.tab_${tab.id}`, '') || tab.label}
                   >
-                    <Icon className="w-4 h-4" />
+                    <Icon className="w-4 h-4 flex-shrink-0" />
                     <span className="hidden sm:inline">{cms(`profile.tab_${tab.id}`, '') || tab.label}</span>
                   </button>
                 );
@@ -886,12 +887,12 @@ export default function ProfilePage() {
                 <div className="h-px bg-gradient-to-r from-transparent via-gray-200 dark:via-gray-700 to-transparent" />
 
                 {/* Two-Factor Authentication */}
-                <div className="flex items-start justify-between gap-6 p-5 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700">
-                  <div className="flex items-start gap-4">
-                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${twoFactorEnabled ? 'bg-emerald-100 dark:bg-emerald-900/30' : 'bg-gray-200 dark:bg-gray-700'}`}>
+                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 p-4 sm:p-5 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700">
+                  <div className="flex items-start gap-3 sm:gap-4">
+                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${twoFactorEnabled ? 'bg-emerald-100 dark:bg-emerald-900/30' : 'bg-gray-200 dark:bg-gray-700'}`}>
                       <Shield className={`w-5 h-5 ${twoFactorEnabled ? 'text-emerald-600 dark:text-emerald-400' : 'text-gray-500 dark:text-gray-400'}`} />
                     </div>
-                    <div>
+                    <div className="min-w-0">
                       <h4 className="text-heading-sm text-strategy-blue dark:text-white">
                         {cms('profile.two_factor_heading', '') || 'Two-Factor Authentication'}
                       </h4>
@@ -904,7 +905,7 @@ export default function ProfilePage() {
                       </span>
                     </div>
                   </div>
-                  <button className="px-4 py-2.5 text-label-md rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                  <button className="w-full sm:w-auto px-4 py-2.5 text-label-md rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors min-h-[44px]">
                     {twoFactorEnabled ? 'Disable' : 'Enable'}
                   </button>
                 </div>
@@ -950,38 +951,46 @@ export default function ProfilePage() {
                         <div
                           key={index}
                           className={`
-                            flex items-center justify-between p-4 rounded-xl border transition-all duration-200
+                            flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl border transition-all duration-200
                             ${isCurrent
                               ? 'bg-momentum-orange/5 dark:bg-momentum-orange/10 border-momentum-orange/30'
                               : 'bg-white dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
                             }
                           `}
                         >
-                          <div className="flex items-center gap-4">
-                            <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${isCurrent ? 'bg-momentum-orange/10' : 'bg-gray-100 dark:bg-gray-700'}`}>
+                          <div className="flex items-start sm:items-center gap-3 sm:gap-4">
+                            <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${isCurrent ? 'bg-momentum-orange/10' : 'bg-gray-100 dark:bg-gray-700'}`}>
                               <DeviceIcon className={`w-5 h-5 ${isCurrent ? 'text-momentum-orange' : 'text-gray-500 dark:text-gray-400'}`} />
                             </div>
-                            <div>
-                              <div className="flex items-center gap-2">
-                                <p className="text-heading-sm text-strategy-blue dark:text-white">
+                            <div className="min-w-0 flex-1">
+                              <div className="flex flex-wrap items-center gap-2">
+                                <p className="text-heading-sm text-strategy-blue dark:text-white truncate">
                                   {getDeviceName(session)}
                                 </p>
                                 {isCurrent && (
-                                  <span className="px-2 py-0.5 text-label-sm text-momentum-orange bg-momentum-orange/10 rounded-full">
+                                  <span className="px-2 py-0.5 text-label-sm text-momentum-orange bg-momentum-orange/10 rounded-full whitespace-nowrap">
                                     {cms('profile.current_session_badge', '') || 'Current'}
                                   </span>
                                 )}
                               </div>
-                              <p className="text-body-sm text-gray-500 dark:text-gray-400">
+                              <p className="text-body-sm text-gray-500 dark:text-gray-400 truncate">
                                 {formatIpAddress(session.ipAddress)}
-                                {session.lastActivityAt && ` · Last active ${new Date(session.lastActivityAt).toLocaleDateString()}`}
+                                <span className="hidden sm:inline">
+                                  {session.lastActivityAt && ` · Last active ${new Date(session.lastActivityAt).toLocaleDateString()}`}
+                                </span>
                               </p>
+                              {/* Show last activity on separate line for mobile */}
+                              {session.lastActivityAt && (
+                                <p className="sm:hidden text-body-xs text-gray-400 dark:text-gray-500 mt-0.5">
+                                  Last active {new Date(session.lastActivityAt).toLocaleDateString()}
+                                </p>
+                              )}
                             </div>
                           </div>
                           {!isCurrent && (
                             <button
                               onClick={() => handleRevokeSession(session.id)}
-                              className="px-3 py-1.5 text-label-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg transition-colors"
+                              className="w-full sm:w-auto px-3 py-2 sm:py-1.5 text-label-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg transition-colors border border-red-200 dark:border-red-900/50 sm:border-0 min-h-[44px] sm:min-h-0"
                             >
                               {cms('profile.revoke_session_button', '') || 'Revoke'}
                             </button>
@@ -1166,8 +1175,12 @@ export default function ProfilePage() {
 
       {/* Delete Modal */}
       {showDeleteModal && deletionType && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-elevated max-w-md w-full overflow-hidden animate-scale-in">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white dark:bg-gray-800 rounded-t-2xl sm:rounded-2xl shadow-elevated max-w-md w-full overflow-hidden animate-scale-in max-h-[90vh] overflow-y-auto">
+            {/* Drag handle for mobile */}
+            <div className="sm:hidden flex justify-center pt-3">
+              <div className="w-10 h-1 bg-gray-300 dark:bg-gray-600 rounded-full" />
+            </div>
             <div className={`px-6 py-4 ${deletionType === 'Deactivate' ? 'bg-amber-50 dark:bg-amber-950/30' : 'bg-red-50 dark:bg-red-950/30'}`}>
               <div className="flex items-center gap-3">
                 <div className={`w-10 h-10 rounded-full flex items-center justify-center ${deletionType === 'Deactivate' ? 'bg-amber-100 dark:bg-amber-900/30' : 'bg-red-100 dark:bg-red-900/30'}`}>

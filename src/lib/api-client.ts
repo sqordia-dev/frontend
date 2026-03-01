@@ -204,8 +204,8 @@ class ApiClient {
     return this.client.put(url, data);
   }
 
-  public delete<T>(url: string): Promise<AxiosResponse<T>> {
-    return this.client.delete(url);
+  public delete<T>(url: string, config?: { data?: any }): Promise<AxiosResponse<T>> {
+    return this.client.delete(url, config);
   }
 
   public patch<T>(url: string, data?: any): Promise<AxiosResponse<T>> {

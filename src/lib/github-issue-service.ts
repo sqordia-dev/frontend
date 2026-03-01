@@ -2,6 +2,10 @@ import { apiClient } from './api-client';
 import {
   CreateGitHubIssueRequest,
   GitHubIssueResponse,
+  GitHubIssueListResponse,
+  GitHubIssueDetailResponse,
+  GitHubIssueStats,
+  ListIssuesParams,
   SystemInfo,
 } from './github-issue-types';
 
@@ -37,6 +41,88 @@ export const gitHubIssueService = {
     const response = await apiClient.post<{ url: string }>('/api/v1/github-issues/upload-screenshot', formData);
     const data = unwrap<{ url: string }>(response.data);
     return data.url;
+  },
+
+  /**
+   * List GitHub issues with filtering and pagination
+   */
+  async listIssues(params: ListIssuesParams = {}): Promise<GitHubIssueListResponse> {
+    const searchParams = new URLSearchParams();
+    if (params.repository) searchParams.append('repository', params.repository);
+    if (params.state) searchParams.append('state', params.state);
+    if (params.label) searchParams.append('label', params.label);
+    if (params.search) searchParams.append('search', params.search);
+    if (params.page) searchParams.append('page', params.page.toString());
+    if (params.pageSize) searchParams.append('pageSize', params.pageSize.toString());
+    if (params.sort) searchParams.append('sort', params.sort);
+    if (params.direction) searchParams.append('direction', params.direction);
+
+    const response = await apiClient.get<GitHubIssueListResponse>(
+      `/api/v1/github-issues?${searchParams.toString()}`
+    );
+    return unwrap<GitHubIssueListResponse>(response.data);
+  },
+
+  /**
+   * Get a single GitHub issue by number
+   */
+  async getIssue(repository: string, issueNumber: number): Promise<GitHubIssueDetailResponse> {
+    const response = await apiClient.get<GitHubIssueDetailResponse>(
+      `/api/v1/github-issues/${repository}/${issueNumber}`
+    );
+    return unwrap<GitHubIssueDetailResponse>(response.data);
+  },
+
+  /**
+   * Get issue statistics
+   */
+  async getStats(): Promise<GitHubIssueStats> {
+    const response = await apiClient.get<GitHubIssueStats>('/api/v1/github-issues/stats');
+    return unwrap<GitHubIssueStats>(response.data);
+  },
+
+  /**
+   * Update the state of a GitHub issue (open/close)
+   */
+  async updateIssueState(repository: string, issueNumber: number, state: 'open' | 'closed'): Promise<GitHubIssueDetailResponse> {
+    const response = await apiClient.patch<GitHubIssueDetailResponse>(
+      `/api/v1/github-issues/${repository}/${issueNumber}`,
+      { state }
+    );
+    return unwrap<GitHubIssueDetailResponse>(response.data);
+  },
+
+  /**
+   * Update a GitHub issue (title, body, priority, category, state)
+   */
+  async updateIssue(
+    repository: string,
+    issueNumber: number,
+    updates: {
+      title?: string;
+      body?: string;
+      priority?: string;
+      category?: string;
+      state?: 'open' | 'closed';
+    }
+  ): Promise<GitHubIssueDetailResponse> {
+    const response = await apiClient.patch<GitHubIssueDetailResponse>(
+      `/api/v1/github-issues/${repository}/${issueNumber}`,
+      updates
+    );
+    return unwrap<GitHubIssueDetailResponse>(response.data);
+  },
+
+  /**
+   * Archive (soft delete) a GitHub issue
+   * Note: GitHub doesn't support deleting issues, so we close and label as archived
+   */
+  async archiveIssue(repository: string, issueNumber: number, reason?: string): Promise<GitHubIssueDetailResponse> {
+    const response = await apiClient.delete<GitHubIssueDetailResponse>(
+      `/api/v1/github-issues/${repository}/${issueNumber}`,
+      { data: reason ? { reason } : undefined }
+    );
+    return unwrap<GitHubIssueDetailResponse>(response.data);
   },
 
   /**

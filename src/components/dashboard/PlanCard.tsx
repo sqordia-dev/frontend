@@ -156,9 +156,7 @@ export function PlanCard({
   // Determine the link destination
   const linkTo = isDraft
     ? `/questionnaire/${id}${nextQuestionId ? `#question-${nextQuestionId}` : ""}`
-    : isGenerated
-    ? `/plans/${id}/preview`
-    : `/plans/${id}`;
+    : `/business-plan/${id}/preview`;
 
   // Action button text
   const actionText = isDraft

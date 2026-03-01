@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { ToastProvider } from './contexts/ToastContext';
 import { SkipLink } from '@/components/ui/skip-link';
 import LandingPage from './pages/LandingPageNew';
@@ -17,9 +17,8 @@ import OnboardingPage from './pages/onboarding';
 import DashboardPage from './pages/DashboardPage';
 import ProfilePage from './pages/ProfilePage';
 import CreatePlanPage from './pages/CreatePlanPage';
-import WizardQuestionnairePage from './pages/WizardQuestionnairePage';
-import { QuestionnairePage as NewQuestionnairePage } from './pages/questionnaire';
-import PlanViewPage from './pages/PlanViewPage';
+import InterviewQuestionnairePage from './pages/InterviewQuestionnairePage';
+// PlanViewPage is deprecated - redirecting /plans/:id to /business-plan/:id/preview
 // Generation and Preview pages
 import { GenerationPage } from './pages/generation';
 import { BusinessPlanPreviewPage } from './pages/business-plan';
@@ -40,7 +39,7 @@ import AdminSettingsPage from './pages/admin/AdminSettingsPage';
 import { AdminAIConfigPage } from './pages/admin/AdminAIConfigPage';
 import AdminPromptRegistryPage from './pages/admin/AdminPromptRegistryPage';
 import PromptRegistryDocPage from './pages/admin/PromptRegistryDocPage';
-import AdminBugReportPage from './pages/admin/AdminBugReportPage';
+import AdminIssueTrackerPage from './pages/admin/AdminIssueTrackerPage';
 import CmsEditorPage from './pages/admin/CmsEditorPage';
 import CmsQuestionnairePage from './pages/admin/CmsQuestionnairePage';
 import AdminQuestionnairePreviewPage from './pages/admin/AdminQuestionnairePreviewPage';
@@ -83,6 +82,13 @@ function ScrollRestorationHandler() {
   }, [location.pathname]);
 
   return null;
+}
+
+// Redirect old /plans/:id routes to new /business-plan/:id/preview
+function RedirectToPreview() {
+  const location = useLocation();
+  const id = location.pathname.split('/')[2]; // Extract ID from /plans/:id or /plans/:id/preview
+  return <Navigate to={`/business-plan/${id}/preview`} replace />;
 }
 
 function App() {
@@ -168,35 +174,10 @@ function App() {
         >
           <Route index element={<CreatePlanPage />} />
         </Route>
-        <Route
-          path="/questionnaire/:planId"
-          element={
-            <ProtectedRoute>
-              <DashboardLayout />
-            </ProtectedRoute>
-          }
-        >
-          <Route index element={<WizardQuestionnairePage />} />
-        </Route>
-        {/* New questionnaire flow (card-based) */}
-        <Route
-          path="/questionnaire-new/:planId"
-          element={
-            <ProtectedRoute>
-              <NewQuestionnairePage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/plans/:id"
-          element={
-            <ProtectedRoute>
-              <DashboardLayout />
-            </ProtectedRoute>
-          }
-        >
-          <Route index element={<PlanViewPage />} />
-        </Route>
+        <Route path="/questionnaire/:planId" element={<ProtectedRoute><InterviewQuestionnairePage /></ProtectedRoute>} />
+        {/* Redirect old /plans/:id route to new preview page */}
+        <Route path="/plans/:id" element={<RedirectToPreview />} />
+        <Route path="/plans/:id/preview" element={<RedirectToPreview />} />
         {/* Generation page - full-screen AI generation progress */}
         <Route
           path="/generation/:planId"
@@ -266,7 +247,7 @@ function App() {
           <Route path="ai-config" element={<AdminAIConfigPage />} />
           <Route path="prompt-registry" element={<AdminPromptRegistryPage />} />
           <Route path="prompt-registry/docs" element={<PromptRegistryDocPage />} />
-          <Route path="bug-report" element={<AdminBugReportPage />} />
+          <Route path="bug-report" element={<AdminIssueTrackerPage />} />
         </Route>
 
         {/* 404 catch-all route - must be last */}

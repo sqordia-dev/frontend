@@ -3,6 +3,14 @@ export { default as PreviewLayout, usePreviewLayout } from './PreviewLayout';
 export { default as PreviewSidebar, getSectionIcon } from './PreviewSidebar';
 export type { ExportFormat } from './PreviewSidebar';
 
+// V2 Components - Notion-style minimal design
+export { default as PreviewLayoutV2, usePreviewLayoutV2 } from './PreviewLayoutV2';
+export { default as CollapsibleSidebar } from './CollapsibleSidebar';
+export { default as SectionCardV2 } from './SectionCardV2';
+export { default as QuickNavPill } from './QuickNavPill';
+export { default as DocumentCanvas, DocumentSection, DocumentDivider } from './DocumentCanvas';
+export { default as HoverActions } from './HoverActions';
+
 // Navigation components
 export { default as NavigationRail } from './NavigationRail';
 export { default as BottomTabBar } from './BottomTabBar';

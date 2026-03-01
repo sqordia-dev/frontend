@@ -1,6 +1,6 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, CheckCircle2, BookOpen, List } from 'lucide-react';
+import { X, CheckCircle2 } from 'lucide-react';
 import { PlanSection } from '../../types/preview';
 
 interface MobileDrawerProps {
@@ -12,6 +12,10 @@ interface MobileDrawerProps {
   children: React.ReactNode;
   /** Plan name for header */
   planName?: string;
+  /** Target element ID to scroll to when drawer closes (for navigation) */
+  navigationTarget?: string | null;
+  /** Callback to clear the navigation target after scrolling */
+  onNavigationComplete?: () => void;
 }
 
 /**
@@ -28,6 +32,8 @@ export default function MobileDrawer({
   onClose,
   children,
   planName,
+  navigationTarget,
+  onNavigationComplete,
 }: MobileDrawerProps) {
   const drawerRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
@@ -85,12 +91,32 @@ export default function MobileDrawer({
       }, 100);
 
       return () => {
-        const scrollY = document.body.style.top;
+        const savedScrollY = document.body.style.top;
         document.body.style.position = '';
         document.body.style.top = '';
         document.body.style.width = '';
         document.body.style.overflow = '';
-        window.scrollTo(0, parseInt(scrollY || '0') * -1);
+
+        // If there's a navigation target, scroll to it instead of restoring position
+        if (navigationTarget) {
+          const targetElement = document.getElementById(`section-${navigationTarget}`);
+          if (targetElement) {
+            // First restore scroll position, then scroll to target
+            window.scrollTo(0, parseInt(savedScrollY || '0') * -1);
+            // Use requestAnimationFrame to ensure DOM is ready
+            requestAnimationFrame(() => {
+              targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              onNavigationComplete?.();
+            });
+          } else {
+            // Fallback: restore original position
+            window.scrollTo(0, parseInt(savedScrollY || '0') * -1);
+            onNavigationComplete?.();
+          }
+        } else {
+          // No navigation target, restore original scroll position
+          window.scrollTo(0, parseInt(savedScrollY || '0') * -1);
+        }
 
         document.removeEventListener('keydown', handleKeyDown);
         document.removeEventListener('keydown', handleFocusTrap);
@@ -296,7 +322,7 @@ interface MobileTocItemProps {
 }
 
 export function MobileTocItem({
-  id,
+  id: _id,
   title,
   icon,
   isActive,

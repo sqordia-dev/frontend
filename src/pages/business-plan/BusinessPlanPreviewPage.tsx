@@ -2,15 +2,10 @@ import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { useParams, useNavigate } from 'react-router-dom';
 import { Loader2, AlertCircle, ArrowLeft, Edit3 } from 'lucide-react';
 import {
-  PreviewLayout,
-  PreviewSidebar,
-  PreviewContent,
-  SectionCard,
+  PreviewLayoutV2,
+  SectionCardV2,
   SectionEditorModal,
   ShareModal,
-  MobileHeader,
-  MobileDrawer,
-  DocumentSkeleton,
 } from '../../components/preview';
 import { ScrollReveal } from '../../components/animations';
 import { CoverPagePreview, CoverPageEditor } from '../../components/cover-page';
@@ -24,7 +19,7 @@ import {
   PlanSection,
   AIAssistAction,
 } from '../../types/preview';
-import { CoverPageSettings } from '../../types/cover-page';
+import { CoverPageSettings, DEFAULT_COVER_PAGE } from '../../types/cover-page';
 import { useToast } from '../../contexts/ToastContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import SEO from '../../components/SEO';
@@ -98,14 +93,13 @@ export default function BusinessPlanPreviewPage() {
           console.warn('Failed to load cover page, using defaults:', coverError);
           // Use default cover page settings
           setCoverPageSettings({
+            ...DEFAULT_COVER_PAGE,
             id: '',
             businessPlanId: planId,
             companyName: data.title,
             documentTitle: 'Business Plan',
-            primaryColor: '#2563EB',
-            layoutStyle: 'classic',
             preparedDate: new Date().toISOString(),
-          });
+          } as CoverPageSettings);
         }
 
         // Load TOC settings
@@ -507,26 +501,6 @@ export default function BusinessPlanPreviewPage() {
     );
   }
 
-  // Sidebar component to pass to layout
-  const sidebarContent = (
-    <PreviewSidebar
-      planName={preview.title}
-      planStatus={preview.status || 'Draft'}
-      sections={sectionsForDisplay}
-      activeSectionId={activeSectionId}
-      onSectionClick={handleSectionClick}
-      onExportClick={(format) => handleExport(format || 'pdf')}
-      onShareClick={handleOpenShareModal}
-      onEditCoverPage={() => setIsCoverPageEditorOpen(true)}
-      isCoverPageActive={isCoverPageActive}
-      onCoverPageClick={handleCoverPageClick}
-      isExporting={isExporting}
-      exportingFormat={exportingFormat}
-      isTOCActive={isTOCActive}
-      onTOCClick={handleTOCClick}
-    />
-  );
-
   return (
     <>
       <SEO
@@ -536,93 +510,85 @@ export default function BusinessPlanPreviewPage() {
         nofollow={true}
       />
 
-      <PreviewLayout
-        sidebar={sidebarContent}
+      <PreviewLayoutV2
         planTitle={preview.title}
-        onExport={() => handleExport('pdf')}
-        onShare={handleOpenShareModal}
-        isExporting={isExporting}
+        planStatus={preview.status || 'Draft'}
         sections={sectionsForDisplay}
         activeSectionId={activeSectionId}
-        onSectionScroll={handleSectionClick}
+        onSectionClick={handleSectionClick}
+        onExportClick={(format) => handleExport(format || 'pdf')}
+        onShareClick={handleOpenShareModal}
+        isCoverPageActive={isCoverPageActive}
+        onCoverPageClick={handleCoverPageClick}
+        isTOCActive={isTOCActive}
+        onTOCClick={handleTOCClick}
+        isExporting={isExporting}
+        exportingFormat={exportingFormat}
       >
-        <PreviewContent
-          sections={sectionsForDisplay}
-          onSectionClick={handleSectionClick}
-          onExport={() => handleExport('pdf')}
-          onShare={handleOpenShareModal}
-          showProgressBar={true}
-          showStickyTOC={true}
-          showFloatingActions={true}
-        >
-          {/* Cover Page Section */}
-          {coverPageSettings && (
-            <ScrollReveal direction="none" delay={0}>
-              <div id="cover-page-section" className="mb-8">
-                <div className="relative">
-                  <CoverPagePreview
-                    settings={coverPageSettings}
-                    className="border border-gray-200 dark:border-gray-700"
-                  />
-                  <button
-                    onClick={() => setIsCoverPageEditorOpen(true)}
-                    className="absolute top-4 right-4 flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white/90 dark:bg-gray-800/90 hover:bg-white dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg shadow-sm transition-colors"
-                  >
-                    <Edit3 size={14} />
-                    Edit Cover
-                  </button>
-                </div>
-              </div>
-            </ScrollReveal>
-          )}
-
-          {/* Table of Contents Section */}
-          <ScrollReveal direction="up" delay={0.1}>
-            <div id="table-of-contents-section" className="mb-8 scroll-mt-6">
-              <div className="relative">
-                <TableOfContents
-                  sections={sectionsForDisplay}
-                  onSectionClick={handleSectionClick}
-                  activeSectionId={activeSectionId}
-                  style={tocSettings?.style as TOCStyle || 'classic'}
+        {/* Cover Page Section */}
+        {coverPageSettings && (
+          <ScrollReveal direction="none" delay={0}>
+            <div id="cover-page-section" className="mb-12">
+              <div className="relative rounded-xl overflow-hidden">
+                <CoverPagePreview
+                  settings={coverPageSettings}
+                  className="border border-warm-gray-200 dark:border-warm-gray-800"
                 />
                 <button
-                  onClick={() => setIsTOCStyleSelectorOpen(true)}
-                  className="absolute top-4 right-4 flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white/90 dark:bg-gray-800/90 hover:bg-white dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg shadow-sm transition-colors"
+                  onClick={() => setIsCoverPageEditorOpen(true)}
+                  className="absolute top-4 right-4 flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-warm-gray-700 dark:text-warm-gray-300 bg-white/90 dark:bg-warm-gray-800/90 hover:bg-white dark:hover:bg-warm-gray-700 border border-warm-gray-200 dark:border-warm-gray-700 rounded-lg shadow-sm transition-colors"
                 >
                   <Edit3 size={14} />
-                  Change Style
+                  {language === 'fr' ? 'Modifier' : 'Edit Cover'}
                 </button>
               </div>
             </div>
           </ScrollReveal>
+        )}
 
-          {/* Business Plan Sections with scroll-triggered animations */}
-          {sectionsForDisplay.map((section, index) => (
-            <ScrollReveal
-              key={section.id}
-              direction="up"
-              delay={index < 3 ? index * 0.1 : 0}
-              distance={20}
-            >
-              <SectionCard
-                section={section}
-                sectionNumber={index + 1}
-                onEdit={() => handleEditSection(section)}
-                onRegenerate={() => handleRegenerateSection(section.name || section.id)}
-                onGenerate={() => handleGenerateSection(section.name || section.id)}
-                onInlineSave={(content) => handleInlineSaveSection(section.id, content)}
-                onAIAssistSelection={handleAIAssistSelection}
-                isRegenerating={regeneratingSectionId === (section.name || section.id)}
-                enableInlineEdit={true}
-                sectionRef={{
-                  current: sectionRefs.current.get(section.id) || null,
-                } as React.RefObject<HTMLElement>}
+        {/* Table of Contents Section */}
+        <ScrollReveal direction="up" delay={0.1}>
+          <div id="table-of-contents-section" className="mb-12 scroll-mt-6">
+            <div className="relative">
+              <TableOfContents
+                sections={sectionsForDisplay}
+                onSectionClick={handleSectionClick}
+                activeSectionId={activeSectionId}
+                style={tocSettings?.style as TOCStyle || 'classic'}
               />
-            </ScrollReveal>
-          ))}
-        </PreviewContent>
-      </PreviewLayout>
+              <button
+                onClick={() => setIsTOCStyleSelectorOpen(true)}
+                className="absolute top-4 right-4 flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-warm-gray-700 dark:text-warm-gray-300 bg-white/90 dark:bg-warm-gray-800/90 hover:bg-white dark:hover:bg-warm-gray-700 border border-warm-gray-200 dark:border-warm-gray-700 rounded-lg shadow-sm transition-colors"
+              >
+                <Edit3 size={14} />
+                {language === 'fr' ? 'Style' : 'Change Style'}
+              </button>
+            </div>
+          </div>
+        </ScrollReveal>
+
+        {/* Divider before sections */}
+        <div className="mb-12 h-px bg-gradient-to-r from-transparent via-warm-gray-200 dark:via-warm-gray-800 to-transparent" />
+
+        {/* Business Plan Sections - Minimal Notion-style */}
+        {sectionsForDisplay.map((section, index) => (
+          <SectionCardV2
+            key={section.id}
+            section={section}
+            sectionNumber={index + 1}
+            onEdit={() => handleEditSection(section)}
+            onRegenerate={() => handleRegenerateSection(section.name || section.id)}
+            onGenerate={() => handleGenerateSection(section.name || section.id)}
+            onInlineSave={(content) => handleInlineSaveSection(section.id, content)}
+            onAIAssistSelection={handleAIAssistSelection}
+            isRegenerating={regeneratingSectionId === (section.name || section.id)}
+            enableInlineEdit={true}
+            sectionRef={{
+              current: sectionRefs.current.get(section.id) || null,
+            } as React.RefObject<HTMLElement>}
+          />
+        ))}
+      </PreviewLayoutV2>
 
       {/* Editor Modal */}
       <SectionEditorModal

@@ -51,23 +51,23 @@ export default function AdminOrganizationsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{t('admin.organizations.title')}</h1>
-        <p className="mt-2 text-gray-600 dark:text-gray-400">{t('admin.organizations.subtitle')}</p>
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">{t('admin.organizations.title')}</h1>
+        <p className="mt-1 sm:mt-2 text-sm sm:text-base text-gray-600 dark:text-gray-400">{t('admin.organizations.subtitle')}</p>
       </div>
 
       {error && (
-        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3 sm:p-4">
           <div className="flex items-center">
-            <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400 mr-2" />
-            <p className="text-red-800 dark:text-red-300">{error}</p>
+            <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400 mr-2 flex-shrink-0" />
+            <p className="text-sm text-red-800 dark:text-red-300">{error}</p>
           </div>
         </div>
       )}
 
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-        <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+        <div className="p-3 sm:p-4 border-b border-gray-200 dark:border-gray-700">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
             <input
@@ -75,12 +75,12 @@ export default function AdminOrganizationsPage() {
               placeholder={t('admin.organizations.search')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500 focus:border-transparent"
             />
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 p-3 sm:p-6">
           {filteredOrganizations.length === 0 ? (
             <div className="col-span-full text-center py-12 text-gray-500 dark:text-gray-400">
               {t('admin.organizations.noOrganizations')}
@@ -89,42 +89,42 @@ export default function AdminOrganizationsPage() {
             filteredOrganizations.map((org) => (
               <div
                 key={org.id}
-                className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6 hover:shadow-lg transition-shadow"
+                className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 sm:p-6 hover:shadow-lg transition-shadow"
               >
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex items-center space-x-3">
-                    <div className="p-3 rounded-lg bg-[#FF6B00]/[0.08]">
-                      <Building2 className="w-6 h-6 text-[#FF6B00]" />
+                <div className="flex items-start justify-between mb-3 sm:mb-4">
+                  <div className="flex items-center space-x-2 sm:space-x-3 min-w-0 flex-1">
+                    <div className="p-2 sm:p-3 rounded-lg bg-[#FF6B00]/[0.08] flex-shrink-0">
+                      <Building2 className="w-5 h-5 sm:w-6 sm:h-6 text-[#FF6B00]" />
                     </div>
-                    <div>
-                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                    <div className="min-w-0 flex-1">
+                      <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white truncate">
                         {org.name}
                       </h3>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">{org.organizationType || org.type || 'Organization'}</p>
+                      <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">{org.organizationType || org.type || 'Organization'}</p>
                     </div>
                   </div>
                   {org.isActive ? (
-                    <CheckCircle className="w-5 h-5 text-[#FF6B00]" />
+                    <CheckCircle className="w-5 h-5 text-[#FF6B00] flex-shrink-0" />
                   ) : (
-                    <XCircle className="w-5 h-5 text-red-600 dark:text-red-400" />
+                    <XCircle className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0" />
                   )}
                 </div>
 
-                <div className="space-y-2 mb-4">
-                  <div className="flex items-center justify-between text-sm">
+                <div className="space-y-1.5 sm:space-y-2 mb-3 sm:mb-4">
+                  <div className="flex items-center justify-between text-xs sm:text-sm">
                     <span className="text-gray-600 dark:text-gray-400">{t('admin.organizations.members')}</span>
                     <span className="font-medium text-gray-900 dark:text-white flex items-center">
-                      <Users className="w-4 h-4 mr-1" />
+                      <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1" />
                       {org.memberCount || 0}
                     </span>
                   </div>
-                  <div className="flex items-center justify-between text-sm">
+                  <div className="flex items-center justify-between text-xs sm:text-sm">
                     <span className="text-gray-600 dark:text-gray-400">{t('admin.organizations.plans')}</span>
                     <span className="font-medium text-gray-900 dark:text-white">
                       {org.businessPlanCount || 0}
                     </span>
                   </div>
-                  <div className="flex items-center justify-between text-sm">
+                  <div className="flex items-center justify-between text-xs sm:text-sm">
                     <span className="text-gray-600 dark:text-gray-400">{t('admin.organizations.created')}</span>
                     <span className="font-medium text-gray-900 dark:text-white">
                       {org.createdAt ? new Date(org.createdAt).toLocaleDateString() : '-'}
@@ -132,23 +132,23 @@ export default function AdminOrganizationsPage() {
                   </div>
                 </div>
 
-                <div className="flex space-x-2">
+                <div className="flex flex-col sm:flex-row gap-2">
                   {org.isActive ? (
                     <button
                       onClick={() => handleStatusChange(org.id, 'Inactive')}
-                      className="flex-1 px-3 py-2 text-sm border border-red-300 dark:border-red-700 text-red-600 dark:text-red-400 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20"
+                      className="flex-1 px-3 py-2.5 sm:py-2 text-sm border border-red-300 dark:border-red-700 text-red-600 dark:text-red-400 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 min-h-[44px] sm:min-h-0"
                     >
                       {t('admin.organizations.deactivate')}
                     </button>
                   ) : (
                     <button
                       onClick={() => handleStatusChange(org.id, 'Active')}
-                      className="flex-1 px-3 py-2 text-sm border rounded-lg transition-colors border-[#FF6B00] text-[#FF6B00] hover:bg-[#FF6B00]/[0.08]"
+                      className="flex-1 px-3 py-2.5 sm:py-2 text-sm border rounded-lg transition-colors border-[#FF6B00] text-[#FF6B00] hover:bg-[#FF6B00]/[0.08] min-h-[44px] sm:min-h-0"
                     >
                       {t('admin.organizations.activate')}
                     </button>
                   )}
-                  <button className="flex-1 px-3 py-2 text-sm text-white rounded-lg transition-colors bg-[#FF6B00] hover:bg-[#E55F00]">
+                  <button className="flex-1 px-3 py-2.5 sm:py-2 text-sm text-white rounded-lg transition-colors bg-[#FF6B00] hover:bg-[#E55F00] min-h-[44px] sm:min-h-0">
                     {t('admin.organizations.viewDetails')}
                   </button>
                 </div>

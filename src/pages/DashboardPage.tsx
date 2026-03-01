@@ -414,13 +414,15 @@ export default function DashboardPage() {
             <AlertDialogTitle className="text-lg">
               {cms('dashboard.deletePlan', 'dashboard.deletePlan')}
             </AlertDialogTitle>
-            <AlertDialogDescription className="space-y-3 text-sm">
-              <p>
-                {cms('dashboard.deleteConfirm', 'dashboard.deleteConfirm')} <span className="font-medium text-foreground">"{planToDelete?.title || 'Untitled Plan'}"</span>?
-              </p>
-              <p className="text-destructive font-medium">
-                {cms('dashboard.deleteWarning', 'dashboard.deleteWarning')}
-              </p>
+            <AlertDialogDescription asChild>
+              <div className="space-y-3 text-sm text-muted-foreground">
+                <span className="block">
+                  {cms('dashboard.deleteConfirm', 'dashboard.deleteConfirm')} <span className="font-medium text-foreground">"{planToDelete?.title || 'Untitled Plan'}"</span>?
+                </span>
+                <span className="block text-destructive font-medium">
+                  {cms('dashboard.deleteWarning', 'dashboard.deleteWarning')}
+                </span>
+              </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="gap-2 sm:gap-0">

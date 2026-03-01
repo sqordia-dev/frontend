@@ -1,11 +1,12 @@
 import React, { useRef, useCallback, useState, useEffect, useMemo } from 'react';
-import { motion } from 'framer-motion';
-import { Pencil, X, Check, Undo2, Redo2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Pencil, Check, Undo2, Redo2, Loader2 } from 'lucide-react';
 import { useInlineEdit } from '../../../hooks/useInlineEdit';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { markdownToHtmlForEditor } from '../../../utils/markdown-to-html';
 import { SaveIndicator } from './SaveIndicator';
 import { FloatingToolbar, FormatCommand } from './FloatingToolbar';
+import { cn } from '../../../lib/utils';
 
 interface EditableSectionProps {
   /** The content to edit (HTML or plain text) */
@@ -303,7 +304,7 @@ export function EditableSection({
 
   // Handle format command from toolbar
   const handleFormat = useCallback(
-    (command: FormatCommand) => {
+    (_command: FormatCommand) => {
       setTimeout(() => {
         if (editableRef.current) {
           contentUpdateFromInputRef.current = true;
@@ -330,29 +331,46 @@ export function EditableSection({
   return (
     <div
       ref={containerRef}
-      className={`relative group ${className}`}
+      className={cn('relative group', className)}
       onClick={handleClick}
       onBlur={handleBlur}
     >
-      {/* Hover indicator when not editing */}
-      {!isEditing && !disabled && (
-        <div className="absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
-          <div className="absolute inset-0 border-2 border-dashed border-blue-300 dark:border-blue-600 rounded-lg" />
-          <div className="absolute top-2 right-2 flex items-center gap-1.5 text-xs text-blue-600 dark:text-blue-400 bg-white dark:bg-gray-800 px-2 py-1 rounded-md shadow-sm border border-blue-200 dark:border-blue-700">
-            <Pencil size={12} aria-hidden="true" />
-            Click to edit
-          </div>
-        </div>
-      )}
+      {/* Subtle hover indicator - small edit icon only */}
+      <AnimatePresence>
+        {!isEditing && !disabled && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
+            className="absolute -right-2 top-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-10"
+          >
+            <div className="flex items-center gap-1.5 px-2 py-1 text-xs font-medium text-warm-gray-500 dark:text-warm-gray-400 bg-white dark:bg-warm-gray-800 rounded-md shadow-sm border border-warm-gray-200 dark:border-warm-gray-700">
+              <Pencil size={11} aria-hidden="true" />
+              <span className="hidden sm:inline">Edit</span>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      {/* Edit mode indicator (border) */}
-      {isEditing && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="absolute inset-0 rounded-lg ring-2 ring-blue-500 ring-opacity-50 pointer-events-none z-10"
-        />
-      )}
+      {/* Subtle left border indicator on hover (like Notion) */}
+      <div className={cn(
+        'absolute -left-4 top-0 bottom-0 w-0.5 rounded-full transition-all duration-200',
+        !isEditing && !disabled ? 'bg-transparent group-hover:bg-warm-gray-300 dark:group-hover:bg-warm-gray-600' : 'bg-transparent'
+      )} />
+
+      {/* Edit mode indicator - subtle warm border */}
+      <AnimatePresence>
+        {isEditing && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.98 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.98 }}
+            transition={{ duration: 0.2 }}
+            className="absolute -left-4 top-0 bottom-0 w-0.5 bg-momentum-orange rounded-full"
+          />
+        )}
+      </AnimatePresence>
 
       {/* Floating Toolbar */}
       <FloatingToolbar
@@ -367,64 +385,105 @@ export function EditableSection({
       />
 
       {/* Edit selection popover */}
-      {editPopoverOpen && (
-        <div
-          className="fixed z-50 p-3 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700"
-          style={{
-            left: editPopoverPositionRef.current.x,
-            top: editPopoverPositionRef.current.y,
-            transform: 'translate(-50%, -100%)',
-            marginTop: -8,
-          }}
-        >
-          <textarea
-            value={editPopoverValue}
-            onChange={(e) => setEditPopoverValue(e.target.value)}
-            className="w-64 min-h-[80px] px-3 py-2 text-sm border border-gray-200 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-y"
-            placeholder="Edit selection..."
-            aria-label="Edit selection"
-            autoFocus
-            onKeyDown={(e) => {
-              if (e.key === 'Escape') handleEditPopoverCancel();
-              if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                handleEditPopoverApply();
-              }
+      <AnimatePresence>
+        {editPopoverOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: 4, scale: 0.96 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 4, scale: 0.96 }}
+            transition={{ duration: 0.15 }}
+            className={cn(
+              'fixed z-50 p-3',
+              'bg-white dark:bg-warm-gray-800',
+              'rounded-xl shadow-elevated',
+              'border border-warm-gray-200 dark:border-warm-gray-700'
+            )}
+            style={{
+              left: editPopoverPositionRef.current.x,
+              top: editPopoverPositionRef.current.y,
+              transform: 'translate(-50%, -100%)',
+              marginTop: -8,
             }}
-          />
-          <div className="flex justify-end gap-2 mt-2">
-            <button
-              type="button"
-              onClick={handleEditPopoverCancel}
-              className="px-3 py-1.5 text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              onClick={handleEditPopoverApply}
-              className="px-3 py-1.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
-            >
-              Apply
-            </button>
-          </div>
-        </div>
-      )}
+          >
+            <textarea
+              value={editPopoverValue}
+              onChange={(e) => setEditPopoverValue(e.target.value)}
+              className={cn(
+                'w-72 min-h-[80px] px-3 py-2 text-sm rounded-lg resize-y',
+                'border border-warm-gray-200 dark:border-warm-gray-600',
+                'bg-warm-gray-50 dark:bg-warm-gray-700',
+                'text-warm-gray-900 dark:text-white',
+                'placeholder:text-warm-gray-400',
+                'focus:ring-2 focus:ring-momentum-orange/30 focus:border-momentum-orange',
+                'focus:outline-none transition-colors'
+              )}
+              placeholder="Edit selection..."
+              aria-label="Edit selection"
+              autoFocus
+              onKeyDown={(e) => {
+                if (e.key === 'Escape') handleEditPopoverCancel();
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  handleEditPopoverApply();
+                }
+              }}
+            />
+            <div className="flex justify-end gap-2 mt-3">
+              <button
+                type="button"
+                onClick={handleEditPopoverCancel}
+                className={cn(
+                  'px-3 py-1.5 text-sm font-medium rounded-lg transition-colors',
+                  'text-warm-gray-500 dark:text-warm-gray-400',
+                  'hover:bg-warm-gray-100 dark:hover:bg-warm-gray-700'
+                )}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleEditPopoverApply}
+                className={cn(
+                  'px-3 py-1.5 text-sm font-medium rounded-lg transition-colors',
+                  'text-white bg-momentum-orange hover:bg-orange-600'
+                )}
+              >
+                Apply
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Content area: uncontrolled while editing so React does not overwrite DOM and lose cursor */}
       {isEditing ? (
-        <div
-          ref={editableRef}
-          contentEditable
-          suppressContentEditableWarning
-          onInput={handleInput}
-          className="prose prose-gray dark:prose-invert max-w-none outline-none cursor-text min-h-[100px]"
-          role="textbox"
-          aria-multiline="true"
-          aria-label="Edit section content"
-        />
+        <motion.div
+          initial={{ backgroundColor: 'transparent' }}
+          animate={{ backgroundColor: 'rgba(255, 107, 0, 0.02)' }}
+          transition={{ duration: 0.2 }}
+          className="relative -mx-4 px-4 py-2 rounded-lg"
+        >
+          <div
+            ref={editableRef}
+            contentEditable
+            suppressContentEditableWarning
+            onInput={handleInput}
+            className={cn(
+              'prose-warm-content max-w-none outline-none cursor-text min-h-[100px]',
+              'focus:outline-none'
+            )}
+            role="textbox"
+            aria-multiline="true"
+            aria-label="Edit section content"
+          />
+        </motion.div>
       ) : (
-        <div className={disabled ? '' : 'cursor-pointer'}>{children}</div>
+        <div className={cn(
+          'transition-colors duration-200',
+          !disabled && 'cursor-pointer'
+        )}>
+          {children}
+        </div>
       )}
 
       {/* Save Indicator */}
@@ -437,55 +496,105 @@ export function EditableSection({
         />
       )}
 
-      {/* Edit mode action bar */}
-      {isEditing && (
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex items-center justify-between mt-4 pt-4 border-t border-gray-200 dark:border-gray-700"
-        >
-          {/* Undo/Redo buttons */}
-          <div className="flex items-center gap-1">
-            <button
-              onClick={undo}
-              disabled={!canUndo}
-              className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              title="Undo (Ctrl+Z)"
-              aria-label="Undo"
-            >
-              <Undo2 size={16} aria-hidden="true" />
-            </button>
-            <button
-              onClick={redo}
-              disabled={!canRedo}
-              className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              title="Redo (Ctrl+Shift+Z)"
-              aria-label="Redo"
-            >
-              <Redo2 size={16} aria-hidden="true" />
-            </button>
-          </div>
+      {/* Edit mode action bar - Floating at bottom */}
+      <AnimatePresence>
+        {isEditing && (
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 8 }}
+            transition={{ duration: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
+            className={cn(
+              'flex items-center justify-between gap-3 mt-6 -mx-4 px-4 py-3',
+              'bg-warm-gray-50 dark:bg-warm-gray-900/50',
+              'border-t border-warm-gray-200 dark:border-warm-gray-800',
+              'rounded-b-lg'
+            )}
+          >
+            {/* Undo/Redo buttons */}
+            <div className="flex items-center gap-0.5">
+              <button
+                onClick={undo}
+                disabled={!canUndo}
+                className={cn(
+                  'p-2 rounded-lg transition-colors',
+                  'text-warm-gray-400 dark:text-warm-gray-500',
+                  'hover:text-warm-gray-600 dark:hover:text-warm-gray-300',
+                  'hover:bg-warm-gray-100 dark:hover:bg-warm-gray-800',
+                  'disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent'
+                )}
+                title="Undo (Ctrl+Z)"
+                aria-label="Undo"
+              >
+                <Undo2 size={16} aria-hidden="true" />
+              </button>
+              <button
+                onClick={redo}
+                disabled={!canRedo}
+                className={cn(
+                  'p-2 rounded-lg transition-colors',
+                  'text-warm-gray-400 dark:text-warm-gray-500',
+                  'hover:text-warm-gray-600 dark:hover:text-warm-gray-300',
+                  'hover:bg-warm-gray-100 dark:hover:bg-warm-gray-800',
+                  'disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent'
+                )}
+                title="Redo (Ctrl+Shift+Z)"
+                aria-label="Redo"
+              >
+                <Redo2 size={16} aria-hidden="true" />
+              </button>
+            </div>
 
-          {/* Save/Cancel buttons */}
-          <div className="flex items-center gap-2">
-            <button
-              onClick={handleCancel}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-            >
-              <X size={14} aria-hidden="true" />
-              Cancel
-            </button>
-            <button
-              onClick={handleSave}
-              disabled={!isDirty || saveState === 'saving'}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg transition-colors"
-            >
-              <Check size={14} aria-hidden="true" />
-              {saveState === 'saving' ? 'Saving...' : 'Save'}
-            </button>
-          </div>
-        </motion.div>
-      )}
+            {/* Status indicator */}
+            <div className="flex-1 flex items-center justify-center">
+              {saveState === 'saving' && (
+                <span className="flex items-center gap-1.5 text-xs text-warm-gray-400">
+                  <Loader2 size={12} className="animate-spin" />
+                  Saving...
+                </span>
+              )}
+              {saveState === 'saved' && (
+                <span className="flex items-center gap-1.5 text-xs text-green-500">
+                  <Check size={12} />
+                  Saved
+                </span>
+              )}
+              {isDirty && saveState === 'idle' && (
+                <span className="text-xs text-warm-gray-400">
+                  Unsaved changes
+                </span>
+              )}
+            </div>
+
+            {/* Save/Cancel buttons */}
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleCancel}
+                className={cn(
+                  'px-3 py-1.5 text-sm font-medium rounded-lg transition-colors',
+                  'text-warm-gray-500 dark:text-warm-gray-400',
+                  'hover:text-warm-gray-700 dark:hover:text-warm-gray-200',
+                  'hover:bg-warm-gray-100 dark:hover:bg-warm-gray-800'
+                )}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSave}
+                disabled={!isDirty || saveState === 'saving'}
+                className={cn(
+                  'flex items-center gap-1.5 px-4 py-1.5 text-sm font-medium rounded-lg transition-colors',
+                  'text-white bg-momentum-orange hover:bg-orange-600',
+                  'disabled:opacity-50 disabled:cursor-not-allowed'
+                )}
+              >
+                <Check size={14} aria-hidden="true" />
+                Done
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
