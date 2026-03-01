@@ -1,5 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { authService } from '../../lib/auth-service';
+import { useTheme } from '../../contexts/ThemeContext';
+import { MobileBottomNav, type NavItemConfig } from '@/components/layout/MobileBottomNav';
 import {
   ArrowLeft,
   History,
@@ -23,6 +26,13 @@ import {
   Pencil,
   ClipboardList,
   Layers,
+  Sparkles,
+  Bot,
+  LayoutDashboard,
+  Users,
+  Palette,
+  Database,
+  ListTodo,
 } from 'lucide-react';
 import CA from 'country-flag-icons/react/3x2/CA';
 import {
@@ -252,7 +262,14 @@ function QuestionEditor({
     section: '',
     options: '',
     optionsEN: '',
+    expertAdviceFR: '',
+    expertAdviceEN: '',
+    coachPromptFR: '',
+    coachPromptEN: '',
   });
+
+  // Tab state for expert/coach sections
+  const [activeTab, setActiveTab] = useState<'basic' | 'expert' | 'coach'>('basic');
 
   useEffect(() => {
     if (question) {
@@ -269,6 +286,10 @@ function QuestionEditor({
         section: question.section || '',
         options: question.options || '',
         optionsEN: question.optionsEN || '',
+        expertAdviceFR: question.expertAdviceFR || '',
+        expertAdviceEN: question.expertAdviceEN || '',
+        coachPromptFR: question.coachPromptFR || '',
+        coachPromptEN: question.coachPromptEN || '',
       });
     } else if (isNew) {
       setFormData({
@@ -284,6 +305,10 @@ function QuestionEditor({
         section: '',
         options: '',
         optionsEN: '',
+        expertAdviceFR: '',
+        expertAdviceEN: '',
+        coachPromptFR: '',
+        coachPromptEN: '',
       });
     }
   }, [question, isNew, selectedStep]);
@@ -295,6 +320,10 @@ function QuestionEditor({
       personaType: formData.personaType === '__all__' ? null : formData.personaType,
       options: formData.options || undefined,
       optionsEN: formData.optionsEN || undefined,
+      expertAdviceFR: formData.expertAdviceFR || undefined,
+      expertAdviceEN: formData.expertAdviceEN || undefined,
+      coachPromptFR: formData.coachPromptFR || undefined,
+      coachPromptEN: formData.coachPromptEN || undefined,
     });
   };
 
@@ -354,7 +383,59 @@ function QuestionEditor({
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+        <div className="flex-1 overflow-y-auto">
+          {/* Tabs */}
+          <div className="sticky top-0 bg-card border-b border-border/50 px-6 pt-4 pb-0 z-10">
+            <div className="flex items-center gap-1 bg-muted/50 rounded-lg p-1 w-fit">
+              <button
+                onClick={() => setActiveTab('basic')}
+                className={cn(
+                  'px-4 py-1.5 text-xs font-semibold rounded-md transition-all flex items-center gap-1.5',
+                  activeTab === 'basic'
+                    ? 'bg-card text-momentum-orange shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
+                )}
+              >
+                <Pencil size={12} />
+                Basic
+              </button>
+              <button
+                onClick={() => setActiveTab('expert')}
+                className={cn(
+                  'px-4 py-1.5 text-xs font-semibold rounded-md transition-all flex items-center gap-1.5',
+                  activeTab === 'expert'
+                    ? 'bg-card text-momentum-orange shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
+                )}
+              >
+                <Sparkles size={12} />
+                Expert Tips
+                {(formData.expertAdviceFR || formData.expertAdviceEN) && (
+                  <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full" />
+                )}
+              </button>
+              <button
+                onClick={() => setActiveTab('coach')}
+                className={cn(
+                  'px-4 py-1.5 text-xs font-semibold rounded-md transition-all flex items-center gap-1.5',
+                  activeTab === 'coach'
+                    ? 'bg-card text-momentum-orange shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
+                )}
+              >
+                <Bot size={12} />
+                AI Coach
+                {(formData.coachPromptFR || formData.coachPromptEN) && (
+                  <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full" />
+                )}
+              </button>
+            </div>
+          </div>
+
+          <div className="p-6 space-y-6">
+          {/* BASIC TAB */}
+          {activeTab === 'basic' && (
+            <>
           {/* Question Text - Side by side */}
           <div>
             <div className="flex items-center gap-2 mb-3">
@@ -602,6 +683,125 @@ function QuestionEditor({
               </div>
             </div>
           )}
+            </>
+          )}
+
+          {/* EXPERT TIPS TAB */}
+          {activeTab === 'expert' && (
+            <div className="space-y-6">
+              <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-xl p-4">
+                <div className="flex items-start gap-3">
+                  <Sparkles size={18} className="text-orange-500 shrink-0 mt-0.5" />
+                  <div>
+                    <h3 className="text-sm font-semibold text-orange-800 dark:text-orange-300">Expert Tips (Conseil d'expert)</h3>
+                    <p className="text-xs text-orange-600 dark:text-orange-400 mt-1">
+                      These tips appear in the "Need help?" bubble when users need guidance answering questions.
+                      Use clear, actionable advice with examples.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <div className="flex items-center gap-1.5 mb-1.5">
+                    <div className="flex h-4 w-6 items-center justify-center rounded overflow-hidden border border-border/50">
+                      <QuebecFlag className="w-6 h-4" />
+                    </div>
+                    <span className="text-[10px] font-semibold text-muted-foreground uppercase">FR</span>
+                  </div>
+                  <textarea
+                    value={formData.expertAdviceFR}
+                    onChange={(e) => setFormData({ ...formData, expertAdviceFR: e.target.value })}
+                    className={cn(inputClass, "resize-none h-64 text-sm leading-relaxed")}
+                    placeholder="Conseil d'expert pour bien répondre :&#10;&#10;Décrivez les points clés...&#10;&#10;Astuce : ..."
+                    disabled={!isEditMode}
+                  />
+                  <p className="text-[10px] text-muted-foreground mt-1">
+                    {formData.expertAdviceFR.length} characters
+                  </p>
+                </div>
+
+                <div>
+                  <div className="flex items-center gap-1.5 mb-1.5">
+                    <div className="flex h-4 w-6 items-center justify-center rounded overflow-hidden border border-border/50">
+                      <CA className="w-6 h-4" title="" />
+                    </div>
+                    <span className="text-[10px] font-semibold text-muted-foreground uppercase">EN</span>
+                  </div>
+                  <textarea
+                    value={formData.expertAdviceEN}
+                    onChange={(e) => setFormData({ ...formData, expertAdviceEN: e.target.value })}
+                    className={cn(inputClass, "resize-none h-64 text-sm leading-relaxed")}
+                    placeholder="Expert advice for a good answer:&#10;&#10;Describe key points...&#10;&#10;Tip: ..."
+                    disabled={!isEditMode}
+                  />
+                  <p className="text-[10px] text-muted-foreground mt-1">
+                    {formData.expertAdviceEN.length} characters
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* AI COACH TAB */}
+          {activeTab === 'coach' && (
+            <div className="space-y-6">
+              <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4">
+                <div className="flex items-start gap-3">
+                  <Bot size={18} className="text-blue-500 shrink-0 mt-0.5" />
+                  <div>
+                    <h3 className="text-sm font-semibold text-blue-800 dark:text-blue-300">AI Coach Prompts</h3>
+                    <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
+                      These prompts are used by the AI to generate personalized suggestions for users.
+                      Include context analysis steps and response format instructions.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <div className="flex items-center gap-1.5 mb-1.5">
+                    <div className="flex h-4 w-6 items-center justify-center rounded overflow-hidden border border-border/50">
+                      <QuebecFlag className="w-6 h-4" />
+                    </div>
+                    <span className="text-[10px] font-semibold text-muted-foreground uppercase">FR</span>
+                  </div>
+                  <textarea
+                    value={formData.coachPromptFR}
+                    onChange={(e) => setFormData({ ...formData, coachPromptFR: e.target.value })}
+                    className={cn(inputClass, "resize-none h-80 text-sm font-mono leading-relaxed")}
+                    placeholder="Tu es un expert en...&#10;&#10;ÉTAPE 1 : ANALYSE DU CONTEXTE&#10;...&#10;&#10;ÉTAPE 2 : GÉNÉRATION&#10;..."
+                    disabled={!isEditMode}
+                  />
+                  <p className="text-[10px] text-muted-foreground mt-1">
+                    {formData.coachPromptFR.length} characters
+                  </p>
+                </div>
+
+                <div>
+                  <div className="flex items-center gap-1.5 mb-1.5">
+                    <div className="flex h-4 w-6 items-center justify-center rounded overflow-hidden border border-border/50">
+                      <CA className="w-6 h-4" title="" />
+                    </div>
+                    <span className="text-[10px] font-semibold text-muted-foreground uppercase">EN</span>
+                  </div>
+                  <textarea
+                    value={formData.coachPromptEN}
+                    onChange={(e) => setFormData({ ...formData, coachPromptEN: e.target.value })}
+                    className={cn(inputClass, "resize-none h-80 text-sm font-mono leading-relaxed")}
+                    placeholder="You are an expert in...&#10;&#10;STEP 1: CONTEXT ANALYSIS&#10;...&#10;&#10;STEP 2: GENERATION&#10;..."
+                    disabled={!isEditMode}
+                  />
+                  <p className="text-[10px] text-muted-foreground mt-1">
+                    {formData.coachPromptEN.length} characters
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+          </div>
         </div>
       </div>
     </>
@@ -626,6 +826,27 @@ function QuestionnaireEditorContent() {
     reorderQuestions,
     clearError,
   } = useQuestionnaireVersion();
+
+  const navigate = useNavigate();
+  const { theme, toggleTheme, language: appLanguage, setLanguage: setAppLanguage, t } = useTheme();
+
+  // Logout handler
+  const handleLogout = async () => {
+    await authService.logout();
+    navigate('/login');
+  };
+
+  // Mobile navigation items
+  const mobileMainNav: NavItemConfig[] = [
+    { name: appLanguage === 'fr' ? 'Aperçu' : 'Overview', href: '/admin', icon: LayoutDashboard },
+    { name: appLanguage === 'fr' ? 'Utilisateurs' : 'Users', href: '/admin/users', icon: Users },
+    { name: 'CMS', href: '/admin/cms', icon: Palette },
+  ];
+
+  const mobileMoreNav: NavItemConfig[] = [
+    { name: appLanguage === 'fr' ? 'Prompts' : 'Prompts', href: '/admin/prompt-registry', icon: Database },
+    { name: appLanguage === 'fr' ? 'Problèmes' : 'Issues', href: '/admin/bug-report', icon: ListTodo },
+  ];
 
   // UI state
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -998,7 +1219,7 @@ function QuestionnaireEditorContent() {
       )}
 
       {/* Main Content */}
-      <main className="max-w-5xl mx-auto px-4 sm:px-6 py-6">
+      <main className="max-w-5xl mx-auto px-4 sm:px-6 py-6 pb-24 md:pb-6">
         {/* Filters & Search */}
         <div className="flex flex-col sm:flex-row gap-4 mb-6">
           {/* Persona Filter */}
@@ -1202,6 +1423,23 @@ function QuestionnaireEditorContent() {
         onClose={() => setIsHistoryOpen(false)}
         onRestore={handleRestoreVersion}
         currentVersionId={activeVersion?.id}
+      />
+
+      {/* Mobile Bottom Navigation */}
+      <MobileBottomNav
+        mainNavItems={mobileMainNav}
+        moreMenuItems={mobileMoreNav}
+        backLink={{
+          label: appLanguage === 'fr' ? 'Retour au tableau de bord' : 'Back to Dashboard',
+          href: '/dashboard',
+        }}
+        onLogout={handleLogout}
+        t={t}
+        theme={theme}
+        onThemeToggle={toggleTheme}
+        language={appLanguage}
+        onLanguageChange={setAppLanguage}
+        showUserProfile={false}
       />
     </div>
   );

@@ -1,5 +1,8 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { authService } from '@/lib/auth-service';
+import { useTheme } from '@/contexts/ThemeContext';
+import { MobileBottomNav, type NavItemConfig } from '@/components/layout/MobileBottomNav';
 import {
   ArrowLeft,
   Target,
@@ -12,6 +15,10 @@ import {
   Monitor,
   Tablet,
   Smartphone,
+  LayoutDashboard,
+  Palette,
+  Database,
+  ListTodo,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -43,12 +50,31 @@ const deviceButtons: { size: DeviceSize; icon: typeof Monitor; label: string }[]
 
 export default function AdminQuestionnairePreviewPage() {
   const navigate = useNavigate();
+  const { theme, toggleTheme, language: appLanguage, setLanguage: setAppLanguage, t } = useTheme();
   const [questions, setQuestions] = useState<AdminQuestionTemplate[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [deviceSize, setDeviceSize] = useState<DeviceSize>('desktop');
   const [language, setLanguage] = useState<'en' | 'fr'>('fr');
   const [activeStep, setActiveStep] = useState(1);
+
+  // Logout handler
+  const handleLogout = async () => {
+    await authService.logout();
+    navigate('/login');
+  };
+
+  // Mobile navigation items
+  const mobileMainNav: NavItemConfig[] = [
+    { name: appLanguage === 'fr' ? 'Aperçu' : 'Overview', href: '/admin', icon: LayoutDashboard },
+    { name: appLanguage === 'fr' ? 'Utilisateurs' : 'Users', href: '/admin/users', icon: Users },
+    { name: 'CMS', href: '/admin/cms', icon: Palette },
+  ];
+
+  const mobileMoreNav: NavItemConfig[] = [
+    { name: appLanguage === 'fr' ? 'Prompts' : 'Prompts', href: '/admin/prompt-registry', icon: Database },
+    { name: appLanguage === 'fr' ? 'Problèmes' : 'Issues', href: '/admin/bug-report', icon: ListTodo },
+  ];
 
   useEffect(() => {
     const loadQuestions = async () => {
@@ -174,7 +200,7 @@ export default function AdminQuestionnairePreviewPage() {
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-auto p-4">
+      <div className="flex-1 overflow-auto p-4 pb-24 md:pb-4">
         <div
           className={cn(
             'mx-auto transition-all duration-300 ease-in-out',
@@ -334,6 +360,23 @@ export default function AdminQuestionnairePreviewPage() {
           )}
         </div>
       </div>
+
+      {/* Mobile Bottom Navigation */}
+      <MobileBottomNav
+        mainNavItems={mobileMainNav}
+        moreMenuItems={mobileMoreNav}
+        backLink={{
+          label: appLanguage === 'fr' ? 'Retour au tableau de bord' : 'Back to Dashboard',
+          href: '/dashboard',
+        }}
+        onLogout={handleLogout}
+        t={t}
+        theme={theme}
+        onThemeToggle={toggleTheme}
+        language={appLanguage}
+        onLanguageChange={setAppLanguage}
+        showUserProfile={false}
+      />
     </div>
   );
 }

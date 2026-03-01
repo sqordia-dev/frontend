@@ -1,5 +1,8 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { authService } from '../../lib/auth-service';
+import { useTheme } from '../../contexts/ThemeContext';
+import { MobileBottomNav, type NavItemConfig } from '@/components/layout/MobileBottomNav';
 import {
   ArrowLeft,
   History,
@@ -38,6 +41,9 @@ import {
   ArrowRight,
   Pencil,
   Save,
+  Users,
+  Database,
+  ListTodo,
 } from 'lucide-react';
 import { CmsProvider, useCms } from '../../contexts/CmsContext';
 import { CmsMobileDrawer } from '../../components/cms/CmsMobileDrawer';
@@ -109,6 +115,8 @@ interface CmsEditorContentProps {
 
 function CmsEditorContent({ pages }: CmsEditorContentProps) {
   const { activeVersion, isLoading, isDirty, lastSaved, createVersion, saveBlocks, publishVersion, setIsDirty } = useCms();
+  const navigate = useNavigate();
+  const { theme, toggleTheme, language: appLanguage, setLanguage: setAppLanguage, t } = useTheme();
 
   // UI state
   const [expandedPages, setExpandedPages] = useState<Set<string>>(new Set(['landing']));
@@ -129,6 +137,24 @@ function CmsEditorContent({ pages }: CmsEditorContentProps) {
   const [sectionBlocks, setSectionBlocks] = useState<CmsContentBlock[]>([]);
   const [editedContent, setEditedContent] = useState<Record<string, string>>({});
   const [isSaving, setIsSaving] = useState(false);
+
+  // Logout handler
+  const handleLogout = async () => {
+    await authService.logout();
+    navigate('/login');
+  };
+
+  // Mobile navigation items
+  const mobileMainNav: NavItemConfig[] = [
+    { name: appLanguage === 'fr' ? 'Aperçu' : 'Overview', href: '/admin', icon: LayoutDashboard },
+    { name: appLanguage === 'fr' ? 'Utilisateurs' : 'Users', href: '/admin/users', icon: Users },
+    { name: 'CMS', href: '/admin/cms', icon: Palette },
+  ];
+
+  const mobileMoreNav: NavItemConfig[] = [
+    { name: appLanguage === 'fr' ? 'Prompts' : 'Prompts', href: '/admin/prompt-registry', icon: Database },
+    { name: appLanguage === 'fr' ? 'Problèmes' : 'Issues', href: '/admin/bug-report', icon: ListTodo },
+  ];
 
   // Build dynamic pages with labels from CMS content
   const dynamicPages = useMemo(() => {
@@ -309,31 +335,65 @@ function CmsEditorContent({ pages }: CmsEditorContentProps) {
 
   if (isLoading) {
     return (
-      <div className="h-screen flex items-center justify-center bg-background">
-        <div className="text-center">
-          <Loader2 className="w-8 h-8 animate-spin text-momentum-orange mx-auto mb-4" />
-          <p className="text-sm text-muted-foreground">Loading CMS Editor...</p>
+      <div className="min-h-screen bg-background">
+        <div className="h-screen flex items-center justify-center pb-20">
+          <div className="text-center">
+            <Loader2 className="w-8 h-8 animate-spin text-momentum-orange mx-auto mb-4" />
+            <p className="text-sm text-muted-foreground">Loading CMS Editor...</p>
+          </div>
         </div>
+        <MobileBottomNav
+          mainNavItems={mobileMainNav}
+          moreMenuItems={mobileMoreNav}
+          backLink={{
+            label: appLanguage === 'fr' ? 'Retour au tableau de bord' : 'Back to Dashboard',
+            href: '/dashboard',
+          }}
+          onLogout={handleLogout}
+          t={t}
+          theme={theme}
+          onThemeToggle={toggleTheme}
+          language={appLanguage}
+          onLanguageChange={setAppLanguage}
+          showUserProfile={false}
+        />
       </div>
     );
   }
 
   if (!activeVersion) {
     return (
-      <div className="h-screen flex items-center justify-center bg-background">
-        <div className="text-center max-w-md px-4">
-          <div className="w-16 h-16 bg-momentum-orange/10 rounded-2xl flex items-center justify-center mx-auto mb-6">
-            <FileText className="w-8 h-8 text-momentum-orange" />
+      <div className="min-h-screen bg-background">
+        <div className="h-screen flex items-center justify-center pb-20">
+          <div className="text-center max-w-md px-4">
+            <div className="w-16 h-16 bg-momentum-orange/10 rounded-2xl flex items-center justify-center mx-auto mb-6">
+              <FileText className="w-8 h-8 text-momentum-orange" />
+            </div>
+            <h2 className="text-xl font-bold text-foreground mb-2">No Active Draft</h2>
+            <p className="text-muted-foreground mb-6">Create a new draft to start editing content.</p>
+            <Button
+              onClick={() => createVersion()}
+              className="bg-momentum-orange hover:bg-momentum-orange/90 text-white"
+            >
+              Create New Draft
+            </Button>
           </div>
-          <h2 className="text-xl font-bold text-foreground mb-2">No Active Draft</h2>
-          <p className="text-muted-foreground mb-6">Create a new draft to start editing content.</p>
-          <Button
-            onClick={() => createVersion()}
-            className="bg-momentum-orange hover:bg-momentum-orange/90 text-white"
-          >
-            Create New Draft
-          </Button>
         </div>
+        <MobileBottomNav
+          mainNavItems={mobileMainNav}
+          moreMenuItems={mobileMoreNav}
+          backLink={{
+            label: appLanguage === 'fr' ? 'Retour au tableau de bord' : 'Back to Dashboard',
+            href: '/dashboard',
+          }}
+          onLogout={handleLogout}
+          t={t}
+          theme={theme}
+          onThemeToggle={toggleTheme}
+          language={appLanguage}
+          onLanguageChange={setAppLanguage}
+          showUserProfile={false}
+        />
       </div>
     );
   }
@@ -342,13 +402,13 @@ function CmsEditorContent({ pages }: CmsEditorContentProps) {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="sticky top-0 z-20 bg-card border-b border-border/50">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6">
-          <div className="h-14 flex items-center justify-between">
+        <div className="max-w-5xl mx-auto px-3 sm:px-6">
+          <div className="h-14 flex items-center justify-between gap-2">
             {/* Left */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 min-w-0">
               <Link
                 to="/dashboard"
-                className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors"
+                className="p-1.5 sm:p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors shrink-0"
                 title="Back to Dashboard"
               >
                 <ArrowLeft size={18} />
@@ -356,34 +416,32 @@ function CmsEditorContent({ pages }: CmsEditorContentProps) {
 
               <button
                 onClick={() => setIsMobileDrawerOpen(true)}
-                className="lg:hidden p-2 text-muted-foreground hover:text-foreground"
+                className="lg:hidden p-1.5 text-muted-foreground hover:text-foreground shrink-0"
               >
                 <Menu size={18} />
               </button>
 
-              <div className="flex items-center gap-2.5">
-                <h1 className="text-base font-bold text-foreground">Sqordia CMS</h1>
-                <Badge variant="warning" className="text-[9px] font-bold">
+              <div className="flex items-center gap-1.5 sm:gap-2.5 min-w-0">
+                <h1 className="text-sm sm:text-base font-bold text-foreground truncate">
+                  <span className="sm:hidden">CMS</span>
+                  <span className="hidden sm:inline">Sqordia CMS</span>
+                </h1>
+                <Badge variant="warning" className="text-[9px] font-bold shrink-0 hidden sm:inline-flex">
                   Draft v{activeVersion.versionNumber}
                 </Badge>
                 {isDirty && (
-                  <span className="text-[10px] text-amber-600 font-medium">Unsaved</span>
-                )}
-                {lastSaved && !isDirty && (
-                  <span className="text-[10px] text-muted-foreground hidden sm:inline">
-                    Saved {getTimeSinceLastSaved()}
-                  </span>
+                  <span className="text-[10px] text-amber-600 font-medium hidden sm:inline">Unsaved</span>
                 )}
               </div>
             </div>
 
             {/* Right */}
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => setIsVersionHistoryOpen(true)}
-                className="h-8 px-2"
+                className="h-8 w-8 p-0 hidden sm:flex"
               >
                 <History size={16} />
               </Button>
@@ -392,17 +450,17 @@ function CmsEditorContent({ pages }: CmsEditorContentProps) {
                 variant="ghost"
                 size="sm"
                 onClick={() => setIsScheduleDialogOpen(true)}
-                className="h-8 px-2 hidden sm:flex"
+                className="h-8 w-8 p-0 hidden sm:flex"
               >
                 <Calendar size={16} />
               </Button>
 
               {/* Language toggle */}
-              <div className="flex items-center bg-muted rounded-lg p-0.5 mx-1">
+              <div className="flex items-center bg-muted rounded-lg p-0.5">
                 <button
                   onClick={() => setLanguage('en')}
                   className={cn(
-                    'px-2.5 py-1 text-xs font-semibold rounded-md transition-all',
+                    'px-2 py-1 text-[11px] sm:text-xs font-semibold rounded-md transition-all',
                     language === 'en'
                       ? 'bg-card text-momentum-orange shadow-sm'
                       : 'text-muted-foreground hover:text-foreground'
@@ -413,7 +471,7 @@ function CmsEditorContent({ pages }: CmsEditorContentProps) {
                 <button
                   onClick={() => setLanguage('fr')}
                   className={cn(
-                    'px-2.5 py-1 text-xs font-semibold rounded-md transition-all',
+                    'px-2 py-1 text-[11px] sm:text-xs font-semibold rounded-md transition-all',
                     language === 'fr'
                       ? 'bg-card text-momentum-orange shadow-sm'
                       : 'text-muted-foreground hover:text-foreground'
@@ -426,14 +484,14 @@ function CmsEditorContent({ pages }: CmsEditorContentProps) {
               <Button
                 onClick={handlePublish}
                 disabled={isPublishing}
-                className="bg-momentum-orange hover:bg-momentum-orange/90 text-white h-8 text-xs"
+                className="bg-momentum-orange hover:bg-momentum-orange/90 text-white h-8 text-xs px-2 sm:px-3"
               >
                 {isPublishing ? (
-                  <Loader2 size={14} className="mr-1.5 animate-spin" />
+                  <Loader2 size={14} className="sm:mr-1.5 animate-spin" />
                 ) : (
-                  <Send size={14} className="mr-1.5" />
+                  <Send size={14} className="sm:mr-1.5" />
                 )}
-                Publish
+                <span className="hidden sm:inline">Publish</span>
               </Button>
             </div>
           </div>
@@ -441,7 +499,7 @@ function CmsEditorContent({ pages }: CmsEditorContentProps) {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-5xl mx-auto px-4 sm:px-6 py-6">
+      <main className="max-w-5xl mx-auto px-4 sm:px-6 py-6 pb-24 md:pb-6">
         {/* Search */}
         <div className="mb-6">
           <div className="relative max-w-md">
@@ -689,6 +747,23 @@ function CmsEditorContent({ pages }: CmsEditorContentProps) {
         onClose={() => setIsScheduleDialogOpen(false)}
         versionId={activeVersion.id}
         versionNumber={activeVersion.versionNumber}
+      />
+
+      {/* Mobile Bottom Navigation */}
+      <MobileBottomNav
+        mainNavItems={mobileMainNav}
+        moreMenuItems={mobileMoreNav}
+        backLink={{
+          label: appLanguage === 'fr' ? 'Retour au tableau de bord' : 'Back to Dashboard',
+          href: '/dashboard',
+        }}
+        onLogout={handleLogout}
+        t={t}
+        theme={theme}
+        onThemeToggle={toggleTheme}
+        language={appLanguage}
+        onLanguageChange={setAppLanguage}
+        showUserProfile={false}
       />
     </div>
   );
