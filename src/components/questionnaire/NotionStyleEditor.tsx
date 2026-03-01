@@ -410,22 +410,22 @@ export default function NotionStyleEditor({
 
         {/* Bottom Bar */}
         <div className={`
-          flex items-center justify-between px-4 py-3 border-t
+          flex flex-wrap items-center justify-between gap-2 px-3 sm:px-4 py-2 sm:py-3 border-t
           ${theme === 'dark' ? 'border-gray-800' : 'border-gray-100'}
         `}>
           {/* Left: Word/Char count */}
-          <div className={`flex items-center gap-4 text-xs ${mutedColor}`}>
-            <span>{wordCount} {t.words}</span>
-            <span>{charCount} {t.chars}</span>
+          <div className={`flex items-center gap-2 sm:gap-4 text-xs ${mutedColor}`}>
+            <span className="whitespace-nowrap">{wordCount} <span className="hidden sm:inline">{t.words}</span><span className="sm:hidden">w</span></span>
+            <span className="whitespace-nowrap">{charCount} <span className="hidden sm:inline">{t.chars}</span><span className="sm:hidden">c</span></span>
             {isRequired && charCount < minLength && (
-              <span className="text-orange-500">
-                ({minLength - charCount} {t.moreNeeded})
+              <span className="text-orange-500 whitespace-nowrap">
+                (<span className="hidden sm:inline">{minLength - charCount} {t.moreNeeded}</span><span className="sm:hidden">+{minLength - charCount}</span>)
               </span>
             )}
           </div>
 
           {/* Right: Actions */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2">
             {/* Ask Sqordia - Generate when empty, dropdown when has content */}
             {onAIAction && (
               <div className="relative" ref={aiMenuRef}>
@@ -435,7 +435,7 @@ export default function NotionStyleEditor({
                     onClick={() => handleAIAction('generate')}
                     disabled={isAIProcessing}
                     className={`
-                      flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium
+                      flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 rounded-lg text-xs font-medium
                       transition-all
                       bg-gradient-to-r from-purple-500/10 to-orange-500/10 text-purple-600 dark:text-purple-400
                       hover:from-purple-500/20 hover:to-orange-500/20
@@ -447,7 +447,8 @@ export default function NotionStyleEditor({
                     ) : (
                       <Sparkles size={14} />
                     )}
-                    {(t as typeof TRANSLATIONS.en).generateAnswer || t.aiActions.generate.label}
+                    <span className="hidden sm:inline">{(t as typeof TRANSLATIONS.en).generateAnswer || t.aiActions.generate.label}</span>
+                    <span className="sm:hidden">AI</span>
                   </button>
                 ) : (
                   /* When has content: Show dropdown with all AI actions */
@@ -456,7 +457,7 @@ export default function NotionStyleEditor({
                       onClick={() => setShowAIMenu(!showAIMenu)}
                       disabled={isAIProcessing}
                       className={`
-                        flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium
+                        flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 rounded-lg text-xs font-medium
                         transition-all
                         bg-gradient-to-r from-purple-500/10 to-orange-500/10 text-purple-600 dark:text-purple-400
                         hover:from-purple-500/20 hover:to-orange-500/20
@@ -468,7 +469,7 @@ export default function NotionStyleEditor({
                       ) : (
                         <Sparkles size={14} />
                       )}
-                      {t.askSqordia}
+                      <span className="hidden sm:inline">{t.askSqordia}</span>
                       <ChevronDown size={12} className={`transition-transform ${showAIMenu ? 'rotate-180' : ''}`} />
                     </button>
 
@@ -521,7 +522,7 @@ export default function NotionStyleEditor({
               onClick={onSave}
               disabled={isSaving || !isValid}
               className={`
-                flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-medium
+                flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-4 py-1.5 rounded-lg text-xs font-medium
                 transition-all
                 ${isValid
                   ? 'bg-orange-500 text-white hover:bg-orange-600'
@@ -536,7 +537,7 @@ export default function NotionStyleEditor({
               ) : (
                 <Send size={14} />
               )}
-              {isSaving ? t.saving : lastSaved ? t.saved : t.save}
+              <span className="hidden sm:inline">{isSaving ? t.saving : lastSaved ? t.saved : t.save}</span>
             </button>
           </div>
         </div>
