@@ -75,7 +75,8 @@ export default function CompanyPersonaStep({
   const { t } = useTheme();
   const [companyName, setCompanyName] = useState(data.companyName || data.businessName || '');
   const [industry, setIndustry] = useState(data.industry || '');
-  const [selectedPersona, setSelectedPersona] = useState<OnboardingPersona | undefined>(data.persona);
+  // Default to 'entrepreneur' since Consultant and OBNL are coming soon
+  const [selectedPersona, setSelectedPersona] = useState<OnboardingPersona | undefined>(data.persona || 'entrepreneur');
   const [errors, setErrors] = useState<{ companyName?: string }>({});
   const [touched, setTouched] = useState<{ companyName?: boolean }>({});
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
