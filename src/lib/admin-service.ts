@@ -1,28 +1,42 @@
 import { apiClient } from './api-client';
 import { ApiResponse } from './types';
 
+// Type for API response data that could be either a Result wrapper or direct value
+type ApiData<T = any> = { isSuccess?: boolean; value?: T; error?: { message?: string }; items?: T[]; Items?: T[]; totalCount?: number; TotalCount?: number; pageNumber?: number; PageNumber?: number; totalPages?: number; TotalPages?: number; Id?: string; id?: string } | T;
+
+// Helper to safely extract data from API response
+function extractApiData<T>(data: unknown): T {
+  const d = data as ApiData<T>;
+  if (d && typeof d === 'object' && 'isSuccess' in d) {
+    if (d.isSuccess && d.value !== undefined) {
+      return d.value as T;
+    }
+    if (!d.isSuccess && d.error?.message) {
+      throw new Error(d.error.message);
+    }
+  }
+  return d as T;
+}
+
 export const adminService = {
   async getOverview(): Promise<any> {
     try {
       const response = await apiClient.get('/api/v1/admin/overview');
-      // Backend returns value directly (not wrapped in Result)
+      const data = response.data as ApiData;
       // Check if it's a Result wrapper first
-      if (response.data && typeof response.data === 'object' && 'isSuccess' in response.data) {
-        // It's a Result wrapper
-        if (response.data.isSuccess && response.data.value) {
-          return response.data.value;
-        } else if (!response.data.isSuccess) {
-          throw new Error(response.data.error?.message || 'Failed to load overview');
+      if (data && typeof data === 'object' && 'isSuccess' in data) {
+        if (data.isSuccess && data.value) {
+          return data.value;
+        } else if (!data.isSuccess) {
+          throw new Error(data.error?.message || 'Failed to load overview');
         }
       }
-      // Direct value response - backend returns AdminSystemOverview directly
-      if (!response.data) {
+      if (!data) {
         throw new Error('No data received from server');
       }
-      return response.data;
+      return data;
     } catch (error: any) {
       console.error('Error in getOverview:', error);
-      // Re-throw with more context if needed
       if (error.response?.status === 401) {
         throw new Error('Unauthorized - please log in as admin');
       } else if (error.response?.status === 403) {
@@ -36,16 +50,15 @@ export const adminService = {
     const response = await apiClient.get('/api/v1/admin/system-health');
     // Backend returns value directly (not wrapped in Result)
     // Check if it's a Result wrapper first
-    if (response.data && typeof response.data === 'object' && 'isSuccess' in response.data) {
-      // It's a Result wrapper
-      if (response.data.isSuccess && response.data.value) {
-        return response.data.value;
-      } else if (!response.data.isSuccess) {
-        throw new Error(response.data.error?.message || 'Failed to load system health');
+    const data = response.data as ApiData;
+    if (data && typeof data === 'object' && 'isSuccess' in data) {
+      if (data.isSuccess && data.value) {
+        return data.value;
+      } else if (!data.isSuccess) {
+        throw new Error(data.error?.message || 'Failed to load system health');
       }
     }
-    // Direct value response
-    return response.data;
+    return data;
   },
 
   async getUsers(params?: any): Promise<any> {

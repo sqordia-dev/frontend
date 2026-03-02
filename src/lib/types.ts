@@ -19,6 +19,7 @@ export interface User {
   createdAt: string;
   profilePictureUrl?: string;
   persona?: PersonaType;
+  roles?: string[];
 }
 
 export interface LoginRequest {

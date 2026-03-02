@@ -68,9 +68,9 @@ export default function SEO({
       <link rel="canonical" href={canonicalUrl} />
 
       {/* Hreflang Tags */}
-      <link rel="alternate" hreflang="en" href={alternateUrls.en} />
-      <link rel="alternate" hreflang="fr" href={alternateUrls.fr} />
-      <link rel="alternate" hreflang="x-default" href={alternateUrls.en} />
+      <link rel="alternate" hrefLang="en" href={alternateUrls.en} />
+      <link rel="alternate" hrefLang="fr" href={alternateUrls.fr} />
+      <link rel="alternate" hrefLang="x-default" href={alternateUrls.en} />
 
       {/* Open Graph / Facebook */}
       <meta property="og:type" content={ogType} />

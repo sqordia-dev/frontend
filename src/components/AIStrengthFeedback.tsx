@@ -63,10 +63,11 @@ export default function AIStrengthFeedback({
           includeGaps: true
         });
 
-        const data = response.data?.value || response.data;
-        setPolishedText(data.polishedText);
-        setGaps(data.gaps || []);
-        setStrengthScore(data.strengthScore);
+        const responseData = response.data as { value?: any } | any;
+        const data = (responseData && typeof responseData === 'object' && 'value' in responseData) ? responseData.value : responseData;
+        setPolishedText(data?.polishedText);
+        setGaps(data?.gaps || []);
+        setStrengthScore(data?.strengthScore);
       } else if (triggerType === 'field') {
         // Field-level: Focus on polishing
         const polishResponse = await apiClient.post('/api/v1/ai/polish-answer', {
@@ -78,9 +79,10 @@ export default function AIStrengthFeedback({
           language
         });
 
-        const polishData = polishResponse.data?.value || polishResponse.data;
-        setPolishedText(polishData.polishedText);
-        setStrengthScore(polishData.strengthScore);
+        const polishResponseData = polishResponse.data as { value?: any } | any;
+        const polishData = (polishResponseData && typeof polishResponseData === 'object' && 'value' in polishResponseData) ? polishResponseData.value : polishResponseData;
+        setPolishedText(polishData?.polishedText);
+        setStrengthScore(polishData?.strengthScore);
       } else {
         // Section-level: Focus on gaps
         const gapResponse = await apiClient.post('/api/v1/ai/analyze-step', {
@@ -91,9 +93,10 @@ export default function AIStrengthFeedback({
           language
         });
 
-        const gapData = gapResponse.data?.value || gapResponse.data;
-        setGaps(gapData.questions?.[0]?.gaps || []);
-        setStrengthScore(gapData.overallScore);
+        const gapResponseData = gapResponse.data as { value?: any } | any;
+        const gapData = (gapResponseData && typeof gapResponseData === 'object' && 'value' in gapResponseData) ? gapResponseData.value : gapResponseData;
+        setGaps(gapData?.questions?.[0]?.gaps || []);
+        setStrengthScore(gapData?.overallScore);
       }
 
       setShowFeedback(true);

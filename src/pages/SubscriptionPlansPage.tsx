@@ -70,9 +70,10 @@ export default function SubscriptionPlansPage() {
 
       try {
         const orgsResponse = await apiClient.get('/api/v1/organizations');
-        const orgs = orgsResponse.data?.isSuccess
-          ? orgsResponse.data.value
-          : (Array.isArray(orgsResponse.data) ? orgsResponse.data : []);
+        const orgsData = orgsResponse.data as { isSuccess?: boolean; value?: any[] } | any[];
+        const orgs = (orgsData && typeof orgsData === 'object' && 'isSuccess' in orgsData && orgsData.isSuccess)
+          ? (orgsData.value || [])
+          : (Array.isArray(orgsData) ? orgsData : []);
         setOrganizations(orgs);
         setNeedsOrganization(orgs.length === 0);
       } catch (e: any) {
@@ -144,13 +145,14 @@ export default function SubscriptionPlansPage() {
       const response = await apiClient.get('/api/v1/subscriptions/plans');
 
       let plansData: SubscriptionPlan[] = [];
+      const responseData = response.data as { isSuccess?: boolean; value?: SubscriptionPlan[] } | SubscriptionPlan[];
 
-      if (response.data?.isSuccess && response.data.value) {
-        plansData = Array.isArray(response.data.value) ? response.data.value : [];
-      } else if (Array.isArray(response.data)) {
-        plansData = response.data;
-      } else if (response.data?.value && Array.isArray(response.data.value)) {
-        plansData = response.data.value;
+      if (responseData && typeof responseData === 'object' && 'isSuccess' in responseData && responseData.isSuccess && responseData.value) {
+        plansData = Array.isArray(responseData.value) ? responseData.value : [];
+      } else if (Array.isArray(responseData)) {
+        plansData = responseData;
+      } else if (responseData && typeof responseData === 'object' && 'value' in responseData && Array.isArray(responseData.value)) {
+        plansData = responseData.value;
       }
 
       plansData.sort((a, b) => {

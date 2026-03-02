@@ -159,7 +159,7 @@ const CashFlowTable: React.FC<CashFlowTableProps> = ({
     return sum > 0 ? sum : null;
   });
 
-  const totalDisbursementsTotal = totalDisbursements.reduce((acc, val) => acc + (val || 0), 0);
+  const totalDisbursementsTotal = totalDisbursements.reduce<number>((acc, val) => acc + (val || 0), 0);
 
   rows.push({
     label: 'TOTAL DÉBOURSÉS',

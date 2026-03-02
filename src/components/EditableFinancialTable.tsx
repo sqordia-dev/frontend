@@ -60,7 +60,8 @@ export default function EditableFinancialTable({
         value: newValue
       });
 
-      const updatedData = response.data?.value || response.data;
+      const responseData = response.data as { value?: any } | any;
+      const updatedData = (responseData && typeof responseData === 'object' && 'value' in responseData) ? responseData.value : responseData;
       
       // Update local state
       setLocalData(prev => {

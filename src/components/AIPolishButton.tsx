@@ -46,19 +46,20 @@ export default function AIPolishButton({
 
       // Handle the Result wrapper format from backend
       let polishedTextValue: string | null = null;
-      
-      if (response.data) {
+      const data = response.data as { value?: { polishedText?: string }; polishedText?: string } | string;
+
+      if (data) {
         // Check if it's wrapped in a Result object (backend returns Result<PolishedTextResponse>)
-        if (response.data.value && response.data.value.polishedText) {
-          polishedTextValue = response.data.value.polishedText;
-        } 
+        if (typeof data === 'object' && 'value' in data && data.value?.polishedText) {
+          polishedTextValue = data.value.polishedText;
+        }
         // Check if it's a direct PolishedTextResponse
-        else if (response.data.polishedText) {
-          polishedTextValue = response.data.polishedText;
+        else if (typeof data === 'object' && 'polishedText' in data && data.polishedText) {
+          polishedTextValue = data.polishedText;
         }
         // Check if it's just a string (fallback)
-        else if (typeof response.data === 'string') {
-          polishedTextValue = response.data;
+        else if (typeof data === 'string') {
+          polishedTextValue = data;
         }
       }
       

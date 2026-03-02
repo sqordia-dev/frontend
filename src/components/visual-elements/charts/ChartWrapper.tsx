@@ -229,7 +229,7 @@ export function ChartWrapper({ data, styling, height = 300 }: ChartWrapperProps)
           cy="50%"
           outerRadius={80}
           innerRadius={innerRadius}
-          label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+          label={({ name, percent }) => `${name}: ${((percent ?? 0) * 100).toFixed(0)}%`}
           labelLine={{ stroke: '#9CA3AF', strokeWidth: 1 }}
         >
           {pieData.map((_, index) => (
@@ -240,7 +240,7 @@ export function ChartWrapper({ data, styling, height = 300 }: ChartWrapperProps)
           ))}
         </Pie>
         <Tooltip
-          formatter={(value: number) => formatValue(value, data.options)}
+          formatter={(value) => formatValue(value as number, data.options)}
           contentStyle={{
             backgroundColor: 'white',
             border: '1px solid #E5E7EB',

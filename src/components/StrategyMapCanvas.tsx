@@ -45,7 +45,8 @@ export default function StrategyMapCanvas({ planId, onUpdate }: StrategyMapCanva
     setLoading(true);
     try {
       const plan = await apiClient.get(`/api/v1/business-plans/${planId}`);
-      const strategyMapJson = plan.data?.strategyMapJson || plan.data?.value?.strategyMapJson;
+      const planData = plan.data as { strategyMapJson?: string; value?: { strategyMapJson?: string } } | any;
+      const strategyMapJson = planData?.strategyMapJson || planData?.value?.strategyMapJson;
       
       if (strategyMapJson) {
         const parsed = JSON.parse(strategyMapJson);

@@ -555,7 +555,7 @@ export default function PlanViewPage() {
   const [editingSection, setEditingSection] = useState<string | null>(null);
   const [editingContent, setEditingContent] = useState<string>('');
   const [saving, setSaving] = useState<string | null>(null);
-  const [aiLoading, setAiLoading] = useState<{ [key: string]: 'improve' | 'expand' | 'simplify' | 'help' | null }>({});
+  const [aiLoading, setAiLoading] = useState<{ [key: string]: 'improve' | 'expand' | 'simplify' | 'help' | 'regenerate' | null }>({});
   const [lastSaved, setLastSaved] = useState<{ [key: string]: string }>({});
   const [hoveredSection, setHoveredSection] = useState<string | null>(null);
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
@@ -1143,8 +1143,8 @@ export default function PlanViewPage() {
 
       // Refetch sections to get the new content
       const sectionsResponse = await businessPlanService.getSections(id);
-      if (sectionsResponse?.sections) {
-        setSections(sectionsResponse.sections);
+      if (Array.isArray(sectionsResponse)) {
+        setSections(sectionsResponse);
       }
       setStatusMessage(language === 'fr' ? 'Section regénérée avec succès' : 'Section regenerated successfully');
 

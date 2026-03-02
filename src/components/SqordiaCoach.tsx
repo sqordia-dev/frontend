@@ -59,8 +59,9 @@ export default function SqordiaCoach({
         location: location || { city: 'Montreal', province: 'Quebec' }
       });
 
-      const data = response.data?.value || response.data;
-      const auditIssues: AuditIssue[] = data.issues || data.gaps || [];
+      const responseData = response.data as { value?: any; issues?: AuditIssue[]; gaps?: AuditIssue[] } | any;
+      const data = (responseData && typeof responseData === 'object' && 'value' in responseData) ? responseData.value : responseData;
+      const auditIssues: AuditIssue[] = data?.issues || data?.gaps || [];
       setIssues(auditIssues);
     } catch (err: any) {
       console.error('Failed to analyze section:', err);

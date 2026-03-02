@@ -62,8 +62,9 @@ export default function FinancialDriverInput({ persona, onCalculate }: Financial
         province
       });
 
-      const data = response.data?.value || response.data;
-      setProjections(data);
+      const responseData = response.data as { value?: FinancialProjections } | FinancialProjections;
+      const data = (responseData && typeof responseData === 'object' && 'value' in responseData) ? responseData.value : responseData;
+      setProjections(data as FinancialProjections);
       if (onCalculate) {
         onCalculate(data);
       }

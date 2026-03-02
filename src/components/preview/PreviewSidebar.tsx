@@ -284,7 +284,7 @@ export default function PreviewSidebar({
           <AnimatePresence mode="popLayout">
             {sections.map((section, index) => {
               const Icon = getSectionIcon(section.title);
-              const hasContent = section.content && section.content.trim().length > 0;
+              const hasContent = Boolean(section.content && section.content.trim().length > 0);
               const isActive = activeSectionId === section.id;
 
               return (
