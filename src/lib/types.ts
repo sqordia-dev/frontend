@@ -20,6 +20,7 @@ export interface User {
   profilePictureUrl?: string;
   persona?: PersonaType;
   roles?: string[];
+  onboardingCompleted?: boolean;
 }
 
 export interface LoginRequest {

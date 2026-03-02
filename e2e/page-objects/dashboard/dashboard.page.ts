@@ -253,7 +253,11 @@ export class DashboardPage extends BasePage {
 
   /**
    * Complete onboarding if user is redirected there
-   * Handles multi-step onboarding flow
+   * Handles multi-step onboarding flow:
+   * Step 1: Company name, industry, persona selection
+   * Step 2: Business stage, team size, funding status
+   * Step 3: Goals (multi-select) and target market
+   * Step 4: Feature tour (complete)
    */
   async completeOnboarding(): Promise<void> {
     const url = this.page.url();
@@ -265,60 +269,123 @@ export class DashboardPage extends BasePage {
     console.log('Starting onboarding completion...');
 
     try {
-      // Step 1: Select persona (Entrepreneur)
-      // The persona buttons are the large selectable cards
-      const personaCard = this.page.locator('button').filter({ hasText: /Entrepreneur.*Solopreneur/i }).first();
+      // Wait for the onboarding wizard to load
+      await this.page.waitForLoadState('networkidle');
+      await this.page.waitForTimeout(1000);
 
-      if (await personaCard.isVisible({ timeout: 5000 }).catch(() => false)) {
-        console.log('Selecting Entrepreneur persona...');
-        await personaCard.click();
-        await this.page.waitForTimeout(1000);
+      // ========== STEP 1: Company, Industry, Persona ==========
+      console.log('Step 1: Filling company info...');
+
+      // Fill company name
+      const companyInput = this.page.locator('input#companyName, input[name="companyName"]');
+      if (await companyInput.isVisible({ timeout: 5000 }).catch(() => false)) {
+        await companyInput.fill('E2E Test Company');
+        console.log('Company name filled');
+        await this.page.waitForTimeout(300);
       }
 
-      // After selecting persona, wait for either navigation or step 2
-      await this.page.waitForTimeout(2000);
-
-      // Check if we've already progressed
-      if (!this.page.url().includes('/onboarding')) {
-        console.log('Onboarding completed after persona selection');
-        return;
-      }
-
-      // Step 2: Look for Continue/Submit button (may be at bottom of page)
-      const continueButton = this.page.locator('button').filter({
-        hasText: /Continue|Continuer|Next|Suivant|Submit|Soumettre|Get Started|Commencer|Complete|Terminer/i
-      }).first();
-
-      for (let attempt = 0; attempt < 3; attempt++) {
-        // Wait for button to be enabled
-        if (await continueButton.isVisible({ timeout: 3000 }).catch(() => false)) {
-          const isEnabled = await continueButton.isEnabled().catch(() => false);
-          if (isEnabled) {
-            console.log(`Clicking continue button (attempt ${attempt + 1})...`);
-            await continueButton.click();
-            await this.page.waitForTimeout(2000);
-
-            // Check if we've left onboarding
-            if (!this.page.url().includes('/onboarding')) {
-              console.log('Onboarding completed!');
-              return;
-            }
-          } else {
-            console.log('Continue button is disabled, waiting...');
-            await this.page.waitForTimeout(1000);
-          }
-        } else {
-          break;
+      // Select industry from dropdown
+      const industryButton = this.page.locator('button#industry');
+      if (await industryButton.isVisible({ timeout: 3000 }).catch(() => false)) {
+        await industryButton.click();
+        await this.page.waitForTimeout(300);
+        // Click on "Technology" option
+        const techOption = this.page.locator('[role="option"]').filter({ hasText: /Technology|Technologie/i }).first();
+        if (await techOption.isVisible({ timeout: 2000 }).catch(() => false)) {
+          await techOption.click();
+          console.log('Industry selected');
+          await this.page.waitForTimeout(300);
         }
       }
 
-      // If still on onboarding, try clicking on any enabled primary button
-      const primaryButton = this.page.locator('button.bg-momentum-orange, button[type="submit"]').first();
-      if (await primaryButton.isVisible({ timeout: 2000 }).catch(() => false)) {
-        const isEnabled = await primaryButton.isEnabled().catch(() => false);
+      // Persona is already selected by default (entrepreneur), click continue
+      await this.clickContinueButton();
+      await this.page.waitForTimeout(1000);
+
+      // Check if we've left onboarding
+      if (!this.page.url().includes('/onboarding')) {
+        console.log('Onboarding completed after step 1');
+        return;
+      }
+
+      // ========== STEP 2: Business Context (Stage, Team Size, Funding) ==========
+      console.log('Step 2: Business context...');
+
+      // Select business stage (Startup)
+      const startupStage = this.page.locator('button[aria-pressed]').filter({ hasText: /Startup|Démarrage/i }).first();
+      if (await startupStage.isVisible({ timeout: 3000 }).catch(() => false)) {
+        await startupStage.click();
+        console.log('Business stage selected');
+        await this.page.waitForTimeout(300);
+      }
+
+      // Select team size from dropdown
+      const teamSizeButton = this.page.locator('button#teamSize');
+      if (await teamSizeButton.isVisible({ timeout: 3000 }).catch(() => false)) {
+        await teamSizeButton.click();
+        await this.page.waitForTimeout(300);
+        const soloOption = this.page.locator('[role="option"]').first();
+        if (await soloOption.isVisible({ timeout: 2000 }).catch(() => false)) {
+          await soloOption.click();
+          console.log('Team size selected');
+          await this.page.waitForTimeout(300);
+        }
+      }
+
+      // Select funding status from dropdown
+      const fundingButton = this.page.locator('button#fundingStatus');
+      if (await fundingButton.isVisible({ timeout: 3000 }).catch(() => false)) {
+        await fundingButton.click();
+        await this.page.waitForTimeout(300);
+        const bootstrappedOption = this.page.locator('[role="option"]').first();
+        if (await bootstrappedOption.isVisible({ timeout: 2000 }).catch(() => false)) {
+          await bootstrappedOption.click();
+          console.log('Funding status selected');
+          await this.page.waitForTimeout(300);
+        }
+      }
+
+      await this.clickContinueButton();
+      await this.page.waitForTimeout(1000);
+
+      if (!this.page.url().includes('/onboarding')) {
+        console.log('Onboarding completed after step 2');
+        return;
+      }
+
+      // ========== STEP 3: Goals and Market ==========
+      console.log('Step 3: Goals and market...');
+
+      // Select at least one goal (checkboxes)
+      const goalCheckbox = this.page.locator('button[role="checkbox"]').first();
+      if (await goalCheckbox.isVisible({ timeout: 3000 }).catch(() => false)) {
+        await goalCheckbox.click();
+        console.log('Goal selected');
+        await this.page.waitForTimeout(300);
+      }
+
+      // Target market is optional, skip it
+      await this.clickContinueButton();
+      await this.page.waitForTimeout(1000);
+
+      if (!this.page.url().includes('/onboarding')) {
+        console.log('Onboarding completed after step 3');
+        return;
+      }
+
+      // ========== STEP 4: Feature Tour ==========
+      console.log('Step 4: Feature tour...');
+      // Look for "Get Started" or complete button
+      const getStartedButton = this.page.locator('button').filter({
+        hasText: /Get Started|Commencer|Complete|Finish|Terminer|Create.*Plan/i
+      }).first();
+      if (await getStartedButton.isVisible({ timeout: 5000 }).catch(() => false)) {
+        const isEnabled = await getStartedButton.isEnabled().catch(() => false);
         if (isEnabled) {
-          await primaryButton.click();
-          await this.page.waitForTimeout(2000);
+          console.log('Clicking Get Started button...');
+          await getStartedButton.click();
+          // Wait for navigation - this will create a plan and redirect
+          await this.page.waitForTimeout(5000);
         }
       }
 
@@ -328,6 +395,32 @@ export class DashboardPage extends BasePage {
 
     // Final check
     console.log(`Final URL after onboarding attempt: ${this.page.url()}`);
+  }
+
+  /**
+   * Helper to click the Continue/Next button during onboarding
+   */
+  private async clickContinueButton(): Promise<boolean> {
+    const continueButton = this.page.locator('button').filter({
+      hasText: /Continue|Continuer|Next|Suivant/i
+    }).first();
+
+    // Wait for button to be enabled and click
+    for (let attempt = 0; attempt < 10; attempt++) {
+      if (await continueButton.isVisible({ timeout: 2000 }).catch(() => false)) {
+        const isEnabled = await continueButton.isEnabled().catch(() => false);
+        if (isEnabled) {
+          console.log(`Clicking continue button...`);
+          await continueButton.click();
+          return true;
+        } else {
+          console.log('Continue button is disabled, waiting...');
+          await this.page.waitForTimeout(500);
+        }
+      }
+    }
+    console.log('Failed to click continue button after all attempts');
+    return false;
   }
 
   /**

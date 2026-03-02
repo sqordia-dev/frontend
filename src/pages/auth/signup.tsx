@@ -91,8 +91,16 @@ export default function SignupPage() {
         idToken: googleUser.idToken,
         accessToken: googleUser.accessToken,
       };
-      await authService.googleAuth(tokens);
-      navigate('/onboarding');
+      const response = await authService.googleAuth(tokens);
+      // Check if returning user has completed onboarding
+      if (response.user?.onboardingCompleted) {
+        if (response.user?.persona) {
+          localStorage.setItem('userPersona', response.user.persona);
+        }
+        navigate('/dashboard');
+      } else {
+        navigate('/onboarding');
+      }
     } catch (err: any) {
       setServerError(getUserFriendlyError(err, 'signup'));
     }
@@ -101,8 +109,16 @@ export default function SignupPage() {
   const handleMicrosoftSignUp = async () => {
     setServerError('');
     try {
-      await authService.signInWithMicrosoft();
-      navigate('/onboarding');
+      const response = await authService.signInWithMicrosoft();
+      // Check if returning user has completed onboarding
+      if (response?.user?.onboardingCompleted) {
+        if (response.user?.persona) {
+          localStorage.setItem('userPersona', response.user.persona);
+        }
+        navigate('/dashboard');
+      } else {
+        navigate('/onboarding');
+      }
     } catch (err: any) {
       setServerError(getUserFriendlyError(err, 'signup'));
     }

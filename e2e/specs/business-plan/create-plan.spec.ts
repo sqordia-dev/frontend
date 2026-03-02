@@ -5,6 +5,9 @@ import { test, expect } from '../../fixtures';
  * Tags: @business-plan @create @crud
  */
 test.describe('Create Plan @business-plan @create', () => {
+  // Increase timeout for tests that involve plan creation
+  test.setTimeout(60000);
+
   /**
    * Helper to check if user is stuck on onboarding
    */

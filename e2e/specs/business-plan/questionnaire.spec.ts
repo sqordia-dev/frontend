@@ -3,9 +3,15 @@ import { test, expect } from '../../fixtures';
 /**
  * Questionnaire E2E Tests
  * Tags: @questionnaire @business-plan @interview
+ *
+ * Note: Each test creates a new plan to ensure isolated test state.
+ * This may cause slower execution but ensures test independence.
  */
 test.describe('Questionnaire @questionnaire @business-plan', () => {
   let testPlanId: string | null = null;
+
+  // Increase timeout for tests that create plans
+  test.setTimeout(60000);
 
   /**
    * Helper to check if user is stuck on onboarding
@@ -38,15 +44,16 @@ test.describe('Questionnaire @questionnaire @business-plan', () => {
     await createPlanPage.waitForPageReady();
 
     const planName = `E2E Questionnaire Test ${Date.now()}`;
-    await createPlanPage.fillProjectName(planName);
-    await createPlanPage.clickCreate();
 
-    // Wait for navigation to questionnaire and extract plan ID
-    await page.waitForURL(/\/questionnaire\//, { timeout: 30000 });
-    const currentUrl = page.url();
-    const match = currentUrl.match(/\/questionnaire\/([^/]+)/);
-    if (match) {
-      testPlanId = match[1];
+    try {
+      // Use the improved method that waits for button to be enabled
+      testPlanId = await createPlanPage.createPlanAndWaitForQuestionnaire(planName);
+      console.log(`✅ Created test plan: ${testPlanId}`);
+    } catch (error) {
+      console.error('❌ Failed to create plan in beforeEach:', error);
+      // Take a screenshot for debugging
+      await page.screenshot({ path: `test-results/beforeEach-failure-${Date.now()}.png` });
+      throw error;
     }
   });
 
@@ -102,17 +109,18 @@ test.describe('Questionnaire @questionnaire @business-plan', () => {
     await questionnairePage.typeAnswer('This is my test answer for the first question. It contains enough content to be valid.');
     await questionnairePage.page.waitForTimeout(500);
 
-    // Get initial question number
-    const initialQuestion = await questionnairePage.getCurrentStepNumber();
-
     // Navigate to next
     await questionnairePage.goToNextQuestion();
+    await questionnairePage.page.waitForTimeout(500);
 
     await screenshots.capture({ feature: 'questionnaire', name: 'questionnaire-second-question' });
 
-    // Verify navigation occurred
+    // Verify we're still on questionnaire and navigation occurred
     const currentUrl = questionnairePage.page.url();
     expect(currentUrl).toContain('/questionnaire/');
+
+    // Verify questionnaire is still loaded and functional
+    await questionnairePage.expectQuestionnaireLoaded();
   });
 
   test('should navigate to previous question @navigation', async ({ questionnairePage }) => {

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { X, ArrowRight, ArrowLeft, Sparkles, FileText, BarChart3, Plus, Check, Rocket } from 'lucide-react';
+import { X, ArrowRight, ArrowLeft, Sparkles, FileText, BarChart3, Plus, Check, Rocket, Square, CheckSquare } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 import { cn } from '@/lib/utils';
 
@@ -33,6 +33,7 @@ export default function DashboardTour({ onStartTour }: DashboardTourProps = {}) 
   const [highlightedElement, setHighlightedElement] = useState<HTMLElement | null>(null);
   const [spotlightRect, setSpotlightRect] = useState<SpotlightRect | null>(null);
   const [popupPosition, setPopupPosition] = useState({ top: 0, left: 0, position: 'right' as 'top' | 'bottom' | 'left' | 'right' });
+  const [dontShowAgain, setDontShowAgain] = useState(false);
   const prevElementRef = useRef<HTMLElement | null>(null);
 
   const BRAND_ORANGE = '#FF6B00';
@@ -90,14 +91,20 @@ export default function DashboardTour({ onStartTour }: DashboardTourProps = {}) 
     }
   }, [highlightedElement]);
 
-  const completeTour = useCallback(() => {
+  const completeTour = useCallback((permanently: boolean = true) => {
     cleanupElement();
     setIsVisible(false);
     setIsAnimatingIn(false);
     setHighlightedElement(null);
     setSpotlightRect(null);
-    localStorage.setItem('dashboardTourCompleted', 'true');
+    if (permanently) {
+      localStorage.setItem('dashboardTourCompleted', 'true');
+    }
   }, [cleanupElement]);
+
+  const skipTour = useCallback(() => {
+    completeTour(dontShowAgain);
+  }, [completeTour, dontShowAgain]);
 
   const updateSpotlight = useCallback((element: HTMLElement) => {
     const rect = element.getBoundingClientRect();
@@ -226,17 +233,17 @@ export default function DashboardTour({ onStartTour }: DashboardTourProps = {}) 
   useEffect(() => {
     if (!isVisible) return;
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') { completeTour(); return; }
+      if (e.key === 'Escape') { skipTour(); return; }
       if (e.key === 'ArrowRight' || e.key === 'Enter') {
         e.preventDefault();
-        if (currentStep < steps.length - 1) { nextStep(); } else { completeTour(); }
+        if (currentStep < steps.length - 1) { nextStep(); } else { completeTour(true); }
         return;
       }
       if (e.key === 'ArrowLeft' && currentStep > 0) { e.preventDefault(); prevStep(); }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isVisible, currentStep]);
+  }, [isVisible, currentStep, skipTour, completeTour]);
 
   // Recalculate spotlight on scroll/resize
   useEffect(() => {
@@ -340,7 +347,7 @@ export default function DashboardTour({ onStartTour }: DashboardTourProps = {}) 
         {spotlightRect && (
           <div
             className="absolute pointer-events-auto"
-            onClick={completeTour}
+            onClick={skipTour}
             style={{
               top: spotlightRect.top,
               left: spotlightRect.left,
@@ -355,7 +362,7 @@ export default function DashboardTour({ onStartTour }: DashboardTourProps = {}) 
         {!spotlightRect && (
           <div
             className="absolute inset-0 pointer-events-auto"
-            onClick={completeTour}
+            onClick={skipTour}
             style={{ backgroundColor: 'rgba(0, 0, 0, 0.55)' }}
           />
         )}
@@ -421,7 +428,7 @@ export default function DashboardTour({ onStartTour }: DashboardTourProps = {}) 
                 </div>
               </div>
               <button
-                onClick={completeTour}
+                onClick={skipTour}
                 className="text-muted-foreground hover:text-foreground transition-colors p-2 hover:bg-muted rounded-xl flex-shrink-0 -mt-1 -mr-1"
                 aria-label="Close tour"
               >
@@ -455,47 +462,62 @@ export default function DashboardTour({ onStartTour }: DashboardTourProps = {}) 
             </div>
 
             {/* Footer Actions */}
-            <div className="flex items-center justify-between pt-1">
+            <div className="flex flex-col gap-3 pt-1">
+              {/* Don't show again checkbox */}
               <button
-                onClick={completeTour}
-                className="text-sm text-muted-foreground hover:text-foreground font-medium transition-colors px-1 py-1"
+                onClick={() => setDontShowAgain(!dontShowAgain)}
+                className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors self-start"
               >
-                {t('dashboard.tour.skip')}
-              </button>
-              <div className="flex items-center gap-2">
-                {!isFirstStep && (
-                  <button
-                    onClick={prevStep}
-                    className={cn(
-                      "flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-xl transition-all",
-                      "text-foreground bg-muted hover:bg-muted/80 border border-border/50"
-                    )}
-                  >
-                    <ArrowLeft size={15} />
-                    <span>Back</span>
-                  </button>
+                {dontShowAgain ? (
+                  <CheckSquare size={16} className="text-momentum-orange" />
+                ) : (
+                  <Square size={16} />
                 )}
+                <span>{t('dashboard.tour.dontShowAgain')}</span>
+              </button>
+
+              <div className="flex items-center justify-between">
                 <button
-                  onClick={isLastStep ? completeTour : nextStep}
-                  className={cn(
-                    "flex items-center gap-1.5 px-5 py-2 text-sm text-white rounded-xl font-semibold transition-all",
-                    "hover:brightness-110 active:scale-[0.97]",
-                    "shadow-lg shadow-momentum-orange/25"
-                  )}
-                  style={{ backgroundColor: BRAND_ORANGE }}
+                  onClick={skipTour}
+                  className="text-sm text-muted-foreground hover:text-foreground font-medium transition-colors px-1 py-1"
                 >
-                  {isLastStep ? (
-                    <>
-                      <Check size={15} strokeWidth={2.5} />
-                      <span>Get Started</span>
-                    </>
-                  ) : (
-                    <>
-                      <span>Next</span>
-                      <ArrowRight size={15} strokeWidth={2.5} />
-                    </>
-                  )}
+                  {t('dashboard.tour.skip')}
                 </button>
+                <div className="flex items-center gap-2">
+                  {!isFirstStep && (
+                    <button
+                      onClick={prevStep}
+                      className={cn(
+                        "flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-xl transition-all",
+                        "text-foreground bg-muted hover:bg-muted/80 border border-border/50"
+                      )}
+                    >
+                      <ArrowLeft size={15} />
+                      <span>Back</span>
+                    </button>
+                  )}
+                  <button
+                    onClick={isLastStep ? () => completeTour(true) : nextStep}
+                    className={cn(
+                      "flex items-center gap-1.5 px-5 py-2 text-sm text-white rounded-xl font-semibold transition-all",
+                      "hover:brightness-110 active:scale-[0.97]",
+                      "shadow-lg shadow-momentum-orange/25"
+                    )}
+                    style={{ backgroundColor: BRAND_ORANGE }}
+                  >
+                    {isLastStep ? (
+                      <>
+                        <Check size={15} strokeWidth={2.5} />
+                        <span>Get Started</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>Next</span>
+                        <ArrowRight size={15} strokeWidth={2.5} />
+                      </>
+                    )}
+                  </button>
+                </div>
               </div>
             </div>
           </div>

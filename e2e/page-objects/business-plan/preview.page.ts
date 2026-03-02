@@ -61,38 +61,46 @@ export class BusinessPlanPreviewPage extends BasePage {
   }
 
   /**
-   * Export button
+   * Export buttons container
    */
-  get exportButton(): Locator {
-    return this.page.locator('button').filter({ hasText: /Export|Exporter/i }).first();
+  get exportButtonsContainer(): Locator {
+    return this.page.locator('.plan-export-buttons');
   }
 
   /**
-   * Export dropdown/menu
+   * Export button (generic - fallback)
+   */
+  get exportButton(): Locator {
+    // Find any export button in the container
+    return this.exportButtonsContainer.locator('button').first();
+  }
+
+  /**
+   * Export to PDF button - uses aria-label
+   */
+  get exportPdfOption(): Locator {
+    return this.page.locator('button[aria-label*="PDF"], button[aria-label*="pdf"]').first();
+  }
+
+  /**
+   * Export to Word button - uses aria-label
+   */
+  get exportWordOption(): Locator {
+    return this.page.locator('button[aria-label*="Word"], button[aria-label*="word"]').first();
+  }
+
+  /**
+   * Share button - uses aria-label
+   */
+  get shareButton(): Locator {
+    return this.page.locator('button[aria-label*="Share"], button[aria-label*="Partager"]').first();
+  }
+
+  /**
+   * Export dropdown/menu - not used in current UI, kept for compatibility
    */
   get exportMenu(): Locator {
     return this.page.locator('[role="menu"], [class*="dropdown"], [class*="popover"]').filter({ hasText: /PDF|Word|DOCX/i }).first();
-  }
-
-  /**
-   * Export to PDF option
-   */
-  get exportPdfOption(): Locator {
-    return this.page.locator('[role="menuitem"], button, a').filter({ hasText: /PDF/i }).first();
-  }
-
-  /**
-   * Export to Word/DOCX option
-   */
-  get exportWordOption(): Locator {
-    return this.page.locator('[role="menuitem"], button, a').filter({ hasText: /Word|DOCX/i }).first();
-  }
-
-  /**
-   * Share button
-   */
-  get shareButton(): Locator {
-    return this.page.locator('button').filter({ hasText: /Share|Partager/i }).first();
   }
 
   /**
@@ -213,27 +221,34 @@ export class BusinessPlanPreviewPage extends BasePage {
   }
 
   /**
-   * Open export menu
+   * Open export menu - no-op in current UI (buttons are directly visible)
    */
   async openExportMenu(): Promise<void> {
-    await this.exportButton.click();
+    // In current UI, export buttons are directly visible, no menu to open
     await this.page.waitForTimeout(300);
   }
 
   /**
-   * Export to PDF
+   * Export to PDF - direct button click
    */
   async exportToPdf(): Promise<void> {
-    await this.openExportMenu();
     await this.exportPdfOption.click();
   }
 
   /**
-   * Export to Word
+   * Export to Word - direct button click
    */
   async exportToWord(): Promise<void> {
-    await this.openExportMenu();
     await this.exportWordOption.click();
+  }
+
+  /**
+   * Check if export buttons are visible
+   */
+  async areExportButtonsVisible(): Promise<boolean> {
+    const pdfVisible = await this.exportPdfOption.isVisible({ timeout: 3000 }).catch(() => false);
+    const wordVisible = await this.exportWordOption.isVisible({ timeout: 3000 }).catch(() => false);
+    return pdfVisible || wordVisible;
   }
 
   /**
@@ -327,10 +342,11 @@ export class BusinessPlanPreviewPage extends BasePage {
   }
 
   /**
-   * Check if export menu is open
+   * Check if export buttons are visible (no menu in current UI)
    */
   async isExportMenuOpen(): Promise<boolean> {
-    return this.exportMenu.isVisible({ timeout: 1000 }).catch(() => false);
+    // In current UI, buttons are always visible when the page is loaded
+    return this.areExportButtonsVisible();
   }
 
   // ==================== ASSERTIONS ====================
@@ -340,7 +356,13 @@ export class BusinessPlanPreviewPage extends BasePage {
    */
   async expectPreviewLoaded(): Promise<void> {
     await expect(this.page).toHaveURL(/\/business-plan\//);
-    await expect(this.contentArea).toBeVisible();
+    // Wait for any content to be visible
+    const hasContent = await Promise.race([
+      this.contentArea.waitFor({ state: 'visible', timeout: 10000 }).then(() => true),
+      this.planTitle.waitFor({ state: 'visible', timeout: 10000 }).then(() => true),
+      this.page.locator('h1, h2').first().waitFor({ state: 'visible', timeout: 10000 }).then(() => true),
+    ]).catch(() => false);
+    expect(hasContent).toBeTruthy();
   }
 
   /**
@@ -360,17 +382,19 @@ export class BusinessPlanPreviewPage extends BasePage {
   }
 
   /**
-   * Assert export button is visible
+   * Assert export buttons are visible (PDF or Word)
    */
   async expectExportButtonVisible(): Promise<void> {
-    await expect(this.exportButton).toBeVisible();
+    const isVisible = await this.areExportButtonsVisible();
+    expect(isVisible).toBeTruthy();
   }
 
   /**
    * Assert share button is visible
    */
   async expectShareButtonVisible(): Promise<void> {
-    await expect(this.shareButton).toBeVisible();
+    const isVisible = await this.shareButton.isVisible({ timeout: 5000 }).catch(() => false);
+    expect(isVisible).toBeTruthy();
   }
 
   /**

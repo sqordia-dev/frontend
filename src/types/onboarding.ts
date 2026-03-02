@@ -101,6 +101,18 @@ export interface OnboardingProgressRequest {
 }
 
 /**
+ * Onboarding context passed to business plan creation
+ */
+export interface OnboardingContext {
+  industry?: string;
+  businessStage?: string;
+  teamSize?: string;
+  fundingStatus?: string;
+  goals?: string[];
+  targetMarket?: string;
+}
+
+/**
  * Request to complete onboarding
  */
 export interface OnboardingCompleteRequest {
@@ -109,6 +121,7 @@ export interface OnboardingCompleteRequest {
   industry?: string;
   description?: string;
   templateId?: string;
+  onboardingContext?: OnboardingContext;
 }
 
 /**

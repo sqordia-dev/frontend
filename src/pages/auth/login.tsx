@@ -77,11 +77,14 @@ export default function LoginPage() {
         password: formData.password,
       });
 
-      // Check if user has persona set - redirect to onboarding if not
-      const userPersona = response.user?.persona || localStorage.getItem('userPersona');
-      if (!userPersona) {
+      // Check if user has completed onboarding - redirect to onboarding if not
+      if (!response.user?.onboardingCompleted) {
         navigate('/onboarding');
       } else {
+        // Store persona for quick access
+        if (response.user?.persona) {
+          localStorage.setItem('userPersona', response.user.persona);
+        }
         navigate('/dashboard');
       }
     } catch (err: any) {
@@ -101,10 +104,13 @@ export default function LoginPage() {
       };
       const response = await authService.googleAuth(tokens);
 
-      const userPersona = response.user?.persona || localStorage.getItem('userPersona');
-      if (!userPersona) {
+      // Check if user has completed onboarding
+      if (!response.user?.onboardingCompleted) {
         navigate('/onboarding');
       } else {
+        if (response.user?.persona) {
+          localStorage.setItem('userPersona', response.user.persona);
+        }
         navigate('/dashboard');
       }
     } catch (err: any) {
@@ -115,8 +121,16 @@ export default function LoginPage() {
   const handleMicrosoftSignIn = async () => {
     setServerError('');
     try {
-      await authService.signInWithMicrosoft();
-      navigate('/onboarding');
+      const response = await authService.signInWithMicrosoft();
+      // Check if user has completed onboarding
+      if (!response?.user?.onboardingCompleted) {
+        navigate('/onboarding');
+      } else {
+        if (response.user?.persona) {
+          localStorage.setItem('userPersona', response.user.persona);
+        }
+        navigate('/dashboard');
+      }
     } catch (err: any) {
       setServerError(getUserFriendlyError(err, 'login'));
     }

@@ -5,6 +5,9 @@ import { test, expect } from '../../fixtures';
  * Tags: @export @business-plan @pdf @word
  */
 test.describe('Export Functionality @export @business-plan', () => {
+  // Increase timeout for export tests (downloads can be slow)
+  test.setTimeout(90000);
+
   /**
    * Helper to check if user is stuck on onboarding
    */

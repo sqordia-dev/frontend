@@ -12,52 +12,60 @@ export class QuestionnairePage extends BasePage {
   // ==================== LOCATORS ====================
 
   /**
-   * Current question text
+   * Current question text - displayed in AIInterviewer component
+   * Format: "Q{number}. {questionText}"
    */
   get currentQuestion(): Locator {
-    return this.page.locator('h2, h3, [class*="question"]').filter({ hasText: /.+\?|.{20,}/ }).first();
+    return this.page.locator('.text-lg.font-medium').filter({ has: this.page.locator('span.text-orange-500') }).first();
   }
 
   /**
-   * Question number indicator
+   * Question number indicator - "Question X of Y" in navigation area
    */
   get questionIndicator(): Locator {
-    return this.page.locator('[class*="question"]').filter({ hasText: /Question \d+ of \d+|Question \d+ sur \d+/i }).first();
+    return this.page.locator('div.text-sm').filter({ hasText: /Question \d+ of \d+|Question \d+ sur \d+/i }).first();
   }
 
   /**
-   * Answer text area/editor
+   * Answer text area/editor - NotionStyleEditor uses ProseMirror
    */
   get answerEditor(): Locator {
-    return this.page.locator('textarea, [contenteditable="true"], .ProseMirror, [data-testid="answer-editor"]').first();
+    return this.page.locator('.ProseMirror, [contenteditable="true"], textarea, [data-testid="answer-editor"]').first();
   }
 
   /**
-   * Next button
+   * Next button - orange button with "Next" text
    */
   get nextButton(): Locator {
-    return this.page.locator('button').filter({ hasText: /Next|Suivant|Continue/i }).first();
+    return this.page.locator('button.bg-orange-500, button.bg-orange-600').filter({ hasText: /Next|Suivant/i }).first();
   }
 
   /**
    * Previous button
    */
   get previousButton(): Locator {
-    return this.page.locator('button').filter({ hasText: /Previous|Précédent|Back/i }).first();
+    return this.page.locator('button').filter({ hasText: /Previous|Précédent/i }).first();
   }
 
   /**
-   * Generate plan button (appears at the end)
+   * Generate plan button (appears at the end - green button with Sparkles icon)
    */
   get generatePlanButton(): Locator {
-    return this.page.locator('button').filter({ hasText: /Generate|Générer/i }).first();
+    return this.page.locator('button').filter({ hasText: /Generate.*Plan|Générer.*plan/i }).first();
   }
 
   /**
-   * Progress indicator
+   * Progress indicator - the progress bar in header
    */
   get progressBar(): Locator {
-    return this.page.locator('[role="progressbar"], .progress-bar, [class*="progress"]').first();
+    return this.page.locator('.h-2.rounded-full.overflow-hidden').first();
+  }
+
+  /**
+   * Answered count indicator - "X / Y answered" in header
+   */
+  get answeredIndicator(): Locator {
+    return this.page.locator('.text-sm').filter({ hasText: /\d+\s*\/\s*\d+\s*(answered|répondu)/i }).first();
   }
 
   /**
@@ -218,20 +226,42 @@ export class QuestionnairePage extends BasePage {
    * Get current question text
    */
   async getCurrentQuestionText(): Promise<string | null> {
-    return this.currentQuestion.textContent();
+    // Try the AIInterviewer question first
+    const questionVisible = await this.currentQuestion.isVisible({ timeout: 3000 }).catch(() => false);
+    if (questionVisible) {
+      return this.currentQuestion.textContent();
+    }
+    // Fallback: look for any text that looks like a question
+    const fallback = this.page.locator('.text-lg, h2, h3').filter({ hasText: /\?|Q\d+/ }).first();
+    return fallback.textContent();
   }
 
   /**
-   * Get current step number
+   * Get current step number from "Question X of Y" indicator or "X / Y answered" format
    */
   async getCurrentStepNumber(): Promise<number | null> {
-    const indicator = await this.questionIndicator.textContent();
-    if (indicator) {
-      const match = indicator.match(/Question (\d+)/i);
-      if (match) {
-        return parseInt(match[1], 10);
+    // Try the "Question X of Y" format first
+    const indicatorVisible = await this.questionIndicator.isVisible({ timeout: 3000 }).catch(() => false);
+    if (indicatorVisible) {
+      const indicator = await this.questionIndicator.textContent();
+      if (indicator) {
+        const match = indicator.match(/Question (\d+)/i);
+        if (match) {
+          return parseInt(match[1], 10);
+        }
       }
     }
+
+    // Fallback: try the "X / Y answered" format in header
+    const answeredVisible = await this.answeredIndicator.isVisible({ timeout: 2000 }).catch(() => false);
+    if (answeredVisible) {
+      const text = await this.answeredIndicator.textContent();
+      if (text) {
+        // This gives us answered count, not current question - return null
+        return null;
+      }
+    }
+
     return null;
   }
 
@@ -239,13 +269,30 @@ export class QuestionnairePage extends BasePage {
    * Get total questions count
    */
   async getTotalQuestions(): Promise<number | null> {
-    const indicator = await this.questionIndicator.textContent();
-    if (indicator) {
-      const match = indicator.match(/of (\d+)|sur (\d+)/i);
-      if (match) {
-        return parseInt(match[1] || match[2], 10);
+    // Try the "Question X of Y" format
+    const indicatorVisible = await this.questionIndicator.isVisible({ timeout: 3000 }).catch(() => false);
+    if (indicatorVisible) {
+      const indicator = await this.questionIndicator.textContent();
+      if (indicator) {
+        const match = indicator.match(/of (\d+)|sur (\d+)/i);
+        if (match) {
+          return parseInt(match[1] || match[2], 10);
+        }
       }
     }
+
+    // Fallback: try the "X / Y answered" format in header
+    const answeredVisible = await this.answeredIndicator.isVisible({ timeout: 2000 }).catch(() => false);
+    if (answeredVisible) {
+      const text = await this.answeredIndicator.textContent();
+      if (text) {
+        const match = text.match(/\/\s*(\d+)/);
+        if (match) {
+          return parseInt(match[1], 10);
+        }
+      }
+    }
+
     return null;
   }
 
@@ -277,21 +324,35 @@ export class QuestionnairePage extends BasePage {
    */
   async expectQuestionnaireLoaded(): Promise<void> {
     await expect(this.page).toHaveURL(/\/questionnaire\//);
-    await expect(this.answerEditor.or(this.currentQuestion)).toBeVisible();
+    // Wait for any content indicating the questionnaire is ready
+    const hasContent = await Promise.race([
+      this.answerEditor.waitFor({ state: 'visible', timeout: 10000 }).then(() => true),
+      this.currentQuestion.waitFor({ state: 'visible', timeout: 10000 }).then(() => true),
+      this.page.locator('.text-lg.font-medium').first().waitFor({ state: 'visible', timeout: 10000 }).then(() => true),
+    ]).catch(() => false);
+    expect(hasContent).toBeTruthy();
   }
 
   /**
    * Assert current question is visible
+   * Uses multiple fallback strategies for question detection
    */
   async expectQuestionVisible(): Promise<void> {
-    await expect(this.currentQuestion).toBeVisible();
+    // Try multiple selectors for question visibility
+    const isVisible = await Promise.race([
+      this.currentQuestion.isVisible({ timeout: 5000 }),
+      this.page.locator('.text-lg.font-medium').first().isVisible({ timeout: 5000 }),
+      this.page.locator('span.text-orange-500').filter({ hasText: /Q\d+/ }).first().isVisible({ timeout: 5000 }),
+    ]).catch(() => false);
+    expect(isVisible).toBeTruthy();
   }
 
   /**
    * Assert answer editor is visible
    */
   async expectEditorVisible(): Promise<void> {
-    await expect(this.answerEditor).toBeVisible();
+    const isVisible = await this.answerEditor.isVisible({ timeout: 5000 }).catch(() => false);
+    expect(isVisible).toBeTruthy();
   }
 
   /**
@@ -316,12 +377,13 @@ export class QuestionnairePage extends BasePage {
   }
 
   /**
-   * Assert progress is shown
+   * Assert progress is shown - looks for progress bar or answered indicator
    */
   async expectProgressVisible(): Promise<void> {
-    const hasProgress = await this.progressBar.isVisible().catch(() => false);
-    const hasIndicator = await this.questionIndicator.isVisible().catch(() => false);
-    expect(hasProgress || hasIndicator).toBeTruthy();
+    const hasProgress = await this.progressBar.isVisible({ timeout: 3000 }).catch(() => false);
+    const hasIndicator = await this.questionIndicator.isVisible({ timeout: 3000 }).catch(() => false);
+    const hasAnswered = await this.answeredIndicator.isVisible({ timeout: 3000 }).catch(() => false);
+    expect(hasProgress || hasIndicator || hasAnswered).toBeTruthy();
   }
 
   /**

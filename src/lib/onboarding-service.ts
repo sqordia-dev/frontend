@@ -87,13 +87,14 @@ export const onboardingService = {
       // Determine plan type based on persona
       const planType = request.persona === 'obnl' ? 'StrategicPlan' : 'BusinessPlan';
 
-      // Create the business plan with required fields
+      // Create the business plan with required fields and onboarding context
       const planResponse = await apiClient.post<{ id: string }>('/api/v1/business-plans', {
         title: request.businessName,
         description: request.description,
         planType: planType,
         organizationId: organizationId,
         persona: personaCapitalized,
+        onboardingContext: request.onboardingContext,
       });
 
       // Handle wrapped response format

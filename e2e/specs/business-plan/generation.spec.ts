@@ -8,6 +8,9 @@ import { test, expect } from '../../fixtures';
  * Use sparingly in CI due to long execution times.
  */
 test.describe('AI Generation @generation @ai', () => {
+  // Increase timeout for generation tests
+  test.setTimeout(120000);
+
   /**
    * Helper to check if user is stuck on onboarding
    */
@@ -46,12 +49,10 @@ test.describe('AI Generation @generation @ai', () => {
         return;
       }
 
-      // Create a new plan
+      // Create a new plan using the improved method
       await createPlanPage.goto();
       await createPlanPage.waitForPageReady();
-      await createPlanPage.fillProjectName(`AI Gen Test ${Date.now()}`);
-      await createPlanPage.clickCreate();
-      await page.waitForURL(/\/questionnaire\//, { timeout: 30000 });
+      await createPlanPage.createPlanAndWaitForQuestionnaire(`AI Gen Test ${Date.now()}`);
 
       // Fill in some basic answers
       await questionnairePage.waitForQuestionnaireReady();

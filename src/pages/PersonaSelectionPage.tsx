@@ -27,6 +27,7 @@ interface PersonaOption {
   color: string;
   features: string[];
   featuresFr: string[];
+  comingSoon?: boolean;
 }
 
 const personaOptions: PersonaOption[] = [
@@ -66,7 +67,8 @@ const personaOptions: PersonaOption[] = [
       'Modélisation financière basée sur les moteurs',
       'Gestion de portefeuille clients',
       'Suivi de l\'utilisation'
-    ]
+    ],
+    comingSoon: true
   },
   {
     id: 'OBNL',
@@ -85,7 +87,8 @@ const personaOptions: PersonaOption[] = [
       'Focus sur l\'impact social',
       'Support pour demandes de subventions',
       'Conformité Québec (Loi 96)'
-    ]
+    ],
+    comingSoon: true
   }
 ];
 
@@ -211,28 +214,45 @@ export default function PersonaSelectionPage() {
               const Icon = persona.icon;
               const isSelected = selectedPersona === persona.id;
               const isCurrentlyLoading = loading && isSelected;
+              const isDisabled = loading || persona.comingSoon;
 
               return (
                 <button
                   key={persona.id}
-                  onClick={() => !loading && handleSelectPersona(persona.id)}
-                  disabled={loading}
+                  onClick={() => !isDisabled && handleSelectPersona(persona.id)}
+                  disabled={isDisabled}
                   className={`
                     relative p-8 rounded-2xl border-2 transition-all duration-300 text-left
-                    ${isSelected 
-                      ? 'ring-4 ring-opacity-30 scale-105' 
-                      : 'hover:scale-102 hover:shadow-xl'
+                    ${isSelected
+                      ? 'ring-4 ring-opacity-30 scale-105'
+                      : persona.comingSoon
+                        ? ''
+                        : 'hover:scale-102 hover:shadow-xl'
                     }
-                    ${loading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
+                    ${isDisabled ? 'cursor-not-allowed' : 'cursor-pointer'}
                   `}
                   style={{
                     backgroundColor: isDark ? '#1F2937' : '#FFFFFF',
                     borderColor: isSelected ? persona.color : (isDark ? '#374151' : '#E5E7EB'),
-                    boxShadow: isSelected 
+                    boxShadow: isSelected
                       ? `0 0 0 4px ${persona.color}40, 0 10px 25px -5px rgba(0, 0, 0, 0.1)`
-                      : '0 1px 3px rgba(0, 0, 0, 0.1)'
+                      : '0 1px 3px rgba(0, 0, 0, 0.1)',
+                    opacity: persona.comingSoon ? 0.6 : 1,
+                    filter: persona.comingSoon ? 'grayscale(40%)' : 'none'
                   }}
                 >
+                  {/* Coming Soon Badge */}
+                  {persona.comingSoon && (
+                    <div
+                      className="absolute top-4 right-4 px-3 py-1 rounded-full text-xs font-semibold"
+                      style={{
+                        backgroundColor: isDark ? '#374151' : '#E5E7EB',
+                        color: isDark ? '#9CA3AF' : '#6B7280'
+                      }}
+                    >
+                      {language === 'fr' ? 'Bientôt' : 'Coming Soon'}
+                    </div>
+                  )}
                   {/* Icon */}
                   <div 
                     className="w-16 h-16 rounded-xl flex items-center justify-center mb-6 transition-transform"
@@ -277,10 +297,10 @@ export default function PersonaSelectionPage() {
                     ))}
                   </ul>
 
-                  {/* Selected Indicator */}
-                  {isSelected && (
+                  {/* Selected Indicator - only show if not coming soon */}
+                  {isSelected && !persona.comingSoon && (
                     <div className="absolute top-4 right-4">
-                      <div 
+                      <div
                         className="w-8 h-8 rounded-full flex items-center justify-center"
                         style={{ backgroundColor: persona.color }}
                       >
@@ -293,12 +313,12 @@ export default function PersonaSelectionPage() {
                     </div>
                   )}
 
-                  {/* Hover Arrow */}
-                  {!isSelected && !loading && (
+                  {/* Hover Arrow - only show if not coming soon */}
+                  {!isSelected && !loading && !persona.comingSoon && (
                     <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <ArrowRight 
-                        size={20} 
-                        style={{ color: persona.color }} 
+                      <ArrowRight
+                        size={20}
+                        style={{ color: persona.color }}
                       />
                     </div>
                   )}

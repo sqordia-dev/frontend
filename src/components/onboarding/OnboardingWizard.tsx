@@ -113,6 +113,14 @@ export default function OnboardingWizard({
         industry: data.industry,
         description: data.targetMarket, // Use target market as description
         templateId: undefined, // No template selection in new flow
+        onboardingContext: {
+          industry: data.industry,
+          businessStage: data.businessStage,
+          teamSize: data.teamSize,
+          fundingStatus: data.fundingStatus,
+          goals: data.goals,
+          targetMarket: data.targetMarket,
+        },
       });
 
       showSuccess('Success!', 'Your business plan has been created.');

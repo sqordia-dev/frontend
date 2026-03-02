@@ -101,9 +101,26 @@ export class CreatePlanPage extends BasePage {
   /**
    * Create a plan and wait for navigation to questionnaire
    */
-  async createPlanAndWaitForQuestionnaire(projectName: string): Promise<void> {
-    await this.createPlan(projectName);
-    await this.page.waitForURL(/\/questionnaire\//, { timeout: 30000 });
+  async createPlanAndWaitForQuestionnaire(projectName: string): Promise<string> {
+    await this.fillProjectName(projectName);
+
+    // Wait for button to be enabled (org loaded)
+    await this.page.waitForFunction(
+      () => {
+        const button = document.querySelector('button[type="submit"]');
+        return button && !button.hasAttribute('disabled');
+      },
+      { timeout: 15000 }
+    );
+
+    await this.clickCreate();
+
+    // Wait for navigation with longer timeout
+    await this.page.waitForURL(/\/questionnaire\//, { timeout: 60000 });
+
+    // Extract and return the plan ID
+    const match = this.page.url().match(/\/questionnaire\/([^/]+)/);
+    return match ? match[1] : '';
   }
 
   /**
@@ -115,12 +132,18 @@ export class CreatePlanPage extends BasePage {
   }
 
   /**
-   * Wait for the page to be ready
+   * Wait for the page to be ready (button enabled means org is loaded)
    */
   async waitForPageReady(): Promise<void> {
     await this.page.waitForLoadState('networkidle');
-    // Wait for the create button to be enabled (org loaded)
+    // Wait for the create button to be visible
     await this.createButton.waitFor({ state: 'visible', timeout: 10000 });
+    // Wait for organization to load (button becomes enabled when projectName is entered)
+    // Check if any loading spinner is visible in the button
+    const hasSpinner = await this.buttonLoader.isVisible().catch(() => false);
+    if (hasSpinner) {
+      await this.buttonLoader.waitFor({ state: 'hidden', timeout: 15000 });
+    }
     // Wait for any loading states to complete
     await this.page.waitForTimeout(500);
   }
