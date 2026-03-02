@@ -7,6 +7,7 @@ import { VisualHelper } from '../helpers/visual-helper';
 import { LoginPage } from '../page-objects/auth/login.page';
 import { DashboardPage } from '../page-objects/dashboard/dashboard.page';
 import { CmsEditorPage } from '../page-objects/admin/cms-editor.page';
+import { CreatePlanPage, QuestionnairePage, BusinessPlanPreviewPage, GenerationPage } from '../page-objects/business-plan';
 
 /**
  * Custom test fixtures for Sqordia E2E tests
@@ -21,6 +22,10 @@ export type TestFixtures = {
   loginPage: LoginPage;
   dashboardPage: DashboardPage;
   cmsEditorPage: CmsEditorPage;
+  createPlanPage: CreatePlanPage;
+  questionnairePage: QuestionnairePage;
+  previewPage: BusinessPlanPreviewPage;
+  generationPage: GenerationPage;
 
   // Pre-authenticated pages
   authenticatedPage: Page;
@@ -66,6 +71,30 @@ export const test = base.extend<TestFixtures>({
   cmsEditorPage: [async ({ page }, use) => {
     const cmsEditorPage = new CmsEditorPage(page);
     await use(cmsEditorPage);
+  }, { scope: 'test' }],
+
+  // Create Plan page object fixture
+  createPlanPage: [async ({ page }, use) => {
+    const createPlanPage = new CreatePlanPage(page);
+    await use(createPlanPage);
+  }, { scope: 'test' }],
+
+  // Questionnaire page object fixture
+  questionnairePage: [async ({ page }, use) => {
+    const questionnairePage = new QuestionnairePage(page);
+    await use(questionnairePage);
+  }, { scope: 'test' }],
+
+  // Preview page object fixture
+  previewPage: [async ({ page }, use) => {
+    const previewPage = new BusinessPlanPreviewPage(page);
+    await use(previewPage);
+  }, { scope: 'test' }],
+
+  // Generation page object fixture
+  generationPage: [async ({ page }, use) => {
+    const generationPage = new GenerationPage(page);
+    await use(generationPage);
   }, { scope: 'test' }],
 
   // Authenticated page fixture (regular user)
