@@ -54,11 +54,15 @@ export default defineConfig({
     rollupOptions: {
       output: {
         // Manual chunk splitting for vendor libraries
+        // Note: Libraries using React hooks must NOT be separated from React
         manualChunks(id) {
-          // React core - rarely changes
+          // React core + React-dependent libraries bundled together
           if (id.includes('node_modules/react/') ||
               id.includes('node_modules/react-dom/') ||
-              id.includes('node_modules/react-router')) {
+              id.includes('node_modules/react-router') ||
+              id.includes('node_modules/recharts/') ||
+              id.includes('node_modules/framer-motion/') ||
+              id.includes('node_modules/@react-pdf/')) {
             return 'vendor-react';
           }
           // Radix UI components - frequently used, medium change frequency
@@ -69,21 +73,13 @@ export default defineConfig({
           if (id.includes('node_modules/@tiptap/')) {
             return 'vendor-editor';
           }
-          // Charts and data visualization - large bundle
-          if (id.includes('node_modules/recharts/') || id.includes('node_modules/d3-')) {
-            return 'vendor-charts';
+          // D3 utilities (no React dependency) - can be separate
+          if (id.includes('node_modules/d3-')) {
+            return 'vendor-d3';
           }
           // Icons - frequently imported but static
           if (id.includes('node_modules/lucide-react/')) {
             return 'vendor-icons';
-          }
-          // Animation library - large
-          if (id.includes('node_modules/framer-motion/')) {
-            return 'vendor-animation';
-          }
-          // PDF rendering - large, rarely used
-          if (id.includes('node_modules/@react-pdf/')) {
-            return 'vendor-pdf';
           }
         },
       },
