@@ -43,6 +43,9 @@ env:
   CI: true
   NODE_VERSION: '20'
   APP_VERSION: ${{ github.sha }}
+  # Production URL for staging tests
+  PROD_URL: https://sqordia.app
+  LOCAL_URL: http://localhost:4173
 
 jobs:
   # Install dependencies and cache
@@ -136,7 +139,7 @@ jobs:
         env:
           TEST_ENV: ${{ github.event.inputs.environment || 'local' }}
           SKIP_AUTH_SETUP: 'true'
-          BASE_URL: http://localhost:4173
+          BASE_URL: ${{ github.event.inputs.environment == 'staging' && 'https://sqordia.app' || 'http://localhost:4173' }}
         continue-on-error: true
 
       - name: Upload smoke test results
@@ -205,7 +208,7 @@ jobs:
           TEST_ADMIN_EMAIL: ${{ secrets.TEST_ADMIN_EMAIL }}
           TEST_ADMIN_PASSWORD: ${{ secrets.TEST_ADMIN_PASSWORD }}
           SKIP_AUTH_SETUP: 'true'
-          BASE_URL: http://localhost:4173
+          BASE_URL: ${{ github.event.inputs.environment == 'staging' && 'https://sqordia.app' || 'http://localhost:4173' }}
         continue-on-error: true
 
       - name: Upload test results
