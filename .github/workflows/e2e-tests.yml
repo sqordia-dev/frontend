@@ -4,12 +4,16 @@ on:
   push:
     branches: [main, develop]
     paths:
-      - 'frontend/**'
+      - 'src/**'
+      - 'e2e/**'
+      - 'package.json'
+      - 'playwright.config.ts'
       - '.github/workflows/e2e-tests.yml'
   pull_request:
     branches: [main, develop]
     paths:
-      - 'frontend/**'
+      - 'src/**'
+      - 'e2e/**'
   workflow_dispatch:
     inputs:
       test_tag:
@@ -39,15 +43,11 @@ env:
   CI: true
   NODE_VERSION: '20'
   APP_VERSION: ${{ github.sha }}
-  WORKING_DIR: frontend
 
 jobs:
   # Install dependencies and cache
   install:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ${{ env.WORKING_DIR }}
     steps:
       - uses: actions/checkout@v4
 
@@ -56,7 +56,7 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
-          cache-dependency-path: frontend/package-lock.json
+          cache-dependency-path: package-lock.json
 
       - name: Install dependencies
         run: npm ci
@@ -68,14 +68,11 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.cache/ms-playwright
-          key: playwright-browsers-${{ runner.os }}-${{ hashFiles('frontend/package-lock.json') }}
+          key: playwright-browsers-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
 
   # Lint and type check
   lint:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ${{ env.WORKING_DIR }}
     steps:
       - uses: actions/checkout@v4
 
@@ -84,7 +81,7 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
-          cache-dependency-path: frontend/package-lock.json
+          cache-dependency-path: package-lock.json
 
       - name: Install dependencies
         run: npm ci
@@ -99,9 +96,6 @@ jobs:
   smoke-tests:
     needs: [install, lint]
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ${{ env.WORKING_DIR }}
     steps:
       - uses: actions/checkout@v4
 
@@ -110,7 +104,7 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
-          cache-dependency-path: frontend/package-lock.json
+          cache-dependency-path: package-lock.json
 
       - name: Install dependencies
         run: npm ci
@@ -119,7 +113,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.cache/ms-playwright
-          key: playwright-browsers-${{ runner.os }}-${{ hashFiles('frontend/package-lock.json') }}
+          key: playwright-browsers-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
 
       - name: Install Playwright browsers (fallback)
         run: npx playwright install --with-deps chromium
@@ -149,17 +143,14 @@ jobs:
         with:
           name: smoke-test-results
           path: |
-            frontend/playwright-report/
-            frontend/test-results/
+            playwright-report/
+            test-results/
           retention-days: 7
 
   # Full E2E test suite
   e2e-tests:
     needs: smoke-tests
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ${{ env.WORKING_DIR }}
     strategy:
       fail-fast: false
       matrix:
@@ -173,7 +164,7 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
-          cache-dependency-path: frontend/package-lock.json
+          cache-dependency-path: package-lock.json
 
       - name: Install dependencies
         run: npm ci
@@ -182,7 +173,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.cache/ms-playwright
-          key: playwright-browsers-${{ runner.os }}-${{ hashFiles('frontend/package-lock.json') }}
+          key: playwright-browsers-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
 
       - name: Install Playwright browsers (fallback)
         run: npx playwright install --with-deps ${{ matrix.browser }}
@@ -219,17 +210,14 @@ jobs:
         with:
           name: e2e-results-${{ matrix.browser }}-${{ matrix.shard }}
           path: |
-            frontend/playwright-report/
-            frontend/test-results/
+            playwright-report/
+            test-results/
           retention-days: 7
 
   # Visual regression tests
   visual-regression:
     needs: smoke-tests
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ${{ env.WORKING_DIR }}
     steps:
       - uses: actions/checkout@v4
 
@@ -238,7 +226,7 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
-          cache-dependency-path: frontend/package-lock.json
+          cache-dependency-path: package-lock.json
 
       - name: Install dependencies
         run: npm ci
@@ -247,7 +235,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.cache/ms-playwright
-          key: playwright-browsers-${{ runner.os }}-${{ hashFiles('frontend/package-lock.json') }}
+          key: playwright-browsers-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
 
       - name: Install Playwright browsers (fallback)
         run: npx playwright install --with-deps chromium
@@ -277,8 +265,8 @@ jobs:
         with:
           name: visual-regression-results
           path: |
-            frontend/playwright-report/
-            frontend/test-results/
+            playwright-report/
+            test-results/
           retention-days: 14
 
   # Merge test reports
