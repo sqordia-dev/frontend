@@ -1,14 +1,14 @@
 {
   "admin": {
-    "email": "admin@sqordia.app",
+    "email": "admin@sqordia.com",
     "password": "Sqordia2025!",
-    "firstName": "Admin",
-    "lastName": "User",
+    "firstName": "Sqordia",
+    "lastName": "Admin",
     "role": "admin"
   },
   "regularUser": {
-    "email": "testuser@sqordia.app",
-    "password": "TestUser2025!",
+    "email": "test@test.com",
+    "password": "Sqordia2025!",
     "firstName": "Test",
     "lastName": "User",
     "role": "user"

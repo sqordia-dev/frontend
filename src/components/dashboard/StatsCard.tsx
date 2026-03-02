@@ -16,7 +16,7 @@ export interface StatsCardProps {
   className?: string;
 }
 
-export function StatsCard({
+export const StatsCard = React.memo(function StatsCard({
   title,
   value,
   description,
@@ -139,7 +139,7 @@ export function StatsCard({
       </div>
     </div>
   );
-}
+});
 
 /**
  * Compact stats card for smaller spaces
@@ -151,7 +151,7 @@ export interface CompactStatsCardProps {
   className?: string;
 }
 
-export function CompactStatsCard({
+export const CompactStatsCard = React.memo(function CompactStatsCard({
   title,
   value,
   icon,
@@ -178,7 +178,7 @@ export function CompactStatsCard({
       </div>
     </div>
   );
-}
+});
 
 /**
  * Stats card with sparkline/mini chart support
@@ -187,7 +187,7 @@ export interface SparklineStatsCardProps extends StatsCardProps {
   sparklineData?: number[];
 }
 
-export function SparklineStatsCard({
+export const SparklineStatsCard = React.memo(function SparklineStatsCard({
   sparklineData,
   ...props
 }: SparklineStatsCardProps) {
@@ -284,4 +284,4 @@ export function SparklineStatsCard({
       )}
     </div>
   );
-}
+});

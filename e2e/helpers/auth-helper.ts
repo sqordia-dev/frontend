@@ -14,18 +14,18 @@ export interface UserCredentials {
  */
 export const TEST_USERS: Record<string, UserCredentials> = {
   admin: {
-    email: process.env.TEST_ADMIN_EMAIL || 'admin@sqordia.app',
+    email: process.env.TEST_ADMIN_EMAIL || 'admin@sqordia.com',
     password: process.env.TEST_ADMIN_PASSWORD || 'Sqordia2025!',
     role: 'admin',
   },
   user: {
-    email: process.env.TEST_USER_EMAIL || 'testuser@sqordia.app',
-    password: process.env.TEST_USER_PASSWORD || 'TestUser2025!',
+    email: process.env.TEST_USER_EMAIL || 'test@test.com',
+    password: process.env.TEST_USER_PASSWORD || 'Sqordia2025!',
     role: 'user',
   },
   consultant: {
-    email: process.env.TEST_CONSULTANT_EMAIL || 'consultant@sqordia.app',
-    password: process.env.TEST_CONSULTANT_PASSWORD || 'Consultant2025!',
+    email: process.env.TEST_CONSULTANT_EMAIL || 'admin@sqordia.com',
+    password: process.env.TEST_CONSULTANT_PASSWORD || 'Sqordia2025!',
     role: 'consultant',
   },
 };

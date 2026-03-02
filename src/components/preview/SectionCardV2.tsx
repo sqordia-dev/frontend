@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   FileText,
@@ -109,7 +109,7 @@ const contentVariants = {
  * - Subtle gradient divider between sections
  * - Smooth entrance animations
  */
-export default function SectionCardV2({
+const SectionCardV2 = React.memo(function SectionCardV2({
   section,
   sectionNumber,
   onEdit,
@@ -229,7 +229,9 @@ export default function SectionCardV2({
       <div className="mt-12 h-px bg-gradient-to-r from-transparent via-warm-gray-200 dark:via-warm-gray-800 to-transparent" />
     </motion.section>
   );
-}
+});
+
+export default SectionCardV2;
 
 /**
  * Loading state while regenerating

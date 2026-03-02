@@ -23,3 +23,11 @@ squelette plan stratégique.md
 
 # NSwag generated swagger specs (downloaded from backend)
 swagger-specs/
+
+# Playwright
+test-results/
+playwright-report/
+playwright/.cache/
+screenshots/
+playwright-report/
+.auth/

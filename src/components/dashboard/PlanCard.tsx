@@ -117,7 +117,7 @@ const getStatusLabel = (
   }
 };
 
-export function PlanCard({
+export const PlanCard = React.memo(function PlanCard({
   id,
   title,
   description,
@@ -331,4 +331,4 @@ export function PlanCard({
       </div>
     </div>
   );
-}
+});

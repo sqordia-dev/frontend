@@ -1,63 +1,77 @@
-import { useEffect } from 'react';
+import { useEffect, lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { ToastProvider } from './contexts/ToastContext';
 import { SkipLink } from '@/components/ui/skip-link';
-import LandingPage from './pages/LandingPageNew';
-// Auth pages
-import {
-  SignupPage,
-  LoginPage,
-  ForgotPasswordPage,
-  ResetPasswordPage,
-  VerifyEmailPage,
-  MicrosoftCallbackPage,
-} from './pages/auth';
-import PersonaSelectionPage from './pages/PersonaSelectionPage';
-import OnboardingPage from './pages/onboarding';
-import DashboardPage from './pages/DashboardPage';
-import ProfilePage from './pages/ProfilePage';
-import CreatePlanPage from './pages/CreatePlanPage';
-import InterviewQuestionnairePage from './pages/InterviewQuestionnairePage';
-// PlanViewPage is deprecated - redirecting /plans/:id to /business-plan/:id/preview
-// Generation and Preview pages
-import { GenerationPage } from './pages/generation';
-import { BusinessPlanPreviewPage } from './pages/business-plan';
-import TemplateDetailPage from './pages/TemplateDetailPage';
-import ProtectedRoute from './components/ProtectedRoute';
-import AdminLayout from './components/AdminLayout';
-import DashboardLayout from './components/DashboardLayout';
-import AdminOverviewPage from './pages/admin/AdminOverviewPage';
-import AdminUsersPage from './pages/admin/AdminUsersPage';
-import AdminUserDetailPage from './pages/admin/AdminUserDetailPage';
-import AdminOrganizationsPage from './pages/admin/AdminOrganizationsPage';
-// import AdminBusinessPlansPage from './pages/admin/AdminBusinessPlansPage'; // Hidden for now
-import AdminAIPromptsPage from './pages/admin/AdminAIPromptsPage';
-import AdminActivityLogsPage from './pages/admin/AdminActivityLogsPage';
-import AdminSystemHealthPage from './pages/admin/AdminSystemHealthPage';
-import AdminTemplatesPage from './pages/admin/AdminTemplatesPage';
-import AdminSettingsPage from './pages/admin/AdminSettingsPage';
-import { AdminAIConfigPage } from './pages/admin/AdminAIConfigPage';
-import AdminPromptRegistryPage from './pages/admin/AdminPromptRegistryPage';
-import PromptRegistryDocPage from './pages/admin/PromptRegistryDocPage';
-import AdminIssueTrackerPage from './pages/admin/AdminIssueTrackerPage';
-import CmsEditorPage from './pages/admin/CmsEditorPage';
-import CmsQuestionnairePage from './pages/admin/CmsQuestionnairePage';
-import AdminQuestionnairePreviewPage from './pages/admin/AdminQuestionnairePreviewPage';
-import SubscriptionPlansPage from './pages/SubscriptionPlansPage';
-import SubscriptionPage from './pages/SubscriptionPage';
-import InvoicesPage from './pages/InvoicesPage';
-import CheckoutSuccessPage from './pages/CheckoutSuccessPage';
-import CheckoutCancelPage from './pages/CheckoutCancelPage';
-import ExamplePlansPage from './pages/ExamplePlansPage';
-import ExamplePlanDetailPage from './pages/ExamplePlanDetailPage';
-import BlogPostPage from './pages/BlogPostPage';
-import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
-import TermsOfServicePage from './pages/TermsOfServicePage';
-import SecurityPage from './pages/SecurityPage';
-import CompliancePage from './pages/CompliancePage';
-import NotFoundPage from './pages/NotFoundPage';
-import BugReportPage from './pages/BugReportPage';
+import PageLoader from './components/PageLoader';
 import ScrollToTop from './components/ScrollToTop';
+
+// Critical path - eagerly loaded for fast initial render
+import LandingPage from './pages/LandingPageNew';
+import LoginPage from './pages/auth/login';
+import SignupPage from './pages/auth/signup';
+import ProtectedRoute from './components/ProtectedRoute';
+
+// Lazy-loaded pages - split into separate chunks
+// Auth pages (non-critical)
+const ForgotPasswordPage = lazy(() => import('./pages/auth/forgot-password'));
+const ResetPasswordPage = lazy(() => import('./pages/auth/reset-password'));
+const VerifyEmailPage = lazy(() => import('./pages/auth/verify-email'));
+const MicrosoftCallbackPage = lazy(() => import('./pages/auth/microsoft-callback'));
+
+// Core app pages
+const PersonaSelectionPage = lazy(() => import('./pages/PersonaSelectionPage'));
+const OnboardingPage = lazy(() => import('./pages/onboarding'));
+const DashboardPage = lazy(() => import('./pages/DashboardPage'));
+const ProfilePage = lazy(() => import('./pages/ProfilePage'));
+const CreatePlanPage = lazy(() => import('./pages/CreatePlanPage'));
+const InterviewQuestionnairePage = lazy(() => import('./pages/InterviewQuestionnairePage'));
+
+// Generation and Preview pages
+const GenerationPage = lazy(() => import('./pages/generation/GenerationPage'));
+const BusinessPlanPreviewPage = lazy(() => import('./pages/business-plan/BusinessPlanPreviewPage'));
+
+// Templates and Examples
+const TemplateDetailPage = lazy(() => import('./pages/TemplateDetailPage'));
+const ExamplePlansPage = lazy(() => import('./pages/ExamplePlansPage'));
+const ExamplePlanDetailPage = lazy(() => import('./pages/ExamplePlanDetailPage'));
+
+// Subscription and Billing
+const SubscriptionPlansPage = lazy(() => import('./pages/SubscriptionPlansPage'));
+const SubscriptionPage = lazy(() => import('./pages/SubscriptionPage'));
+const InvoicesPage = lazy(() => import('./pages/InvoicesPage'));
+const CheckoutSuccessPage = lazy(() => import('./pages/CheckoutSuccessPage'));
+const CheckoutCancelPage = lazy(() => import('./pages/CheckoutCancelPage'));
+
+// Static pages
+const BlogPostPage = lazy(() => import('./pages/BlogPostPage'));
+const PrivacyPolicyPage = lazy(() => import('./pages/PrivacyPolicyPage'));
+const TermsOfServicePage = lazy(() => import('./pages/TermsOfServicePage'));
+const SecurityPage = lazy(() => import('./pages/SecurityPage'));
+const CompliancePage = lazy(() => import('./pages/CompliancePage'));
+const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
+const BugReportPage = lazy(() => import('./pages/BugReportPage'));
+
+// Layouts - lazy loaded as they're only needed after auth
+const AdminLayout = lazy(() => import('./components/AdminLayout'));
+const DashboardLayout = lazy(() => import('./components/DashboardLayout'));
+
+// Admin pages - all lazy loaded (admin section is rarely accessed)
+const AdminOverviewPage = lazy(() => import('./pages/admin/AdminOverviewPage'));
+const AdminUsersPage = lazy(() => import('./pages/admin/AdminUsersPage'));
+const AdminUserDetailPage = lazy(() => import('./pages/admin/AdminUserDetailPage'));
+const AdminOrganizationsPage = lazy(() => import('./pages/admin/AdminOrganizationsPage'));
+const AdminAIPromptsPage = lazy(() => import('./pages/admin/AdminAIPromptsPage'));
+const AdminActivityLogsPage = lazy(() => import('./pages/admin/AdminActivityLogsPage'));
+const AdminSystemHealthPage = lazy(() => import('./pages/admin/AdminSystemHealthPage'));
+const AdminTemplatesPage = lazy(() => import('./pages/admin/AdminTemplatesPage'));
+const AdminSettingsPage = lazy(() => import('./pages/admin/AdminSettingsPage'));
+const AdminAIConfigPage = lazy(() => import('./pages/admin/AdminAIConfigPage').then(m => ({ default: m.AdminAIConfigPage })));
+const AdminPromptRegistryPage = lazy(() => import('./pages/admin/AdminPromptRegistryPage'));
+const PromptRegistryDocPage = lazy(() => import('./pages/admin/PromptRegistryDocPage'));
+const AdminIssueTrackerPage = lazy(() => import('./pages/admin/AdminIssueTrackerPage'));
+const CmsEditorPage = lazy(() => import('./pages/admin/CmsEditorPage'));
+const CmsQuestionnairePage = lazy(() => import('./pages/admin/CmsQuestionnairePage'));
+const AdminQuestionnairePreviewPage = lazy(() => import('./pages/admin/AdminQuestionnairePreviewPage'));
 
 // Component to handle scroll restoration prevention
 function ScrollRestorationHandler() {
@@ -107,152 +121,211 @@ function App() {
         <ScrollToTop />
         {/* Skip to main content link for accessibility */}
         <SkipLink targetId="main-content" />
-        <Routes>
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/fr" element={<LandingPage />} />
-        {/* New auth pages */}
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/signup" element={<SignupPage />} />
-        <Route path="/register" element={<SignupPage />} /> {/* Alias for signup */}
-        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-        <Route path="/reset-password" element={<ResetPasswordPage />} />
-        <Route path="/verify-email" element={<VerifyEmailPage />} />
-        <Route path="/auth/microsoft/callback" element={<MicrosoftCallbackPage />} />
-        <Route
-          path="/onboarding"
-          element={
-            <ProtectedRoute>
-              <OnboardingPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/persona-selection"
-          element={
-            <ProtectedRoute>
-              <PersonaSelectionPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route path="/template/:templateId" element={<TemplateDetailPage />} />
-        <Route path="/example-plans" element={<ExamplePlansPage />} />
-        <Route path="/example-plans/:id" element={<ExamplePlanDetailPage />} />
-        <Route path="/blog/:slug" element={<BlogPostPage />} />
-        <Route path="/privacy" element={<PrivacyPolicyPage />} />
-        <Route path="/terms" element={<TermsOfServicePage />} />
-        <Route path="/security" element={<SecurityPage />} />
-        <Route path="/compliance" element={<CompliancePage />} />
-        <Route path="/checkout/success" element={<CheckoutSuccessPage />} />
-        <Route path="/checkout/cancel" element={<CheckoutCancelPage />} />
-        <Route
-          path="/dashboard"
-          element={
-            <ProtectedRoute>
-              <DashboardLayout />
-            </ProtectedRoute>
-          }
-        >
-          <Route index element={<DashboardPage />} />
-        </Route>
-        <Route
-          path="/profile"
-          element={
-            <ProtectedRoute>
-              <DashboardLayout />
-            </ProtectedRoute>
-          }
-        >
-          <Route index element={<ProfilePage />} />
-        </Route>
-        <Route
-          path="/create-plan"
-          element={
-            <ProtectedRoute>
-              <DashboardLayout />
-            </ProtectedRoute>
-          }
-        >
-          <Route index element={<CreatePlanPage />} />
-        </Route>
-        <Route path="/questionnaire/:planId" element={<ProtectedRoute><InterviewQuestionnairePage /></ProtectedRoute>} />
-        {/* Redirect old /plans/:id route to new preview page */}
-        <Route path="/plans/:id" element={<RedirectToPreview />} />
-        <Route path="/plans/:id/preview" element={<RedirectToPreview />} />
-        {/* Generation page - full-screen AI generation progress */}
-        <Route
-          path="/generation/:planId"
-          element={
-            <ProtectedRoute>
-              <GenerationPage />
-            </ProtectedRoute>
-          }
-        />
-        {/* Business plan preview page - full-screen document preview */}
-        <Route
-          path="/business-plan/:id/preview"
-          element={
-            <ProtectedRoute>
-              <BusinessPlanPreviewPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route path="/subscription-plans" element={<SubscriptionPlansPage />} />
-        <Route
-          path="/subscription"
-          element={
-            <ProtectedRoute>
-              <DashboardLayout />
-            </ProtectedRoute>
-          }
-        >
-          <Route index element={<SubscriptionPage />} />
-        </Route>
-        <Route
-          path="/invoices"
-          element={
-            <ProtectedRoute>
-              <DashboardLayout />
-            </ProtectedRoute>
-          }
-        >
-          <Route index element={<InvoicesPage />} />
-        </Route>
-        {/* Bug Report page - standalone */}
-        <Route path="/bug-report" element={<ProtectedRoute><BugReportPage /></ProtectedRoute>} />
 
-        {/* CMS routes - standalone (no AdminLayout sidebar) */}
-        <Route path="/admin/cms" element={<ProtectedRoute><CmsEditorPage /></ProtectedRoute>} />
-        <Route path="/admin/cms/questionnaire" element={<ProtectedRoute><CmsQuestionnairePage /></ProtectedRoute>} />
-        <Route path="/admin/cms/questionnaire-preview" element={<ProtectedRoute><AdminQuestionnairePreviewPage /></ProtectedRoute>} />
+        <Suspense fallback={<PageLoader />}>
+          <Routes>
+            {/* Public routes - Landing and Auth (critical path) */}
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/fr" element={<LandingPage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/signup" element={<SignupPage />} />
+            <Route path="/register" element={<SignupPage />} />
 
-        <Route
-          path="/admin"
-          element={
-            <ProtectedRoute>
-              <AdminLayout />
-            </ProtectedRoute>
-          }
-        >
-          <Route index element={<AdminOverviewPage />} />
-          <Route path="users" element={<AdminUsersPage />} />
-          <Route path="users/:userId" element={<AdminUserDetailPage />} />
-          <Route path="organizations" element={<AdminOrganizationsPage />} />
-          {/* <Route path="business-plans" element={<AdminBusinessPlansPage />} /> Hidden for now */}
-          <Route path="templates" element={<AdminTemplatesPage />} />
-          <Route path="prompts-studio" element={<AdminAIPromptsPage />} />
-          <Route path="ai-prompts" element={<AdminAIPromptsPage />} />
-          <Route path="activity-logs" element={<AdminActivityLogsPage />} />
-          <Route path="system-health" element={<AdminSystemHealthPage />} />
-          <Route path="settings" element={<AdminSettingsPage />} />
-          <Route path="ai-config" element={<AdminAIConfigPage />} />
-          <Route path="prompt-registry" element={<AdminPromptRegistryPage />} />
-          <Route path="prompt-registry/docs" element={<PromptRegistryDocPage />} />
-          <Route path="bug-report" element={<AdminIssueTrackerPage />} />
-        </Route>
+            {/* Auth routes - lazy loaded */}
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="/reset-password" element={<ResetPasswordPage />} />
+            <Route path="/verify-email" element={<VerifyEmailPage />} />
+            <Route path="/auth/microsoft/callback" element={<MicrosoftCallbackPage />} />
 
-        {/* 404 catch-all route - must be last */}
-        <Route path="*" element={<NotFoundPage />} />
-        </Routes>
+            {/* Onboarding */}
+            <Route
+              path="/onboarding"
+              element={
+                <ProtectedRoute>
+                  <OnboardingPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/persona-selection"
+              element={
+                <ProtectedRoute>
+                  <PersonaSelectionPage />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Public content pages */}
+            <Route path="/template/:templateId" element={<TemplateDetailPage />} />
+            <Route path="/example-plans" element={<ExamplePlansPage />} />
+            <Route path="/example-plans/:id" element={<ExamplePlanDetailPage />} />
+            <Route path="/blog/:slug" element={<BlogPostPage />} />
+            <Route path="/privacy" element={<PrivacyPolicyPage />} />
+            <Route path="/terms" element={<TermsOfServicePage />} />
+            <Route path="/security" element={<SecurityPage />} />
+            <Route path="/compliance" element={<CompliancePage />} />
+            <Route path="/subscription-plans" element={<SubscriptionPlansPage />} />
+
+            {/* Checkout pages */}
+            <Route path="/checkout/success" element={<CheckoutSuccessPage />} />
+            <Route path="/checkout/cancel" element={<CheckoutCancelPage />} />
+
+            {/* Dashboard routes */}
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute>
+                  <DashboardLayout />
+                </ProtectedRoute>
+              }
+            >
+              <Route index element={<DashboardPage />} />
+            </Route>
+
+            <Route
+              path="/profile"
+              element={
+                <ProtectedRoute>
+                  <DashboardLayout />
+                </ProtectedRoute>
+              }
+            >
+              <Route index element={<ProfilePage />} />
+            </Route>
+
+            <Route
+              path="/create-plan"
+              element={
+                <ProtectedRoute>
+                  <DashboardLayout />
+                </ProtectedRoute>
+              }
+            >
+              <Route index element={<CreatePlanPage />} />
+            </Route>
+
+            {/* Questionnaire - full screen */}
+            <Route
+              path="/questionnaire/:planId"
+              element={
+                <ProtectedRoute>
+                  <InterviewQuestionnairePage />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Legacy route redirects */}
+            <Route path="/plans/:id" element={<RedirectToPreview />} />
+            <Route path="/plans/:id/preview" element={<RedirectToPreview />} />
+
+            {/* Generation page - full-screen AI generation progress */}
+            <Route
+              path="/generation/:planId"
+              element={
+                <ProtectedRoute>
+                  <GenerationPage />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Business plan preview - full-screen document preview */}
+            <Route
+              path="/business-plan/:id/preview"
+              element={
+                <ProtectedRoute>
+                  <BusinessPlanPreviewPage />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Subscription management */}
+            <Route
+              path="/subscription"
+              element={
+                <ProtectedRoute>
+                  <DashboardLayout />
+                </ProtectedRoute>
+              }
+            >
+              <Route index element={<SubscriptionPage />} />
+            </Route>
+
+            <Route
+              path="/invoices"
+              element={
+                <ProtectedRoute>
+                  <DashboardLayout />
+                </ProtectedRoute>
+              }
+            >
+              <Route index element={<InvoicesPage />} />
+            </Route>
+
+            {/* Bug Report - standalone */}
+            <Route
+              path="/bug-report"
+              element={
+                <ProtectedRoute>
+                  <BugReportPage />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* CMS routes - standalone (no AdminLayout sidebar) */}
+            <Route
+              path="/admin/cms"
+              element={
+                <ProtectedRoute>
+                  <CmsEditorPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/cms/questionnaire"
+              element={
+                <ProtectedRoute>
+                  <CmsQuestionnairePage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/cms/questionnaire-preview"
+              element={
+                <ProtectedRoute>
+                  <AdminQuestionnairePreviewPage />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Admin routes */}
+            <Route
+              path="/admin"
+              element={
+                <ProtectedRoute>
+                  <AdminLayout />
+                </ProtectedRoute>
+              }
+            >
+              <Route index element={<AdminOverviewPage />} />
+              <Route path="users" element={<AdminUsersPage />} />
+              <Route path="users/:userId" element={<AdminUserDetailPage />} />
+              <Route path="organizations" element={<AdminOrganizationsPage />} />
+              <Route path="templates" element={<AdminTemplatesPage />} />
+              <Route path="prompts-studio" element={<AdminAIPromptsPage />} />
+              <Route path="ai-prompts" element={<AdminAIPromptsPage />} />
+              <Route path="activity-logs" element={<AdminActivityLogsPage />} />
+              <Route path="system-health" element={<AdminSystemHealthPage />} />
+              <Route path="settings" element={<AdminSettingsPage />} />
+              <Route path="ai-config" element={<AdminAIConfigPage />} />
+              <Route path="prompt-registry" element={<AdminPromptRegistryPage />} />
+              <Route path="prompt-registry/docs" element={<PromptRegistryDocPage />} />
+              <Route path="bug-report" element={<AdminIssueTrackerPage />} />
+            </Route>
+
+            {/* 404 catch-all route - must be last */}
+            <Route path="*" element={<NotFoundPage />} />
+          </Routes>
+        </Suspense>
       </Router>
     </ToastProvider>
   );

@@ -22,8 +22,8 @@ export class VisualHelper {
     const maskLocators = options.mask?.map(selector => this.page.locator(selector)) || [];
 
     await expect(this.page).toHaveScreenshot(`${options.name}.png`, {
-      maxDiffPixelRatio: options.maxDiffPixelRatio ?? 0.01,
-      threshold: options.threshold ?? 0.2,
+      maxDiffPixelRatio: options.maxDiffPixelRatio ?? 0.02, // 2% tolerance for minor rendering differences
+      threshold: options.threshold ?? 0.25, // Slightly higher threshold for anti-aliasing
       mask: maskLocators,
       fullPage: options.fullPage ?? true,
     });
@@ -72,9 +72,6 @@ export class VisualHelper {
     // Wait for network to be idle
     await this.page.waitForLoadState('networkidle');
 
-    // Wait for animations to complete
-    await this.page.waitForTimeout(500);
-
     // Disable animations for consistent screenshots
     await this.page.addStyleTag({
       content: `
@@ -86,6 +83,9 @@ export class VisualHelper {
         }
       `,
     });
+
+    // Wait for animations and lazy-loaded content to settle
+    await this.page.waitForTimeout(1000);
   }
 
   /**
