@@ -7,7 +7,7 @@ import {
   Search, MoreVertical, Shield, Ban, Check, AlertCircle, X, LayoutGrid, List,
   UserPlus, Download, ChevronLeft, ChevronRight, CheckCircle2, XCircle,
   Eye, KeyRound, Users, UserCheck, UserX, ChevronDown, RefreshCw,
-  Mail, MailX, Loader2, Filter, ArrowUpDown, TrendingUp
+  Loader2, Filter, ArrowUpDown, TrendingUp
 } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { getUserFriendlyError } from '../../utils/error-messages';
@@ -40,31 +40,6 @@ function getInitials(user: any): string {
   const last = user.lastName?.[0] || '';
   if (first && last) return `${first}${last}`.toUpperCase();
   return user.email?.[0]?.toUpperCase() || 'U';
-}
-
-// Status badge component
-function StatusBadge({ status }: { status: string }) {
-  const style = statusStyles[status] || statusStyles.Inactive;
-  return (
-    <span className={cn('inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium', style.bg, style.text)}>
-      <span className={cn('w-1.5 h-1.5 rounded-full', style.dot)} />
-      {status}
-    </span>
-  );
-}
-
-// Avatar component
-function UserAvatar({ user, size = 'md' }: { user: any; size?: 'sm' | 'md' | 'lg' }) {
-  const sizes = { sm: 'w-8 h-8 text-xs', md: 'w-10 h-10 text-sm', lg: 'w-14 h-14 text-lg' };
-  return (
-    <div className={cn(
-      'rounded-full flex items-center justify-center font-semibold',
-      'bg-gradient-to-br from-momentum-orange/20 to-orange-500/10 text-momentum-orange',
-      sizes[size]
-    )}>
-      {getInitials(user)}
-    </div>
-  );
 }
 
 export default function AdminUsersPage() {
@@ -583,205 +558,440 @@ export default function AdminUsersPage() {
             </p>
           </div>
         ) : viewMode === 'list' ? (
-          /* TABLE VIEW */
+          /* TABLE VIEW - Polished Design */
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="bg-gray-50/50 dark:bg-gray-800/30">
-                  <th className="w-12 px-4 py-3 hidden lg:table-cell">
-                    <input
-                      type="checkbox"
-                      checked={users.length > 0 && selectedUsers.size === users.length}
-                      onChange={toggleSelectAll}
-                      className="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-momentum-orange focus:ring-momentum-orange/20"
-                    />
+                <tr className="bg-gradient-to-r from-gray-50 to-gray-50/50 dark:from-gray-800/50 dark:to-gray-800/30 border-b border-gray-100 dark:border-gray-800">
+                  <th className="w-14 px-5 py-4 hidden lg:table-cell">
+                    <label className="relative flex items-center justify-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={users.length > 0 && selectedUsers.size === users.length}
+                        onChange={toggleSelectAll}
+                        className="sr-only peer"
+                      />
+                      <div className={cn(
+                        'w-5 h-5 rounded-md border-2 transition-all duration-200 flex items-center justify-center',
+                        users.length > 0 && selectedUsers.size === users.length
+                          ? 'bg-momentum-orange border-momentum-orange'
+                          : 'border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500'
+                      )}>
+                        {users.length > 0 && selectedUsers.size === users.length && (
+                          <Check className="w-3 h-3 text-white" strokeWidth={3} />
+                        )}
+                      </div>
+                    </label>
                   </th>
                   <SortHeader label={language === 'fr' ? 'Utilisateur' : 'User'} field="FirstName" sortBy={sortBy} onSort={(f) => { setSortBy(f); setSortDescending(sortBy === f ? !sortDescending : false); }} />
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  <th className="px-4 py-4 text-left text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                     {language === 'fr' ? 'Statut' : 'Status'}
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider hidden xl:table-cell">
+                  <th className="px-4 py-4 text-left text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider hidden xl:table-cell">
                     {language === 'fr' ? 'Rôle' : 'Role'}
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider hidden lg:table-cell">Type</th>
-                  <th className="px-4 py-3 text-center text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider hidden md:table-cell">Email</th>
+                  <th className="px-4 py-4 text-left text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider hidden lg:table-cell">Type</th>
+                  <th className="px-4 py-4 text-center text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider hidden md:table-cell">Email</th>
                   <SortHeader label={language === 'fr' ? 'Inscrit' : 'Joined'} field="CreatedAt" sortBy={sortBy} onSort={(f) => { setSortBy(f); setSortDescending(sortBy === f ? !sortDescending : true); }} className="hidden lg:table-cell" />
-                  <th className="px-4 py-3 text-right text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
+                  <th className="px-5 py-4 text-right text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider w-32">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+              <tbody className="divide-y divide-gray-100/80 dark:divide-gray-800/80">
                 {users.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="px-6 py-16 text-center">
-                      <Users className="w-12 h-12 mx-auto text-gray-300 dark:text-gray-600 mb-4" />
-                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                    <td colSpan={8} className="px-6 py-20 text-center">
+                      <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-gray-100 to-gray-50 dark:from-gray-800 dark:to-gray-900 flex items-center justify-center mb-4">
+                        <Users className="w-8 h-8 text-gray-400 dark:text-gray-500" />
+                      </div>
+                      <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
                         {language === 'fr' ? 'Aucun utilisateur trouvé' : 'No users found'}
+                      </p>
+                      <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                        {language === 'fr' ? 'Essayez de modifier vos filtres' : 'Try adjusting your filters'}
                       </p>
                     </td>
                   </tr>
-                ) : users.map((user) => (
-                  <motion.tr
-                    key={user.id}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className={cn(
-                      'group transition-colors cursor-pointer',
-                      selectedUsers.has(user.id)
-                        ? 'bg-momentum-orange/5 dark:bg-momentum-orange/10'
-                        : 'hover:bg-gray-50 dark:hover:bg-gray-800/50'
-                    )}
-                  >
-                    <td className="w-12 px-4 py-3 hidden lg:table-cell" onClick={(e) => e.stopPropagation()}>
-                      <input
-                        type="checkbox"
-                        checked={selectedUsers.has(user.id)}
-                        onChange={() => toggleSelectUser(user.id)}
-                        className="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-momentum-orange focus:ring-momentum-orange/20"
-                      />
-                    </td>
-                    <td className="px-4 py-3" onClick={() => navigate(`/admin/users/${user.id}`)}>
-                      <div className="flex items-center gap-3">
-                        <UserAvatar user={user} />
-                        <div className="min-w-0">
-                          <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{getUserName(user)}</p>
-                          <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{user.email}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3" onClick={() => navigate(`/admin/users/${user.id}`)}>
-                      <StatusBadge status={getStatusLabel(user)} />
-                    </td>
-                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400 hidden xl:table-cell" onClick={() => navigate(`/admin/users/${user.id}`)}>
-                      {user.role || '-'}
-                    </td>
-                    <td className="px-4 py-3 hidden lg:table-cell" onClick={() => navigate(`/admin/users/${user.id}`)}>
-                      <span className="px-2 py-1 rounded-lg bg-gray-100 dark:bg-gray-800 text-xs font-medium text-gray-600 dark:text-gray-400">
-                        {user.userType || 'User'}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-center hidden md:table-cell" onClick={() => navigate(`/admin/users/${user.id}`)}>
-                      {user.emailVerified ? (
-                        <CheckCircle2 className="w-4 h-4 text-emerald-500 mx-auto" />
-                      ) : (
-                        <XCircle className="w-4 h-4 text-gray-300 dark:text-gray-600 mx-auto" />
+                ) : users.map((user, index) => {
+                  const status = getStatusLabel(user);
+                  const statusStyle = statusStyles[status] || statusStyles.Inactive;
+
+                  return (
+                    <motion.tr
+                      key={user.id}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: index * 0.02 }}
+                      className={cn(
+                        'group transition-all duration-200 cursor-pointer',
+                        selectedUsers.has(user.id)
+                          ? 'bg-momentum-orange/5 dark:bg-momentum-orange/10'
+                          : 'hover:bg-gray-50/80 dark:hover:bg-gray-800/40'
                       )}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400 tabular-nums hidden lg:table-cell" onClick={() => navigate(`/admin/users/${user.id}`)}>
-                      {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : '-'}
-                    </td>
-                    <td className="px-4 py-3 text-right" onClick={(e) => e.stopPropagation()}>
-                      <div className="relative inline-block actions-dropdown">
-                        <button
-                          onClick={() => setShowActions(showActions === user.id ? null : user.id)}
-                          className="p-2 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                        >
-                          <MoreVertical className="w-4 h-4" />
-                        </button>
-                        <AnimatePresence>
-                          {showActions === user.id && (
-                            <motion.div
-                              initial={{ opacity: 0, scale: 0.95, y: -5 }}
-                              animate={{ opacity: 1, scale: 1, y: 0 }}
-                              exit={{ opacity: 0, scale: 0.95, y: -5 }}
-                              transition={{ duration: 0.15 }}
-                              className="absolute right-0 top-full mt-1 w-52 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 py-1.5 z-20 overflow-hidden"
+                    >
+                      <td className="w-14 px-5 py-4 hidden lg:table-cell" onClick={(e) => e.stopPropagation()}>
+                        <label className="relative flex items-center cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={selectedUsers.has(user.id)}
+                            onChange={() => toggleSelectUser(user.id)}
+                            className="sr-only peer"
+                          />
+                          <div className={cn(
+                            'w-5 h-5 rounded-md border-2 transition-all duration-200 flex items-center justify-center',
+                            selectedUsers.has(user.id)
+                              ? 'bg-momentum-orange border-momentum-orange'
+                              : 'border-gray-300 dark:border-gray-600 group-hover:border-gray-400 dark:group-hover:border-gray-500'
+                          )}>
+                            {selectedUsers.has(user.id) && (
+                              <Check className="w-3 h-3 text-white" strokeWidth={3} />
+                            )}
+                          </div>
+                        </label>
+                      </td>
+                      <td className="px-4 py-4" onClick={() => navigate(`/admin/users/${user.id}`)}>
+                        <div className="flex items-center gap-3">
+                          {/* Enhanced Avatar */}
+                          <div className="relative flex-shrink-0">
+                            <div className={cn(
+                              'w-10 h-10 rounded-xl flex items-center justify-center font-semibold text-sm transition-transform duration-200 group-hover:scale-105',
+                              'bg-gradient-to-br from-momentum-orange/20 via-orange-400/10 to-orange-500/5 text-momentum-orange',
+                              'ring-2 ring-white dark:ring-gray-900'
+                            )}>
+                              {getInitials(user)}
+                            </div>
+                            {user.emailVerified && (
+                              <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-emerald-500 flex items-center justify-center ring-2 ring-white dark:ring-gray-900">
+                                <Check className="w-2.5 h-2.5 text-white" strokeWidth={3} />
+                              </div>
+                            )}
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-sm font-semibold text-gray-900 dark:text-white truncate group-hover:text-momentum-orange transition-colors">
+                              {getUserName(user)}
+                            </p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5">{user.email}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-4 py-4" onClick={() => navigate(`/admin/users/${user.id}`)}>
+                        <span className={cn(
+                          'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium',
+                          statusStyle.bg, statusStyle.text
+                        )}>
+                          <span className={cn('w-1.5 h-1.5 rounded-full', statusStyle.dot)} />
+                          {status}
+                        </span>
+                      </td>
+                      <td className="px-4 py-4 hidden xl:table-cell" onClick={() => navigate(`/admin/users/${user.id}`)}>
+                        {user.role ? (
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-strategy-blue/10 dark:bg-strategy-blue/20 text-xs font-medium text-strategy-blue dark:text-blue-300">
+                            <Shield className="w-3 h-3" />
+                            {user.role}
+                          </span>
+                        ) : (
+                          <span className="text-xs text-gray-400 dark:text-gray-500">—</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-4 hidden lg:table-cell" onClick={() => navigate(`/admin/users/${user.id}`)}>
+                        <span className="inline-flex items-center px-2.5 py-1 rounded-lg bg-gray-100 dark:bg-gray-700/50 text-xs font-medium text-gray-600 dark:text-gray-400">
+                          {user.userType || 'User'}
+                        </span>
+                      </td>
+                      <td className="px-4 py-4 text-center hidden md:table-cell" onClick={() => navigate(`/admin/users/${user.id}`)}>
+                        {user.emailVerified ? (
+                          <div className="inline-flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400">
+                            <CheckCircle2 className="w-4 h-4" />
+                            <span className="text-xs font-medium hidden lg:inline">{language === 'fr' ? 'Vérifié' : 'Verified'}</span>
+                          </div>
+                        ) : (
+                          <div className="inline-flex items-center gap-1.5 text-gray-400 dark:text-gray-500">
+                            <XCircle className="w-4 h-4" />
+                            <span className="text-xs font-medium hidden lg:inline">Pending</span>
+                          </div>
+                        )}
+                      </td>
+                      <td className="px-4 py-4 hidden lg:table-cell" onClick={() => navigate(`/admin/users/${user.id}`)}>
+                        <span className="text-xs font-medium text-gray-500 dark:text-gray-400 tabular-nums">
+                          {user.createdAt ? new Date(user.createdAt).toLocaleDateString(language === 'fr' ? 'fr-CA' : 'en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—'}
+                        </span>
+                      </td>
+                      <td className="px-5 py-4" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex items-center justify-end gap-1">
+                          {/* Quick action buttons - visible on hover */}
+                          <div className="hidden group-hover:flex items-center gap-1 mr-1">
+                            <button
+                              onClick={() => navigate(`/admin/users/${user.id}`)}
+                              className="p-2 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all"
+                              title={language === 'fr' ? 'Voir' : 'View'}
                             >
-                              <ActionItem icon={Eye} label={language === 'fr' ? 'Voir détails' : 'View Details'} onClick={() => navigate(`/admin/users/${user.id}`)} />
-                              <div className="h-px bg-gray-100 dark:bg-gray-700 my-1" />
-                              <ActionItem icon={Check} label={language === 'fr' ? 'Activer' : 'Activate'} onClick={() => handleStatusChange(user.id, 'Active')} className="text-emerald-600 dark:text-emerald-400" />
-                              <ActionItem icon={Ban} label={language === 'fr' ? 'Suspendre' : 'Suspend'} onClick={() => handleStatusChange(user.id, 'Suspended')} className="text-amber-600 dark:text-amber-400" />
-                              <ActionItem icon={XCircle} label={language === 'fr' ? 'Bannir' : 'Ban'} onClick={() => handleStatusChange(user.id, 'Banned')} className="text-red-600 dark:text-red-400" />
-                              <div className="h-px bg-gray-100 dark:bg-gray-700 my-1" />
-                              <ActionItem icon={Shield} label={language === 'fr' ? 'Gérer les rôles' : 'Manage Roles'} onClick={() => openRoleModal(user)} />
-                              <ActionItem icon={KeyRound} label={language === 'fr' ? 'Réinitialiser le mot de passe' : 'Reset Password'} onClick={() => handleResetPassword(user.id)} />
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
-                      </div>
-                    </td>
-                  </motion.tr>
-                ))}
+                              <Eye className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => openRoleModal(user)}
+                              className="p-2 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all"
+                              title={language === 'fr' ? 'Rôles' : 'Roles'}
+                            >
+                              <Shield className="w-4 h-4" />
+                            </button>
+                          </div>
+
+                          {/* More actions dropdown */}
+                          <div className="relative actions-dropdown">
+                            <button
+                              onClick={() => setShowActions(showActions === user.id ? null : user.id)}
+                              className={cn(
+                                'p-2 rounded-lg transition-all duration-200',
+                                showActions === user.id
+                                  ? 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200'
+                                  : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                              )}
+                            >
+                              <MoreVertical className="w-4 h-4" />
+                            </button>
+                            <AnimatePresence>
+                              {showActions === user.id && (
+                                <motion.div
+                                  initial={{ opacity: 0, scale: 0.95, y: -4 }}
+                                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                                  exit={{ opacity: 0, scale: 0.95, y: -4 }}
+                                  transition={{ duration: 0.15 }}
+                                  className="absolute right-0 top-full mt-2 w-52 bg-white dark:bg-gray-800 rounded-xl shadow-2xl shadow-black/10 dark:shadow-black/30 border border-gray-200 dark:border-gray-700 py-2 z-30 overflow-hidden"
+                                >
+                                  <ActionItem icon={Eye} label={language === 'fr' ? 'Voir le profil' : 'View Profile'} onClick={() => navigate(`/admin/users/${user.id}`)} />
+                                  <div className="h-px bg-gray-100 dark:bg-gray-700 my-1.5 mx-3" />
+                                  <ActionItem icon={Check} label={language === 'fr' ? 'Activer' : 'Activate'} onClick={() => handleStatusChange(user.id, 'Active')} className="text-emerald-600 dark:text-emerald-400" />
+                                  <ActionItem icon={Ban} label={language === 'fr' ? 'Suspendre' : 'Suspend'} onClick={() => handleStatusChange(user.id, 'Suspended')} className="text-amber-600 dark:text-amber-400" />
+                                  <ActionItem icon={XCircle} label={language === 'fr' ? 'Bannir' : 'Ban'} onClick={() => handleStatusChange(user.id, 'Banned')} className="text-red-600 dark:text-red-400" />
+                                  <div className="h-px bg-gray-100 dark:bg-gray-700 my-1.5 mx-3" />
+                                  <ActionItem icon={Shield} label={language === 'fr' ? 'Gérer les rôles' : 'Manage Roles'} onClick={() => openRoleModal(user)} />
+                                  <ActionItem icon={KeyRound} label={language === 'fr' ? 'Réinitialiser MDP' : 'Reset Password'} onClick={() => handleResetPassword(user.id)} />
+                                </motion.div>
+                              )}
+                            </AnimatePresence>
+                          </div>
+                        </div>
+                      </td>
+                    </motion.tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
         ) : (
-          /* CARD VIEW */
-          <div className="p-4">
+          /* CARD VIEW - Polished Design */
+          <div className="p-4 sm:p-6">
             {users.length === 0 ? (
-              <div className="text-center py-16">
-                <Users className="w-12 h-12 mx-auto text-gray-300 dark:text-gray-600 mb-4" />
-                <p className="text-sm text-gray-500 dark:text-gray-400">
+              <div className="text-center py-20">
+                <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-gray-100 to-gray-50 dark:from-gray-800 dark:to-gray-900 flex items-center justify-center mb-4">
+                  <Users className="w-8 h-8 text-gray-400 dark:text-gray-500" />
+                </div>
+                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
                   {language === 'fr' ? 'Aucun utilisateur trouvé' : 'No users found'}
+                </p>
+                <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                  {language === 'fr' ? 'Essayez de modifier vos filtres' : 'Try adjusting your filters'}
                 </p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                {users.map((user, index) => (
-                  <motion.div
-                    key={user.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.03 }}
-                    onClick={() => navigate(`/admin/users/${user.id}`)}
-                    className={cn(
-                      'group relative border rounded-xl p-5 transition-all cursor-pointer',
-                      selectedUsers.has(user.id)
-                        ? 'border-momentum-orange bg-momentum-orange/5 dark:bg-momentum-orange/10 shadow-sm'
-                        : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:shadow-lg hover:border-gray-300 dark:hover:border-gray-600'
-                    )}
-                  >
-                    <div className="absolute top-4 left-4" onClick={(e) => e.stopPropagation()}>
-                      <input
-                        type="checkbox"
-                        checked={selectedUsers.has(user.id)}
-                        onChange={() => toggleSelectUser(user.id)}
-                        className="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-momentum-orange focus:ring-momentum-orange/20"
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-5">
+                {users.map((user, index) => {
+                  const status = getStatusLabel(user);
+                  const statusColor = statusStyles[status] || statusStyles.Inactive;
+                  const joinedDate = user.createdAt ? new Date(user.createdAt).toLocaleDateString(language === 'fr' ? 'fr-CA' : 'en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '-';
+
+                  return (
+                    <motion.div
+                      key={user.id}
+                      initial={{ opacity: 0, y: 16 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.025, duration: 0.3 }}
+                      className={cn(
+                        'group relative rounded-2xl transition-all duration-300 cursor-pointer overflow-hidden',
+                        selectedUsers.has(user.id)
+                          ? 'ring-2 ring-momentum-orange ring-offset-2 dark:ring-offset-gray-900'
+                          : 'hover:shadow-xl hover:shadow-black/5 dark:hover:shadow-black/20 hover:-translate-y-1'
+                      )}
+                    >
+                      {/* Card Background with subtle gradient */}
+                      <div className={cn(
+                        'absolute inset-0 bg-white dark:bg-gray-800 border transition-colors duration-300',
+                        selectedUsers.has(user.id)
+                          ? 'border-momentum-orange/30'
+                          : 'border-gray-200/80 dark:border-gray-700/80 group-hover:border-gray-300 dark:group-hover:border-gray-600'
+                      )} style={{ borderRadius: 'inherit' }} />
+
+                      {/* Top accent gradient bar */}
+                      <div
+                        className="absolute top-0 left-0 right-0 h-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                        style={{ background: `linear-gradient(90deg, #FF6B00, #FF8C40)` }}
                       />
-                    </div>
-                    <div className="absolute top-4 right-4 actions-dropdown" onClick={(e) => e.stopPropagation()}>
-                      <button
-                        onClick={() => setShowActions(showActions === user.id ? null : user.id)}
-                        className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                      >
-                        <MoreVertical className="w-4 h-4" />
-                      </button>
-                      <AnimatePresence>
-                        {showActions === user.id && (
-                          <motion.div
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.95 }}
-                            className="absolute right-0 top-full mt-1 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 py-1.5 z-20"
+
+                      {/* Card Content */}
+                      <div className="relative p-5">
+                        {/* Header Row: Checkbox + Status + Actions */}
+                        <div className="flex items-center justify-between mb-4">
+                          <div className="flex items-center gap-3" onClick={(e) => e.stopPropagation()}>
+                            <label className="relative flex items-center cursor-pointer">
+                              <input
+                                type="checkbox"
+                                checked={selectedUsers.has(user.id)}
+                                onChange={() => toggleSelectUser(user.id)}
+                                className="sr-only peer"
+                              />
+                              <div className={cn(
+                                'w-5 h-5 rounded-md border-2 transition-all duration-200 flex items-center justify-center',
+                                selectedUsers.has(user.id)
+                                  ? 'bg-momentum-orange border-momentum-orange'
+                                  : 'border-gray-300 dark:border-gray-600 group-hover:border-gray-400 dark:group-hover:border-gray-500'
+                              )}>
+                                {selectedUsers.has(user.id) && (
+                                  <Check className="w-3 h-3 text-white" strokeWidth={3} />
+                                )}
+                              </div>
+                            </label>
+                            {/* Status indicator dot */}
+                            <div className="flex items-center gap-1.5">
+                              <span className={cn('w-2 h-2 rounded-full', statusColor.dot)} />
+                              <span className={cn('text-[11px] font-semibold uppercase tracking-wide', statusColor.text)}>
+                                {status}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Actions dropdown */}
+                          <div className="actions-dropdown relative" onClick={(e) => e.stopPropagation()}>
+                            <button
+                              onClick={() => setShowActions(showActions === user.id ? null : user.id)}
+                              className={cn(
+                                'p-2 rounded-xl transition-all duration-200',
+                                showActions === user.id
+                                  ? 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200'
+                                  : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/50'
+                              )}
+                            >
+                              <MoreVertical className="w-4 h-4" />
+                            </button>
+                            <AnimatePresence>
+                              {showActions === user.id && (
+                                <motion.div
+                                  initial={{ opacity: 0, scale: 0.95, y: -4 }}
+                                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                                  exit={{ opacity: 0, scale: 0.95, y: -4 }}
+                                  transition={{ duration: 0.15 }}
+                                  className="absolute right-0 top-full mt-2 w-52 bg-white dark:bg-gray-800 rounded-xl shadow-2xl shadow-black/10 dark:shadow-black/30 border border-gray-200 dark:border-gray-700 py-2 z-30 overflow-hidden"
+                                >
+                                  <ActionItem icon={Eye} label={language === 'fr' ? 'Voir le profil' : 'View Profile'} onClick={() => navigate(`/admin/users/${user.id}`)} />
+                                  <div className="h-px bg-gray-100 dark:bg-gray-700 my-1.5 mx-3" />
+                                  <ActionItem icon={Check} label={language === 'fr' ? 'Activer' : 'Activate'} onClick={() => handleStatusChange(user.id, 'Active')} className="text-emerald-600 dark:text-emerald-400" />
+                                  <ActionItem icon={Ban} label={language === 'fr' ? 'Suspendre' : 'Suspend'} onClick={() => handleStatusChange(user.id, 'Suspended')} className="text-amber-600 dark:text-amber-400" />
+                                  <ActionItem icon={XCircle} label={language === 'fr' ? 'Bannir' : 'Ban'} onClick={() => handleStatusChange(user.id, 'Banned')} className="text-red-600 dark:text-red-400" />
+                                  <div className="h-px bg-gray-100 dark:bg-gray-700 my-1.5 mx-3" />
+                                  <ActionItem icon={Shield} label={language === 'fr' ? 'Gérer les rôles' : 'Manage Roles'} onClick={() => openRoleModal(user)} />
+                                  <ActionItem icon={KeyRound} label={language === 'fr' ? 'Réinitialiser MDP' : 'Reset Password'} onClick={() => handleResetPassword(user.id)} />
+                                </motion.div>
+                              )}
+                            </AnimatePresence>
+                          </div>
+                        </div>
+
+                        {/* User Profile Section */}
+                        <div
+                          className="flex items-start gap-4"
+                          onClick={() => navigate(`/admin/users/${user.id}`)}
+                        >
+                          {/* Avatar with status ring */}
+                          <div className="relative flex-shrink-0">
+                            <div className={cn(
+                              'w-14 h-14 rounded-2xl flex items-center justify-center font-bold text-lg transition-transform duration-300 group-hover:scale-105',
+                              'bg-gradient-to-br from-momentum-orange/20 via-orange-400/10 to-orange-500/5 text-momentum-orange',
+                              'ring-2 ring-white dark:ring-gray-800 shadow-sm'
+                            )}>
+                              {getInitials(user)}
+                            </div>
+                            {/* Email verified badge */}
+                            {user.emailVerified && (
+                              <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center ring-2 ring-white dark:ring-gray-800">
+                                <Check className="w-3 h-3 text-white" strokeWidth={3} />
+                              </div>
+                            )}
+                          </div>
+
+                          {/* User Info */}
+                          <div className="flex-1 min-w-0 pt-0.5">
+                            <h3 className="text-sm font-semibold text-gray-900 dark:text-white truncate leading-tight">
+                              {getUserName(user)}
+                            </h3>
+                            <p className="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5">
+                              {user.email}
+                            </p>
+                            <div className="flex items-center gap-2 mt-2">
+                              <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-gray-100 dark:bg-gray-700/50 text-[10px] font-medium text-gray-600 dark:text-gray-400">
+                                {user.userType || 'User'}
+                              </span>
+                              {user.role && (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-strategy-blue/10 dark:bg-strategy-blue/20 text-[10px] font-medium text-strategy-blue dark:text-blue-300">
+                                  <Shield className="w-2.5 h-2.5" />
+                                  {user.role}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Stats Row */}
+                        <div className="grid grid-cols-3 gap-2 mt-5 pt-4 border-t border-gray-100 dark:border-gray-700/50">
+                          <div className="text-center">
+                            <p className="text-[10px] font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wider">{language === 'fr' ? 'Inscrit' : 'Joined'}</p>
+                            <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 mt-1 truncate">{joinedDate}</p>
+                          </div>
+                          <div className="text-center border-x border-gray-100 dark:border-gray-700/50">
+                            <p className="text-[10px] font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wider">Email</p>
+                            <p className={cn(
+                              'text-xs font-semibold mt-1',
+                              user.emailVerified ? 'text-emerald-600 dark:text-emerald-400' : 'text-gray-400 dark:text-gray-500'
+                            )}>
+                              {user.emailVerified ? (language === 'fr' ? 'Vérifié' : 'Verified') : 'Pending'}
+                            </p>
+                          </div>
+                          <div className="text-center">
+                            <p className="text-[10px] font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wider">{language === 'fr' ? 'Plans' : 'Plans'}</p>
+                            <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 mt-1">{user.planCount || 0}</p>
+                          </div>
+                        </div>
+
+                        {/* Quick Actions */}
+                        <div className="flex items-center gap-2 mt-4 pt-4 border-t border-gray-100 dark:border-gray-700/50" onClick={(e) => e.stopPropagation()}>
+                          <button
+                            onClick={() => navigate(`/admin/users/${user.id}`)}
+                            className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/30 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
                           >
-                            <ActionItem icon={Eye} label={language === 'fr' ? 'Voir' : 'View'} onClick={() => navigate(`/admin/users/${user.id}`)} />
-                            <ActionItem icon={Check} label={language === 'fr' ? 'Activer' : 'Activate'} onClick={() => handleStatusChange(user.id, 'Active')} />
-                            <ActionItem icon={Ban} label={language === 'fr' ? 'Suspendre' : 'Suspend'} onClick={() => handleStatusChange(user.id, 'Suspended')} />
-                            <ActionItem icon={Shield} label={language === 'fr' ? 'Rôles' : 'Roles'} onClick={() => openRoleModal(user)} />
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </div>
-
-                    <div className="flex flex-col items-center text-center pt-4 pb-3">
-                      <UserAvatar user={user} size="lg" />
-                      <h3 className="text-sm font-semibold text-gray-900 dark:text-white truncate max-w-full mt-3">{getUserName(user)}</h3>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 truncate max-w-full mt-0.5">{user.email}</p>
-                      <div className="mt-3">
-                        <StatusBadge status={getStatusLabel(user)} />
+                            <Eye className="w-3.5 h-3.5" />
+                            {language === 'fr' ? 'Voir' : 'View'}
+                          </button>
+                          <button
+                            onClick={() => openRoleModal(user)}
+                            className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/30 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                          >
+                            <Shield className="w-3.5 h-3.5" />
+                            {language === 'fr' ? 'Rôles' : 'Roles'}
+                          </button>
+                          <button
+                            onClick={() => handleStatusChange(user.id, status === 'Active' ? 'Suspended' : 'Active')}
+                            className={cn(
+                              'flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium rounded-lg transition-colors',
+                              status === 'Active'
+                                ? 'text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 hover:bg-amber-100 dark:hover:bg-amber-900/30'
+                                : 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 hover:bg-emerald-100 dark:hover:bg-emerald-900/30'
+                            )}
+                          >
+                            {status === 'Active' ? <Ban className="w-3.5 h-3.5" /> : <Check className="w-3.5 h-3.5" />}
+                            {status === 'Active' ? (language === 'fr' ? 'Suspendre' : 'Suspend') : (language === 'fr' ? 'Activer' : 'Activate')}
+                          </button>
+                        </div>
                       </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-3 mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
-                      <CardStat label="Type" value={user.userType || 'User'} />
-                      <CardStat
-                        label="Email"
-                        value={user.emailVerified ? (language === 'fr' ? 'Vérifié' : 'Verified') : 'Pending'}
-                        icon={user.emailVerified ? Mail : MailX}
-                        iconColor={user.emailVerified ? '#10B981' : '#9CA3AF'}
-                      />
-                    </div>
-                  </motion.div>
-                ))}
+                    </motion.div>
+                  );
+                })}
               </div>
             )}
           </div>
@@ -1190,15 +1400,20 @@ function SortHeader({ label, field, sortBy, onSort, className = '' }: {
     <th
       onClick={() => onSort(field)}
       className={cn(
-        "px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:text-gray-700 dark:hover:text-gray-300 select-none group",
+        "px-4 py-4 text-left text-[11px] font-semibold uppercase tracking-wider cursor-pointer select-none group transition-colors",
+        active
+          ? "text-momentum-orange"
+          : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200",
         className
       )}
     >
       <span className="inline-flex items-center gap-1.5">
         {label}
         <ArrowUpDown className={cn(
-          'w-3.5 h-3.5 transition-all',
-          active ? 'text-momentum-orange' : 'text-gray-400 opacity-0 group-hover:opacity-100'
+          'w-3 h-3 transition-all duration-200',
+          active
+            ? 'text-momentum-orange scale-110'
+            : 'text-gray-400 dark:text-gray-500 opacity-0 group-hover:opacity-100 group-hover:scale-100 scale-90'
         )} />
       </span>
     </th>
@@ -1212,11 +1427,11 @@ function ActionItem({ icon: Icon, label, onClick, className = '' }: {
     <button
       onClick={onClick}
       className={cn(
-        'flex items-center gap-2.5 w-full px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors',
+        'flex items-center gap-2.5 w-full px-3 py-2.5 text-[13px] font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-all duration-150 group/action',
         className
       )}
     >
-      <Icon className="w-4 h-4" />
+      <Icon className="w-4 h-4 transition-transform group-hover/action:scale-110" />
       {label}
     </button>
   );
@@ -1233,17 +1448,6 @@ function FormField({ label, required, children }: { label: string; required?: bo
   );
 }
 
-function CardStat({ label, value, icon: Icon, iconColor }: { label: string; value: string; icon?: any; iconColor?: string }) {
-  return (
-    <div className="text-center">
-      <p className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wider font-medium">{label}</p>
-      <div className="flex items-center justify-center gap-1.5 mt-1">
-        {Icon && <Icon className="w-3.5 h-3.5" style={{ color: iconColor }} />}
-        <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 truncate">{value}</p>
-      </div>
-    </div>
-  );
-}
 
 function generatePageNumbers(current: number, total: number): (number | string)[] {
   if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
