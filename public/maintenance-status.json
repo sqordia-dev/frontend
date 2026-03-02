@@ -1,0 +1,19 @@
+{
+  "isEnabled": false,
+  "progressPercent": 0,
+  "currentStep": null,
+  "type": "Deployment",
+  "allowAdminAccess": true,
+  "content": {
+    "en": {
+      "title": "Under Maintenance",
+      "subtitle": "We're improving Sqordia",
+      "description": "Our team is working hard to bring you a better experience."
+    },
+    "fr": {
+      "title": "En maintenance",
+      "subtitle": "Nous ameliorons Sqordia",
+      "description": "Notre equipe travaille pour vous offrir une meilleure experience."
+    }
+  }
+}

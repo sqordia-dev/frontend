@@ -1,9 +1,11 @@
-import { useEffect, lazy, Suspense } from 'react';
+import { useEffect, useState, lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { ToastProvider } from './contexts/ToastContext';
+import { MaintenanceProvider, useMaintenance } from './contexts/MaintenanceContext';
 import { SkipLink } from '@/components/ui/skip-link';
 import PageLoader from './components/PageLoader';
 import ScrollToTop from './components/ScrollToTop';
+import { authService } from './lib/auth-service';
 
 // Critical path - eagerly loaded for fast initial render
 import LandingPage from './pages/LandingPageNew';
@@ -50,6 +52,7 @@ const SecurityPage = lazy(() => import('./pages/SecurityPage'));
 const CompliancePage = lazy(() => import('./pages/CompliancePage'));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 const BugReportPage = lazy(() => import('./pages/BugReportPage'));
+const MaintenancePage = lazy(() => import('./pages/MaintenancePage'));
 
 // Layouts - lazy loaded as they're only needed after auth
 const AdminLayout = lazy(() => import('./components/AdminLayout'));
@@ -105,6 +108,64 @@ function RedirectToPreview() {
   return <Navigate to={`/business-plan/${id}/preview`} replace />;
 }
 
+// Maintenance gate - shows maintenance page when app is in maintenance mode
+function MaintenanceGate({ children }: { children: React.ReactNode }) {
+  const { isInMaintenance, isLoading, status } = useMaintenance();
+  const [user, setUser] = useState<{ role?: string } | null>(null);
+
+  // Fetch current user for admin bypass check
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const currentUser = await authService.getCurrentUser();
+        setUser(currentUser);
+      } catch {
+        setUser(null);
+      }
+    };
+
+    // Only fetch if we might need to check admin bypass
+    if (authService.isAuthenticated()) {
+      fetchUser();
+    }
+
+    // Listen for storage events (auth state changes)
+    const handleAuthChange = () => {
+      if (authService.isAuthenticated()) {
+        fetchUser();
+      } else {
+        setUser(null);
+      }
+    };
+
+    window.addEventListener('storage', handleAuthChange);
+    return () => window.removeEventListener('storage', handleAuthChange);
+  }, []);
+
+  // Don't block during initial loading
+  if (isLoading) {
+    return <>{children}</>;
+  }
+
+  // Check if maintenance mode is active
+  if (isInMaintenance) {
+    // Allow admin bypass if configured
+    const isAdmin = user?.role === 'Admin' || user?.role === 'Administrator';
+    if (status?.allowAdminAccess && isAdmin) {
+      return <>{children}</>;
+    }
+
+    // Show maintenance page
+    return (
+      <Suspense fallback={<PageLoader />}>
+        <MaintenancePage />
+      </Suspense>
+    );
+  }
+
+  return <>{children}</>;
+}
+
 function App() {
   // Prevent scroll restoration globally
   useEffect(() => {
@@ -115,15 +176,17 @@ function App() {
 
   return (
     <ToastProvider>
-      <Router>
-        {/* Prevent browser from restoring scroll position */}
-        <ScrollRestorationHandler />
-        <ScrollToTop />
-        {/* Skip to main content link for accessibility */}
-        <SkipLink targetId="main-content" />
+      <MaintenanceProvider>
+        <Router>
+          {/* Prevent browser from restoring scroll position */}
+          <ScrollRestorationHandler />
+          <ScrollToTop />
+          {/* Skip to main content link for accessibility */}
+          <SkipLink targetId="main-content" />
 
-        <Suspense fallback={<PageLoader />}>
-          <Routes>
+          <MaintenanceGate>
+            <Suspense fallback={<PageLoader />}>
+              <Routes>
             {/* Public routes - Landing and Auth (critical path) */}
             <Route path="/" element={<LandingPage />} />
             <Route path="/fr" element={<LandingPage />} />
@@ -324,9 +387,11 @@ function App() {
 
             {/* 404 catch-all route - must be last */}
             <Route path="*" element={<NotFoundPage />} />
-          </Routes>
-        </Suspense>
-      </Router>
+              </Routes>
+            </Suspense>
+          </MaintenanceGate>
+        </Router>
+      </MaintenanceProvider>
     </ToastProvider>
   );
 }
