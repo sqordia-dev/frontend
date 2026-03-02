@@ -38,11 +38,7 @@ export default function GoalsMarketStep({
       newErrors.goals = t('onboarding.step3.goals.error');
     }
 
-    if (!targetMarket.trim()) {
-      newErrors.targetMarket = t('onboarding.step3.targetMarket.error.required');
-    } else if (targetMarket.trim().length < 10) {
-      newErrors.targetMarket = t('onboarding.step3.targetMarket.error.minLength');
-    }
+    // targetMarket is optional - no validation required
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -80,7 +76,7 @@ export default function GoalsMarketStep({
     }
   };
 
-  const isValid = goals.length > 0 && targetMarket.trim().length >= 10;
+  const isValid = goals.length > 0;
 
   return (
     <div className="flex flex-col h-full">
@@ -171,7 +167,7 @@ export default function GoalsMarketStep({
           >
             <div className="flex items-center gap-2">
               <Users size={18} className="text-orange-500" aria-hidden="true" />
-              {t('onboarding.step3.targetMarket')} <span className="text-red-500">*</span>
+              {t('onboarding.step3.targetMarket')}
             </div>
           </label>
           <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
@@ -197,20 +193,7 @@ export default function GoalsMarketStep({
                 : 'border-gray-200 dark:border-gray-700 focus:border-orange-500 focus:ring-orange-500/20 hover:border-gray-300 dark:hover:border-gray-600'
               }
             `}
-            aria-invalid={touched.targetMarket && !!errors.targetMarket}
-            aria-describedby={errors.targetMarket ? 'targetMarket-error' : 'targetMarket-help'}
-            required
           />
-          {touched.targetMarket && errors.targetMarket ? (
-            <p id="targetMarket-error" className="mt-2 text-sm text-red-600 dark:text-red-400 flex items-center gap-1.5" role="alert">
-              <span className="w-1 h-1 rounded-full bg-red-500" />
-              {errors.targetMarket}
-            </p>
-          ) : (
-            <p id="targetMarket-help" className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-              {targetMarket.length}/10 {t('onboarding.step3.targetMarket.counter')}
-            </p>
-          )}
         </div>
       </div>
 
