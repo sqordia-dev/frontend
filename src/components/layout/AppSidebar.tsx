@@ -19,7 +19,7 @@ import {
   Rocket,
   Briefcase,
   Heart,
-  Sparkles,
+  Brain,
 } from "lucide-react";
 import {
   Sidebar,
@@ -261,8 +261,8 @@ export function AppSidebar({
               tooltip={brandName}
             >
               <Link to="/dashboard" className="flex items-center gap-3">
-                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-strategy-blue to-[#0f1a2e] text-white shadow-md transition-transform duration-200 group-hover:scale-105 shrink-0">
-                  <Sparkles className="h-4 w-4" />
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-strategy-blue text-white shadow-md transition-transform duration-200 group-hover:scale-105 shrink-0">
+                  <Brain className="h-5 w-5" />
                 </div>
                 {!isCollapsed && (
                   <span className="text-base font-bold tracking-tight font-heading">
@@ -276,70 +276,6 @@ export function AppSidebar({
       </SidebarHeader>
 
       <SidebarContent className="px-2">
-        {/* User Profile Card */}
-        {!isCollapsed && user && (
-          <SidebarGroup className="py-0">
-            <SidebarGroupContent>
-              <div
-                className={cn(
-                  "rounded-xl p-3 mb-2 transition-colors",
-                  "bg-muted/50 hover:bg-muted/70"
-                )}
-              >
-                <div className="flex items-center gap-3">
-                  {user.profilePictureUrl && !profileImageError ? (
-                    <img
-                      src={user.profilePictureUrl}
-                      alt={`${user.firstName} ${user.lastName}`}
-                      className="h-10 w-10 rounded-lg object-cover ring-2 ring-background shrink-0"
-                      onError={onProfileImageError}
-                    />
-                  ) : (
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-strategy-blue/20 to-strategy-blue/5 text-strategy-blue shrink-0">
-                      <User className="h-5 w-5" />
-                    </div>
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-foreground truncate">
-                      {user.firstName} {user.lastName}
-                    </p>
-                    <p className="text-xs text-muted-foreground truncate">{user.email}</p>
-                  </div>
-                </div>
-                {user.persona && (
-                  <div className="mt-3 pt-3 border-t border-border/50">
-                    <PersonaBadge persona={user.persona} language={language} />
-                  </div>
-                )}
-              </div>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        )}
-
-        {/* Collapsed user avatar */}
-        {isCollapsed && user && (
-          <SidebarGroup className="py-0">
-            <SidebarGroupContent>
-              <SidebarMenu>
-                <SidebarMenuItem>
-                  <SidebarMenuButton tooltip={`${user.firstName} ${user.lastName}`}>
-                    {user.profilePictureUrl && !profileImageError ? (
-                      <img
-                        src={user.profilePictureUrl}
-                        alt={`${user.firstName} ${user.lastName}`}
-                        className="h-6 w-6 rounded-md object-cover"
-                        onError={onProfileImageError}
-                      />
-                    ) : (
-                      <User className="h-4 w-4" />
-                    )}
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        )}
-
         {/* Main navigation */}
         <SidebarGroup>
           {!isCollapsed && (
@@ -429,8 +365,68 @@ export function AppSidebar({
         )}
       </SidebarContent>
 
-      {/* Footer: Language, Theme, Collapse, Logout */}
+      {/* Footer: User Profile, Language, Theme, Collapse, Logout */}
       <SidebarFooter className="p-2 border-t border-border/50">
+        {/* User Profile Card */}
+        {user && (
+          <div className="mb-2">
+            {!isCollapsed ? (
+              <Link
+                to="/profile"
+                className={cn(
+                  "block rounded-xl p-3 transition-colors",
+                  "bg-muted/50 hover:bg-muted/70"
+                )}
+              >
+                <div className="flex items-center gap-3">
+                  {user.profilePictureUrl && !profileImageError ? (
+                    <img
+                      src={user.profilePictureUrl}
+                      alt={`${user.firstName} ${user.lastName}`}
+                      className="h-10 w-10 rounded-lg object-cover ring-2 ring-background shrink-0"
+                      onError={onProfileImageError}
+                    />
+                  ) : (
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-strategy-blue/20 to-strategy-blue/5 text-strategy-blue shrink-0">
+                      <User className="h-5 w-5" />
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-foreground truncate">
+                      {user.firstName} {user.lastName}
+                    </p>
+                    <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+                  </div>
+                </div>
+                {user.persona && (
+                  <div className="mt-3 pt-3 border-t border-border/50">
+                    <PersonaBadge persona={user.persona} language={language} />
+                  </div>
+                )}
+              </Link>
+            ) : (
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild tooltip={`${user.firstName} ${user.lastName}`}>
+                    <Link to="/profile">
+                      {user.profilePictureUrl && !profileImageError ? (
+                        <img
+                          src={user.profilePictureUrl}
+                          alt={`${user.firstName} ${user.lastName}`}
+                          className="h-6 w-6 rounded-md object-cover"
+                          onError={onProfileImageError}
+                        />
+                      ) : (
+                        <User className="h-4 w-4" />
+                      )}
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            )}
+          </div>
+        )}
+
         <SidebarMenu className="gap-1">
           {/* Language selector */}
           {onLanguageChange && (

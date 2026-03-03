@@ -15,6 +15,8 @@ import {
   PaginatedList,
   SectionType,
   BusinessPlanType,
+  PromptImprovementRequest,
+  PromptImprovementResultDto,
 } from '../types/prompt-registry';
 
 const BASE_URL = '/api/v1/admin/prompt-registry';
@@ -279,6 +281,19 @@ export const promptRegistryService = {
       return handleResponse<PromptPerformanceSummaryDto>(response.data);
     } catch (error: any) {
       console.error('Error in getPerformanceSummary:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Improves a prompt using AI analysis
+   */
+  async improvePrompt(request: PromptImprovementRequest): Promise<PromptImprovementResultDto> {
+    try {
+      const response = await apiClient.post(`${BASE_URL}/improve`, request);
+      return handleResponse<PromptImprovementResultDto>(response.data);
+    } catch (error: any) {
+      console.error('Error in improvePrompt:', error);
       throw error;
     }
   },

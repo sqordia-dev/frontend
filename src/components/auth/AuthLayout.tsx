@@ -39,7 +39,7 @@ export default function AuthLayout({
           {/* Logo */}
           <div className="mb-8 text-center">
             <Link to="/" className="inline-flex items-center gap-3 group">
-              <div className="rounded-xl p-3 transition-transform group-hover:scale-105 bg-strategy-blue dark:bg-slate-800">
+              <div className="rounded-xl p-3 transition-transform group-hover:scale-105 bg-strategy-blue">
                 <Brain className="h-7 w-7 text-white" aria-hidden="true" />
               </div>
               <span className="text-2xl font-bold font-heading text-foreground">
@@ -71,7 +71,7 @@ export default function AuthLayout({
           {/* Mobile Logo (shown when illustration panel is hidden) */}
           <div className="mb-8 text-center lg:hidden">
             <Link to="/" className="group inline-flex items-center gap-3">
-              <div className="rounded-xl p-3 transition-transform group-hover:scale-105 bg-strategy-blue dark:bg-slate-800">
+              <div className="rounded-xl p-3 transition-transform group-hover:scale-105 bg-strategy-blue">
                 <Brain className="h-6 w-6 text-white" aria-hidden="true" />
               </div>
               <span className="text-2xl font-bold font-heading text-foreground">

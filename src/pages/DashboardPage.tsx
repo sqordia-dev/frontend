@@ -58,6 +58,7 @@ export default function DashboardPage() {
   const loadDashboardData = async () => {
     try {
       setLoading(true);
+
       const plansData = await businessPlanService.getBusinessPlans();
       const activePlans = plansData.filter((plan: BusinessPlan) => !plan.isDeleted);
       setPlans(activePlans);
@@ -139,18 +140,21 @@ export default function DashboardPage() {
     }
   };
 
-  // Calculate stats
+  // Local calculations for stats
+  const totalPlans = plans.length;
   const draftCount = plans.filter(p => p.status?.toLowerCase() === 'draft' || !planProgress[p.id]?.isComplete).length;
   const completedCount = plans.filter(p => ['completed', 'generated', 'exported'].includes(p.status?.toLowerCase() || '')).length;
   const dateLocale = language === 'fr' ? 'fr-CA' : 'en-US';
 
-  // Get the most recent activity date, filtering out invalid dates
-  const validDates = plans
-    .map(p => new Date(p.updatedAt || p.createdAt || 0).getTime())
-    .filter(time => time > 86400000); // Filter out dates before Jan 2, 1970 (invalid/epoch dates)
-  const recentActivity = validDates.length > 0
-    ? new Date(Math.max(...validDates)).toLocaleDateString(dateLocale, { month: 'short', day: 'numeric' })
-    : null;
+  // Get the most recent activity date from local plans
+  const recentActivity = (() => {
+    const validDates = plans
+      .map(p => new Date(p.updatedAt || p.createdAt || 0).getTime())
+      .filter(time => time > 86400000);
+    return validDates.length > 0
+      ? new Date(Math.max(...validDates)).toLocaleDateString(dateLocale, { month: 'short', day: 'numeric' })
+      : null;
+  })();
 
   // Loading state with skeletons
   if (loading) {
@@ -249,7 +253,7 @@ export default function DashboardPage() {
         <section className="dashboard-stats grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <StatsCard
             title={cms('dashboard.totalProjects', 'dashboard.totalProjects') || t('dashboard.totalProjects')}
-            value={plans.length}
+            value={totalPlans}
             icon={<Layers className="h-5 w-5" />}
             variant="primary"
           />

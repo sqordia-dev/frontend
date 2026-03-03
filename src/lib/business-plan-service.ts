@@ -1,5 +1,5 @@
 import { apiClient } from './api-client';
-import { BusinessPlan, CreateBusinessPlanRequest, ApiResponse } from './types';
+import { BusinessPlan, CreateBusinessPlanRequest, ApiResponse, UserDashboardStats } from './types';
 
 const DEMO_PLANS: BusinessPlan[] = [
   {
@@ -623,6 +623,32 @@ export const businessPlanService = {
       } else {
         throw error;
       }
+    }
+  },
+
+  async getDashboardStats(): Promise<UserDashboardStats> {
+    try {
+      const response = await apiClient.get<UserDashboardStats>('/api/v1/business-plans/stats');
+      // Handle wrapped response format (isSuccess/value)
+      if ((response.data as any)?.isSuccess && (response.data as any).value) {
+        return (response.data as any).value;
+      }
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch dashboard stats:', error);
+      // Return default stats on error
+      return {
+        totalPlans: 0,
+        plansCreatedThisWeek: 0,
+        plansCreatedLastWeek: 0,
+        growthPercentage: 0,
+        isPositiveTrend: true,
+        inProgressPlans: 0,
+        completedPlans: 0,
+        generatedPlans: 0,
+        dailyActivity: [],
+        lastActivityDate: null
+      };
     }
   }
 };

@@ -43,6 +43,11 @@ export interface ProviderTestResponse {
   errorDetails?: string;
 }
 
+export interface SectionOverride {
+  provider: string;
+  model?: string;
+}
+
 export const AVAILABLE_MODELS: { [key: string]: string[] } = {
   OpenAI: ['gpt-4o', 'gpt-4o-mini', 'gpt-4-turbo', 'gpt-4', 'gpt-3.5-turbo'],
   Claude: [
@@ -61,8 +66,8 @@ export const aiConfigService = {
    * Get current AI provider configuration
    */
   async getConfiguration(): Promise<AIConfiguration> {
-    const response = await apiClient.get('/api/v1/admin/ai-config');
-    return response.data;
+    const response = await apiClient.get<AIConfiguration>('/api/v1/admin/ai-config');
+    return response.data as AIConfiguration;
   },
 
   /**
@@ -79,18 +84,33 @@ export const aiConfigService = {
     provider: string,
     request: ProviderTestRequest
   ): Promise<ProviderTestResponse> {
-    const response = await apiClient.post(
+    const response = await apiClient.post<ProviderTestResponse>(
       `/api/v1/admin/ai-config/test/${provider}`,
       request
     );
-    return response.data;
+    return response.data as ProviderTestResponse;
   },
 
   /**
    * Get available models for a provider
    */
   async getAvailableModels(provider: string): Promise<string[]> {
-    const response = await apiClient.get(`/api/v1/admin/ai-config/models/${provider}`);
-    return response.data;
+    const response = await apiClient.get<string[]>(`/api/v1/admin/ai-config/models/${provider}`);
+    return response.data as string[];
+  },
+
+  /**
+   * Get section-specific AI provider overrides
+   */
+  async getSectionOverrides(): Promise<Record<string, SectionOverride>> {
+    const response = await apiClient.get<Record<string, SectionOverride>>('/api/v1/admin/ai-config/section-overrides');
+    return response.data as Record<string, SectionOverride>;
+  },
+
+  /**
+   * Update section-specific AI provider overrides
+   */
+  async updateSectionOverrides(overrides: Record<string, SectionOverride>): Promise<void> {
+    await apiClient.post('/api/v1/admin/ai-config/section-overrides', overrides);
   },
 };

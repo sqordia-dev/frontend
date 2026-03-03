@@ -11,6 +11,7 @@ import {
   Check,
   PanelLeftClose,
   PanelLeft,
+  User,
   type LucideIcon,
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
@@ -173,8 +174,10 @@ export default function AppSidebar({
   // Check if path is active (exact match or starts with for nested routes)
   const isPathActive = (href: string) => {
     if (href === location.pathname) return true;
-    // For nested routes, check if current path starts with href (but not for root paths)
-    if (href !== '/' && href.length > 1 && location.pathname.startsWith(href + '/')) return true;
+    // For nested routes, check if current path starts with href
+    // But exclude short paths like /admin, /dashboard that would match too broadly
+    const isShortBasePath = href.split('/').filter(Boolean).length <= 1;
+    if (!isShortBasePath && href.length > 1 && location.pathname.startsWith(href + '/')) return true;
     return false;
   };
 
@@ -527,6 +530,33 @@ export default function AppSidebar({
               )}
             </AnimatePresence>
           </button>
+
+          {/* Profile */}
+          <Link
+            to="/profile"
+            onClick={onMobileMenuClose}
+            className={cn(
+              "flex items-center gap-3 w-full h-10 rounded-lg transition-all duration-150 mb-1",
+              "text-gray-600 dark:text-gray-400",
+              "hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white",
+              isCollapsed ? "justify-center px-2" : "px-3"
+            )}
+            title={isCollapsed ? (language === 'fr' ? 'Profil' : 'Profile') : undefined}
+          >
+            <User className="h-4 w-4 shrink-0" />
+            <AnimatePresence mode="wait">
+              {!isCollapsed && (
+                <motion.span
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="text-sm font-medium"
+                >
+                  {language === 'fr' ? 'Profil' : 'Profile'}
+                </motion.span>
+              )}
+            </AnimatePresence>
+          </Link>
 
           {/* Logout */}
           {showLogout && onLogout && (

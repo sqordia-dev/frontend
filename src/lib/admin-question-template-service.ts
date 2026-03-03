@@ -7,6 +7,22 @@ import type {
 
 const BASE_URL = '/api/v1/admin/question-templates';
 
+export interface TestCoachPromptRequest {
+  answer: string;
+  language: 'fr' | 'en';
+  provider?: string;
+  maxTokens?: number;
+  temperature?: number;
+}
+
+export interface TestCoachPromptResponse {
+  output: string;
+  tokensUsed: number;
+  responseTimeMs: number;
+  provider: string;
+  model: string;
+}
+
 export const adminQuestionTemplateService = {
   async getAll(params?: {
     stepNumber?: number;
@@ -46,5 +62,16 @@ export const adminQuestionTemplateService = {
 
   async toggleStatus(id: string, isActive: boolean): Promise<void> {
     await apiClient.patch(`${BASE_URL}/${id}/status`, isActive);
+  },
+
+  /**
+   * Tests a question's coach prompt by providing a sample answer
+   */
+  async testCoachPrompt(id: string, request: TestCoachPromptRequest): Promise<TestCoachPromptResponse> {
+    const response = await apiClient.post<TestCoachPromptResponse>(
+      `${BASE_URL}/${id}/test-coach-prompt`,
+      request
+    );
+    return response.data;
   },
 };

@@ -17,7 +17,7 @@ import {
   Smartphone,
   LayoutDashboard,
   Palette,
-  Database,
+  Sparkles,
   ListTodo,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -72,7 +72,7 @@ export default function AdminQuestionnairePreviewPage() {
   ];
 
   const mobileMoreNav: NavItemConfig[] = [
-    { name: appLanguage === 'fr' ? 'Prompts' : 'Prompts', href: '/admin/prompt-registry', icon: Database },
+    { name: 'AI Studio', href: '/admin/ai-studio', icon: Sparkles },
     { name: appLanguage === 'fr' ? 'Problèmes' : 'Issues', href: '/admin/bug-report', icon: ListTodo },
   ];
 

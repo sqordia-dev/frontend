@@ -4,9 +4,10 @@ import {
   LayoutDashboard,
   Users,
   Palette,
-  Database,
   ListTodo,
   Brain,
+  Flag,
+  Sparkles,
 } from 'lucide-react';
 import { authService } from '../lib/auth-service';
 import { useTheme } from '../contexts/ThemeContext';
@@ -22,7 +23,12 @@ const PAGE_TITLES: Record<string, { en: string; fr: string }> = {
   '/admin': { en: 'Overview', fr: 'Aperçu' },
   '/admin/users': { en: 'Users', fr: 'Utilisateurs' },
   '/admin/cms': { en: 'Content Manager', fr: 'Gestionnaire de contenu' },
-  '/admin/prompt-registry': { en: 'Prompt Registry', fr: 'Registre de prompts' },
+  '/admin/ai-studio': { en: 'AI Studio', fr: 'AI Studio' },
+  '/admin/ai-studio/prompts': { en: 'AI Studio - Prompts', fr: 'AI Studio - Prompts' },
+  '/admin/ai-studio/analytics': { en: 'AI Studio - Analytics', fr: 'AI Studio - Analytics' },
+  '/admin/ai-studio/ab-testing': { en: 'AI Studio - A/B Testing', fr: 'AI Studio - Tests A/B' },
+  '/admin/ai-studio/questions': { en: 'AI Studio - Questions', fr: 'AI Studio - Questions' },
+  '/admin/feature-flags': { en: 'Feature Flags', fr: 'Indicateurs de fonctionnalités' },
   '/admin/bug-report': { en: 'Issue Tracker', fr: 'Suivi des problèmes' },
   '/admin/business-plans': { en: 'Business Plans', fr: "Plans d'affaires" },
   '/admin/organizations': { en: 'Organizations', fr: 'Organisations' },
@@ -82,22 +88,28 @@ export default function AdminLayout() {
           shortcut: '⌘2',
         },
         {
-          name: 'Content Manager',
+          name: language === 'fr' ? 'Gestionnaire de contenu' : 'Content Manager',
           href: '/admin/cms',
           icon: Palette,
           shortcut: '⌘3',
         },
         {
-          name: 'Prompt Registry',
-          href: '/admin/prompt-registry',
-          icon: Database,
+          name: 'AI Studio',
+          href: '/admin/ai-studio',
+          icon: Sparkles,
           shortcut: '⌘4',
         },
         {
-          name: 'Issue Tracker',
+          name: t('admin.nav.featureFlags'),
+          href: '/admin/feature-flags',
+          icon: Flag,
+          shortcut: '⌘5',
+        },
+        {
+          name: language === 'fr' ? 'Suivi des problèmes' : 'Issue Tracker',
           href: '/admin/bug-report',
           icon: ListTodo,
-          shortcut: '⌘5',
+          shortcut: '⌘6',
         },
       ],
     },
@@ -111,7 +123,8 @@ export default function AdminLayout() {
   ];
 
   const mobileMoreNav: NavItemConfig[] = [
-    { name: language === 'fr' ? 'Prompts' : 'Prompts', href: '/admin/prompt-registry', icon: Database },
+    { name: 'AI Studio', href: '/admin/ai-studio', icon: Sparkles },
+    { name: 'Feature Flags', href: '/admin/feature-flags', icon: Flag },
     { name: language === 'fr' ? 'Problèmes' : 'Issues', href: '/admin/bug-report', icon: ListTodo },
   ];
 
@@ -126,7 +139,7 @@ export default function AdminLayout() {
             name: 'Sqordia',
             icon: Brain,
             href: '/admin',
-            iconClassName: 'bg-gradient-to-br from-blue-600 to-blue-700 text-white',
+            iconClassName: 'bg-strategy-blue text-white',
           }}
           navigation={navigation}
           backLink={{

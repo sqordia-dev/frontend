@@ -31,7 +31,6 @@ import {
   LayoutDashboard,
   Users,
   Palette,
-  Database,
   ListTodo,
 } from 'lucide-react';
 import CA from 'country-flag-icons/react/3x2/CA';
@@ -844,7 +843,7 @@ function QuestionnaireEditorContent() {
   ];
 
   const mobileMoreNav: NavItemConfig[] = [
-    { name: appLanguage === 'fr' ? 'Prompts' : 'Prompts', href: '/admin/prompt-registry', icon: Database },
+    { name: 'AI Studio', href: '/admin/ai-studio', icon: Sparkles },
     { name: appLanguage === 'fr' ? 'Problèmes' : 'Issues', href: '/admin/bug-report', icon: ListTodo },
   ];
 

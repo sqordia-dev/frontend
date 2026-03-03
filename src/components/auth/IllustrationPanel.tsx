@@ -55,7 +55,7 @@ export default function IllustrationPanel({
           to="/"
           className="group mb-10 inline-flex items-center gap-3 transition-opacity hover:opacity-80"
         >
-          <div className="rounded-xl p-2.5 bg-strategy-blue dark:bg-white/10 transition-transform group-hover:scale-105">
+          <div className="rounded-xl p-2.5 bg-strategy-blue transition-transform group-hover:scale-105">
             <Brain className="h-6 w-6 text-white" aria-hidden="true" />
           </div>
           <span className="text-xl font-bold font-heading text-strategy-blue dark:text-white tracking-tight">

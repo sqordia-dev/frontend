@@ -220,3 +220,21 @@ export interface CreateOrganizationRequest {
   size?: string;
   website?: string;
 }
+
+export interface DailyPlanCount {
+  date: string;
+  count: number;
+}
+
+export interface UserDashboardStats {
+  totalPlans: number;
+  plansCreatedThisWeek: number;
+  plansCreatedLastWeek: number;
+  growthPercentage: number;
+  isPositiveTrend: boolean;
+  inProgressPlans: number;
+  completedPlans: number;
+  generatedPlans: number;
+  dailyActivity: DailyPlanCount[];
+  lastActivityDate: string | null;
+}

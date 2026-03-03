@@ -87,9 +87,9 @@ export default function NavigationRail({ user, className }: NavigationRailProps)
               <Link
                 to="/dashboard"
                 aria-label="Go to Dashboard"
-                className="p-2 rounded-lg hover:bg-white/10 transition-colors"
+                className="p-2.5 rounded-xl bg-strategy-blue hover:bg-strategy-blue/90 transition-colors"
               >
-                <Brain className="w-7 h-7 text-momentum-orange" />
+                <Brain className="w-5 h-5 text-white" />
               </Link>
             </TooltipTrigger>
             <TooltipContent side="right" sideOffset={8}>

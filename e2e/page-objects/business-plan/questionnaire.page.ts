@@ -90,10 +90,66 @@ export class QuestionnairePage extends BasePage {
   }
 
   /**
-   * AI coach/helper panel
+   * AI Coach floating bubble button (bottom-right corner)
+   */
+  get aiCoachBubble(): Locator {
+    return this.page.locator('button[aria-label*="coach"], button[aria-label*="Sqordia"]').first();
+  }
+
+  /**
+   * AI Coach bubble button (alternative selector)
+   */
+  get aiCoachBubbleAlt(): Locator {
+    return this.page.locator('.fixed.z-40 button.rounded-full').filter({ has: this.page.locator('svg') }).first();
+  }
+
+  /**
+   * AI coach/helper panel (widget when open)
    */
   get aiCoachPanel(): Locator {
     return this.page.locator('[class*="coach"], [class*="ai-assist"], [data-testid="ai-coach"]').first();
+  }
+
+  /**
+   * AI Coach widget container (when opened)
+   */
+  get aiCoachWidget(): Locator {
+    return this.page.locator('.fixed').filter({ hasText: /Sqordia|coach/i }).first();
+  }
+
+  /**
+   * AI Coach widget title
+   */
+  get aiCoachTitle(): Locator {
+    return this.page.locator('h2, h3, .font-bold').filter({ hasText: 'Sqordia' }).first();
+  }
+
+  /**
+   * AI Coach widget close button
+   */
+  get aiCoachCloseButton(): Locator {
+    return this.aiCoachWidget.locator('button').filter({ has: this.page.locator('svg.lucide-x') }).first();
+  }
+
+  /**
+   * AI Coach input textarea
+   */
+  get aiCoachInput(): Locator {
+    return this.page.locator('textarea[placeholder*="question"], textarea[placeholder*="Question"]').first();
+  }
+
+  /**
+   * AI Coach send button
+   */
+  get aiCoachSendButton(): Locator {
+    return this.page.locator('button[type="submit"]').filter({ has: this.page.locator('svg') }).first();
+  }
+
+  /**
+   * AI Coach messages container
+   */
+  get aiCoachMessages(): Locator {
+    return this.page.locator('.overflow-y-auto').filter({ has: this.page.locator('[class*="message"]') }).first();
   }
 
   /**

@@ -1,0 +1,92 @@
+/* Command Palette Styles */
+.command-palette {
+  width: 100%;
+}
+
+.command-palette [cmdk-input] {
+  width: 100%;
+}
+
+.command-palette [cmdk-list] {
+  overflow: auto;
+}
+
+.command-palette [cmdk-item] {
+  cursor: pointer;
+  user-select: none;
+}
+
+.command-palette [cmdk-item][data-selected='true'] {
+  background-color: var(--cmdk-selected-bg, #f4f4f5);
+}
+
+.dark .command-palette [cmdk-item][data-selected='true'] {
+  background-color: var(--cmdk-selected-bg, #27272a);
+}
+
+.command-palette [cmdk-item][data-disabled='true'] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.command-palette [cmdk-group-heading] {
+  padding: 0.375rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #a1a1aa;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.dark .command-palette [cmdk-group-heading] {
+  color: #71717a;
+}
+
+.command-palette [cmdk-empty] {
+  padding: 1.5rem;
+  text-align: center;
+  font-size: 0.875rem;
+  color: #71717a;
+}
+
+/* Keyboard shortcut styling */
+.command-palette kbd {
+  font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+  font-size: 0.625rem;
+  line-height: 1;
+  padding: 0.25rem 0.375rem;
+  border-radius: 0.25rem;
+  background-color: #f4f4f5;
+  border: 1px solid #e4e4e7;
+  color: #52525b;
+}
+
+.dark .command-palette kbd {
+  background-color: #27272a;
+  border-color: #3f3f46;
+  color: #a1a1aa;
+}
+
+/* Animation states */
+.command-palette [cmdk-item] {
+  transition: background-color 0.1s ease;
+}
+
+/* Group styling */
+.command-group:not(:last-child) {
+  margin-bottom: 0.5rem;
+}
+
+.command-group + .command-group {
+  border-top: 1px solid #e4e4e7;
+  padding-top: 0.5rem;
+}
+
+.dark .command-group + .command-group {
+  border-top-color: #27272a;
+}
+
+/* Hide default cmdk-group-heading since we use custom */
+.command-palette [cmdk-group-heading] {
+  display: none;
+}

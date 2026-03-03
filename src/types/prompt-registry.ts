@@ -354,3 +354,38 @@ export interface PaginatedList<T> {
   hasPreviousPage: boolean;
   hasNextPage: boolean;
 }
+
+// Prompt Improvement Types
+export type PromptImprovementFocusArea = 'clarity' | 'specificity' | 'format' | 'all';
+
+export interface PromptImprovementRequest {
+  systemPrompt: string;
+  userPromptTemplate: string;
+  focusArea: PromptImprovementFocusArea;
+  customInstructions?: string | null;
+  targetLanguage?: string | null;
+}
+
+export interface PromptImprovementExplanation {
+  area: string;
+  description: string;
+  before?: string | null;
+  after?: string | null;
+  reason: string;
+}
+
+export interface PromptImprovementResultDto {
+  improvedSystemPrompt: string;
+  improvedUserPromptTemplate: string;
+  improvements: PromptImprovementExplanation[];
+  summary: string;
+  model: string;
+  tokensUsed: number;
+}
+
+export const FOCUS_AREA_OPTIONS: { value: PromptImprovementFocusArea; label: string; description: string }[] = [
+  { value: 'all', label: 'All Areas', description: 'Comprehensive improvement across all dimensions' },
+  { value: 'clarity', label: 'Clarity', description: 'Simplify language and remove ambiguity' },
+  { value: 'specificity', label: 'Specificity', description: 'Add details and define expected outputs' },
+  { value: 'format', label: 'Format', description: 'Improve structure and organization' },
+];

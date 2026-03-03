@@ -3,6 +3,7 @@
  * Exports all custom hooks
  */
 
+export { useAICoach } from './useAICoach';
 export { useAutoSave } from './useAutoSave';
 export { useGenerationStatus } from './useGenerationStatus';
 export { useInlineEdit, type UseInlineEditOptions, type UseInlineEditReturn, type InlineEditSaveState } from './useInlineEdit';
@@ -15,6 +16,7 @@ export { useScrollSpy } from './useScrollSpy';
 export { useCmsUndoRedo } from './useCmsUndoRedo';
 export { useCmsVersionComparison } from './useCmsVersionComparison';
 export type { DiffType, BlockDiff, SectionDiff, VersionComparisonResult } from './useCmsVersionComparison';
+export { useFeatureFlag, useFeatureFlags, useFeatureFlagsAdmin } from './useFeatureFlag';
 
 // Responsive hooks
 export {

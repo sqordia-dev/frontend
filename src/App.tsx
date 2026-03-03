@@ -68,10 +68,17 @@ const AdminActivityLogsPage = lazy(() => import('./pages/admin/AdminActivityLogs
 const AdminSystemHealthPage = lazy(() => import('./pages/admin/AdminSystemHealthPage'));
 const AdminTemplatesPage = lazy(() => import('./pages/admin/AdminTemplatesPage'));
 const AdminSettingsPage = lazy(() => import('./pages/admin/AdminSettingsPage'));
-const AdminAIConfigPage = lazy(() => import('./pages/admin/AdminAIConfigPage').then(m => ({ default: m.AdminAIConfigPage })));
-const AdminPromptRegistryPage = lazy(() => import('./pages/admin/AdminPromptRegistryPage'));
 const PromptRegistryDocPage = lazy(() => import('./pages/admin/PromptRegistryDocPage'));
+// AI Studio pages
+const AIStudioDashboard = lazy(() => import('./pages/admin/ai-studio/AIStudioDashboard'));
+const AIStudioPromptsPage = lazy(() => import('./pages/admin/ai-studio/AIStudioPromptsPage'));
+const AIStudioPromptEditorPage = lazy(() => import('./pages/admin/ai-studio/AIStudioPromptEditorPage'));
+const AIStudioAnalyticsPage = lazy(() => import('./pages/admin/ai-studio/AIStudioAnalyticsPage'));
+const AIStudioABTestingPage = lazy(() => import('./pages/admin/ai-studio/AIStudioABTestingPage'));
+const AIStudioQuestionsPage = lazy(() => import('./pages/admin/ai-studio/AIStudioQuestionsPage'));
+const AIStudioConfigPage = lazy(() => import('./pages/admin/ai-studio/AIStudioConfigPage'));
 const AdminIssueTrackerPage = lazy(() => import('./pages/admin/AdminIssueTrackerPage'));
+const AdminFeatureFlagsPage = lazy(() => import('./pages/admin/AdminFeatureFlagsPage'));
 const CmsEditorPage = lazy(() => import('./pages/admin/CmsEditorPage'));
 const CmsQuestionnairePage = lazy(() => import('./pages/admin/CmsQuestionnairePage'));
 const AdminQuestionnairePreviewPage = lazy(() => import('./pages/admin/AdminQuestionnairePreviewPage'));
@@ -379,9 +386,16 @@ function App() {
               <Route path="activity-logs" element={<AdminActivityLogsPage />} />
               <Route path="system-health" element={<AdminSystemHealthPage />} />
               <Route path="settings" element={<AdminSettingsPage />} />
-              <Route path="ai-config" element={<AdminAIConfigPage />} />
-              <Route path="prompt-registry" element={<AdminPromptRegistryPage />} />
               <Route path="prompt-registry/docs" element={<PromptRegistryDocPage />} />
+              {/* AI Studio routes */}
+              <Route path="ai-studio" element={<AIStudioDashboard />} />
+              <Route path="ai-studio/prompts" element={<AIStudioPromptsPage />} />
+              <Route path="ai-studio/prompts/:id" element={<AIStudioPromptEditorPage />} />
+              <Route path="ai-studio/analytics" element={<AIStudioAnalyticsPage />} />
+              <Route path="ai-studio/ab-testing" element={<AIStudioABTestingPage />} />
+              <Route path="ai-studio/questions" element={<AIStudioQuestionsPage />} />
+              <Route path="ai-studio/config" element={<AIStudioConfigPage />} />
+              <Route path="feature-flags" element={<AdminFeatureFlagsPage />} />
               <Route path="bug-report" element={<AdminIssueTrackerPage />} />
             </Route>
 

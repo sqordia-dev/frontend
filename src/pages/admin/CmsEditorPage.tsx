@@ -42,7 +42,7 @@ import {
   Pencil,
   Save,
   Users,
-  Database,
+  Sparkles,
   ListTodo,
 } from 'lucide-react';
 import { CmsProvider, useCms } from '../../contexts/CmsContext';
@@ -152,7 +152,7 @@ function CmsEditorContent({ pages }: CmsEditorContentProps) {
   ];
 
   const mobileMoreNav: NavItemConfig[] = [
-    { name: appLanguage === 'fr' ? 'Prompts' : 'Prompts', href: '/admin/prompt-registry', icon: Database },
+    { name: 'AI Studio', href: '/admin/ai-studio', icon: Sparkles },
     { name: appLanguage === 'fr' ? 'Problèmes' : 'Issues', href: '/admin/bug-report', icon: ListTodo },
   ];
 
