@@ -9,6 +9,40 @@ import {
 } from '../types/ai-coach';
 
 /**
+ * Extract a user-friendly error message from API error response
+ */
+function extractErrorMessage(error: any, defaultMessage: string): string {
+  // Check for API error response with message
+  if (error?.response?.data) {
+    const data = error.response.data;
+
+    // Handle our standard error format { code, message, details, type }
+    if (data.message) {
+      return data.message;
+    }
+
+    // Handle validation errors
+    if (data.errors) {
+      const firstError = Object.values(data.errors)[0];
+      if (Array.isArray(firstError) && firstError[0]) {
+        return firstError[0];
+      }
+    }
+  }
+
+  // Check for network errors
+  if (error?.code === 'ECONNABORTED' || error?.message?.includes('timeout')) {
+    return 'The request timed out. Please try again.';
+  }
+
+  if (error?.code === 'ERR_NETWORK') {
+    return 'Unable to connect to the server. Please check your internet connection.';
+  }
+
+  return defaultMessage;
+}
+
+/**
  * AI Coach Service
  * API functions for the multi-turn conversational AI Coach feature
  */
@@ -19,16 +53,21 @@ export const aiCoachService = {
    * @returns The conversation with initial messages
    */
   async startConversation(request: StartCoachConversationRequest): Promise<AICoachConversation> {
-    const response = await apiClient.post<any>('/api/v1/ai-coach/conversations', request, {
-      timeout: 60000, // 1 minute for AI response
-    });
+    try {
+      const response = await apiClient.post<any>('/api/v1/ai-coach/conversations', request, {
+        timeout: 60000, // 1 minute for AI response
+      });
 
-    // Handle wrapped response format (isSuccess/value)
-    if (response.data?.isSuccess && response.data.value) {
-      return response.data.value;
+      // Handle wrapped response format (isSuccess/value)
+      if (response.data?.isSuccess && response.data.value) {
+        return response.data.value;
+      }
+
+      return response.data;
+    } catch (error: any) {
+      const message = extractErrorMessage(error, 'Unable to start the conversation. Please try again.');
+      throw new Error(message);
     }
-
-    return response.data;
   },
 
   /**
@@ -37,20 +76,25 @@ export const aiCoachService = {
    * @returns The assistant's response message
    */
   async sendMessage(request: SendCoachMessageRequest): Promise<AICoachMessage> {
-    const response = await apiClient.post<any>(
-      `/api/v1/ai-coach/conversations/${request.conversationId}/messages`,
-      { message: request.message },
-      {
-        timeout: 60000, // 1 minute for AI response
+    try {
+      const response = await apiClient.post<any>(
+        `/api/v1/ai-coach/conversations/${request.conversationId}/messages`,
+        { message: request.message },
+        {
+          timeout: 60000, // 1 minute for AI response
+        }
+      );
+
+      // Handle wrapped response format (isSuccess/value)
+      if (response.data?.isSuccess && response.data.value) {
+        return response.data.value;
       }
-    );
 
-    // Handle wrapped response format (isSuccess/value)
-    if (response.data?.isSuccess && response.data.value) {
-      return response.data.value;
+      return response.data;
+    } catch (error: any) {
+      const message = extractErrorMessage(error, 'Unable to send message. Please try again.');
+      throw new Error(message);
     }
-
-    return response.data;
   },
 
   /**

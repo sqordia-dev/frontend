@@ -3,7 +3,7 @@ import { cn } from '../../lib/utils';
 import { AICoachConversation, AICoachTokenUsage, AICoachAccess } from '../../types/ai-coach';
 import { AICoachMessageBubble } from './AICoachMessageBubble';
 import { AICoachTokenIndicator } from './AICoachTokenIndicator';
-import { X, Loader2, Sparkles, ArrowUp, Lock } from 'lucide-react';
+import { X, Loader2, Sparkles, ArrowUp, Lock, RefreshCw, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface AICoachWidgetProps {
@@ -17,6 +17,7 @@ interface AICoachWidgetProps {
   error: string | null;
   onSendMessage: (message: string) => Promise<void>;
   onApplySuggestion?: (text: string) => void;
+  onClearError?: () => void;
   questionText?: string | null;
   language?: string;
 }
@@ -35,6 +36,7 @@ export function AICoachWidget({
   error,
   onSendMessage,
   onApplySuggestion,
+  onClearError,
   questionText,
   language = 'en',
 }: AICoachWidgetProps) {
@@ -232,11 +234,29 @@ export function AICoachWidget({
 
                 {/* Error message */}
                 {error && (
-                  <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3 text-sm">
-                    <p className="font-medium text-red-700 dark:text-red-300 mb-1">
-                      {labels.errorTitle}
-                    </p>
-                    <p className="text-red-600 dark:text-red-400">{error}</p>
+                  <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4 text-sm">
+                    <div className="flex items-start gap-3">
+                      <div className="w-8 h-8 rounded-full bg-red-100 dark:bg-red-800/50 flex items-center justify-center flex-shrink-0">
+                        <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-red-700 dark:text-red-300 mb-1">
+                          {language === 'fr' ? 'Un problème est survenu' : 'Something went wrong'}
+                        </p>
+                        <p className="text-red-600 dark:text-red-400 text-xs leading-relaxed">
+                          {error}
+                        </p>
+                        {onClearError && (
+                          <button
+                            onClick={onClearError}
+                            className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-red-700 dark:text-red-300 bg-red-100 dark:bg-red-800/50 hover:bg-red-200 dark:hover:bg-red-800 rounded-lg transition-colors"
+                          >
+                            <RefreshCw className="w-3 h-3" />
+                            {language === 'fr' ? 'Réessayer' : 'Try again'}
+                          </button>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 )}
 

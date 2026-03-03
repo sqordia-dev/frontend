@@ -81,6 +81,7 @@ export const AICoachBubble = forwardRef<AICoachBubbleRef, AICoachBubbleProps>(({
     access,
     tokenUsage,
     sendMessage,
+    clearError,
     canUse,
   } = useAICoach({
     businessPlanId,
@@ -206,6 +207,7 @@ export const AICoachBubble = forwardRef<AICoachBubbleRef, AICoachBubbleProps>(({
         error={error}
         onSendMessage={handleSendMessage}
         onApplySuggestion={onSuggestionApply}
+        onClearError={clearError}
         questionText={questionText}
         language={language}
       />
