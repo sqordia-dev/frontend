@@ -310,17 +310,17 @@ export function AIStudioQuestionsPage() {
       <div>
         <div className="flex gap-6 h-[calc(100vh-200px)]">
           {/* Left: Question List */}
-          <div className="w-80 flex-shrink-0 bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 flex flex-col overflow-hidden">
+          <div className="w-80 flex-shrink-0 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 flex flex-col overflow-hidden">
             {/* Search */}
-            <div className="p-3 border-b border-zinc-200 dark:border-zinc-800">
+            <div className="p-3 border-b border-gray-200 dark:border-gray-800">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder={t.search}
-                  className="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 focus:ring-2 focus:ring-purple-500/50 focus:border-transparent"
+                  className="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 focus:ring-2 focus:ring-purple-500/50 focus:border-transparent"
                 />
               </div>
             </div>
@@ -335,7 +335,7 @@ export function AIStudioQuestionsPage() {
                 <div className="p-2 space-y-4">
                   {Object.entries(groupedQuestions).map(([stepNum, stepQuestions]) => (
                     <div key={stepNum}>
-                      <div className="px-2 py-1.5 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
+                      <div className="px-2 py-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wider">
                         {t.step} {stepNum}: {getStepLabel(Number(stepNum))}
                       </div>
                       <div className="space-y-1">
@@ -345,16 +345,16 @@ export function AIStudioQuestionsPage() {
                             onClick={() => setSelectedQuestion(q)}
                             className={cn(
                               'w-full text-left px-3 py-2 rounded-lg transition-colors',
-                              'hover:bg-zinc-100 dark:hover:bg-zinc-800',
+                              'hover:bg-gray-100 dark:hover:bg-gray-800',
                               selectedQuestion?.id === q.id && 'bg-purple-50 dark:bg-purple-900/30 border border-purple-200 dark:border-purple-800'
                             )}
                           >
                             <div className="flex items-start gap-2">
-                              <span className="flex-shrink-0 w-5 h-5 rounded bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center text-xs font-medium text-zinc-600 dark:text-zinc-300">
+                              <span className="flex-shrink-0 w-5 h-5 rounded bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-xs font-medium text-gray-600 dark:text-gray-300">
                                 {q.order}
                               </span>
                               <div className="flex-1 min-w-0">
-                                <p className="text-sm text-zinc-700 dark:text-zinc-300 line-clamp-2">
+                                <p className="text-sm text-gray-700 dark:text-gray-300 line-clamp-2">
                                   {uiLanguage === 'fr' ? q.questionText : (q.questionTextEN || q.questionText)}
                                 </p>
                                 <div className="flex items-center gap-2 mt-1">
@@ -384,26 +384,26 @@ export function AIStudioQuestionsPage() {
           </div>
 
           {/* Right: Editor */}
-          <div className="flex-1 bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 flex flex-col overflow-hidden">
+          <div className="flex-1 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 flex flex-col overflow-hidden">
             {selectedQuestion ? (
               <>
                 {/* Question Info */}
-                <div className="p-4 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/50">
+                <div className="p-4 border-b border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50">
                   <div className="flex items-start justify-between">
                     <div>
                       <div className="flex items-center gap-2 mb-1">
                         <span className="px-2 py-0.5 text-xs font-medium bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300 rounded">
                           {t.step} {selectedQuestion.stepNumber}
                         </span>
-                        <span className="px-2 py-0.5 text-xs font-medium bg-zinc-200 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300 rounded">
+                        <span className="px-2 py-0.5 text-xs font-medium bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded">
                           {selectedQuestion.questionType}
                         </span>
                       </div>
-                      <h3 className="text-base font-medium text-zinc-900 dark:text-white">
+                      <h3 className="text-base font-medium text-gray-900 dark:text-white">
                         {uiLanguage === 'fr' ? selectedQuestion.questionText : (selectedQuestion.questionTextEN || selectedQuestion.questionText)}
                       </h3>
                       {selectedQuestion.helpText && (
-                        <p className="text-xs text-zinc-500 mt-1 flex items-start gap-1">
+                        <p className="text-xs text-gray-500 mt-1 flex items-start gap-1">
                           <HelpCircle className="w-3 h-3 mt-0.5 flex-shrink-0" />
                           {uiLanguage === 'fr' ? selectedQuestion.helpText : (selectedQuestion.helpTextEN || selectedQuestion.helpText)}
                         </p>
@@ -416,7 +416,7 @@ export function AIStudioQuestionsPage() {
                         'flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all',
                         hasChanges
                           ? 'bg-purple-600 hover:bg-purple-700 text-white'
-                          : 'bg-zinc-200 dark:bg-zinc-700 text-zinc-400 cursor-not-allowed'
+                          : 'bg-gray-200 dark:bg-gray-700 text-gray-400 cursor-not-allowed'
                       )}
                     >
                       {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
@@ -426,15 +426,15 @@ export function AIStudioQuestionsPage() {
                 </div>
 
                 {/* Tabs */}
-                <div className="flex items-center justify-between px-4 py-2 border-b border-zinc-200 dark:border-zinc-800">
-                  <div className="flex gap-1 p-1 bg-zinc-100 dark:bg-zinc-800 rounded-lg">
+                <div className="flex items-center justify-between px-4 py-2 border-b border-gray-200 dark:border-gray-800">
+                  <div className="flex gap-1 p-1 bg-gray-100 dark:bg-gray-800 rounded-lg">
                     <button
                       onClick={() => setContentTab('coachPrompt')}
                       className={cn(
                         'flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md transition-colors',
                         contentTab === 'coachPrompt'
-                          ? 'bg-white dark:bg-zinc-700 text-purple-600 dark:text-purple-400 shadow-sm'
-                          : 'text-zinc-600 dark:text-zinc-400'
+                          ? 'bg-white dark:bg-gray-700 text-purple-600 dark:text-purple-400 shadow-sm'
+                          : 'text-gray-600 dark:text-gray-400'
                       )}
                     >
                       <Sparkles className="w-4 h-4" />
@@ -445,8 +445,8 @@ export function AIStudioQuestionsPage() {
                       className={cn(
                         'flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md transition-colors',
                         contentTab === 'expertTip'
-                          ? 'bg-white dark:bg-zinc-700 text-amber-600 dark:text-amber-400 shadow-sm'
-                          : 'text-zinc-600 dark:text-zinc-400'
+                          ? 'bg-white dark:bg-gray-700 text-amber-600 dark:text-amber-400 shadow-sm'
+                          : 'text-gray-600 dark:text-gray-400'
                       )}
                     >
                       <Lightbulb className="w-4 h-4" />
@@ -454,12 +454,12 @@ export function AIStudioQuestionsPage() {
                     </button>
                   </div>
 
-                  <div className="flex items-center gap-1 p-1 bg-zinc-100 dark:bg-zinc-800 rounded-lg">
+                  <div className="flex items-center gap-1 p-1 bg-gray-100 dark:bg-gray-800 rounded-lg">
                     <button
                       onClick={() => setLanguageTab('fr')}
                       className={cn(
                         'flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md transition-colors',
-                        languageTab === 'fr' ? 'bg-white dark:bg-zinc-700 shadow-sm' : ''
+                        languageTab === 'fr' ? 'bg-white dark:bg-gray-700 shadow-sm' : ''
                       )}
                     >
                       🇫🇷 {t.french}
@@ -468,7 +468,7 @@ export function AIStudioQuestionsPage() {
                       onClick={() => setLanguageTab('en')}
                       className={cn(
                         'flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md transition-colors',
-                        languageTab === 'en' ? 'bg-white dark:bg-zinc-700 shadow-sm' : ''
+                        languageTab === 'en' ? 'bg-white dark:bg-gray-700 shadow-sm' : ''
                       )}
                     >
                       🇬🇧 {t.english}
@@ -483,7 +483,7 @@ export function AIStudioQuestionsPage() {
                     'p-4 overflow-hidden transition-all',
                     showTestPanel && contentTab === 'coachPrompt' ? 'flex-1' : 'flex-1'
                   )}>
-                    <div className="h-full rounded-xl border border-zinc-200 dark:border-zinc-700 overflow-hidden">
+                    <div className="h-full rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
                       <MonacoPromptEditor
                         value={getCurrentContent()}
                         onChange={setCurrentContent}
@@ -496,22 +496,22 @@ export function AIStudioQuestionsPage() {
 
                   {/* Test Panel - Only for Coach Prompt */}
                   {contentTab === 'coachPrompt' && (
-                    <div className="border-t border-zinc-200 dark:border-zinc-800">
+                    <div className="border-t border-gray-200 dark:border-gray-800">
                       {/* Toggle Button */}
                       <button
                         onClick={() => setShowTestPanel(!showTestPanel)}
-                        className="w-full flex items-center justify-between px-4 py-2 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors"
+                        className="w-full flex items-center justify-between px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
                       >
                         <div className="flex items-center gap-2">
                           <Play className="w-4 h-4 text-purple-500" />
-                          <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
                             {showTestPanel ? t.hideTest : t.testPrompt}
                           </span>
                         </div>
                         {showTestPanel ? (
-                          <ChevronDown className="w-4 h-4 text-zinc-400" />
+                          <ChevronDown className="w-4 h-4 text-gray-400" />
                         ) : (
-                          <ChevronUp className="w-4 h-4 text-zinc-400" />
+                          <ChevronUp className="w-4 h-4 text-gray-400" />
                         )}
                       </button>
 
@@ -528,12 +528,12 @@ export function AIStudioQuestionsPage() {
                               {/* Test Settings Row */}
                               <div className="flex items-center gap-3">
                                 {/* Language Toggle */}
-                                <div className="flex items-center gap-1 p-1 bg-zinc-100 dark:bg-zinc-800 rounded-lg">
+                                <div className="flex items-center gap-1 p-1 bg-gray-100 dark:bg-gray-800 rounded-lg">
                                   <button
                                     onClick={() => setTestLanguage('fr')}
                                     className={cn(
                                       'px-2 py-1 text-xs font-medium rounded transition-colors',
-                                      testLanguage === 'fr' ? 'bg-white dark:bg-zinc-700 shadow-sm' : ''
+                                      testLanguage === 'fr' ? 'bg-white dark:bg-gray-700 shadow-sm' : ''
                                     )}
                                   >
                                     🇫🇷 FR
@@ -542,7 +542,7 @@ export function AIStudioQuestionsPage() {
                                     onClick={() => setTestLanguage('en')}
                                     className={cn(
                                       'px-2 py-1 text-xs font-medium rounded transition-colors',
-                                      testLanguage === 'en' ? 'bg-white dark:bg-zinc-700 shadow-sm' : ''
+                                      testLanguage === 'en' ? 'bg-white dark:bg-gray-700 shadow-sm' : ''
                                     )}
                                   >
                                     🇬🇧 EN
@@ -560,14 +560,14 @@ export function AIStudioQuestionsPage() {
                                         className={cn(
                                           'p-1.5 rounded-lg transition-colors',
                                           testProvider === p.id
-                                            ? 'bg-zinc-200 dark:bg-zinc-700'
-                                            : 'hover:bg-zinc-100 dark:hover:bg-zinc-800'
+                                            ? 'bg-gray-200 dark:bg-gray-700'
+                                            : 'hover:bg-gray-100 dark:hover:bg-gray-800'
                                         )}
                                         title={p.name}
                                       >
                                         <Icon className={cn(
                                           'w-4 h-4',
-                                          testProvider === p.id ? 'text-zinc-900 dark:text-white' : 'text-zinc-400'
+                                          testProvider === p.id ? 'text-gray-900 dark:text-white' : 'text-gray-400'
                                         )} />
                                       </button>
                                     );
@@ -580,28 +580,28 @@ export function AIStudioQuestionsPage() {
                                   className={cn(
                                     'p-1.5 rounded-lg transition-colors',
                                     showTestSettings
-                                      ? 'bg-zinc-200 dark:bg-zinc-700'
-                                      : 'hover:bg-zinc-100 dark:hover:bg-zinc-800'
+                                      ? 'bg-gray-200 dark:bg-gray-700'
+                                      : 'hover:bg-gray-100 dark:hover:bg-gray-800'
                                   )}
                                 >
-                                  <Settings2 className="w-4 h-4 text-zinc-500" />
+                                  <Settings2 className="w-4 h-4 text-gray-500" />
                                 </button>
                               </div>
 
                               {/* Advanced Settings */}
                               {showTestSettings && (
-                                <div className="flex items-center gap-4 p-3 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg">
+                                <div className="flex items-center gap-4 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
                                   <div className="flex items-center gap-2">
-                                    <label className="text-xs text-zinc-500">{t.maxTokens}:</label>
+                                    <label className="text-xs text-gray-500">{t.maxTokens}:</label>
                                     <input
                                       type="number"
                                       value={testMaxTokens}
                                       onChange={e => setTestMaxTokens(Number(e.target.value))}
-                                      className="w-20 px-2 py-1 text-xs bg-white dark:bg-zinc-700 border border-zinc-200 dark:border-zinc-600 rounded"
+                                      className="w-20 px-2 py-1 text-xs bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded"
                                     />
                                   </div>
                                   <div className="flex items-center gap-2">
-                                    <label className="text-xs text-zinc-500">{t.temperature}:</label>
+                                    <label className="text-xs text-gray-500">{t.temperature}:</label>
                                     <input
                                       type="number"
                                       step="0.1"
@@ -609,7 +609,7 @@ export function AIStudioQuestionsPage() {
                                       max="2"
                                       value={testTemperature}
                                       onChange={e => setTestTemperature(Number(e.target.value))}
-                                      className="w-16 px-2 py-1 text-xs bg-white dark:bg-zinc-700 border border-zinc-200 dark:border-zinc-600 rounded"
+                                      className="w-16 px-2 py-1 text-xs bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded"
                                     />
                                   </div>
                                 </div>
@@ -617,14 +617,14 @@ export function AIStudioQuestionsPage() {
 
                               {/* Test Answer Input */}
                               <div>
-                                <label className="text-xs font-medium text-zinc-500 mb-1 block">
+                                <label className="text-xs font-medium text-gray-500 mb-1 block">
                                   {t.testAnswer}
                                 </label>
                                 <textarea
                                   value={testAnswer}
                                   onChange={e => setTestAnswer(e.target.value)}
                                   placeholder={t.testAnswerPlaceholder}
-                                  className="w-full h-20 px-3 py-2 text-sm bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg resize-none focus:ring-2 focus:ring-purple-500/50 focus:border-transparent"
+                                  className="w-full h-20 px-3 py-2 text-sm bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg resize-none focus:ring-2 focus:ring-purple-500/50 focus:border-transparent"
                                 />
                               </div>
 
@@ -636,7 +636,7 @@ export function AIStudioQuestionsPage() {
                                   'w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all',
                                   canRunTest && !testLoading
                                     ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600'
-                                    : 'bg-zinc-200 dark:bg-zinc-700 text-zinc-400 cursor-not-allowed'
+                                    : 'bg-gray-200 dark:bg-gray-700 text-gray-400 cursor-not-allowed'
                                 )}
                               >
                                 {testLoading ? (
@@ -664,10 +664,10 @@ export function AIStudioQuestionsPage() {
                               {testResult && (
                                 <div className="space-y-2">
                                   <div className="flex items-center justify-between">
-                                    <h4 className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                                    <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">
                                       {t.testOutput}
                                     </h4>
-                                    <div className="flex items-center gap-3 text-xs text-zinc-500">
+                                    <div className="flex items-center gap-3 text-xs text-gray-500">
                                       <span>{t.tokens}: {testResult.tokensUsed}</span>
                                       <span>{t.responseTime}: {testResult.responseTimeMs}ms</span>
                                       <button
@@ -680,7 +680,7 @@ export function AIStudioQuestionsPage() {
                                     </div>
                                   </div>
                                   <div className="p-3 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg max-h-40 overflow-y-auto">
-                                    <p className="text-sm text-zinc-700 dark:text-zinc-300 whitespace-pre-wrap">
+                                    <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
                                       {testResult.output}
                                     </p>
                                   </div>
@@ -697,10 +697,10 @@ export function AIStudioQuestionsPage() {
             ) : (
               <div className="flex-1 flex items-center justify-center">
                 <div className="text-center">
-                  <div className="w-16 h-16 rounded-2xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center mx-auto mb-4">
-                    <MessageSquare className="w-8 h-8 text-zinc-400" />
+                  <div className="w-16 h-16 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center mx-auto mb-4">
+                    <MessageSquare className="w-8 h-8 text-gray-400" />
                   </div>
-                  <h3 className="text-lg font-medium text-zinc-700 dark:text-zinc-300 mb-2">
+                  <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">
                     {t.selectQuestion}
                   </h3>
                 </div>

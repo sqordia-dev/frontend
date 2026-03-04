@@ -69,6 +69,7 @@ export const FEATURE_FLAG_CATEGORIES = {
     icon: 'Sparkles',
     flags: [
       { name: 'AIGenerationEnabled', description: 'Enable AI-powered content generation' },
+      { name: 'AICoach', description: 'Enable the AI Coach assistant in the questionnaire' },
       { name: 'UseClaudeAsDefault', description: 'Use Claude as the default AI provider' },
       { name: 'UseGeminiAsDefault', description: 'Use Gemini as the default AI provider' },
       { name: 'EnableAIFallbackMode', description: 'Enable fallback to alternative AI providers' }

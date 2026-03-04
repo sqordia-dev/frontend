@@ -2,6 +2,7 @@ import React from 'react';
 import { cn } from '../../lib/utils';
 import { AICoachMessage } from '../../types/ai-coach';
 import { Copy, Check, Sparkles } from 'lucide-react';
+import { markdownToHtmlForEditor } from '../../utils/markdown-to-html';
 
 interface AICoachMessageBubbleProps {
   message: AICoachMessage;
@@ -56,16 +57,16 @@ export function AICoachMessageBubble({
         )}
       >
         {/* Message content */}
-        <div
-          className={cn(
-            'text-sm md:text-xs leading-relaxed whitespace-pre-wrap',
-            isAssistant
-              ? 'text-slate-700 dark:text-slate-200'
-              : 'text-white'
-          )}
-        >
-          {message.content}
-        </div>
+        {isAssistant ? (
+          <div
+            className="text-sm md:text-xs leading-relaxed text-slate-700 dark:text-slate-200 prose prose-sm dark:prose-invert prose-p:my-1 prose-ul:my-1 prose-ol:my-1 prose-li:my-0.5 prose-headings:my-1.5 max-w-none"
+            dangerouslySetInnerHTML={{ __html: markdownToHtmlForEditor(message.content) }}
+          />
+        ) : (
+          <div className="text-sm md:text-xs leading-relaxed whitespace-pre-wrap text-white">
+            {message.content}
+          </div>
+        )}
 
         {/* Action buttons for assistant messages */}
         {isAssistant && (

@@ -286,14 +286,18 @@ export default function NotionStyleEditor({
     },
   });
 
-  // Update editor content when value changes externally (e.g., AI Polish)
+  // Update editor content when value changes externally (e.g., AI Polish, AI Coach suggestion)
   useEffect(() => {
     if (!editor || editor.isDestroyed) return;
 
     const currentHTML = editor.getHTML();
     // Only update if content differs and not empty placeholder
     if (value && value !== currentHTML && value !== '<p></p>') {
-      editor.commands.setContent(value, { emitUpdate: false });
+      // If the incoming value is markdown (not HTML), convert it first
+      const content = !containsHtmlOrXml(value) && containsMarkdown(value)
+        ? markdownToHtml(value)
+        : value;
+      editor.commands.setContent(content, { emitUpdate: false });
     }
   }, [value, editor]);
 

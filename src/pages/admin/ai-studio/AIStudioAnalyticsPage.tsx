@@ -31,7 +31,7 @@ const MetricCard: React.FC<{
   <motion.div
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
-    className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 p-5"
+    className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5"
   >
     <div className="flex items-start justify-between mb-3">
       <div className={cn('w-10 h-10 rounded-xl flex items-center justify-center', color)}>
@@ -47,9 +47,9 @@ const MetricCard: React.FC<{
         </span>
       )}
     </div>
-    <p className="text-2xl font-bold text-zinc-900 dark:text-white mb-1">{value}</p>
-    <p className="text-sm text-zinc-500">{label}</p>
-    {subValue && <p className="text-xs text-zinc-400 mt-1">{subValue}</p>}
+    <p className="text-2xl font-bold text-gray-900 dark:text-white mb-1">{value}</p>
+    <p className="text-sm text-gray-500">{label}</p>
+    {subValue && <p className="text-xs text-gray-400 mt-1">{subValue}</p>}
   </motion.div>
 );
 
@@ -208,8 +208,8 @@ export function AIStudioAnalyticsPage() {
             {/* Top Performers Lists */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Top Performing */}
-              <div className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 p-5">
-                <h3 className="font-semibold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
+              <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5">
+                <h3 className="font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
                   <TrendingUp className="w-4 h-4 text-emerald-500" />
                   {t.topPerformers}
                 </h3>
@@ -218,14 +218,14 @@ export function AIStudioAnalyticsPage() {
                     <Link
                       key={p.id}
                       to={`/admin/ai-studio/prompts/${p.id}`}
-                      className="flex items-center gap-3 p-2 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
+                      className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                     >
                       <span className="w-6 h-6 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 text-xs font-bold flex items-center justify-center">
                         {i + 1}
                       </span>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-zinc-900 dark:text-white truncate">{p.name}</p>
-                        <p className="text-xs text-zinc-500">{p.sectionTypeName}</p>
+                        <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{p.name}</p>
+                        <p className="text-xs text-gray-500">{p.sectionTypeName}</p>
                       </div>
                       <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400">
                         {(p.acceptanceRate * 100).toFixed(0)}%
@@ -236,8 +236,8 @@ export function AIStudioAnalyticsPage() {
               </div>
 
               {/* Most Used */}
-              <div className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 p-5">
-                <h3 className="font-semibold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
+              <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5">
+                <h3 className="font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
                   <Activity className="w-4 h-4 text-purple-500" />
                   {t.mostUsed}
                 </h3>
@@ -246,14 +246,14 @@ export function AIStudioAnalyticsPage() {
                     <Link
                       key={p.id}
                       to={`/admin/ai-studio/prompts/${p.id}`}
-                      className="flex items-center gap-3 p-2 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
+                      className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                     >
                       <span className="w-6 h-6 rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 text-xs font-bold flex items-center justify-center">
                         {i + 1}
                       </span>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-zinc-900 dark:text-white truncate">{p.name}</p>
-                        <p className="text-xs text-zinc-500">{p.sectionTypeName}</p>
+                        <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{p.name}</p>
+                        <p className="text-xs text-gray-500">{p.sectionTypeName}</p>
                       </div>
                       <span className="text-xs font-medium text-purple-600 dark:text-purple-400">
                         {p.usageCount.toLocaleString()}
@@ -264,8 +264,8 @@ export function AIStudioAnalyticsPage() {
               </div>
 
               {/* Highest Rated */}
-              <div className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 p-5">
-                <h3 className="font-semibold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
+              <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5">
+                <h3 className="font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
                   <Star className="w-4 h-4 text-amber-500" />
                   {t.highestRated}
                 </h3>
@@ -274,14 +274,14 @@ export function AIStudioAnalyticsPage() {
                     <Link
                       key={p.id}
                       to={`/admin/ai-studio/prompts/${p.id}`}
-                      className="flex items-center gap-3 p-2 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
+                      className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                     >
                       <span className="w-6 h-6 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 text-xs font-bold flex items-center justify-center">
                         {i + 1}
                       </span>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-zinc-900 dark:text-white truncate">{p.name}</p>
-                        <p className="text-xs text-zinc-500">{p.sectionTypeName}</p>
+                        <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{p.name}</p>
+                        <p className="text-xs text-gray-500">{p.sectionTypeName}</p>
                       </div>
                       <div className="flex items-center gap-1 text-xs font-medium text-amber-600 dark:text-amber-400">
                         <Star className="w-3 h-3 fill-current" />
@@ -294,25 +294,25 @@ export function AIStudioAnalyticsPage() {
             </div>
 
             {/* Performance by Section */}
-            <div className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 p-5">
-              <h3 className="font-semibold text-zinc-900 dark:text-white mb-4">{t.bySection}</h3>
+            <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5">
+              <h3 className="font-semibold text-gray-900 dark:text-white mb-4">{t.bySection}</h3>
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr className="border-b border-zinc-200 dark:border-zinc-700">
-                      <th className="text-left text-xs font-semibold text-zinc-500 uppercase tracking-wider pb-3">Section</th>
-                      <th className="text-right text-xs font-semibold text-zinc-500 uppercase tracking-wider pb-3">Prompts</th>
-                      <th className="text-right text-xs font-semibold text-zinc-500 uppercase tracking-wider pb-3">Usage</th>
-                      <th className="text-right text-xs font-semibold text-zinc-500 uppercase tracking-wider pb-3">Acceptance</th>
-                      <th className="text-right text-xs font-semibold text-zinc-500 uppercase tracking-wider pb-3">Rating</th>
+                    <tr className="border-b border-gray-200 dark:border-gray-700">
+                      <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider pb-3">Section</th>
+                      <th className="text-right text-xs font-semibold text-gray-500 uppercase tracking-wider pb-3">Prompts</th>
+                      <th className="text-right text-xs font-semibold text-gray-500 uppercase tracking-wider pb-3">Usage</th>
+                      <th className="text-right text-xs font-semibold text-gray-500 uppercase tracking-wider pb-3">Acceptance</th>
+                      <th className="text-right text-xs font-semibold text-gray-500 uppercase tracking-wider pb-3">Rating</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
+                  <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
                     {summary.performanceBySection.map(section => (
-                      <tr key={section.sectionType} className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
-                        <td className="py-3 text-sm font-medium text-zinc-900 dark:text-white">{section.sectionTypeName}</td>
-                        <td className="py-3 text-sm text-zinc-600 dark:text-zinc-400 text-right">{section.promptCount}</td>
-                        <td className="py-3 text-sm text-zinc-600 dark:text-zinc-400 text-right">{section.usageCount.toLocaleString()}</td>
+                      <tr key={section.sectionType} className="hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                        <td className="py-3 text-sm font-medium text-gray-900 dark:text-white">{section.sectionTypeName}</td>
+                        <td className="py-3 text-sm text-gray-600 dark:text-gray-400 text-right">{section.promptCount}</td>
+                        <td className="py-3 text-sm text-gray-600 dark:text-gray-400 text-right">{section.usageCount.toLocaleString()}</td>
                         <td className="py-3 text-sm text-right">
                           <span className={cn(
                             'font-medium',
@@ -321,7 +321,7 @@ export function AIStudioAnalyticsPage() {
                             {(section.acceptanceRate * 100).toFixed(0)}%
                           </span>
                         </td>
-                        <td className="py-3 text-sm text-zinc-600 dark:text-zinc-400 text-right">{section.averageRating.toFixed(1)}</td>
+                        <td className="py-3 text-sm text-gray-600 dark:text-gray-400 text-right">{section.averageRating.toFixed(1)}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -330,7 +330,7 @@ export function AIStudioAnalyticsPage() {
             </div>
           </div>
         ) : (
-          <div className="text-center py-20 text-zinc-500">
+          <div className="text-center py-20 text-gray-500">
             {language === 'fr' ? 'Erreur lors du chargement des données' : 'Error loading data'}
           </div>
         )}

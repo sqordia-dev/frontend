@@ -52,7 +52,7 @@ const FeatureCard: React.FC<{
     <motion.div
       whileHover={{ y: -4, scale: 1.02 }}
       whileTap={{ scale: 0.98 }}
-      className="group relative bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-6 hover:shadow-xl hover:border-transparent transition-all duration-300 overflow-hidden"
+      className="group relative bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-6 hover:shadow-xl hover:border-transparent transition-all duration-300 overflow-hidden"
     >
       {/* Gradient Background on Hover */}
       <div className={cn(
@@ -75,16 +75,16 @@ const FeatureCard: React.FC<{
           )}
         </div>
 
-        <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-2 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-orange-500 group-hover:to-amber-500 transition-all">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-orange-500 group-hover:to-amber-500 transition-all">
           {title}
         </h3>
-        <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-4 line-clamp-2">
+        <p className="text-sm text-gray-500 dark:text-gray-400 mb-4 line-clamp-2">
           {description}
         </p>
 
         <div className="flex items-center justify-between">
           {stats && (
-            <span className="text-xs font-medium text-zinc-400 dark:text-zinc-500">
+            <span className="text-xs font-medium text-gray-400 dark:text-gray-500">
               {stats}
             </span>
           )}
@@ -105,9 +105,9 @@ const StatCard: React.FC<{
   trend?: number;
   color: string;
 }> = ({ label, value, icon: Icon, trend, color }) => (
-  <div className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 p-4">
+  <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-4">
     <div className="flex items-center justify-between mb-2">
-      <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+      <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
         {label}
       </span>
       <div className={cn('w-8 h-8 rounded-lg flex items-center justify-center', color)}>
@@ -115,7 +115,7 @@ const StatCard: React.FC<{
       </div>
     </div>
     <div className="flex items-end justify-between">
-      <span className="text-2xl font-bold text-zinc-900 dark:text-white">
+      <span className="text-2xl font-bold text-gray-900 dark:text-white">
         {value}
       </span>
       {trend !== undefined && (
@@ -260,9 +260,9 @@ export function AIStudioDashboard() {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           {loading ? (
             Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 p-4 animate-pulse">
-                <div className="h-4 w-20 bg-zinc-200 dark:bg-zinc-700 rounded mb-3" />
-                <div className="h-8 w-16 bg-zinc-200 dark:bg-zinc-700 rounded" />
+              <div key={i} className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-4 animate-pulse">
+                <div className="h-4 w-20 bg-gray-200 dark:bg-gray-700 rounded mb-3" />
+                <div className="h-8 w-16 bg-gray-200 dark:bg-gray-700 rounded" />
               </div>
             ))
           ) : (
@@ -297,7 +297,7 @@ export function AIStudioDashboard() {
 
         {/* Features Grid */}
         <div className="mb-8">
-          <h2 className="text-lg font-semibold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
             <Sparkles className="w-5 h-5 text-orange-500" />
             {t.features}
           </h2>
@@ -337,14 +337,14 @@ export function AIStudioDashboard() {
               description={t.config.desc}
               icon={Settings2}
               href="/admin/ai-studio/config"
-              gradient="bg-gradient-to-br from-slate-500 to-zinc-600"
+              gradient="bg-gradient-to-br from-slate-500 to-gray-600"
             />
           </div>
         </div>
 
         {/* Quick Actions */}
-        <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-6">
-          <h2 className="text-lg font-semibold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
+        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-6">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
             <Zap className="w-5 h-5 text-amber-500" />
             {t.quickActions}
           </h2>
@@ -358,14 +358,14 @@ export function AIStudioDashboard() {
             </Link>
             <Link
               to="/admin/ai-studio/prompts"
-              className="inline-flex items-center gap-2 px-4 py-2.5 bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-sm font-medium rounded-xl hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
+              className="inline-flex items-center gap-2 px-4 py-2.5 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-sm font-medium rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
             >
               <FileText className="w-4 h-4" />
               {t.viewAll}
             </Link>
             <Link
               to="/admin/ai-studio/analytics"
-              className="inline-flex items-center gap-2 px-4 py-2.5 bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-sm font-medium rounded-xl hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
+              className="inline-flex items-center gap-2 px-4 py-2.5 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-sm font-medium rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
             >
               <BarChart3 className="w-4 h-4" />
               {t.analytics.title}

@@ -60,6 +60,7 @@ import { QUESTION_TYPES, PERSONA_TYPES } from '../../types/admin-question-templa
 import { cn } from '@/lib/utils';
 import { QuestionnaireVersionProvider, useQuestionnaireVersion } from '../../contexts/QuestionnaireVersionContext';
 import { QuestionnaireVersionHistorySidebar } from '../../components/admin/questionnaire/QuestionnaireVersionHistorySidebar';
+import { StepTitleEditor } from '../../components/admin/questionnaire/StepTitleEditor';
 import { questionnaireVersionService } from '../../lib/questionnaire-version-service';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -84,6 +85,8 @@ const stepColors: Record<number, string> = {
   3: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800',
   4: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-800',
   5: 'bg-pink-500/10 text-pink-600 dark:text-pink-400 border-pink-200 dark:border-pink-800',
+  6: 'bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-cyan-200 dark:border-cyan-800',
+  7: 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-200 dark:border-rose-800',
 };
 
 // Sortable Question Row
@@ -823,6 +826,7 @@ function QuestionnaireEditorContent() {
     updateQuestion,
     deleteQuestion,
     reorderQuestions,
+    updateStep,
     clearError,
   } = useQuestionnaireVersion();
 
@@ -852,7 +856,7 @@ function QuestionnaireEditorContent() {
   const [personaFilter, setPersonaFilter] = useState<PersonaFilter>('all');
   const [language, setLanguage] = useState<Language>('en');
   const [showInactive, setShowInactive] = useState(false);
-  const [expandedSteps, setExpandedSteps] = useState<Set<number>>(new Set([1, 2, 3, 4, 5]));
+  const [expandedSteps, setExpandedSteps] = useState<Set<number>>(new Set([1, 2, 3, 4, 5, 6, 7]));
   const [searchQuery, setSearchQuery] = useState('');
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
 
@@ -1315,21 +1319,16 @@ function QuestionnaireEditorContent() {
                   className="bg-card rounded-xl border border-border/50 overflow-hidden"
                 >
                   {/* Step Header */}
-                  <button
+                  <div
                     onClick={() => toggleStep(step.stepNumber)}
-                    className="w-full px-4 py-3.5 flex items-center justify-between hover:bg-muted/30 transition-colors"
+                    className="group w-full px-4 py-3.5 flex items-center justify-between hover:bg-muted/30 transition-colors cursor-pointer"
                   >
-                    <div className="flex items-center gap-3">
-                      <div className={cn('w-9 h-9 rounded-lg flex items-center justify-center font-bold text-sm', stepColor)}>
-                        {step.stepNumber}
-                      </div>
-                      <div className="text-left">
-                        <h3 className="text-sm font-semibold text-foreground">{getStepTitle(step.stepNumber)}</h3>
-                        <p className="text-[11px] text-muted-foreground">
-                          {stepQuestions.length} question{stepQuestions.length !== 1 ? 's' : ''}
-                        </p>
-                      </div>
-                    </div>
+                    <StepTitleEditor
+                      step={{ ...step, questionCount: stepQuestions.length }}
+                      language={language}
+                      isEditMode={isEditMode}
+                      onSave={updateStep}
+                    />
                     <div className="flex items-center gap-3">
                       <Badge variant="secondary" className="text-[10px]">
                         {stepQuestions.length}
@@ -1340,7 +1339,7 @@ function QuestionnaireEditorContent() {
                         <ChevronRight size={18} className="text-muted-foreground" />
                       )}
                     </div>
-                  </button>
+                  </div>
 
                   {/* Questions */}
                   {isExpanded && (

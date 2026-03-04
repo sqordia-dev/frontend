@@ -332,7 +332,7 @@ export function AIStudioPromptEditorPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
       </div>
     );
@@ -340,9 +340,9 @@ export function AIStudioPromptEditorPage() {
 
   if (error || !prompt) {
     return (
-      <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 flex flex-col items-center justify-center gap-4">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex flex-col items-center justify-center gap-4">
         <AlertCircle className="w-12 h-12 text-red-500" />
-        <p className="text-zinc-600 dark:text-zinc-400">{error || t.notFound}</p>
+        <p className="text-gray-600 dark:text-gray-400">{error || t.notFound}</p>
         <Link
           to="/admin/ai-studio/prompts"
           className="text-orange-500 hover:underline"
@@ -354,21 +354,21 @@ export function AIStudioPromptEditorPage() {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       {/* Header */}
-      <div className="bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 sticky top-0 z-40">
+      <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Link
                 to="/admin/ai-studio/prompts"
-                className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg transition-colors"
+                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
               >
-                <ArrowLeft className="w-5 h-5 text-zinc-500" />
+                <ArrowLeft className="w-5 h-5 text-gray-500" />
               </Link>
               <div>
                 <div className="flex items-center gap-2">
-                  <h1 className="text-lg font-bold text-zinc-900 dark:text-white">
+                  <h1 className="text-lg font-bold text-gray-900 dark:text-white">
                     {prompt.name}
                   </h1>
                   {isDirty && (
@@ -383,7 +383,7 @@ export function AIStudioPromptEditorPage() {
                     </span>
                   )}
                 </div>
-                <div className="flex items-center gap-2 text-xs text-zinc-500 mt-0.5">
+                <div className="flex items-center gap-2 text-xs text-gray-500 mt-0.5">
                   <span>{prompt.sectionTypeName}</span>
                   <span>•</span>
                   <span>{prompt.planTypeName}</span>
@@ -397,7 +397,7 @@ export function AIStudioPromptEditorPage() {
               <button
                 onClick={loadHistory}
                 disabled={historyLoading}
-                className="p-2 text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg transition-colors"
+                className="p-2 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
                 title={t.history}
               >
                 {historyLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <History className="w-4 h-4" />}
@@ -408,7 +408,7 @@ export function AIStudioPromptEditorPage() {
                   'p-2 rounded-lg transition-colors',
                   prompt.isActive
                     ? 'text-green-500 hover:bg-green-50 dark:hover:bg-green-900/30'
-                    : 'text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'
+                    : 'text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
                 )}
                 title={prompt.isActive ? 'Deactivate' : 'Activate'}
               >
@@ -421,7 +421,7 @@ export function AIStudioPromptEditorPage() {
                   'flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-lg transition-colors',
                   (editSystemPrompt || editUserPromptTemplate)
                     ? 'bg-gradient-to-r from-violet-500 to-purple-600 text-white hover:from-violet-600 hover:to-purple-700'
-                    : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-400 cursor-not-allowed'
+                    : 'bg-gray-100 dark:bg-gray-800 text-gray-400 cursor-not-allowed'
                 )}
               >
                 <Wand2 className="w-4 h-4" />
@@ -434,7 +434,7 @@ export function AIStudioPromptEditorPage() {
                   'flex items-center gap-2 px-4 py-1.5 text-sm font-medium rounded-lg transition-colors',
                   isDirty
                     ? 'bg-orange-500 text-white hover:bg-orange-600'
-                    : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-400 cursor-not-allowed'
+                    : 'bg-gray-100 dark:bg-gray-800 text-gray-400 cursor-not-allowed'
                 )}
               >
                 {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
@@ -445,26 +445,26 @@ export function AIStudioPromptEditorPage() {
         </div>
 
         {/* Metadata Bar */}
-        <div className="border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/50">
+        <div className="border-t border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 flex items-center gap-4 text-xs">
             <div className="flex items-center gap-2">
-              <span className="text-zinc-400">{t.deploy}:</span>
+              <span className="text-gray-400">{t.deploy}:</span>
               <DeploymentLabelPicker
                 value={deploymentLabel}
                 onChange={handleDeploymentLabelChange}
                 loading={deploymentLoading}
               />
             </div>
-            <div className="w-px h-4 bg-zinc-200 dark:bg-zinc-700" />
+            <div className="w-px h-4 bg-gray-200 dark:bg-gray-700" />
             <div className="flex items-center gap-2">
-              <span className="text-zinc-400">{t.section}:</span>
-              <span className="px-1.5 py-0.5 bg-zinc-200 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-300 font-medium rounded">
+              <span className="text-gray-400">{t.section}:</span>
+              <span className="px-1.5 py-0.5 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-medium rounded">
                 {prompt.sectionTypeName}
               </span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-zinc-400">{t.type}:</span>
-              <span className="px-1.5 py-0.5 bg-zinc-200 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-300 font-medium rounded">
+              <span className="text-gray-400">{t.type}:</span>
+              <span className="px-1.5 py-0.5 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-medium rounded">
                 {prompt.planTypeName}
               </span>
             </div>
@@ -478,8 +478,8 @@ export function AIStudioPromptEditorPage() {
           {/* Editor Column */}
           <div className="space-y-6">
             {/* System Prompt */}
-            <div className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 p-4">
-              <label className="flex items-center gap-2 text-xs font-medium text-zinc-500 mb-3">
+            <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-4">
+              <label className="flex items-center gap-2 text-xs font-medium text-gray-500 mb-3">
                 <Code2 className="w-3.5 h-3.5" />
                 {t.systemPrompt}
               </label>
@@ -495,11 +495,11 @@ export function AIStudioPromptEditorPage() {
             </div>
 
             {/* User Prompt Template */}
-            <div className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 p-4">
-              <label className="flex items-center gap-2 text-xs font-medium text-zinc-500 mb-3">
+            <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-4">
+              <label className="flex items-center gap-2 text-xs font-medium text-gray-500 mb-3">
                 <MessageSquare className="w-3.5 h-3.5" />
                 {t.userTemplate}
-                <span className="text-zinc-400 font-normal">{t.variableHint}</span>
+                <span className="text-gray-400 font-normal">{t.variableHint}</span>
               </label>
               <MonacoPromptEditor
                 value={editUserPromptTemplate}
@@ -516,9 +516,9 @@ export function AIStudioPromptEditorPage() {
           {/* Test Column */}
           <div className="space-y-6">
             {/* Test Panel */}
-            <div className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 p-4">
+            <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-4">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-semibold text-zinc-900 dark:text-white flex items-center gap-2">
+                <h3 className="text-sm font-semibold text-gray-900 dark:text-white flex items-center gap-2">
                   <Play className="w-4 h-4 text-orange-500" />
                   {language === 'fr' ? 'Tester le Prompt' : 'Test Prompt'}
                 </h3>
@@ -528,8 +528,8 @@ export function AIStudioPromptEditorPage() {
                     className={cn(
                       'p-2 rounded-lg transition-colors',
                       showSettings
-                        ? 'bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white'
-                        : 'text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800'
+                        ? 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white'
+                        : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800'
                     )}
                   >
                     <Settings2 className="w-4 h-4" />
@@ -542,14 +542,14 @@ export function AIStudioPromptEditorPage() {
                 <motion.div
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
-                  className="mb-4 p-4 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg space-y-4"
+                  className="mb-4 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg space-y-4"
                 >
                   {/* Provider */}
                   <div className="relative">
-                    <label className="text-xs text-zinc-500 mb-1 block">{t.provider}</label>
+                    <label className="text-xs text-gray-500 mb-1 block">{t.provider}</label>
                     <button
                       onClick={() => setShowProviderDropdown(!showProviderDropdown)}
-                      className="w-full flex items-center justify-between px-3 py-2 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg"
+                      className="w-full flex items-center justify-between px-3 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg"
                     >
                       <div className="flex items-center gap-2">
                         <div className={cn('w-6 h-6 rounded flex items-center justify-center bg-gradient-to-br', currentProvider.bgGradient)}>
@@ -557,10 +557,10 @@ export function AIStudioPromptEditorPage() {
                         </div>
                         <span className="text-sm">{currentProvider.name}</span>
                       </div>
-                      <ChevronDown className="w-4 h-4 text-zinc-400" />
+                      <ChevronDown className="w-4 h-4 text-gray-400" />
                     </button>
                     {showProviderDropdown && (
-                      <div className="absolute z-10 w-full mt-1 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg shadow-lg">
+                      <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg">
                         {AI_PROVIDERS.map(provider => {
                           const Icon = provider.icon;
                           return (
@@ -568,8 +568,8 @@ export function AIStudioPromptEditorPage() {
                               key={provider.id}
                               onClick={() => handleProviderChange(provider.id)}
                               className={cn(
-                                'w-full px-3 py-2 flex items-center gap-2 hover:bg-zinc-50 dark:hover:bg-zinc-700',
-                                selectedProvider === provider.id && 'bg-zinc-50 dark:bg-zinc-700'
+                                'w-full px-3 py-2 flex items-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-700',
+                                selectedProvider === provider.id && 'bg-gray-50 dark:bg-gray-700'
                               )}
                             >
                               <div className={cn('w-6 h-6 rounded flex items-center justify-center bg-gradient-to-br', provider.bgGradient)}>
@@ -585,23 +585,23 @@ export function AIStudioPromptEditorPage() {
 
                   {/* Model */}
                   <div className="relative">
-                    <label className="text-xs text-zinc-500 mb-1 block">{t.model}</label>
+                    <label className="text-xs text-gray-500 mb-1 block">{t.model}</label>
                     <button
                       onClick={() => setShowModelDropdown(!showModelDropdown)}
-                      className="w-full flex items-center justify-between px-3 py-2 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg"
+                      className="w-full flex items-center justify-between px-3 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg"
                     >
                       <span className="text-sm">{selectedModel}</span>
-                      <ChevronDown className="w-4 h-4 text-zinc-400" />
+                      <ChevronDown className="w-4 h-4 text-gray-400" />
                     </button>
                     {showModelDropdown && (
-                      <div className="absolute z-10 w-full mt-1 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg shadow-lg">
+                      <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg">
                         {currentProvider.models.map(model => (
                           <button
                             key={model}
                             onClick={() => { setSelectedModel(model); setShowModelDropdown(false); }}
                             className={cn(
-                              'w-full px-3 py-2 text-left text-sm hover:bg-zinc-50 dark:hover:bg-zinc-700',
-                              selectedModel === model && 'bg-zinc-50 dark:bg-zinc-700'
+                              'w-full px-3 py-2 text-left text-sm hover:bg-gray-50 dark:hover:bg-gray-700',
+                              selectedModel === model && 'bg-gray-50 dark:bg-gray-700'
                             )}
                           >
                             {model}
@@ -614,16 +614,16 @@ export function AIStudioPromptEditorPage() {
                   {/* Max Tokens & Temperature */}
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="text-xs text-zinc-500 mb-1 block">{t.maxTokens}</label>
+                      <label className="text-xs text-gray-500 mb-1 block">{t.maxTokens}</label>
                       <input
                         type="number"
                         value={testMaxTokens}
                         onChange={e => setTestMaxTokens(Number(e.target.value))}
-                        className="w-full px-3 py-2 text-sm bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg"
+                        className="w-full px-3 py-2 text-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg"
                       />
                     </div>
                     <div>
-                      <label className="text-xs text-zinc-500 mb-1 block">{t.temperature}</label>
+                      <label className="text-xs text-gray-500 mb-1 block">{t.temperature}</label>
                       <input
                         type="number"
                         step="0.1"
@@ -631,7 +631,7 @@ export function AIStudioPromptEditorPage() {
                         max="2"
                         value={testTemperature}
                         onChange={e => setTestTemperature(Number(e.target.value))}
-                        className="w-full px-3 py-2 text-sm bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg"
+                        className="w-full px-3 py-2 text-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg"
                       />
                     </div>
                   </div>
@@ -640,12 +640,12 @@ export function AIStudioPromptEditorPage() {
 
               {/* Test Variables */}
               <div className="mb-4">
-                <label className="text-xs text-zinc-500 mb-2 block">{t.testVariables}</label>
+                <label className="text-xs text-gray-500 mb-2 block">{t.testVariables}</label>
                 <textarea
                   value={testVariables}
                   onChange={e => setTestVariables(e.target.value)}
                   placeholder='{"companyName": "Acme Inc", "industry": "Technology"}'
-                  className="w-full h-24 px-3 py-2 font-mono text-sm bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg resize-none"
+                  className="w-full h-24 px-3 py-2 font-mono text-sm bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg resize-none"
                 />
               </div>
 
@@ -674,13 +674,13 @@ export function AIStudioPromptEditorPage() {
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 p-4"
+                className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-4"
               >
                 <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-sm font-semibold text-zinc-900 dark:text-white">
+                  <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
                     {t.testOutput}
                   </h3>
-                  <div className="flex items-center gap-3 text-xs text-zinc-500">
+                  <div className="flex items-center gap-3 text-xs text-gray-500">
                     <span>{t.tokens}: {testResult.tokensUsed}</span>
                     <span>{t.responseTime}: {testResult.responseTimeMs}ms</span>
                     <button
@@ -692,8 +692,8 @@ export function AIStudioPromptEditorPage() {
                     </button>
                   </div>
                 </div>
-                <div className="p-3 bg-zinc-50 dark:bg-zinc-800 rounded-lg max-h-80 overflow-y-auto">
-                  <pre className="text-sm text-zinc-700 dark:text-zinc-300 whitespace-pre-wrap">
+                <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg max-h-80 overflow-y-auto">
+                  <pre className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
                     {testResult.output}
                   </pre>
                 </div>

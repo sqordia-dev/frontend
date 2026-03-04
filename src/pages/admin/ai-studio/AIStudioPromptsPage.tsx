@@ -44,7 +44,7 @@ const getSectionColor = (section: string) => {
     'OperationsPlan': { bg: 'bg-cyan-50 dark:bg-cyan-950', text: 'text-cyan-700 dark:text-cyan-300', border: 'border-cyan-200 dark:border-cyan-800' },
     'FinancialProjections': { bg: 'bg-green-50 dark:bg-green-950', text: 'text-green-700 dark:text-green-300', border: 'border-green-200 dark:border-green-800' },
   };
-  return colors[section] || { bg: 'bg-zinc-50 dark:bg-zinc-800', text: 'text-zinc-700 dark:text-zinc-300', border: 'border-zinc-200 dark:border-zinc-700' };
+  return colors[section] || { bg: 'bg-gray-50 dark:bg-gray-800', text: 'text-gray-700 dark:text-gray-300', border: 'border-gray-200 dark:border-gray-700' };
 };
 
 const formatTimeAgo = (dateStr: string) => {
@@ -168,20 +168,20 @@ export function AIStudioPromptsPage() {
       </motion.div>
 
       {/* Filter Bar */}
-      <div className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800">
+      <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800">
         <div className="p-4">
           {/* Filters Row */}
             <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
               <div className="flex flex-wrap gap-2 items-center flex-1">
                 {/* Search */}
                 <div className="relative flex-1 min-w-[200px] max-w-md">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                   <input
                     type="text"
                     placeholder={t.search}
                     value={searchTerm}
                     onChange={e => setSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 text-sm border border-zinc-200 dark:border-zinc-700 rounded-lg bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-white focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    className="w-full pl-10 pr-4 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                   />
                 </div>
 
@@ -190,14 +190,14 @@ export function AIStudioPromptsPage() {
                   <select
                     value={filterSectionType}
                     onChange={e => setFilterSectionType(e.target.value === '' ? '' : Number(e.target.value) as SectionType)}
-                    className="appearance-none pl-3 pr-8 py-2 text-sm font-medium border border-zinc-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 cursor-pointer hover:border-orange-500/50 transition-colors"
+                    className="appearance-none pl-3 pr-8 py-2 text-sm font-medium border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 cursor-pointer hover:border-orange-500/50 transition-colors"
                   >
                     <option value="">{t.allSections}</option>
                     {SECTION_TYPE_OPTIONS.map(opt => (
                       <option key={opt.value} value={opt.value}>{opt.label}</option>
                     ))}
                   </select>
-                  <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400 pointer-events-none" />
+                  <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
                 </div>
 
                 {/* Plan Type Filter */}
@@ -205,14 +205,14 @@ export function AIStudioPromptsPage() {
                   <select
                     value={filterPlanType}
                     onChange={e => setFilterPlanType(e.target.value === '' ? '' : Number(e.target.value) as BusinessPlanType)}
-                    className="appearance-none pl-3 pr-8 py-2 text-sm font-medium border border-zinc-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 cursor-pointer hover:border-orange-500/50 transition-colors"
+                    className="appearance-none pl-3 pr-8 py-2 text-sm font-medium border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 cursor-pointer hover:border-orange-500/50 transition-colors"
                   >
                     <option value="">{t.allTypes}</option>
                     {BUSINESS_PLAN_TYPE_OPTIONS.map(opt => (
                       <option key={opt.value} value={opt.value}>{opt.label}</option>
                     ))}
                   </select>
-                  <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400 pointer-events-none" />
+                  <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
                 </div>
 
                 {/* Active Only Toggle */}
@@ -221,9 +221,9 @@ export function AIStudioPromptsPage() {
                     type="checkbox"
                     checked={filterActiveOnly}
                     onChange={e => setFilterActiveOnly(e.target.checked)}
-                    className="w-4 h-4 text-orange-500 rounded border-zinc-300 focus:ring-orange-500"
+                    className="w-4 h-4 text-orange-500 rounded border-gray-300 focus:ring-orange-500"
                   />
-                  <span className="text-zinc-600 dark:text-zinc-400 whitespace-nowrap">
+                  <span className="text-gray-600 dark:text-gray-400 whitespace-nowrap">
                     {t.activeOnly}
                   </span>
                 </label>
@@ -231,24 +231,24 @@ export function AIStudioPromptsPage() {
 
               <div className="flex items-center gap-2">
                 {/* View Toggle */}
-                <div className="flex items-center gap-1 p-1 bg-zinc-100 dark:bg-zinc-800 rounded-lg">
+                <div className="flex items-center gap-1 p-1 bg-gray-100 dark:bg-gray-800 rounded-lg">
                   <button
                     onClick={() => setViewMode('grid')}
                     className={cn(
                       'p-1.5 rounded-md transition-colors',
-                      viewMode === 'grid' ? 'bg-white dark:bg-zinc-700 shadow-sm' : 'hover:bg-zinc-200 dark:hover:bg-zinc-700'
+                      viewMode === 'grid' ? 'bg-white dark:bg-gray-700 shadow-sm' : 'hover:bg-gray-200 dark:hover:bg-gray-700'
                     )}
                   >
-                    <LayoutGrid className="w-4 h-4 text-zinc-600 dark:text-zinc-300" />
+                    <LayoutGrid className="w-4 h-4 text-gray-600 dark:text-gray-300" />
                   </button>
                   <button
                     onClick={() => setViewMode('list')}
                     className={cn(
                       'p-1.5 rounded-md transition-colors',
-                      viewMode === 'list' ? 'bg-white dark:bg-zinc-700 shadow-sm' : 'hover:bg-zinc-200 dark:hover:bg-zinc-700'
+                      viewMode === 'list' ? 'bg-white dark:bg-gray-700 shadow-sm' : 'hover:bg-gray-200 dark:hover:bg-gray-700'
                     )}
                   >
-                    <List className="w-4 h-4 text-zinc-600 dark:text-zinc-300" />
+                    <List className="w-4 h-4 text-gray-600 dark:text-gray-300" />
                   </button>
                 </div>
 
@@ -266,18 +266,18 @@ export function AIStudioPromptsPage() {
         </div>
 
       {/* Content */}
-      <div className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 p-4">
+      <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-4">
         {loading ? (
           <div className="flex items-center justify-center py-20">
             <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
           </div>
         ) : prompts.length === 0 ? (
           <div className="text-center py-20">
-            <FileText className="w-16 h-16 mx-auto text-zinc-300 dark:text-zinc-600 mb-4" />
-            <h3 className="text-lg font-medium text-zinc-700 dark:text-zinc-300 mb-2">
+            <FileText className="w-16 h-16 mx-auto text-gray-300 dark:text-gray-600 mb-4" />
+            <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">
               {t.noResults}
             </h3>
-            <p className="text-sm text-zinc-500">{t.tryAdjusting}</p>
+            <p className="text-sm text-gray-500">{t.tryAdjusting}</p>
           </div>
         ) : viewMode === 'grid' ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -290,7 +290,7 @@ export function AIStudioPromptsPage() {
                   animate={{ opacity: 1, y: 0 }}
                   whileHover={{ y: -2 }}
                   onClick={() => navigate(`/admin/ai-studio/prompts/${prompt.id}`)}
-                  className="group bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 p-4 hover:shadow-lg hover:border-orange-500/50 transition-all cursor-pointer"
+                  className="group bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-4 hover:shadow-lg hover:border-orange-500/50 transition-all cursor-pointer"
                 >
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex items-center gap-2">
@@ -302,22 +302,22 @@ export function AIStudioPromptsPage() {
                       </span>
                       <span className={cn(
                         'w-2 h-2 rounded-full',
-                        prompt.isActive ? 'bg-green-500' : 'bg-zinc-300'
+                        prompt.isActive ? 'bg-green-500' : 'bg-gray-300'
                       )} />
                     </div>
                     {prompt.alias && <DeploymentBadge alias={prompt.alias} size="sm" />}
                   </div>
 
-                  <h3 className="font-medium text-zinc-900 dark:text-white mb-1 line-clamp-2 group-hover:text-orange-500 transition-colors">
+                  <h3 className="font-medium text-gray-900 dark:text-white mb-1 line-clamp-2 group-hover:text-orange-500 transition-colors">
                     {prompt.name}
                   </h3>
 
-                  <div className="flex items-center gap-3 text-xs text-zinc-400 mb-3">
+                  <div className="flex items-center gap-3 text-xs text-gray-400 mb-3">
                     <span>{prompt.planTypeName}</span>
                     <span>v{prompt.version}</span>
                   </div>
 
-                  <div className="flex items-center justify-between text-xs text-zinc-500">
+                  <div className="flex items-center justify-between text-xs text-gray-500">
                     <div className="flex items-center gap-1">
                       <Clock className="w-3 h-3" />
                       {formatTimeAgo(prompt.updatedAt)}
@@ -335,32 +335,32 @@ export function AIStudioPromptsPage() {
           </div>
         ) : (
           /* List View */
-          <div className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 overflow-hidden">
+          <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden">
             <table className="w-full">
-              <thead className="bg-zinc-50 dark:bg-zinc-800/50 border-b border-zinc-200 dark:border-zinc-700">
+              <thead className="bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-700">
                 <tr>
-                  <th className="text-left text-xs font-semibold text-zinc-500 uppercase tracking-wider px-4 py-3">Name</th>
-                  <th className="text-left text-xs font-semibold text-zinc-500 uppercase tracking-wider px-4 py-3 hidden sm:table-cell">Section</th>
-                  <th className="text-left text-xs font-semibold text-zinc-500 uppercase tracking-wider px-4 py-3 hidden md:table-cell">Type</th>
-                  <th className="text-left text-xs font-semibold text-zinc-500 uppercase tracking-wider px-4 py-3 hidden lg:table-cell">Status</th>
-                  <th className="text-left text-xs font-semibold text-zinc-500 uppercase tracking-wider px-4 py-3">Updated</th>
+                  <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-4 py-3">Name</th>
+                  <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-4 py-3 hidden sm:table-cell">Section</th>
+                  <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-4 py-3 hidden md:table-cell">Type</th>
+                  <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-4 py-3 hidden lg:table-cell">Status</th>
+                  <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-4 py-3">Updated</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
+              <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
                 {prompts.map(prompt => {
                   const sectionColor = getSectionColor(prompt.sectionTypeName);
                   return (
                     <tr
                       key={prompt.id}
                       onClick={() => navigate(`/admin/ai-studio/prompts/${prompt.id}`)}
-                      className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50 cursor-pointer transition-colors"
+                      className="hover:bg-gray-50 dark:hover:bg-gray-800/50 cursor-pointer transition-colors"
                     >
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-3">
-                          <span className={cn('w-2 h-2 rounded-full flex-shrink-0', prompt.isActive ? 'bg-green-500' : 'bg-zinc-300')} />
+                          <span className={cn('w-2 h-2 rounded-full flex-shrink-0', prompt.isActive ? 'bg-green-500' : 'bg-gray-300')} />
                           <div>
-                            <p className="font-medium text-zinc-900 dark:text-white text-sm">{prompt.name}</p>
-                            <p className="text-xs text-zinc-500">v{prompt.version}</p>
+                            <p className="font-medium text-gray-900 dark:text-white text-sm">{prompt.name}</p>
+                            <p className="text-xs text-gray-500">v{prompt.version}</p>
                           </div>
                         </div>
                       </td>
@@ -369,13 +369,13 @@ export function AIStudioPromptsPage() {
                           {prompt.sectionTypeName}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-sm text-zinc-600 dark:text-zinc-400 hidden md:table-cell">
+                      <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400 hidden md:table-cell">
                         {prompt.planTypeName}
                       </td>
                       <td className="px-4 py-3 hidden lg:table-cell">
-                        {prompt.alias ? <DeploymentBadge alias={prompt.alias} size="sm" /> : <span className="text-xs text-zinc-400">—</span>}
+                        {prompt.alias ? <DeploymentBadge alias={prompt.alias} size="sm" /> : <span className="text-xs text-gray-400">—</span>}
                       </td>
-                      <td className="px-4 py-3 text-sm text-zinc-500">
+                      <td className="px-4 py-3 text-sm text-gray-500">
                         {formatTimeAgo(prompt.updatedAt)}
                       </td>
                     </tr>
@@ -388,7 +388,7 @@ export function AIStudioPromptsPage() {
 
         {/* Count */}
         {!loading && prompts.length > 0 && (
-          <div className="text-center text-sm text-zinc-500 mt-6">
+          <div className="text-center text-sm text-gray-500 mt-6">
             {language === 'fr' ? `${totalCount} prompts trouvés` : `${totalCount} prompts found`}
           </div>
         )}

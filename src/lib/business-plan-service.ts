@@ -33,11 +33,16 @@ export const businessPlanService = {
     }
 
     try {
-      const response = await apiClient.get<BusinessPlan[]>('/api/v1/business-plans');
-      
-      // Backend returns the array directly via Ok(result.Value)
-      const plansData = Array.isArray(response.data) ? response.data : [];
-      
+      const response = await apiClient.get('/api/v1/business-plans');
+
+      // Backend may return a paginated response { items: [...] } or a plain array
+      const data = response.data;
+      const plansData: BusinessPlan[] = Array.isArray(data)
+        ? data
+        : Array.isArray(data?.items || data?.Items)
+          ? (data.items || data.Items)
+          : [];
+
       // Defensive filter: ensure no deleted plans slip through (backend should filter, but just in case)
       return plansData.filter((plan: any) => !plan.isDeleted && !plan.IsDeleted);
     } catch (error: any) {

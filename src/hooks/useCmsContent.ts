@@ -23,6 +23,10 @@ export interface UseCmsContentReturn {
   refetch: () => Promise<void>;
 }
 
+// Skip CMS fetches when backend CMS endpoints are not available.
+// Set VITE_CMS_ENABLED=true in .env once the CMS backend is implemented.
+const CMS_ENABLED = import.meta.env.VITE_CMS_ENABLED === 'true';
+
 // Global cache keyed by pageKey:language
 const pageContentCache: Map<string, { data: PublishedContent; timestamp: number }> = new Map();
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
@@ -48,7 +52,7 @@ export function useCmsContent(pageKey: string, options: UseCmsContentOptions = {
   const cacheKey = `${pageKey}:${language}`;
 
   const fetchContent = useCallback(async () => {
-    if (!enabled || !pageKey) return;
+    if (!CMS_ENABLED || !enabled || !pageKey) return;
 
     // Check cache
     const cached = pageContentCache.get(cacheKey);

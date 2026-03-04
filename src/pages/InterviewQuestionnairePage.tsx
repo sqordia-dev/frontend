@@ -34,6 +34,8 @@ import SEO from '../components/SEO';
 import AIInterviewer from '../components/questionnaire/AIInterviewer';
 import NotionStyleEditor from '../components/questionnaire/NotionStyleEditor';
 import { AICoachBubble, AICoachBubbleRef } from '../components/ai-coach';
+// Feature flag imports reserved for future gating
+// import { useFeatureFlags } from '../hooks/useFeatureFlag';
 import { apiClient } from '../lib/api-client';
 import LanguageDropdown from '../components/layout/LanguageDropdown';
 import { authService } from '../lib/auth-service';
@@ -92,6 +94,10 @@ const TRANSLATIONS = {
     shortcutClose: 'Close dialog',
     shortcutHelp: 'Show shortcuts',
     pressKey: 'Press',
+    autoSaving: 'Saving...',
+    autoSaved: 'Saved',
+    autoSaveError: 'Save failed',
+    unsavedChanges: 'Unsaved changes',
   },
   fr: {
     loading: 'Chargement de votre entrevue...',
@@ -106,6 +112,10 @@ const TRANSLATIONS = {
     questionOf: 'Question {current} sur {total}',
     generatePlan: 'Générer le plan',
     saveError: 'Échec de la sauvegarde. Veuillez réessayer.',
+    autoSaving: 'Sauvegarde...',
+    autoSaved: 'Sauvegardé',
+    autoSaveError: 'Échec de sauvegarde',
+    unsavedChanges: 'Modifications non sauvegardées',
     shortcuts: 'Raccourcis',
     shortcutsTitle: 'Raccourcis clavier',
     shortcutNext: 'Question suivante',
@@ -135,6 +145,7 @@ function InterviewQuestionnaireContent() {
   const navigate = useNavigate();
   const { theme, language, toggleTheme } = useTheme();
   const t = TRANSLATIONS[language as keyof typeof TRANSLATIONS] || TRANSLATIONS.en;
+  // AI Coach is always visible (flag gating removed to match production behavior)
 
   // Get context for global answer tracking and business context
   const {
@@ -159,10 +170,14 @@ function InterviewQuestionnaireContent() {
   const [user, setUser] = useState<UserType | null>(null);
   const [showShortcuts, setShowShortcuts] = useState(false);
   const [isCoachOpen, setIsCoachOpen] = useState(false);
+  const [autoSaveStatus, setAutoSaveStatus] = useState<'idle' | 'dirty' | 'saving' | 'saved' | 'error'>('idle');
+  const autoSaveStatusTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Refs
   const questionRefs = useRef<Map<string, HTMLDivElement>>(new Map());
   const coachRef = useRef<AICoachBubbleRef>(null);
+  const savedAnswersRef = useRef<Record<string, string>>({});
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Current question
   const currentQuestion = questions[currentQuestionIndex];
@@ -305,6 +320,8 @@ function InterviewQuestionnaireContent() {
         id: q.id,
         questionNumber: q.questionNumber,
       })));
+      // Track what's already persisted to avoid redundant saves
+      savedAnswersRef.current = { ...initialAnswers };
 
       // Find first unanswered question
       const firstUnanswered = mappedQuestions.findIndex(q => !initialAnswers[q.id] || initialAnswers[q.id].trim().length < 10);
@@ -320,9 +337,9 @@ function InterviewQuestionnaireContent() {
     }
   };
 
-  // Save answer to backend
-  const saveAnswer = useCallback(async (questionId: string, answer: string) => {
-    if (!planId || !answer.trim()) return;
+  // Save answer to backend — returns true on success
+  const saveAnswer = useCallback(async (questionId: string, answer: string): Promise<boolean> => {
+    if (!planId || !answer.trim()) return false;
 
     setSaving(questionId);
     try {
@@ -336,12 +353,14 @@ function InterviewQuestionnaireContent() {
           ? { ...q, isAnswered: answer.trim().length >= 10, responseText: answer }
           : q
       ));
+      return true;
     } catch (err) {
       console.error('Failed to save answer:', err);
       const errorMsg = language === 'fr'
         ? 'Échec de la sauvegarde. Veuillez réessayer.'
         : 'Failed to save. Please try again.';
       setError(errorMsg);
+      return false;
     } finally {
       setSaving(null);
     }
@@ -362,9 +381,81 @@ function InterviewQuestionnaireContent() {
     }
   }, [answers, saveAnswer]);
 
+  // Show "saved" status briefly, then fade back to idle
+  const showSavedStatus = useCallback((status: 'saved' | 'error') => {
+    setAutoSaveStatus(status);
+    if (autoSaveStatusTimerRef.current) clearTimeout(autoSaveStatusTimerRef.current);
+    autoSaveStatusTimerRef.current = setTimeout(() => setAutoSaveStatus('idle'), 3000);
+  }, []);
+
+  // Save current answer if it has unsaved changes
+  const flushCurrentAnswer = useCallback(() => {
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    if (currentQuestion) {
+      const currentAnswer = answers[currentQuestion.id] || '';
+      if (currentAnswer.trim() && currentAnswer !== savedAnswersRef.current[currentQuestion.id]) {
+        setAutoSaveStatus('saving');
+        saveAnswer(currentQuestion.id, currentAnswer).then(ok => {
+          if (ok) savedAnswersRef.current[currentQuestion.id] = currentAnswer;
+          showSavedStatus(ok ? 'saved' : 'error');
+        });
+      }
+    }
+  }, [currentQuestion, answers, saveAnswer, showSavedStatus]);
+
+  // Debounced auto-save: save 2s after the user stops typing
+  useEffect(() => {
+    if (!planId || !currentQuestion) return;
+    const currentAnswer = answers[currentQuestion.id] || '';
+    const savedAnswer = savedAnswersRef.current[currentQuestion.id] || '';
+    if (currentAnswer === savedAnswer) return;
+
+    setAutoSaveStatus('dirty');
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+
+    const questionId = currentQuestion.id;
+    saveTimerRef.current = setTimeout(async () => {
+      if (currentAnswer.trim()) {
+        setAutoSaveStatus('saving');
+        const ok = await saveAnswer(questionId, currentAnswer);
+        if (ok) savedAnswersRef.current[questionId] = currentAnswer;
+        showSavedStatus(ok ? 'saved' : 'error');
+      }
+    }, 2000);
+
+    return () => { if (saveTimerRef.current) clearTimeout(saveTimerRef.current); };
+  }, [answers, currentQuestion, planId, saveAnswer, showSavedStatus]);
+
+  // Warn before closing/refreshing tab with unsaved changes
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      let hasUnsaved = !!saveTimerRef.current;
+      if (!hasUnsaved && currentQuestion) {
+        const currentAnswer = answers[currentQuestion.id] || '';
+        const savedAnswer = savedAnswersRef.current[currentQuestion.id] || '';
+        hasUnsaved = currentAnswer !== savedAnswer && !!currentAnswer.trim();
+      }
+      if (hasUnsaved) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [currentQuestion, answers]);
+
+  // Cleanup timers on unmount
+  useEffect(() => {
+    return () => {
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+      if (autoSaveStatusTimerRef.current) clearTimeout(autoSaveStatusTimerRef.current);
+    };
+  }, []);
+
   // Navigate to next question
   const goToNext = useCallback(() => {
     if (currentQuestionIndex < questions.length - 1) {
+      flushCurrentAnswer();
       const nextIndex = currentQuestionIndex + 1;
       setCurrentQuestionIndex(nextIndex);
       setExpandedSections(prev => new Set([...prev, questions[nextIndex].stepNumber]));
@@ -375,11 +466,12 @@ function InterviewQuestionnaireContent() {
         questionEl?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }, 100);
     }
-  }, [currentQuestionIndex, questions]);
+  }, [currentQuestionIndex, questions, flushCurrentAnswer]);
 
   // Navigate to previous question
   const goToPrevious = useCallback(() => {
     if (currentQuestionIndex > 0) {
+      flushCurrentAnswer();
       const prevIndex = currentQuestionIndex - 1;
       setCurrentQuestionIndex(prevIndex);
 
@@ -388,10 +480,11 @@ function InterviewQuestionnaireContent() {
         questionEl?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }, 100);
     }
-  }, [currentQuestionIndex, questions]);
+  }, [currentQuestionIndex, questions, flushCurrentAnswer]);
 
   // Jump to specific question
   const jumpToQuestion = useCallback((index: number) => {
+    flushCurrentAnswer();
     setCurrentQuestionIndex(index);
     setExpandedSections(prev => new Set([...prev, questions[index].stepNumber]));
 
@@ -399,7 +492,7 @@ function InterviewQuestionnaireContent() {
       const questionEl = questionRefs.current.get(questions[index].id);
       questionEl?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }, 100);
-  }, [questions]);
+  }, [questions, flushCurrentAnswer]);
 
   // Toggle section expansion
   const toggleSection = useCallback((stepNumber: number) => {
@@ -464,10 +557,11 @@ function InterviewQuestionnaireContent() {
   // Complete questionnaire
   const handleComplete = useCallback(() => {
     if (planId) {
+      flushCurrentAnswer();
       localStorage.removeItem(`questionnaire_step_${planId}`);
       navigate(`/generation/${planId}`);
     }
-  }, [planId, navigate]);
+  }, [planId, navigate, flushCurrentAnswer]);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -584,7 +678,7 @@ function InterviewQuestionnaireContent() {
           <div className="flex items-center justify-between gap-4">
             {/* Back button */}
             <button
-              onClick={() => navigate('/dashboard')}
+              onClick={() => { flushCurrentAnswer(); navigate('/dashboard'); }}
               className={`flex items-center gap-2 px-3 py-2 rounded-xl ${mutedColor} hover:text-orange-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all`}
             >
               <ArrowLeft size={18} />
@@ -608,6 +702,36 @@ function InterviewQuestionnaireContent() {
                 />
               </div>
             </div>
+
+            {/* Auto-save status indicator */}
+            {autoSaveStatus !== 'idle' && (
+              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-all duration-300">
+                {autoSaveStatus === 'dirty' && (
+                  <span className={`flex items-center gap-1 ${mutedColor}`}>
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                    {t.unsavedChanges}
+                  </span>
+                )}
+                {autoSaveStatus === 'saving' && (
+                  <span className="flex items-center gap-1 text-orange-500">
+                    <Loader2 size={12} className="animate-spin" />
+                    {t.autoSaving}
+                  </span>
+                )}
+                {autoSaveStatus === 'saved' && (
+                  <span className="flex items-center gap-1 text-emerald-500">
+                    <CheckCircle2 size={12} />
+                    {t.autoSaved}
+                  </span>
+                )}
+                {autoSaveStatus === 'error' && (
+                  <span className="flex items-center gap-1 text-red-500">
+                    <AlertCircle size={12} />
+                    {t.autoSaveError}
+                  </span>
+                )}
+              </div>
+            )}
 
             {/* Mobile progress */}
             <div className="flex items-center gap-2 sm:hidden">

@@ -271,7 +271,7 @@ export function AIStudioConfigPage() {
     return (
       <div className="text-center py-12">
         <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-        <p className="text-zinc-600 dark:text-zinc-400">Failed to load configuration</p>
+        <p className="text-gray-600 dark:text-gray-400">Failed to load configuration</p>
       </div>
     );
   }
@@ -294,7 +294,7 @@ export function AIStudioConfigPage() {
 
         {/* Gradient orbs */}
         <div className="absolute -top-24 -right-24 w-64 h-64 bg-slate-500/20 rounded-full blur-3xl" />
-        <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-zinc-500/20 rounded-full blur-3xl" />
+        <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-gray-500/20 rounded-full blur-3xl" />
 
         <div className="relative flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div className="flex items-center gap-4">
@@ -304,7 +304,7 @@ export function AIStudioConfigPage() {
             >
               <ArrowLeft className="w-5 h-5 text-slate-400" />
             </Link>
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-slate-500 to-zinc-600 flex items-center justify-center shadow-lg shadow-slate-500/25">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-slate-500 to-gray-600 flex items-center justify-center shadow-lg shadow-slate-500/25">
               <Settings2 className="w-6 h-6 text-white" />
             </div>
             <div>
@@ -352,12 +352,12 @@ export function AIStudioConfigPage() {
         </AnimatePresence>
 
         {/* Active Provider Selection */}
-        <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-6">
+        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-6">
           <div className="flex items-center gap-3 mb-2">
             <Zap className="w-5 h-5 text-amber-500" />
-            <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">{t.activeProvider}</h2>
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{t.activeProvider}</h2>
           </div>
-          <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-4">{t.activeProviderDesc}</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">{t.activeProviderDesc}</p>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {PROVIDERS.map((provider) => {
@@ -374,19 +374,19 @@ export function AIStudioConfigPage() {
                     'relative p-4 rounded-xl border-2 text-left transition-all',
                     isActive
                       ? `border-current ${colors.text} ${colors.light}`
-                      : 'border-zinc-200 dark:border-zinc-700 hover:border-zinc-300 dark:hover:border-zinc-600',
+                      : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600',
                     (!providerInfo?.isConfigured && !editedApiKeys[provider]) && 'opacity-50 cursor-not-allowed'
                   )}
                 >
                   <div className="flex items-center justify-between mb-2">
-                    <span className="font-semibold text-zinc-900 dark:text-white">{provider}</span>
+                    <span className="font-semibold text-gray-900 dark:text-white">{provider}</span>
                     {isActive && <CheckCircle className={cn('w-5 h-5', colors.text)} />}
                   </div>
-                  <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
                     {providerInfo?.isConfigured || editedApiKeys[provider] ? t.configured : t.notConfigured}
                   </p>
                   {providerInfo?.source && (
-                    <div className="flex items-center gap-1 mt-2 text-xs text-zinc-400">
+                    <div className="flex items-center gap-1 mt-2 text-xs text-gray-400">
                       {providerInfo.source === 'Database' ? <Database className="w-3 h-3" /> : <Server className="w-3 h-3" />}
                       <span>{providerInfo.source}</span>
                     </div>
@@ -398,12 +398,12 @@ export function AIStudioConfigPage() {
         </div>
 
         {/* Fallback Providers */}
-        <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-6">
+        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-6">
           <div className="flex items-center gap-3 mb-2">
             <RefreshCw className="w-5 h-5 text-blue-500" />
-            <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">{t.fallbackProviders}</h2>
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{t.fallbackProviders}</h2>
           </div>
-          <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-4">{t.fallbackProvidersDesc}</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">{t.fallbackProvidersDesc}</p>
 
           <div className="flex flex-wrap gap-2">
             {PROVIDERS.filter(p => p !== selectedActiveProvider).map((provider) => {
@@ -421,14 +421,14 @@ export function AIStudioConfigPage() {
                     'px-4 py-2 rounded-lg border-2 text-sm font-medium transition-all flex items-center gap-2',
                     isSelected
                       ? `${colors.light} ${colors.text} border-current`
-                      : 'border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-400',
+                      : 'border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400',
                     !isConfigured && 'opacity-50 cursor-not-allowed'
                   )}
                 >
                   {isSelected && <CheckCircle className="w-4 h-4" />}
                   {provider}
                   {selectedFallbacks.indexOf(provider) >= 0 && (
-                    <span className="ml-1 px-1.5 py-0.5 text-[10px] bg-zinc-200 dark:bg-zinc-700 rounded">
+                    <span className="ml-1 px-1.5 py-0.5 text-[10px] bg-gray-200 dark:bg-gray-700 rounded">
                       #{selectedFallbacks.indexOf(provider) + 1}
                     </span>
                   )}
@@ -439,10 +439,10 @@ export function AIStudioConfigPage() {
         </div>
 
         {/* Provider Configuration */}
-        <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-6">
+        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-6">
           <div className="flex items-center gap-3 mb-6">
             <Brain className="w-5 h-5 text-purple-500" />
-            <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">{t.providerConfig}</h2>
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{t.providerConfig}</h2>
           </div>
 
           <div className="space-y-6">
@@ -453,7 +453,7 @@ export function AIStudioConfigPage() {
               return (
                 <div
                   key={providerName}
-                  className="p-4 rounded-xl border border-zinc-200 dark:border-zinc-700 space-y-4"
+                  className="p-4 rounded-xl border border-gray-200 dark:border-gray-700 space-y-4"
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
@@ -461,8 +461,8 @@ export function AIStudioConfigPage() {
                         <Sparkles className="w-5 h-5 text-white" />
                       </div>
                       <div>
-                        <h3 className="font-semibold text-zinc-900 dark:text-white">{providerName}</h3>
-                        <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                        <h3 className="font-semibold text-gray-900 dark:text-white">{providerName}</h3>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
                           {provider?.model || editedModels[providerName]}
                         </p>
                       </div>
@@ -484,7 +484,7 @@ export function AIStudioConfigPage() {
 
                   {/* API Key */}
                   <div>
-                    <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       {t.apiKey}
                     </label>
                     <div className="flex gap-2">
@@ -494,12 +494,12 @@ export function AIStudioConfigPage() {
                           value={editedApiKeys[providerName] || ''}
                           onChange={(e) => setEditedApiKeys({ ...editedApiKeys, [providerName]: e.target.value })}
                           placeholder={provider?.apiKeyPreview || 'Enter API key...'}
-                          className="w-full px-4 py-2 border border-zinc-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                          className="w-full px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                         />
                         <button
                           type="button"
                           onClick={() => setShowApiKeys({ ...showApiKeys, [providerName]: !showApiKeys[providerName] })}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
                         >
                           {showApiKeys[providerName] ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                         </button>
@@ -507,7 +507,7 @@ export function AIStudioConfigPage() {
                       <button
                         onClick={() => handleTestProvider(providerName)}
                         disabled={testingProvider === providerName}
-                        className="px-4 py-2 bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-700 disabled:opacity-50 transition-colors flex items-center gap-2"
+                        className="px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 disabled:opacity-50 transition-colors flex items-center gap-2"
                       >
                         {testingProvider === providerName ? (
                           <>
@@ -542,13 +542,13 @@ export function AIStudioConfigPage() {
 
                   {/* Model Selection */}
                   <div>
-                    <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       {t.model}
                     </label>
                     <select
                       value={editedModels[providerName] || ''}
                       onChange={(e) => setEditedModels({ ...editedModels, [providerName]: e.target.value })}
-                      className="w-full px-4 py-2 border border-zinc-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                     >
                       {AVAILABLE_MODELS[providerName]?.map((model) => (
                         <option key={model} value={model}>
@@ -564,29 +564,29 @@ export function AIStudioConfigPage() {
         </div>
 
         {/* Section Overrides */}
-        <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-6">
+        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-6">
           <div className="flex items-center gap-3 mb-2">
             <Layers className="w-5 h-5 text-indigo-500" />
-            <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">{t.sectionOverrides}</h2>
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{t.sectionOverrides}</h2>
           </div>
-          <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-6">{t.sectionOverridesDesc}</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">{t.sectionOverridesDesc}</p>
 
           <div className="space-y-4">
             {Object.entries(SECTION_GROUPS).map(([groupName, sections]) => (
-              <div key={groupName} className="border border-zinc-200 dark:border-zinc-700 rounded-xl overflow-hidden">
+              <div key={groupName} className="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
                 <button
                   onClick={() => toggleGroup(groupName)}
-                  className="w-full flex items-center justify-between p-4 bg-zinc-50 dark:bg-zinc-800/50 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                  className="w-full flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                 >
-                  <span className="font-medium text-zinc-900 dark:text-white">{groupName}</span>
+                  <span className="font-medium text-gray-900 dark:text-white">{groupName}</span>
                   <div className="flex items-center gap-2">
-                    <span className="text-xs text-zinc-500">
+                    <span className="text-xs text-gray-500">
                       {sections.filter(s => sectionOverrides[s.key]).length} / {sections.length} overrides
                     </span>
                     {expandedGroups[groupName] ? (
-                      <ChevronDown className="w-5 h-5 text-zinc-400" />
+                      <ChevronDown className="w-5 h-5 text-gray-400" />
                     ) : (
-                      <ChevronRight className="w-5 h-5 text-zinc-400" />
+                      <ChevronRight className="w-5 h-5 text-gray-400" />
                     )}
                   </div>
                 </button>
@@ -600,14 +600,14 @@ export function AIStudioConfigPage() {
                       transition={{ duration: 0.2 }}
                       className="overflow-hidden"
                     >
-                      <div className="p-4 space-y-3 border-t border-zinc-200 dark:border-zinc-700">
+                      <div className="p-4 space-y-3 border-t border-gray-200 dark:border-gray-700">
                         {sections.map((section) => {
                           const override = sectionOverrides[section.key];
                           const label = section.label[language === 'fr' ? 'fr' : 'en'];
 
                           return (
                             <div key={section.key} className="flex items-center justify-between gap-4">
-                              <span className="text-sm text-zinc-700 dark:text-zinc-300 flex-1">{label}</span>
+                              <span className="text-sm text-gray-700 dark:text-gray-300 flex-1">{label}</span>
                               <select
                                 value={override?.provider || 'default'}
                                 onChange={(e) => handleSectionOverrideChange(section.key, e.target.value === 'default' ? null : e.target.value)}
@@ -615,7 +615,7 @@ export function AIStudioConfigPage() {
                                   'px-3 py-1.5 text-sm border rounded-lg transition-colors',
                                   override?.provider
                                     ? `${PROVIDER_COLORS[override.provider as keyof typeof PROVIDER_COLORS]?.light} ${PROVIDER_COLORS[override.provider as keyof typeof PROVIDER_COLORS]?.text} border-current`
-                                    : 'border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300'
+                                    : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300'
                                 )}
                               >
                                 <option value="default">{t.useDefault} ({selectedActiveProvider})</option>
