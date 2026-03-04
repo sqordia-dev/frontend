@@ -8,80 +8,80 @@ import ScrollToTop from './components/ScrollToTop';
 import { authService } from './lib/auth-service';
 
 // Critical path - eagerly loaded for fast initial render
-import LandingPage from './pages/LandingPageNew';
-import LoginPage from './pages/auth/login';
-import SignupPage from './pages/auth/signup';
+import LandingPage from './routes/LandingPageNew';
+import LoginPage from './routes/auth/login';
+import SignupPage from './routes/auth/signup';
 import ProtectedRoute from './components/ProtectedRoute';
 
 // Lazy-loaded pages - split into separate chunks
 // Auth pages (non-critical)
-const ForgotPasswordPage = lazy(() => import('./pages/auth/forgot-password'));
-const ResetPasswordPage = lazy(() => import('./pages/auth/reset-password'));
-const VerifyEmailPage = lazy(() => import('./pages/auth/verify-email'));
-const MicrosoftCallbackPage = lazy(() => import('./pages/auth/microsoft-callback'));
+const ForgotPasswordPage = lazy(() => import('./routes/auth/forgot-password'));
+const ResetPasswordPage = lazy(() => import('./routes/auth/reset-password'));
+const VerifyEmailPage = lazy(() => import('./routes/auth/verify-email'));
+const MicrosoftCallbackPage = lazy(() => import('./routes/auth/microsoft-callback'));
 
 // Core app pages
-const PersonaSelectionPage = lazy(() => import('./pages/PersonaSelectionPage'));
-const OnboardingPage = lazy(() => import('./pages/onboarding'));
-const DashboardPage = lazy(() => import('./pages/DashboardPage'));
-const ProfilePage = lazy(() => import('./pages/ProfilePage'));
-const CreatePlanPage = lazy(() => import('./pages/CreatePlanPage'));
-const InterviewQuestionnairePage = lazy(() => import('./pages/InterviewQuestionnairePage'));
+const PersonaSelectionPage = lazy(() => import('./routes/PersonaSelectionPage'));
+const OnboardingPage = lazy(() => import('./routes/onboarding'));
+const DashboardPage = lazy(() => import('./routes/DashboardPage'));
+const ProfilePage = lazy(() => import('./routes/ProfilePage'));
+const CreatePlanPage = lazy(() => import('./routes/CreatePlanPage'));
+const InterviewQuestionnairePage = lazy(() => import('./routes/InterviewQuestionnairePage'));
 
 // Generation and Preview pages
-const GenerationPage = lazy(() => import('./pages/generation/GenerationPage'));
-const BusinessPlanPreviewPage = lazy(() => import('./pages/business-plan/BusinessPlanPreviewPage'));
+const GenerationPage = lazy(() => import('./routes/generation/GenerationPage'));
+const BusinessPlanPreviewPage = lazy(() => import('./routes/business-plan/BusinessPlanPreviewPage'));
 
 // Templates and Examples
-const TemplateDetailPage = lazy(() => import('./pages/TemplateDetailPage'));
-const ExamplePlansPage = lazy(() => import('./pages/ExamplePlansPage'));
-const ExamplePlanDetailPage = lazy(() => import('./pages/ExamplePlanDetailPage'));
+const TemplateDetailPage = lazy(() => import('./routes/TemplateDetailPage'));
+const ExamplePlansPage = lazy(() => import('./routes/ExamplePlansPage'));
+const ExamplePlanDetailPage = lazy(() => import('./routes/ExamplePlanDetailPage'));
 
 // Subscription and Billing
-const SubscriptionPlansPage = lazy(() => import('./pages/SubscriptionPlansPage'));
-const SubscriptionPage = lazy(() => import('./pages/SubscriptionPage'));
-const InvoicesPage = lazy(() => import('./pages/InvoicesPage'));
-const CheckoutSuccessPage = lazy(() => import('./pages/CheckoutSuccessPage'));
-const CheckoutCancelPage = lazy(() => import('./pages/CheckoutCancelPage'));
+const SubscriptionPlansPage = lazy(() => import('./routes/SubscriptionPlansPage'));
+const SubscriptionPage = lazy(() => import('./routes/SubscriptionPage'));
+const InvoicesPage = lazy(() => import('./routes/InvoicesPage'));
+const CheckoutSuccessPage = lazy(() => import('./routes/CheckoutSuccessPage'));
+const CheckoutCancelPage = lazy(() => import('./routes/CheckoutCancelPage'));
 
 // Static pages
-const BlogPostPage = lazy(() => import('./pages/BlogPostPage'));
-const PrivacyPolicyPage = lazy(() => import('./pages/PrivacyPolicyPage'));
-const TermsOfServicePage = lazy(() => import('./pages/TermsOfServicePage'));
-const SecurityPage = lazy(() => import('./pages/SecurityPage'));
-const CompliancePage = lazy(() => import('./pages/CompliancePage'));
-const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
-const BugReportPage = lazy(() => import('./pages/BugReportPage'));
-const MaintenancePage = lazy(() => import('./pages/MaintenancePage'));
+const BlogPostPage = lazy(() => import('./routes/BlogPostPage'));
+const PrivacyPolicyPage = lazy(() => import('./routes/PrivacyPolicyPage'));
+const TermsOfServicePage = lazy(() => import('./routes/TermsOfServicePage'));
+const SecurityPage = lazy(() => import('./routes/SecurityPage'));
+const CompliancePage = lazy(() => import('./routes/CompliancePage'));
+const NotFoundPage = lazy(() => import('./routes/NotFoundPage'));
+const BugReportPage = lazy(() => import('./routes/BugReportPage'));
+const MaintenancePage = lazy(() => import('./routes/MaintenancePage'));
 
 // Layouts - lazy loaded as they're only needed after auth
 const AdminLayout = lazy(() => import('./components/AdminLayout'));
 const DashboardLayout = lazy(() => import('./components/DashboardLayout'));
 
 // Admin pages - all lazy loaded (admin section is rarely accessed)
-const AdminOverviewPage = lazy(() => import('./pages/admin/AdminOverviewPage'));
-const AdminUsersPage = lazy(() => import('./pages/admin/AdminUsersPage'));
-const AdminUserDetailPage = lazy(() => import('./pages/admin/AdminUserDetailPage'));
-const AdminOrganizationsPage = lazy(() => import('./pages/admin/AdminOrganizationsPage'));
-const AdminAIPromptsPage = lazy(() => import('./pages/admin/AdminAIPromptsPage'));
-const AdminActivityLogsPage = lazy(() => import('./pages/admin/AdminActivityLogsPage'));
-const AdminSystemHealthPage = lazy(() => import('./pages/admin/AdminSystemHealthPage'));
-const AdminTemplatesPage = lazy(() => import('./pages/admin/AdminTemplatesPage'));
-const AdminSettingsPage = lazy(() => import('./pages/admin/AdminSettingsPage'));
-const PromptRegistryDocPage = lazy(() => import('./pages/admin/PromptRegistryDocPage'));
+const AdminOverviewPage = lazy(() => import('./routes/admin/AdminOverviewPage'));
+const AdminUsersPage = lazy(() => import('./routes/admin/AdminUsersPage'));
+const AdminUserDetailPage = lazy(() => import('./routes/admin/AdminUserDetailPage'));
+const AdminOrganizationsPage = lazy(() => import('./routes/admin/AdminOrganizationsPage'));
+const AdminAIPromptsPage = lazy(() => import('./routes/admin/AdminAIPromptsPage'));
+const AdminActivityLogsPage = lazy(() => import('./routes/admin/AdminActivityLogsPage'));
+const AdminSystemHealthPage = lazy(() => import('./routes/admin/AdminSystemHealthPage'));
+const AdminTemplatesPage = lazy(() => import('./routes/admin/AdminTemplatesPage'));
+const AdminSettingsPage = lazy(() => import('./routes/admin/AdminSettingsPage'));
+const PromptRegistryDocPage = lazy(() => import('./routes/admin/PromptRegistryDocPage'));
 // AI Studio pages
-const AIStudioDashboard = lazy(() => import('./pages/admin/ai-studio/AIStudioDashboard'));
-const AIStudioPromptsPage = lazy(() => import('./pages/admin/ai-studio/AIStudioPromptsPage'));
-const AIStudioPromptEditorPage = lazy(() => import('./pages/admin/ai-studio/AIStudioPromptEditorPage'));
-const AIStudioAnalyticsPage = lazy(() => import('./pages/admin/ai-studio/AIStudioAnalyticsPage'));
-const AIStudioABTestingPage = lazy(() => import('./pages/admin/ai-studio/AIStudioABTestingPage'));
-const AIStudioQuestionsPage = lazy(() => import('./pages/admin/ai-studio/AIStudioQuestionsPage'));
-const AIStudioConfigPage = lazy(() => import('./pages/admin/ai-studio/AIStudioConfigPage'));
-const AdminIssueTrackerPage = lazy(() => import('./pages/admin/AdminIssueTrackerPage'));
-const AdminFeatureFlagsPage = lazy(() => import('./pages/admin/AdminFeatureFlagsPage'));
-const CmsEditorPage = lazy(() => import('./pages/admin/CmsEditorPage'));
-const CmsQuestionnairePage = lazy(() => import('./pages/admin/CmsQuestionnairePage'));
-const AdminQuestionnairePreviewPage = lazy(() => import('./pages/admin/AdminQuestionnairePreviewPage'));
+const AIStudioDashboard = lazy(() => import('./routes/admin/ai-studio/AIStudioDashboard'));
+const AIStudioPromptsPage = lazy(() => import('./routes/admin/ai-studio/AIStudioPromptsPage'));
+const AIStudioPromptEditorPage = lazy(() => import('./routes/admin/ai-studio/AIStudioPromptEditorPage'));
+const AIStudioAnalyticsPage = lazy(() => import('./routes/admin/ai-studio/AIStudioAnalyticsPage'));
+const AIStudioABTestingPage = lazy(() => import('./routes/admin/ai-studio/AIStudioABTestingPage'));
+const AIStudioQuestionsPage = lazy(() => import('./routes/admin/ai-studio/AIStudioQuestionsPage'));
+const AIStudioConfigPage = lazy(() => import('./routes/admin/ai-studio/AIStudioConfigPage'));
+const AdminIssueTrackerPage = lazy(() => import('./routes/admin/AdminIssueTrackerPage'));
+const AdminFeatureFlagsPage = lazy(() => import('./routes/admin/AdminFeatureFlagsPage'));
+const CmsEditorPage = lazy(() => import('./routes/admin/CmsEditorPage'));
+const CmsQuestionnairePage = lazy(() => import('./routes/admin/CmsQuestionnairePage'));
+const AdminQuestionnairePreviewPage = lazy(() => import('./routes/admin/AdminQuestionnairePreviewPage'));
 
 // Component to handle scroll restoration prevention
 function ScrollRestorationHandler() {

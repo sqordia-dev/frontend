@@ -1,0 +1,378 @@
+{
+  "meta": {
+    "title": "Sqordia - Planification d'affaires propulsée par l'IA en moins de 60 minutes",
+    "description": "Créez des plans d'affaires professionnels et prêts pour les banques en moins de 60 minutes avec l'assistance de l'IA. Parfait pour les entrepreneurs, consultants et OBNL.",
+    "keywords": "plan d'affaires, planification IA, plan stratégique, projections financières, outils entrepreneurs, planification startup",
+    "ogTitle": "Créez votre plan d'affaires en moins de 60 minutes | Sqordia",
+    "ogDescription": "Planification d'affaires propulsée par l'IA qui vous guide à chaque étape. Prêt pour les banques, professionnel et adapté à vos besoins."
+  },
+  "common": {
+    "loading": "Chargement...",
+    "error": "Une erreur s'est produite",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "create": "Créer",
+    "submit": "Soumettre",
+    "back": "Retour",
+    "next": "Suivant",
+    "previous": "Précédent",
+    "close": "Fermer",
+    "search": "Rechercher",
+    "filter": "Filtrer",
+    "sort": "Trier",
+    "yes": "Oui",
+    "no": "Non",
+    "confirm": "Confirmer",
+    "learnMore": "En savoir plus",
+    "getStarted": "Commencer",
+    "signIn": "Se connecter",
+    "signUp": "S'inscrire",
+    "signOut": "Se déconnecter",
+    "dashboard": "Tableau de bord",
+    "profile": "Profil",
+    "settings": "Paramètres",
+    "help": "Aide",
+    "privacy": "Confidentialité",
+    "terms": "Conditions",
+    "security": "Sécurité",
+    "allRightsReserved": "Tous droits réservés."
+  },
+  "nav": {
+    "home": "Accueil",
+    "features": "Fonctionnalités",
+    "howItWorks": "Comment ça marche",
+    "testimonials": "Témoignages",
+    "faq": "FAQ",
+    "pricing": "Tarifs",
+    "blog": "Blogue",
+    "about": "À propos",
+    "contact": "Contact",
+    "examplePlans": "Plans exemples",
+    "templates": "Modèles",
+    "login": "Connexion",
+    "getstarted": "Commencer",
+    "openMenu": "Ouvrir le menu",
+    "closeMenu": "Fermer le menu",
+    "switchToLight": "Passer au mode clair",
+    "switchToDark": "Passer au mode sombre"
+  },
+  "landing": {
+    "hero": {
+      "badge": {
+        "trusted": "2 500+ plans créés",
+        "rating": "4.9/5 évaluation"
+      },
+      "headline": {
+        "line1": "Un plan d'affaires prêt pour la banque",
+        "highlight": "en moins de 60 minutes"
+      },
+      "subheadline": "Arrêtez de fixer une page blanche. Répondez à 20 questions simples et guidées, et laissez l'IA de Sqordia créer votre stratégie professionnelle et vos projections financières automatiquement.",
+      "cta": {
+        "primary": "Commencer mon plan d'affaires",
+        "secondary": "Voir les exemples"
+      },
+      "trust": {
+        "noCard": "Aucune carte de crédit requise",
+        "trial": "Essai gratuit de 14 jours",
+        "cancel": "Annuler à tout moment"
+      },
+      "productDemo": "Démonstration du tableau de bord Sqordia"
+    },
+    "valueProps": {
+      "badge": "Pourquoi choisir Sqordia",
+      "title": "Tout ce dont vous avez besoin pour",
+      "titleHighlight": "réussir",
+      "subtitle": "Des outils puissants propulsés par l'IA conçus pour vous aider à créer des plans d'affaires professionnels efficacement",
+      "1": {
+        "title": "Intelligence IA avancée",
+        "description": "Notre IA comprend le contexte de votre entreprise et génère du contenu adapté qui résonne avec les investisseurs et les prêteurs."
+      },
+      "2": {
+        "title": "Documents prêts pour les banques",
+        "description": "Chaque plan répond aux exigences strictes des institutions financières, vous assurant d'être prêt pour toute opportunité de financement."
+      },
+      "3": {
+        "title": "Collaboration multi-utilisateurs",
+        "description": "Travaillez ensemble avec votre équipe, conseillers et parties prenantes en temps réel avec commentaires et partage intégrés."
+      },
+      "4": {
+        "title": "Modèles professionnels",
+        "description": "Choisissez parmi des modèles spécifiques à l'industrie conçus par des experts en affaires et validés par des institutions financières."
+      }
+    },
+    "features": {
+      "badge": "Comment ça marche",
+      "title": "De l'idée au plan en",
+      "titleHighlight": "3 étapes simples",
+      "subtitle": "Notre processus simplifié vous guide du concept initial à un plan d'affaires complet et professionnel",
+      "step1": {
+        "subtitle": "Étape 1",
+        "title": "Répondez aux questions intelligentes",
+        "description": "Notre questionnaire guidé par l'IA s'adapte à vos réponses, posant uniquement des questions pertinentes pour comprendre votre vision d'entreprise unique.",
+        "benefit1": "20 questions ciblées adaptées à votre industrie",
+        "benefit2": "La sauvegarde automatique préserve votre progression",
+        "benefit3": "Passez et revenez aux questions à tout moment",
+        "benefit4": "Disponible en français et en anglais",
+        "imageAlt": "Interface du questionnaire intelligent Sqordia"
+      },
+      "step2": {
+        "subtitle": "Étape 2",
+        "title": "L'IA génère votre plan",
+        "description": "Regardez notre IA transformer vos réponses en un plan d'affaires complet et professionnel avec projections financières.",
+        "benefit1": "Sommaire exécutif complet",
+        "benefit2": "Analyse de marché et paysage concurrentiel",
+        "benefit3": "Projections financières sur 5 ans",
+        "benefit4": "Analyse du seuil de rentabilité incluse",
+        "imageAlt": "Aperçu du plan d'affaires généré par l'IA"
+      },
+      "step3": {
+        "subtitle": "Étape 3",
+        "title": "Révisez, modifiez et exportez",
+        "description": "Peaufinez votre plan avec notre éditeur intuitif, puis exportez en format PDF ou Word prêt pour les investisseurs et les banques.",
+        "benefit1": "Édition en ligne pour des modifications rapides",
+        "benefit2": "Exportation en formats PDF et Word",
+        "benefit3": "Partagez avec les parties prenantes instantanément",
+        "benefit4": "Mise en forme prête pour les banques",
+        "imageAlt": "Options d'exportation et de partage du plan d'affaires"
+      }
+    },
+    "testimonials": {
+      "badge": "Histoires de réussite",
+      "title": "Fait confiance par les entrepreneurs",
+      "titleHighlight": "à travers le Canada",
+      "subtitle": "Rejoignez des milliers de propriétaires d'entreprises qui ont créé avec succès leurs plans avec Sqordia",
+      "ratingLabel": "évaluation de {rating} étoiles",
+      "items": [
+        {
+          "quote": "Sqordia m'a aidé à créer un plan d'affaires professionnel en seulement 45 minutes. La banque a approuvé mon prêt en une semaine!",
+          "name": "Marie Tremblay",
+          "role": "Fondatrice",
+          "company": "Café Montréal"
+        },
+        {
+          "quote": "En tant que consultant, j'utilise Sqordia pour tous mes clients. La qualité et la rapidité sont inégalées.",
+          "name": "David Chen",
+          "role": "Consultant en affaires",
+          "company": "Chen & Associés"
+        },
+        {
+          "quote": "La fonction de projections financières nous a fait économiser d'innombrables heures. Nos investisseurs étaient impressionnés.",
+          "name": "Sarah Williams",
+          "role": "PDG",
+          "company": "TechStart Inc."
+        }
+      ]
+    },
+    "faq": {
+      "badge": "Questions et réponses",
+      "title": "Questions",
+      "titleHighlight": "fréquentes",
+      "subtitle": "Tout ce que vous devez savoir sur la création de votre plan d'affaires avec Sqordia",
+      "items": [
+        {
+          "question": "Combien de temps faut-il pour créer un plan d'affaires?",
+          "answer": "La plupart des utilisateurs complètent leur plan d'affaires en moins de 60 minutes. Notre processus guidé par l'IA simplifie le processus de planification traditionnellement long."
+        },
+        {
+          "question": "Ai-je besoin d'expertise financière?",
+          "answer": "Non! Sqordia génère automatiquement des projections financières sur 5 ans, une analyse du seuil de rentabilité et tous les états financiers requis basés sur vos données."
+        },
+        {
+          "question": "Quels formats d'exportation sont disponibles?",
+          "answer": "Vous pouvez exporter votre plan d'affaires en formats PDF et Microsoft Word. Les deux sont formatés professionnellement et prêts pour les banques."
+        },
+        {
+          "question": "Puis-je mettre à jour mon plan après sa création?",
+          "answer": "Absolument! Vos plans sont sauvegardés dans votre tableau de bord et peuvent être modifiés à tout moment. Les mises à jour sont reflétées instantanément."
+        },
+        {
+          "question": "Mes données sont-elles sécurisées?",
+          "answer": "Oui, nous prenons la sécurité au sérieux. Toutes les données sont chiffrées et stockées dans des centres de données canadiens, conformes à la Loi 25 du Québec et à la LPRPDE."
+        },
+        {
+          "question": "Puis-je collaborer avec mon équipe?",
+          "answer": "Oui! Vous pouvez inviter des membres de l'équipe à voir et modifier vos plans. Parfait pour travailler avec des cofondateurs, conseillers ou consultants."
+        },
+        {
+          "question": "Quelle technologie IA utilisez-vous?",
+          "answer": "Sqordia utilise des modèles d'IA avancés formés spécifiquement pour la planification d'affaires, assurant une génération de contenu précise et pertinente."
+        },
+        {
+          "question": "Offrez-vous du support pour les OBNL?",
+          "answer": "Oui! Nous avons des modèles et questionnaires spécialisés pour les OBNL (organismes à but non lucratif) au Québec et à travers le Canada."
+        }
+      ]
+    },
+    "finalCta": {
+      "badge": "Prêt à commencer?",
+      "headline": "Créez votre plan d'affaires aujourd'hui",
+      "subheadline": "Rejoignez des milliers d'entrepreneurs qui ont transformé leurs idées en plans d'affaires professionnels prêts pour les banques.",
+      "cta": "Commencer gratuitement - Sans carte de crédit",
+      "trust": {
+        "noCard": "Aucune carte de crédit requise",
+        "trial": "Essai gratuit de 14 jours",
+        "cancel": "Annuler à tout moment"
+      }
+    }
+  },
+  "footer": {
+    "tagline": "Planification d'affaires propulsée par l'IA qui aide les entrepreneurs à transformer leur vision en réalité.",
+    "copyright": "Tous droits réservés.",
+    "builtIn": "Fait avec amour au Québec, Canada",
+    "product": "Produit",
+    "features": "Fonctionnalités",
+    "pricing": "Tarifs",
+    "templates": "Modèles",
+    "examples": "Plans exemples",
+    "api": "API",
+    "company": "Entreprise",
+    "about": "À propos",
+    "blog": "Blogue",
+    "careers": "Carrières",
+    "contact": "Contact",
+    "partners": "Partenaires",
+    "resources": "Ressources",
+    "documentation": "Documentation",
+    "help": "Centre d'aide",
+    "community": "Communauté",
+    "webinars": "Webinaires",
+    "status": "Statut",
+    "legal": "Légal",
+    "privacy": "Politique de confidentialité",
+    "privacyShort": "Confidentialité",
+    "terms": "Conditions d'utilisation",
+    "termsShort": "Conditions",
+    "security": "Sécurité",
+    "compliance": "Conformité",
+    "cookies": "Cookies"
+  },
+  "auth": {
+    "login": {
+      "title": "Bon retour",
+      "subtitle": "Connectez-vous pour accéder à votre tableau de bord",
+      "email": "Courriel",
+      "emailPlaceholder": "vous@entreprise.com",
+      "password": "Mot de passe",
+      "passwordPlaceholder": "Entrez votre mot de passe",
+      "rememberMe": "Se souvenir de moi",
+      "forgotPassword": "Mot de passe oublié?",
+      "button": "Se connecter",
+      "signingIn": "Connexion en cours...",
+      "noAccount": "Pas encore de compte?",
+      "signUpLink": "Inscrivez-vous",
+      "orContinueWith": "Ou continuer avec",
+      "google": "Continuer avec Google",
+      "microsoft": "Continuer avec Microsoft"
+    },
+    "signup": {
+      "title": "Créez votre compte",
+      "subtitle": "Commencez à bâtir votre plan d'affaires aujourd'hui",
+      "firstName": "Prénom",
+      "lastName": "Nom",
+      "email": "Courriel",
+      "password": "Mot de passe",
+      "confirmPassword": "Confirmer le mot de passe",
+      "acceptTerms": "J'accepte les Conditions d'utilisation et la Politique de confidentialité",
+      "button": "Créer un compte",
+      "hasAccount": "Vous avez déjà un compte?",
+      "signInLink": "Connectez-vous"
+    },
+    "forgotPassword": {
+      "title": "Réinitialiser votre mot de passe",
+      "subtitle": "Entrez votre courriel et nous vous enverrons un lien de réinitialisation",
+      "email": "Courriel",
+      "button": "Envoyer le lien",
+      "backToLogin": "Retour à la connexion",
+      "checkEmail": "Vérifiez votre courriel",
+      "emailSent": "Nous avons envoyé un lien de réinitialisation à votre courriel"
+    },
+    "resetPassword": {
+      "title": "Définir un nouveau mot de passe",
+      "subtitle": "Entrez votre nouveau mot de passe ci-dessous",
+      "password": "Nouveau mot de passe",
+      "confirmPassword": "Confirmer le nouveau mot de passe",
+      "button": "Réinitialiser le mot de passe"
+    },
+    "verifyEmail": {
+      "title": "Vérifiez votre courriel",
+      "subtitle": "Veuillez vérifier votre courriel pour le lien de vérification",
+      "resendButton": "Renvoyer le courriel de vérification",
+      "success": "Courriel vérifié avec succès!",
+      "error": "La vérification a échoué. Veuillez réessayer."
+    },
+    "errors": {
+      "invalidCredentials": "Courriel ou mot de passe invalide",
+      "emailRequired": "Le courriel est requis",
+      "passwordRequired": "Le mot de passe est requis",
+      "passwordMismatch": "Les mots de passe ne correspondent pas",
+      "emailExists": "Un compte avec ce courriel existe déjà",
+      "weakPassword": "Le mot de passe doit contenir au moins 8 caractères",
+      "networkError": "Erreur réseau. Veuillez vérifier votre connexion."
+    }
+  },
+  "dashboard": {
+    "title": "Tableau de bord",
+    "welcome": "Bienvenue",
+    "recentPlans": "Plans d'affaires récents",
+    "createNew": "Créer un nouveau plan",
+    "viewAll": "Voir tout",
+    "stats": {
+      "totalPlans": "Plans totaux",
+      "inProgress": "En cours",
+      "completed": "Complétés",
+      "readinessScore": "Score de préparation"
+    },
+    "emptyState": {
+      "title": "Aucun plan d'affaires",
+      "description": "Créez votre premier plan d'affaires pour commencer",
+      "button": "Créer votre premier plan"
+    }
+  },
+  "businessPlan": {
+    "sections": {
+      "executiveSummary": "Sommaire exécutif",
+      "companyDescription": "Description de l'entreprise",
+      "marketAnalysis": "Analyse de marché",
+      "organization": "Organisation et gestion",
+      "products": "Produits et services",
+      "marketing": "Marketing et ventes",
+      "funding": "Demande de financement",
+      "financials": "Projections financières",
+      "appendix": "Annexe"
+    },
+    "actions": {
+      "generate": "Générer avec l'IA",
+      "edit": "Modifier",
+      "preview": "Aperçu",
+      "export": "Exporter",
+      "share": "Partager",
+      "delete": "Supprimer"
+    },
+    "status": {
+      "draft": "Brouillon",
+      "inProgress": "En cours",
+      "completed": "Complété",
+      "generating": "Génération..."
+    }
+  },
+  "questionnaire": {
+    "title": "Questionnaire du plan d'affaires",
+    "progress": "Progrès",
+    "section": "Section",
+    "of": "de",
+    "next": "Suivant",
+    "previous": "Précédent",
+    "skip": "Passer pour l'instant",
+    "autoSaved": "Sauvegardé automatiquement",
+    "saving": "Sauvegarde..."
+  },
+  "errors": {
+    "notFound": "Page non trouvée",
+    "notFoundDescription": "La page que vous recherchez n'existe pas ou a été déplacée.",
+    "serverError": "Erreur serveur",
+    "unauthorized": "Non autorisé",
+    "backHome": "Retour à l'accueil"
+  }
+}

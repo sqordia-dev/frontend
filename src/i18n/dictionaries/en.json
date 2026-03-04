@@ -1,0 +1,378 @@
+{
+  "meta": {
+    "title": "Sqordia - AI-Powered Business Planning in Under 60 Minutes",
+    "description": "Create professional, bank-ready business plans in under 60 minutes with AI-powered guidance. Perfect for entrepreneurs, consultants, and non-profits.",
+    "keywords": "business plan, AI business planning, strategic planning, financial projections, entrepreneur tools, startup planning",
+    "ogTitle": "Create Your Business Plan in Under 60 Minutes | Sqordia",
+    "ogDescription": "AI-powered business planning that guides you through every step. Bank-ready, professional, and tailored to your needs."
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "submit": "Submit",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "close": "Close",
+    "search": "Search",
+    "filter": "Filter",
+    "sort": "Sort",
+    "yes": "Yes",
+    "no": "No",
+    "confirm": "Confirm",
+    "learnMore": "Learn More",
+    "getStarted": "Get Started",
+    "signIn": "Sign In",
+    "signUp": "Sign Up",
+    "signOut": "Sign Out",
+    "dashboard": "Dashboard",
+    "profile": "Profile",
+    "settings": "Settings",
+    "help": "Help",
+    "privacy": "Privacy",
+    "terms": "Terms",
+    "security": "Security",
+    "allRightsReserved": "All rights reserved."
+  },
+  "nav": {
+    "home": "Home",
+    "features": "Features",
+    "howItWorks": "How It Works",
+    "testimonials": "Testimonials",
+    "faq": "FAQ",
+    "pricing": "Pricing",
+    "blog": "Blog",
+    "about": "About",
+    "contact": "Contact",
+    "examplePlans": "Example Plans",
+    "templates": "Templates",
+    "login": "Login",
+    "getstarted": "Get Started",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "switchToLight": "Switch to light mode",
+    "switchToDark": "Switch to dark mode"
+  },
+  "landing": {
+    "hero": {
+      "badge": {
+        "trusted": "2,500+ plans created",
+        "rating": "4.9/5 rating"
+      },
+      "headline": {
+        "line1": "A Bank-Ready Business Plan",
+        "highlight": "in Under 60 Minutes"
+      },
+      "subheadline": "Stop staring at a blank page. Answer 20 simple, guided questions and let Sqordia's AI build your professional strategy and automated financial projections instantly.",
+      "cta": {
+        "primary": "Start My Business Plan",
+        "secondary": "View Example Plans"
+      },
+      "trust": {
+        "noCard": "No credit card required",
+        "trial": "14-day free trial",
+        "cancel": "Cancel anytime"
+      },
+      "productDemo": "Sqordia dashboard demonstration"
+    },
+    "valueProps": {
+      "badge": "Why Choose Sqordia",
+      "title": "Everything You Need to",
+      "titleHighlight": "Succeed",
+      "subtitle": "Powerful AI-driven tools designed to help you create professional business plans efficiently",
+      "1": {
+        "title": "AI-Powered Intelligence",
+        "description": "Our advanced AI understands your business context and generates tailored content that resonates with investors and lenders."
+      },
+      "2": {
+        "title": "Bank-Ready Documents",
+        "description": "Every plan meets the stringent requirements of financial institutions, ensuring you're prepared for any funding opportunity."
+      },
+      "3": {
+        "title": "Multi-User Collaboration",
+        "description": "Work together with your team, advisors, and stakeholders in real-time with built-in commenting and sharing."
+      },
+      "4": {
+        "title": "Professional Templates",
+        "description": "Choose from industry-specific templates designed by business experts and validated by financial institutions."
+      }
+    },
+    "features": {
+      "badge": "How It Works",
+      "title": "From Idea to Plan in",
+      "titleHighlight": "3 Simple Steps",
+      "subtitle": "Our streamlined process guides you from initial concept to a complete, professional business plan",
+      "step1": {
+        "subtitle": "Step 1",
+        "title": "Answer Smart Questions",
+        "description": "Our AI-guided questionnaire adapts to your responses, asking only relevant questions to understand your unique business vision.",
+        "benefit1": "20 focused questions tailored to your industry",
+        "benefit2": "Auto-save keeps your progress safe",
+        "benefit3": "Skip and return to questions anytime",
+        "benefit4": "Available in English and French",
+        "imageAlt": "Sqordia smart questionnaire interface"
+      },
+      "step2": {
+        "subtitle": "Step 2",
+        "title": "AI Generates Your Plan",
+        "description": "Watch as our AI transforms your answers into a comprehensive, professional business plan with financial projections.",
+        "benefit1": "Complete executive summary",
+        "benefit2": "Market analysis and competitive landscape",
+        "benefit3": "5-year financial projections",
+        "benefit4": "Break-even analysis included",
+        "imageAlt": "AI-generated business plan preview"
+      },
+      "step3": {
+        "subtitle": "Step 3",
+        "title": "Review, Edit & Export",
+        "description": "Fine-tune your plan with our intuitive editor, then export to PDF or Word format ready for investors and banks.",
+        "benefit1": "Inline editing for quick changes",
+        "benefit2": "Export to PDF and Word formats",
+        "benefit3": "Share with stakeholders instantly",
+        "benefit4": "Bank-ready formatting",
+        "imageAlt": "Business plan export and sharing options"
+      }
+    },
+    "testimonials": {
+      "badge": "Success Stories",
+      "title": "Trusted by Entrepreneurs",
+      "titleHighlight": "Across Canada",
+      "subtitle": "Join thousands of business owners who have successfully created their plans with Sqordia",
+      "ratingLabel": "{rating} star rating",
+      "items": [
+        {
+          "quote": "Sqordia helped me create a professional business plan in just 45 minutes. The bank approved my loan within a week!",
+          "name": "Marie Tremblay",
+          "role": "Founder",
+          "company": "Cafe Montreal"
+        },
+        {
+          "quote": "As a consultant, I use Sqordia for all my clients. The quality and speed are unmatched.",
+          "name": "David Chen",
+          "role": "Business Consultant",
+          "company": "Chen & Associates"
+        },
+        {
+          "quote": "The financial projections feature saved us countless hours. Our investors were impressed.",
+          "name": "Sarah Williams",
+          "role": "CEO",
+          "company": "TechStart Inc."
+        }
+      ]
+    },
+    "faq": {
+      "badge": "Questions & Answers",
+      "title": "Frequently Asked",
+      "titleHighlight": "Questions",
+      "subtitle": "Everything you need to know about creating your business plan with Sqordia",
+      "items": [
+        {
+          "question": "How long does it take to create a business plan?",
+          "answer": "Most users complete their business plan in under 60 minutes. Our AI-guided process streamlines the traditionally lengthy planning process."
+        },
+        {
+          "question": "Do I need financial expertise?",
+          "answer": "No! Sqordia automatically generates 5-year financial projections, break-even analysis, and all required financial statements based on your inputs."
+        },
+        {
+          "question": "What export formats are available?",
+          "answer": "You can export your business plan to PDF and Microsoft Word formats. Both are professionally formatted and bank-ready."
+        },
+        {
+          "question": "Can I update my plan after creation?",
+          "answer": "Absolutely! Your plans are saved in your dashboard and can be edited anytime. Updates are reflected instantly."
+        },
+        {
+          "question": "Is my data secure?",
+          "answer": "Yes, we take security seriously. All data is encrypted and stored in Canadian data centers, compliant with Quebec Law 25 and PIPEDA."
+        },
+        {
+          "question": "Can I collaborate with my team?",
+          "answer": "Yes! You can invite team members to view and edit your plans. Perfect for working with co-founders, advisors, or consultants."
+        },
+        {
+          "question": "What AI technology do you use?",
+          "answer": "Sqordia uses advanced AI models trained specifically for business planning, ensuring accurate and relevant content generation."
+        },
+        {
+          "question": "Do you offer support for non-profits?",
+          "answer": "Yes! We have specialized templates and questionnaires for OBNL (non-profit organizations) in Quebec and across Canada."
+        }
+      ]
+    },
+    "finalCta": {
+      "badge": "Ready to Start?",
+      "headline": "Create Your Business Plan Today",
+      "subheadline": "Join thousands of entrepreneurs who have transformed their ideas into professional, bank-ready business plans.",
+      "cta": "Start Free - No Credit Card",
+      "trust": {
+        "noCard": "No credit card required",
+        "trial": "14-day free trial",
+        "cancel": "Cancel anytime"
+      }
+    }
+  },
+  "footer": {
+    "tagline": "AI-powered business planning that helps entrepreneurs turn their vision into reality.",
+    "copyright": "All rights reserved.",
+    "builtIn": "Made with love in Quebec, Canada",
+    "product": "Product",
+    "features": "Features",
+    "pricing": "Pricing",
+    "templates": "Templates",
+    "examples": "Example Plans",
+    "api": "API",
+    "company": "Company",
+    "about": "About",
+    "blog": "Blog",
+    "careers": "Careers",
+    "contact": "Contact",
+    "partners": "Partners",
+    "resources": "Resources",
+    "documentation": "Documentation",
+    "help": "Help Center",
+    "community": "Community",
+    "webinars": "Webinars",
+    "status": "Status",
+    "legal": "Legal",
+    "privacy": "Privacy Policy",
+    "privacyShort": "Privacy",
+    "terms": "Terms of Service",
+    "termsShort": "Terms",
+    "security": "Security",
+    "compliance": "Compliance",
+    "cookies": "Cookies"
+  },
+  "auth": {
+    "login": {
+      "title": "Welcome Back",
+      "subtitle": "Sign in to continue to your dashboard",
+      "email": "Email",
+      "emailPlaceholder": "you@company.com",
+      "password": "Password",
+      "passwordPlaceholder": "Enter your password",
+      "rememberMe": "Remember me",
+      "forgotPassword": "Forgot password?",
+      "button": "Sign In",
+      "signingIn": "Signing in...",
+      "noAccount": "Don't have an account?",
+      "signUpLink": "Sign up",
+      "orContinueWith": "Or continue with",
+      "google": "Continue with Google",
+      "microsoft": "Continue with Microsoft"
+    },
+    "signup": {
+      "title": "Create Your Account",
+      "subtitle": "Start building your business plan today",
+      "firstName": "First Name",
+      "lastName": "Last Name",
+      "email": "Email",
+      "password": "Password",
+      "confirmPassword": "Confirm Password",
+      "acceptTerms": "I accept the Terms of Service and Privacy Policy",
+      "button": "Create Account",
+      "hasAccount": "Already have an account?",
+      "signInLink": "Sign in"
+    },
+    "forgotPassword": {
+      "title": "Reset Your Password",
+      "subtitle": "Enter your email and we'll send you a reset link",
+      "email": "Email",
+      "button": "Send Reset Link",
+      "backToLogin": "Back to login",
+      "checkEmail": "Check your email",
+      "emailSent": "We've sent a password reset link to your email"
+    },
+    "resetPassword": {
+      "title": "Set New Password",
+      "subtitle": "Enter your new password below",
+      "password": "New Password",
+      "confirmPassword": "Confirm New Password",
+      "button": "Reset Password"
+    },
+    "verifyEmail": {
+      "title": "Verify Your Email",
+      "subtitle": "Please check your email for a verification link",
+      "resendButton": "Resend Verification Email",
+      "success": "Email verified successfully!",
+      "error": "Verification failed. Please try again."
+    },
+    "errors": {
+      "invalidCredentials": "Invalid email or password",
+      "emailRequired": "Email is required",
+      "passwordRequired": "Password is required",
+      "passwordMismatch": "Passwords do not match",
+      "emailExists": "An account with this email already exists",
+      "weakPassword": "Password must be at least 8 characters",
+      "networkError": "Network error. Please check your connection."
+    }
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "welcome": "Welcome back",
+    "recentPlans": "Recent Business Plans",
+    "createNew": "Create New Plan",
+    "viewAll": "View All",
+    "stats": {
+      "totalPlans": "Total Plans",
+      "inProgress": "In Progress",
+      "completed": "Completed",
+      "readinessScore": "Readiness Score"
+    },
+    "emptyState": {
+      "title": "No business plans yet",
+      "description": "Create your first business plan to get started",
+      "button": "Create Your First Plan"
+    }
+  },
+  "businessPlan": {
+    "sections": {
+      "executiveSummary": "Executive Summary",
+      "companyDescription": "Company Description",
+      "marketAnalysis": "Market Analysis",
+      "organization": "Organization & Management",
+      "products": "Products & Services",
+      "marketing": "Marketing & Sales",
+      "funding": "Funding Request",
+      "financials": "Financial Projections",
+      "appendix": "Appendix"
+    },
+    "actions": {
+      "generate": "Generate with AI",
+      "edit": "Edit",
+      "preview": "Preview",
+      "export": "Export",
+      "share": "Share",
+      "delete": "Delete"
+    },
+    "status": {
+      "draft": "Draft",
+      "inProgress": "In Progress",
+      "completed": "Completed",
+      "generating": "Generating..."
+    }
+  },
+  "questionnaire": {
+    "title": "Business Plan Questionnaire",
+    "progress": "Progress",
+    "section": "Section",
+    "of": "of",
+    "next": "Next",
+    "previous": "Previous",
+    "skip": "Skip for now",
+    "autoSaved": "Auto-saved",
+    "saving": "Saving..."
+  },
+  "errors": {
+    "notFound": "Page not found",
+    "notFoundDescription": "The page you're looking for doesn't exist or has been moved.",
+    "serverError": "Server error",
+    "unauthorized": "Unauthorized",
+    "backHome": "Back to Home"
+  }
+}

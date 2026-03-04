@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  frontend-nextjs:
+    build:
+      context: .
+      dockerfile: Dockerfile.nextjs
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://host.docker.internal:5241}
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://host.docker.internal:5241}
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+    networks:
+      - sqordia-network
+
+networks:
+  sqordia-network:
+    external: true
+    name: sqordia_default
