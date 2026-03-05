@@ -11,8 +11,8 @@ export interface EmailTemplateDto {
   variablesJson: string;
   isActive: boolean;
   version: number;
-  createdAt: string;
-  updatedAt: string;
+  created: string;
+  lastModified: string | null;
 }
 
 export interface CreateEmailTemplateRequest {
