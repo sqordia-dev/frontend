@@ -9,6 +9,7 @@ import {
   Flag,
   Sparkles,
   Mail,
+  BarChart3,
 } from 'lucide-react';
 import { AdminAIAssistant } from './admin/AdminAIAssistant';
 import { authService } from '../lib/auth-service';
@@ -37,6 +38,7 @@ const PAGE_TITLES: Record<string, { en: string; fr: string }> = {
   '/admin/activity-logs': { en: 'Activity Logs', fr: "Journal d'activité" },
   '/admin/settings': { en: 'Settings', fr: 'Paramètres' },
   '/admin/email-templates': { en: 'Email Templates', fr: 'Modèles courriel' },
+  '/admin/metrics': { en: 'Metrics & Insights', fr: 'Métriques et analyses' },
 };
 
 export default function AdminLayout() {
@@ -119,6 +121,12 @@ export default function AdminLayout() {
           href: '/admin/email-templates',
           icon: Mail,
           shortcut: '⌘7',
+        },
+        {
+          name: t('admin.nav.metrics'),
+          href: '/admin/metrics',
+          icon: BarChart3,
+          shortcut: '⌘8',
         },
       ],
     },

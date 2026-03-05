@@ -86,9 +86,11 @@ const AIStudioAnalyticsPage = lazy(() => import('./pages/admin/ai-studio/AIStudi
 const AIStudioABTestingPage = lazy(() => import('./pages/admin/ai-studio/AIStudioABTestingPage'));
 const AIStudioQuestionsPage = lazy(() => import('./pages/admin/ai-studio/AIStudioQuestionsPage'));
 const AIStudioConfigPage = lazy(() => import('./pages/admin/ai-studio/AIStudioConfigPage'));
+const AdminMetricsPage = lazy(() => import('./pages/admin/AdminMetricsPage'));
 const AdminIssueTrackerPage = lazy(() => import('./pages/admin/AdminIssueTrackerPage'));
 const AdminFeatureFlagsPage = lazy(() => import('./pages/admin/AdminFeatureFlagsPage'));
 const AdminEmailTemplatesPage = lazy(() => import('./pages/admin/AdminEmailTemplatesPage'));
+const EmailTemplatesDocPage = lazy(() => import('./pages/admin/EmailTemplatesDocPage'));
 const CmsEditorPage = lazy(() => import('./pages/admin/CmsEditorPage'));
 const CmsQuestionnairePage = lazy(() => import('./pages/admin/CmsQuestionnairePage'));
 const AdminQuestionnairePreviewPage = lazy(() => import('./pages/admin/AdminQuestionnairePreviewPage'));
@@ -369,6 +371,8 @@ function App() {
               <Route path="feature-flags" element={<AdminFeatureFlagsPage />} />
               <Route path="bug-report" element={<AdminIssueTrackerPage />} />
               <Route path="email-templates" element={<AdminEmailTemplatesPage />} />
+              <Route path="email-templates/docs" element={<EmailTemplatesDocPage />} />
+              <Route path="metrics" element={<AdminMetricsPage />} />
             </Route>
 
             {/* 404 catch-all route - must be last */}
