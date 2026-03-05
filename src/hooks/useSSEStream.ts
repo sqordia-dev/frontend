@@ -8,6 +8,14 @@ interface SSEStreamOptions<T> {
   onError?: (error: string) => void;
 }
 
+// Derive API base URL using the same logic as api-client.ts
+function getSSEBaseUrl(): string {
+  if (import.meta.env.MODE === 'development') return '';
+  const envUrl = import.meta.env.VITE_API_URL;
+  if (envUrl && envUrl.trim() !== '') return envUrl;
+  return 'https://sqordia-production-api.proudwater-90136d2c.canadacentral.azurecontainerapps.io';
+}
+
 /**
  * Reusable hook for consuming SSE (Server-Sent Events) streams.
  * Uses fetch + ReadableStream instead of axios (which doesn't support SSE).
@@ -25,7 +33,7 @@ export function useSSEStream() {
 
     try {
       const token = localStorage.getItem('accessToken');
-      const baseUrl = import.meta.env.MODE === 'development' ? '' : (import.meta.env.VITE_API_URL || '');
+      const baseUrl = getSSEBaseUrl();
 
       const response = await fetch(`${baseUrl}${url}`, {
         method: 'POST',
