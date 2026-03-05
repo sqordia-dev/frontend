@@ -13,6 +13,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { getUserFriendlyError } from '../../utils/error-messages';
 import { cn } from '../../lib/utils';
 import { useIsMobile } from '../../hooks';
+import { SqordiaLoader } from '../../components/ui/SqordiaLoader';
 
 const STATUS_OPTIONS = ['All', 'Active', 'Inactive', 'Suspended', 'Banned'] as const;
 const USER_TYPE_OPTIONS = ['All', 'Entrepreneur', 'Consultant', 'OBNL'] as const;
@@ -548,14 +549,8 @@ export default function AdminUsersPage() {
 
         {/* Content */}
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-20">
-            <div className="relative">
-              <div className="w-10 h-10 rounded-full border-2 border-gray-200 dark:border-gray-700" />
-              <div className="absolute top-0 left-0 w-10 h-10 rounded-full border-2 border-momentum-orange border-t-transparent animate-spin" />
-            </div>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-4">
-              {language === 'fr' ? 'Chargement...' : 'Loading users...'}
-            </p>
+          <div className="flex items-center justify-center py-20">
+            <SqordiaLoader size="md" message={language === 'fr' ? 'Chargement...' : 'Loading users...'} />
           </div>
         ) : viewMode === 'list' ? (
           /* TABLE VIEW - Polished Design */

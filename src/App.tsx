@@ -51,6 +51,18 @@ const CompliancePage = lazy(() => import('./pages/CompliancePage'));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 const BugReportPage = lazy(() => import('./pages/BugReportPage'));
 
+// Financial Projections (Previsio) pages
+const FinancialProjectionsPage = lazy(() => import('./pages/financial/FinancialProjectionsPage'));
+const SalesSection = lazy(() => import('./pages/financial/SalesSection'));
+const COGSSection = lazy(() => import('./pages/financial/COGSSection'));
+const PayrollSection = lazy(() => import('./pages/financial/PayrollSection'));
+const SalesExpensesSection = lazy(() => import('./pages/financial/SalesExpensesSection'));
+const AdminExpensesSection = lazy(() => import('./pages/financial/AdminExpensesSection'));
+const CapexSection = lazy(() => import('./pages/financial/CapexSection'));
+const ProjectCostSection = lazy(() => import('./pages/financial/ProjectCostSection'));
+const FinancingSection = lazy(() => import('./pages/financial/FinancingSection'));
+const ReportsSection = lazy(() => import('./pages/financial/ReportsSection'));
+
 // Layouts - lazy loaded as they're only needed after auth
 const AdminLayout = lazy(() => import('./components/AdminLayout'));
 const DashboardLayout = lazy(() => import('./components/DashboardLayout'));
@@ -76,6 +88,7 @@ const AIStudioQuestionsPage = lazy(() => import('./pages/admin/ai-studio/AIStudi
 const AIStudioConfigPage = lazy(() => import('./pages/admin/ai-studio/AIStudioConfigPage'));
 const AdminIssueTrackerPage = lazy(() => import('./pages/admin/AdminIssueTrackerPage'));
 const AdminFeatureFlagsPage = lazy(() => import('./pages/admin/AdminFeatureFlagsPage'));
+const AdminEmailTemplatesPage = lazy(() => import('./pages/admin/AdminEmailTemplatesPage'));
 const CmsEditorPage = lazy(() => import('./pages/admin/CmsEditorPage'));
 const CmsQuestionnairePage = lazy(() => import('./pages/admin/CmsQuestionnairePage'));
 const AdminQuestionnairePreviewPage = lazy(() => import('./pages/admin/AdminQuestionnairePreviewPage'));
@@ -245,6 +258,27 @@ function App() {
               }
             />
 
+            {/* Financial Projections (Previsio) */}
+            <Route
+              path="/business-plan/:id/financials"
+              element={
+                <ProtectedRoute>
+                  <FinancialProjectionsPage />
+                </ProtectedRoute>
+              }
+            >
+              <Route index element={<Navigate to="sales" replace />} />
+              <Route path="sales" element={<SalesSection />} />
+              <Route path="cogs" element={<COGSSection />} />
+              <Route path="payroll" element={<PayrollSection />} />
+              <Route path="sales-expenses" element={<SalesExpensesSection />} />
+              <Route path="admin-expenses" element={<AdminExpensesSection />} />
+              <Route path="capex" element={<CapexSection />} />
+              <Route path="project-cost" element={<ProjectCostSection />} />
+              <Route path="financing" element={<FinancingSection />} />
+              <Route path="reports" element={<ReportsSection />} />
+            </Route>
+
             {/* Subscription management */}
             <Route
               path="/subscription"
@@ -334,6 +368,7 @@ function App() {
               <Route path="ai-studio/config" element={<AIStudioConfigPage />} />
               <Route path="feature-flags" element={<AdminFeatureFlagsPage />} />
               <Route path="bug-report" element={<AdminIssueTrackerPage />} />
+              <Route path="email-templates" element={<AdminEmailTemplatesPage />} />
             </Route>
 
             {/* 404 catch-all route - must be last */}

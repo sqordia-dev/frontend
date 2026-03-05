@@ -200,7 +200,7 @@ export function RichTextEditor({
 
   return (
     <div
-      className={`border border-gray-300 dark:border-gray-600 rounded-lg flex flex-col overflow-hidden bg-white dark:bg-gray-900 ${disabled ? 'opacity-50' : ''} ${className}`}
+      className={`border border-warm-gray-300 dark:border-border rounded-lg flex flex-col overflow-hidden bg-white dark:bg-card ${disabled ? 'opacity-50' : ''} ${className}`}
     >
       <EditorToolbar editor={editor} disabled={disabled} />
       <div className="flex-1 min-h-0 overflow-y-auto">

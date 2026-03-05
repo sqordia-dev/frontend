@@ -26,6 +26,8 @@ import { VisualElementRenderer } from '../visual-elements';
 import HoverActions from './HoverActions';
 import { cn } from '../../lib/utils';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useIsTouchDevice } from '../../hooks';
+import { Button } from '../ui/button';
 
 interface SectionCardV2Props {
   section: PlanSection;
@@ -123,6 +125,8 @@ const SectionCardV2 = React.memo(function SectionCardV2({
   alwaysShowActions = false,
 }: SectionCardV2Props) {
   const { language } = useTheme();
+  const isTouchDevice = useIsTouchDevice();
+  const shouldAlwaysShowActions = alwaysShowActions || isTouchDevice;
   const hasContent = section.content && section.content.trim().length > 0;
   const Icon = getSectionIcon(section.title);
 
@@ -150,7 +154,7 @@ const SectionCardV2 = React.memo(function SectionCardV2({
       variants={sectionVariants}
       initial="hidden"
       animate="visible"
-      className="group scroll-mt-24 mb-12"
+      className="group scroll-mt-20 lg:scroll-mt-24 mb-12"
       aria-labelledby={`section-title-${section.id}`}
     >
       {/* Section Header - Number + Title + Hover Actions */}
@@ -172,7 +176,7 @@ const SectionCardV2 = React.memo(function SectionCardV2({
           <h2
             id={`section-title-${section.id}`}
             className={cn(
-              'text-2xl font-semibold tracking-tight',
+              'text-lg sm:text-xl lg:text-2xl font-semibold tracking-tight',
               'text-warm-gray-900 dark:text-white'
             )}
           >
@@ -187,7 +191,7 @@ const SectionCardV2 = React.memo(function SectionCardV2({
             onRegenerate={onRegenerate}
             isRegenerating={isRegenerating}
             showAIAssist={false}
-            alwaysVisible={alwaysShowActions}
+            alwaysVisible={shouldAlwaysShowActions}
           />
         )}
       </header>
@@ -195,7 +199,7 @@ const SectionCardV2 = React.memo(function SectionCardV2({
       {/* Content Area */}
       <AnimatePresence mode="wait">
         {isRegenerating ? (
-          <LoadingState key="loading" language={language} />
+          <LoadingState key="loading" />
         ) : hasContent ? (
           <motion.div
             key="content"
@@ -220,13 +224,12 @@ const SectionCardV2 = React.memo(function SectionCardV2({
           <EmptyState
             key="empty"
             onGenerate={onGenerate}
-            language={language}
           />
         )}
       </AnimatePresence>
 
       {/* Subtle Divider */}
-      <div className="mt-12 h-px bg-gradient-to-r from-transparent via-warm-gray-200 dark:via-warm-gray-800 to-transparent" />
+      <div className="mt-12 h-px bg-gradient-to-r from-transparent via-warm-gray-200 dark:via-secondary to-transparent" />
     </motion.section>
   );
 });
@@ -236,7 +239,8 @@ export default SectionCardV2;
 /**
  * Loading state while regenerating
  */
-function LoadingState({ language }: { language: string }) {
+function LoadingState() {
+  const { t } = useTheme();
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -249,7 +253,7 @@ function LoadingState({ language }: { language: string }) {
         <div className="absolute inset-0 rounded-full bg-momentum-orange/20 animate-ping" />
       </div>
       <p className="mt-4 text-sm text-warm-gray-500 dark:text-warm-gray-400">
-        {language === 'fr' ? 'Régénération en cours...' : 'Regenerating content...'}
+        {t('preview.section.regenerating')}
       </p>
     </motion.div>
   );
@@ -260,17 +264,16 @@ function LoadingState({ language }: { language: string }) {
  */
 function EmptyState({
   onGenerate,
-  language,
 }: {
   onGenerate: () => void;
-  language: string;
 }) {
+  const { t } = useTheme();
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -10 }}
-      className="flex flex-col items-center justify-center py-12 rounded-xl bg-warm-gray-50 dark:bg-warm-gray-900/50 border border-dashed border-warm-gray-200 dark:border-warm-gray-800"
+      className="flex flex-col items-center justify-center py-12 rounded-xl bg-warm-gray-50 dark:bg-card/50 border border-dashed border-warm-gray-200 dark:border-border"
     >
       <motion.div
         animate={{ y: [0, -4, 0] }}
@@ -279,21 +282,16 @@ function EmptyState({
         <Sparkles size={32} className="text-warm-gray-300 dark:text-warm-gray-600" />
       </motion.div>
       <p className="mt-3 text-warm-gray-500 dark:text-warm-gray-400 text-sm">
-        {language === 'fr' ? 'Cette section est vide' : 'This section is empty'}
+        {t('preview.section.empty')}
       </p>
-      <button
+      <Button
+        variant="brand"
+        size="sm"
         onClick={onGenerate}
-        className={cn(
-          'mt-4 px-4 py-2 rounded-lg',
-          'bg-momentum-orange text-white',
-          'hover:bg-orange-600',
-          'transition-colors',
-          'text-sm font-medium',
-          'focus:outline-none focus:ring-2 focus:ring-momentum-orange/50 focus:ring-offset-2'
-        )}
+        className="mt-4"
       >
-        {language === 'fr' ? 'Générer avec l\'IA' : 'Generate with AI'}
-      </button>
+        {t('preview.section.generate')}
+      </Button>
     </motion.div>
   );
 }

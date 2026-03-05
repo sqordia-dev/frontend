@@ -74,7 +74,7 @@ export function TableOfContents({
         </div>
 
         {/* Grid of cards */}
-        <div className="p-4 grid grid-cols-2 gap-3">
+        <div className="p-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
           {sections.map((section) => {
             const isActive = activeSectionId === section.id;
             return (

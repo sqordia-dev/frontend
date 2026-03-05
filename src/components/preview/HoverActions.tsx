@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { Edit2, RefreshCw, Sparkles, Loader2 } from 'lucide-react';
 import { cn } from '../../lib/utils';
+import { useTheme } from '../../contexts/ThemeContext';
 
 interface HoverActionsProps {
   onEdit: () => void;
@@ -42,6 +43,8 @@ export default function HoverActions({
   className,
   alwaysVisible = false,
 }: HoverActionsProps) {
+  const { t } = useTheme();
+
   return (
     <motion.div
       className={cn(
@@ -63,15 +66,16 @@ export default function HoverActions({
         }}
         className={cn(
           'p-2 rounded-lg',
+          'min-w-[44px] min-h-[44px] flex items-center justify-center',
           'text-warm-gray-500 hover:text-warm-gray-900',
           'hover:bg-warm-gray-100',
           'dark:text-warm-gray-400 dark:hover:text-white',
-          'dark:hover:bg-warm-gray-800',
+          'dark:hover:bg-secondary',
           'transition-colors duration-150',
           'focus:outline-none focus:ring-2 focus:ring-momentum-orange/50'
         )}
-        title="Edit section"
-        aria-label="Edit section"
+        title={t('preview.actions.edit')}
+        aria-label={t('preview.actions.edit')}
       >
         <Edit2 size={18} />
       </motion.button>
@@ -86,6 +90,7 @@ export default function HoverActions({
         disabled={isRegenerating}
         className={cn(
           'p-2 rounded-lg',
+          'min-w-[44px] min-h-[44px] flex items-center justify-center',
           'text-warm-gray-500 hover:text-momentum-orange',
           'hover:bg-orange-50',
           'dark:text-warm-gray-400 dark:hover:text-momentum-orange',
@@ -94,8 +99,8 @@ export default function HoverActions({
           'focus:outline-none focus:ring-2 focus:ring-momentum-orange/50',
           'disabled:opacity-50 disabled:cursor-not-allowed'
         )}
-        title={isRegenerating ? 'Regenerating...' : 'Regenerate with AI'}
-        aria-label={isRegenerating ? 'Regenerating...' : 'Regenerate with AI'}
+        title={isRegenerating ? t('preview.actions.regenerating') : t('preview.actions.regenerate')}
+        aria-label={isRegenerating ? t('preview.actions.regenerating') : t('preview.actions.regenerate')}
       >
         {isRegenerating ? (
           <Loader2 size={18} className="animate-spin" />
@@ -114,6 +119,7 @@ export default function HoverActions({
           }}
           className={cn(
             'p-2 rounded-lg',
+            'min-w-[44px] min-h-[44px] flex items-center justify-center',
             'text-warm-gray-500 hover:text-purple-600',
             'hover:bg-purple-50',
             'dark:text-warm-gray-400 dark:hover:text-purple-400',
@@ -121,8 +127,8 @@ export default function HoverActions({
             'transition-colors duration-150',
             'focus:outline-none focus:ring-2 focus:ring-purple-500/50'
           )}
-          title="AI Assist"
-          aria-label="AI Assist"
+          title={t('preview.actions.aiAssist')}
+          aria-label={t('preview.actions.aiAssist')}
         >
           <Sparkles size={18} />
         </motion.button>

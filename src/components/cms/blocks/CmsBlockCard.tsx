@@ -1,7 +1,10 @@
+import { useState } from 'react';
+import { Sparkles } from 'lucide-react';
 import { CmsContentBlock } from '../../../lib/cms-types';
 import { CmsTextBlock } from './CmsTextBlock';
 import { CmsRichTextBlock } from './CmsRichTextBlock';
 import { CmsImageBlock } from './CmsImageBlock';
+import { CmsAiGeneratorPanel } from '../CmsAiGeneratorPanel';
 
 interface CmsBlockCardProps {
   block: CmsContentBlock;
@@ -18,6 +21,8 @@ export function CmsBlockCard({
   icon,
   iconColorClass,
 }: CmsBlockCardProps) {
+  const [showAiPanel, setShowAiPanel] = useState(false);
+  const canUseAi = block.blockType === 'Text' || block.blockType === 'RichText';
   // Format block key for display
   const formatBlockLabel = (blockKey: string): string => {
     const parts = blockKey.split('.');
@@ -172,13 +177,38 @@ export function CmsBlockCard({
             {formatBlockLabel(block.blockKey)}
           </span>
         </div>
-        <span className="material-symbols-outlined text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity cursor-grab">
-          drag_indicator
-        </span>
+        <div className="flex items-center gap-2">
+          {canUseAi && (
+            <button
+              onClick={() => setShowAiPanel(true)}
+              className="flex items-center gap-1 px-2 py-1 text-xs font-medium text-purple-600 bg-purple-50 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-purple-100"
+              title="Generate with AI"
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              AI
+            </button>
+          )}
+          <span className="material-symbols-outlined text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity cursor-grab">
+            drag_indicator
+          </span>
+        </div>
       </div>
 
       {/* Content editor */}
       {renderEditor()}
+
+      {/* AI Generator Panel */}
+      {showAiPanel && (
+        <CmsAiGeneratorPanel
+          blockType={block.blockType}
+          sectionContext={block.blockKey}
+          onAccept={(generated) => {
+            onContentChange(generated);
+            setShowAiPanel(false);
+          }}
+          onClose={() => setShowAiPanel(false)}
+        />
+      )}
     </div>
   );
 }

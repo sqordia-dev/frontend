@@ -68,4 +68,20 @@ export const queryKeys = {
     questions: (planId: string) => [...queryKeys.questionnaire.all, planId, 'questions'] as const,
     responses: (planId: string) => [...queryKeys.questionnaire.all, planId, 'responses'] as const,
   },
+  // Previsio Financial Projections
+  previsio: {
+    all: ['previsio'] as const,
+    plan: (businessPlanId: string) => [...queryKeys.previsio.all, businessPlanId, 'plan'] as const,
+    sales: (businessPlanId: string) => [...queryKeys.previsio.all, businessPlanId, 'sales'] as const,
+    cogs: (businessPlanId: string) => [...queryKeys.previsio.all, businessPlanId, 'cogs'] as const,
+    payroll: (businessPlanId: string) => [...queryKeys.previsio.all, businessPlanId, 'payroll'] as const,
+    salesExpenses: (businessPlanId: string) => [...queryKeys.previsio.all, businessPlanId, 'sales-expenses'] as const,
+    adminExpenses: (businessPlanId: string) => [...queryKeys.previsio.all, businessPlanId, 'admin-expenses'] as const,
+    capex: (businessPlanId: string) => [...queryKeys.previsio.all, businessPlanId, 'capex'] as const,
+    financing: (businessPlanId: string) => [...queryKeys.previsio.all, businessPlanId, 'financing'] as const,
+    projectCost: (businessPlanId: string) => [...queryKeys.previsio.all, businessPlanId, 'project-cost'] as const,
+    statements: (businessPlanId: string, type: string, year?: number) =>
+      [...queryKeys.previsio.all, businessPlanId, 'statements', type, year] as const,
+    ratios: (businessPlanId: string) => [...queryKeys.previsio.all, businessPlanId, 'ratios'] as const,
+  },
 } as const;

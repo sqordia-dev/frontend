@@ -2,6 +2,7 @@ import { useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, CheckCircle2 } from 'lucide-react';
 import { PlanSection } from '../../types/preview';
+import { useTheme } from '../../contexts/ThemeContext';
 
 interface MobileDrawerProps {
   /** Whether the drawer is open */
@@ -35,6 +36,7 @@ export default function MobileDrawer({
   navigationTarget,
   onNavigationComplete,
 }: MobileDrawerProps) {
+  const { t } = useTheme();
   const drawerRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const previousActiveElement = useRef<HTMLElement | null>(null);
@@ -158,23 +160,23 @@ export default function MobileDrawer({
             aria-label="Navigation drawer"
           >
             {/* Solid container with subtle shadow */}
-            <div className="relative bg-white dark:bg-gray-900 rounded-t-3xl border-t border-x border-gray-200 dark:border-gray-700 shadow-[0_-8px_32px_rgba(0,0,0,0.15)] dark:shadow-[0_-8px_32px_rgba(0,0,0,0.5)] flex flex-col h-full">
+            <div className="relative bg-white dark:bg-card rounded-t-3xl border-t border-x border-warm-gray-200 dark:border-border shadow-[0_-8px_32px_rgba(0,0,0,0.15)] dark:shadow-[0_-8px_32px_rgba(0,0,0,0.5)] flex flex-col h-full">
               {/* Gradient accent line at top */}
               <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-momentum-orange via-orange-400 to-amber-400 rounded-t-3xl" />
 
               {/* Drag handle */}
               <div className="flex justify-center pt-3 pb-2">
-                <div className="w-10 h-1 bg-gray-300 dark:bg-gray-600 rounded-full" />
+                <div className="w-10 h-1 bg-warm-gray-300 dark:bg-border rounded-full" />
               </div>
 
               {/* Header */}
-              <div className="flex items-center justify-between px-5 pb-4 border-b border-gray-200 dark:border-gray-700">
+              <div className="flex items-center justify-between px-5 pb-4 border-b border-warm-gray-200 dark:border-border">
                 <div>
-                  <h2 className="text-[11px] font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400">
-                    On this page
+                  <h2 className="text-[11px] font-bold uppercase tracking-widest text-warm-gray-500 dark:text-warm-gray-400">
+                    {t('preview.mobile.onThisPage')}
                   </h2>
                   {planName && (
-                    <p className="text-base font-semibold text-gray-900 dark:text-white mt-1 truncate max-w-[220px]" title={planName}>
+                    <p className="text-base font-semibold text-warm-gray-900 dark:text-white mt-1 truncate max-w-[220px]" title={planName}>
                       {planName}
                     </p>
                   )}
@@ -182,10 +184,10 @@ export default function MobileDrawer({
                 <button
                   ref={closeButtonRef}
                   onClick={onClose}
-                  className="p-2.5 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-momentum-orange"
-                  aria-label="Close navigation menu"
+                  className="p-2.5 hover:bg-warm-gray-100 dark:hover:bg-secondary rounded-xl transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-momentum-orange"
+                  aria-label={t('preview.mobile.closeMenu')}
                 >
-                  <X size={22} className="text-gray-600 dark:text-gray-300" aria-hidden="true" />
+                  <X size={22} className="text-warm-gray-600 dark:text-warm-gray-300" aria-hidden="true" />
                 </button>
               </div>
 
@@ -195,9 +197,9 @@ export default function MobileDrawer({
               </div>
 
               {/* Footer hint */}
-              <div className="px-5 py-3 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
-                <p className="text-xs text-center text-gray-500 dark:text-gray-400 font-medium">
-                  Tap a section to navigate
+              <div className="px-5 py-3 border-t border-warm-gray-200 dark:border-border bg-warm-gray-50 dark:bg-secondary">
+                <p className="text-xs text-center text-warm-gray-500 dark:text-warm-gray-400 font-medium">
+                  {t('preview.mobile.tapToNavigate')}
                 </p>
               </div>
             </div>
@@ -244,7 +246,7 @@ export function DrawerNavigationItem({
       className={`group w-full text-left px-4 py-3.5 rounded-xl transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-momentum-orange ${
         isActive
           ? 'bg-orange-50 dark:bg-orange-900/30 border-l-4 border-momentum-orange'
-          : 'hover:bg-gray-100 dark:hover:bg-gray-800 active:bg-gray-200 dark:active:bg-gray-700'
+          : 'hover:bg-warm-gray-100 dark:hover:bg-secondary active:bg-warm-gray-200 dark:active:bg-secondary'
       }`}
       whileTap={{ scale: 0.98 }}
       aria-current={isActive ? 'page' : undefined}
@@ -259,7 +261,7 @@ export function DrawerNavigationItem({
               <div className="w-2 h-2 rounded-full bg-white" />
             </div>
           ) : (
-            <div className="w-5 h-5 rounded-full border-2 border-gray-300 dark:border-gray-600 group-hover:border-gray-400 dark:group-hover:border-gray-500 transition-colors" />
+            <div className="w-5 h-5 rounded-full border-2 border-warm-gray-300 dark:border-border group-hover:border-warm-gray-400 dark:group-hover:border-warm-gray-500 transition-colors" />
           )}
         </div>
 
@@ -270,7 +272,7 @@ export function DrawerNavigationItem({
               ? 'text-momentum-orange'
               : hasContent || isPast
                 ? 'text-emerald-500'
-                : 'text-gray-400 dark:text-gray-500'
+                : 'text-warm-gray-400 dark:text-warm-gray-500'
           }`}>
             {icon}
           </span>
@@ -281,8 +283,8 @@ export function DrawerNavigationItem({
           isActive
             ? 'font-bold text-momentum-orange'
             : hasContent || isPast
-              ? 'font-medium text-gray-600 dark:text-gray-300'
-              : 'font-medium text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white'
+              ? 'font-medium text-warm-gray-600 dark:text-warm-gray-300'
+              : 'font-medium text-warm-gray-700 dark:text-warm-gray-300 group-hover:text-warm-gray-900 dark:group-hover:text-white'
         }`}>
           {index + 1}. {section.title}
         </span>
@@ -302,7 +304,7 @@ export interface DrawerSectionLabelProps {
  */
 export function DrawerSectionLabel({ label }: DrawerSectionLabelProps) {
   return (
-    <p className="text-[11px] uppercase tracking-widest text-gray-400 dark:text-gray-500 font-semibold mb-2 px-4 py-2">
+    <p className="text-[11px] uppercase tracking-widest text-warm-gray-400 dark:text-warm-gray-500 font-semibold mb-2 px-4 py-2">
       {label}
     </p>
   );
@@ -335,7 +337,7 @@ export function MobileTocItem({
       className={`group w-full text-left px-4 py-3.5 rounded-xl transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-momentum-orange ${
         isActive
           ? 'bg-orange-50 dark:bg-orange-900/30 border-l-4 border-momentum-orange'
-          : 'hover:bg-gray-100 dark:hover:bg-gray-800 active:bg-gray-200 dark:active:bg-gray-700'
+          : 'hover:bg-warm-gray-100 dark:hover:bg-secondary active:bg-warm-gray-200 dark:active:bg-secondary'
       }`}
       whileTap={{ scale: 0.98 }}
       aria-current={isActive ? 'location' : undefined}
@@ -350,7 +352,7 @@ export function MobileTocItem({
               <div className="w-2 h-2 rounded-full bg-white" />
             </div>
           ) : (
-            <div className="w-5 h-5 rounded-full border-2 border-gray-300 dark:border-gray-600 group-hover:border-gray-400 dark:group-hover:border-gray-500 transition-colors" />
+            <div className="w-5 h-5 rounded-full border-2 border-warm-gray-300 dark:border-border group-hover:border-warm-gray-400 dark:group-hover:border-warm-gray-500 transition-colors" />
           )}
         </div>
 
@@ -361,7 +363,7 @@ export function MobileTocItem({
               ? 'text-momentum-orange'
               : isPast
                 ? 'text-emerald-500'
-                : 'text-gray-400 dark:text-gray-500'
+                : 'text-warm-gray-400 dark:text-warm-gray-500'
           }`}>
             {icon}
           </span>
@@ -372,8 +374,8 @@ export function MobileTocItem({
           isActive
             ? 'font-bold text-momentum-orange'
             : isPast
-              ? 'font-medium text-gray-600 dark:text-gray-300'
-              : 'font-medium text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white'
+              ? 'font-medium text-warm-gray-600 dark:text-warm-gray-300'
+              : 'font-medium text-warm-gray-700 dark:text-warm-gray-300 group-hover:text-warm-gray-900 dark:group-hover:text-white'
         }`}>
           {title}
         </span>

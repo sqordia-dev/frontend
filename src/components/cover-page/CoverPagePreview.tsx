@@ -266,7 +266,7 @@ export function CoverPagePreview({ settings, className = '', compact = false }: 
 
   const baseClasses = compact
     ? 'relative p-4 shadow-sm rounded-lg overflow-hidden'
-    : 'relative aspect-[8.5/11] p-8 sm:p-12 shadow-lg rounded-xl overflow-hidden';
+    : 'relative aspect-[8.5/11] max-h-[75vh] sm:max-h-none p-6 sm:p-8 lg:p-12 shadow-lg rounded-xl overflow-hidden';
 
   return (
     <div

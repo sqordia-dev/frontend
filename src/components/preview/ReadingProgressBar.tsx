@@ -62,7 +62,7 @@ export function ReadingProgressBar({
     >
       {/* Background track */}
       <div
-        className="w-full bg-gray-200/50 dark:bg-gray-800/50 backdrop-blur-sm"
+        className="w-full bg-warm-gray-200/50 dark:bg-secondary/50 backdrop-blur-sm"
         style={{ height: `${height}px` }}
       >
         {/* Progress fill */}
@@ -88,8 +88,8 @@ export function ReadingProgressBar({
           exit={{ opacity: 0, y: -10 }}
           className={cn(
             'absolute right-4 px-2 py-0.5 text-xs font-medium rounded-full',
-            'bg-white dark:bg-gray-900 shadow-sm border border-gray-200 dark:border-gray-700',
-            'text-gray-700 dark:text-gray-300',
+            'bg-white dark:bg-card shadow-sm border border-warm-gray-200 dark:border-border',
+            'text-warm-gray-700 dark:text-warm-gray-300',
             position === 'top' ? 'top-2' : 'bottom-2'
           )}
         >
@@ -125,7 +125,7 @@ export function CircularProgress({
       <svg className="transform -rotate-90" width={size} height={size}>
         {/* Background circle */}
         <circle
-          className="text-gray-200 dark:text-gray-700"
+          className="text-warm-gray-200 dark:text-border"
           strokeWidth={strokeWidth}
           stroke="currentColor"
           fill="transparent"
@@ -153,7 +153,7 @@ export function CircularProgress({
       </svg>
       {/* Center text */}
       <div className="absolute inset-0 flex items-center justify-center">
-        <span className="text-xs font-semibold text-gray-700 dark:text-gray-300">
+        <span className="text-xs font-semibold text-warm-gray-700 dark:text-warm-gray-300">
           {progress}%
         </span>
       </div>

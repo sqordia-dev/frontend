@@ -1,4 +1,4 @@
-import { Loader2 } from 'lucide-react';
+import { SqordiaLoader } from './ui/SqordiaLoader';
 
 /**
  * Full-page loading spinner for lazy-loaded routes
@@ -11,16 +11,7 @@ export default function PageLoader() {
       role="status"
       aria-label="Loading page"
     >
-      <div className="text-center">
-        <Loader2
-          size={48}
-          className="animate-spin mx-auto mb-4 text-orange-500"
-          aria-hidden="true"
-        />
-        <p className="text-gray-600 dark:text-gray-400 text-sm">
-          Loading...
-        </p>
-      </div>
+      <SqordiaLoader size="lg" message="Loading..." />
     </div>
   );
 }

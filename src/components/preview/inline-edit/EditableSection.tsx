@@ -345,7 +345,7 @@ export function EditableSection({
             transition={{ duration: 0.15 }}
             className="absolute -right-2 top-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-10"
           >
-            <div className="flex items-center gap-1.5 px-2 py-1 text-xs font-medium text-warm-gray-500 dark:text-warm-gray-400 bg-white dark:bg-warm-gray-800 rounded-md shadow-sm border border-warm-gray-200 dark:border-warm-gray-700">
+            <div className="flex items-center gap-1.5 px-2 py-1 text-xs font-medium text-warm-gray-500 dark:text-warm-gray-400 bg-white dark:bg-secondary rounded-md shadow-sm border border-warm-gray-200 dark:border-border">
               <Pencil size={11} aria-hidden="true" />
               <span className="hidden sm:inline">Edit</span>
             </div>
@@ -356,7 +356,7 @@ export function EditableSection({
       {/* Subtle left border indicator on hover (like Notion) */}
       <div className={cn(
         'absolute -left-4 top-0 bottom-0 w-0.5 rounded-full transition-all duration-200',
-        !isEditing && !disabled ? 'bg-transparent group-hover:bg-warm-gray-300 dark:group-hover:bg-warm-gray-600' : 'bg-transparent'
+        !isEditing && !disabled ? 'bg-transparent group-hover:bg-warm-gray-300 dark:group-hover:bg-border' : 'bg-transparent'
       )} />
 
       {/* Edit mode indicator - subtle warm border */}
@@ -394,9 +394,9 @@ export function EditableSection({
             transition={{ duration: 0.15 }}
             className={cn(
               'fixed z-50 p-3',
-              'bg-white dark:bg-warm-gray-800',
+              'bg-white dark:bg-secondary',
               'rounded-xl shadow-elevated',
-              'border border-warm-gray-200 dark:border-warm-gray-700'
+              'border border-warm-gray-200 dark:border-border'
             )}
             style={{
               left: editPopoverPositionRef.current.x,
@@ -410,8 +410,8 @@ export function EditableSection({
               onChange={(e) => setEditPopoverValue(e.target.value)}
               className={cn(
                 'w-72 min-h-[80px] px-3 py-2 text-sm rounded-lg resize-y',
-                'border border-warm-gray-200 dark:border-warm-gray-600',
-                'bg-warm-gray-50 dark:bg-warm-gray-700',
+                'border border-warm-gray-200 dark:border-border',
+                'bg-warm-gray-50 dark:bg-secondary',
                 'text-warm-gray-900 dark:text-white',
                 'placeholder:text-warm-gray-400',
                 'focus:ring-2 focus:ring-momentum-orange/30 focus:border-momentum-orange',
@@ -435,7 +435,7 @@ export function EditableSection({
                 className={cn(
                   'px-3 py-1.5 text-sm font-medium rounded-lg transition-colors',
                   'text-warm-gray-500 dark:text-warm-gray-400',
-                  'hover:bg-warm-gray-100 dark:hover:bg-warm-gray-700'
+                  'hover:bg-warm-gray-100 dark:hover:bg-secondary'
                 )}
               >
                 Cancel
@@ -506,8 +506,8 @@ export function EditableSection({
             transition={{ duration: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
             className={cn(
               'flex items-center justify-between gap-3 mt-6 -mx-4 px-4 py-3',
-              'bg-warm-gray-50 dark:bg-warm-gray-900/50',
-              'border-t border-warm-gray-200 dark:border-warm-gray-800',
+              'bg-warm-gray-50 dark:bg-card/50',
+              'border-t border-warm-gray-200 dark:border-border',
               'rounded-b-lg'
             )}
           >
@@ -520,7 +520,7 @@ export function EditableSection({
                   'p-2 rounded-lg transition-colors',
                   'text-warm-gray-400 dark:text-warm-gray-500',
                   'hover:text-warm-gray-600 dark:hover:text-warm-gray-300',
-                  'hover:bg-warm-gray-100 dark:hover:bg-warm-gray-800',
+                  'hover:bg-warm-gray-100 dark:hover:bg-secondary',
                   'disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent'
                 )}
                 title="Undo (Ctrl+Z)"
@@ -535,7 +535,7 @@ export function EditableSection({
                   'p-2 rounded-lg transition-colors',
                   'text-warm-gray-400 dark:text-warm-gray-500',
                   'hover:text-warm-gray-600 dark:hover:text-warm-gray-300',
-                  'hover:bg-warm-gray-100 dark:hover:bg-warm-gray-800',
+                  'hover:bg-warm-gray-100 dark:hover:bg-secondary',
                   'disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent'
                 )}
                 title="Redo (Ctrl+Shift+Z)"
@@ -574,7 +574,7 @@ export function EditableSection({
                   'px-3 py-1.5 text-sm font-medium rounded-lg transition-colors',
                   'text-warm-gray-500 dark:text-warm-gray-400',
                   'hover:text-warm-gray-700 dark:hover:text-warm-gray-200',
-                  'hover:bg-warm-gray-100 dark:hover:bg-warm-gray-800'
+                  'hover:bg-warm-gray-100 dark:hover:bg-secondary'
                 )}
               >
                 Cancel

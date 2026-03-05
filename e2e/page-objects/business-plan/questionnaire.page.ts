@@ -37,7 +37,7 @@ export class QuestionnairePage extends BasePage {
    * Next button - orange button with "Next" text
    */
   get nextButton(): Locator {
-    return this.page.locator('button.bg-orange-500, button.bg-orange-600').filter({ hasText: /Next|Suivant/i }).first();
+    return this.page.locator('button').filter({ hasText: /Next|Suivant/i }).first();
   }
 
   /**

@@ -39,7 +39,7 @@ export default function DocumentCanvas({
       <motion.main
         className={cn(
           'min-h-screen',
-          'bg-warm-gray-50 dark:bg-warm-gray-950',
+          'bg-warm-gray-50 dark:bg-background',
           // Padding for content
           'pt-8 pb-24 px-6',
           'lg:pt-12 lg:pb-32',
@@ -105,6 +105,6 @@ export function DocumentSection({
  */
 export function DocumentDivider() {
   return (
-    <div className="my-16 h-px bg-gradient-to-r from-transparent via-warm-gray-200 dark:via-warm-gray-800 to-transparent" />
+    <div className="my-16 h-px bg-gradient-to-r from-transparent via-warm-gray-200 dark:via-secondary to-transparent" />
   );
 }

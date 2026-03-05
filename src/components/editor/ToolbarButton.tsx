@@ -47,7 +47,7 @@ export function ToolbarButton({
           focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-1
           ${isActive
             ? 'bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400'
-            : 'text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+            : 'text-warm-gray-700 dark:text-warm-gray-300 hover:bg-warm-gray-200 dark:hover:bg-secondary'
           }
           ${disabled
             ? 'opacity-50 cursor-not-allowed'
@@ -62,10 +62,10 @@ export function ToolbarButton({
       {tooltip && showTooltip && !disabled && (
         <div
           role="tooltip"
-          className="absolute z-50 bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs font-medium text-white bg-gray-900 dark:bg-gray-700 rounded shadow-lg whitespace-nowrap pointer-events-none"
+          className="absolute z-50 bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs font-medium text-white bg-warm-gray-900 dark:bg-secondary rounded shadow-lg whitespace-nowrap pointer-events-none"
         >
           {tooltip}
-          <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-900 dark:border-t-gray-700" />
+          <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-warm-gray-900 dark:border-t-secondary" />
         </div>
       )}
     </div>

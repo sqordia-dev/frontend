@@ -515,5 +515,17 @@ export const adminService = {
       return response.data.value;
     }
     return response.data;
-  }
+  },
+
+  // ======== AI Insights ========
+
+  async getAiInsights(): Promise<any[]> {
+    const response = await apiClient.get('/api/v1/admin/ai-insights');
+    return extractApiData<any[]>(response.data);
+  },
+
+  async runBatchAnalysis(): Promise<any> {
+    const response = await apiClient.post('/api/v1/admin/analytics/run-batch');
+    return extractApiData<any>(response.data);
+  },
 };

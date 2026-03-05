@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ChevronLeft,
@@ -27,11 +27,22 @@ import {
   FileType,
   ArrowLeft,
   Home,
+  Sun,
+  Moon,
+  Settings,
+  User,
   type LucideIcon,
 } from 'lucide-react';
 import { PlanSection } from '../../types/preview';
 import { cn } from '../../lib/utils';
 import { useTheme } from '../../contexts/ThemeContext';
+import { authService } from '../../lib/auth-service';
+import type { User as UserType } from '../../lib/types';
+import LanguageDropdown from '../layout/LanguageDropdown';
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem,
+  DropdownMenuSeparator, DropdownMenuTrigger,
+} from '../ui/dropdown-menu';
 
 export type ExportFormat = 'pdf' | 'word';
 
@@ -125,7 +136,25 @@ export default function CollapsibleSidebar({
   onCollapseChange,
 }: CollapsibleSidebarProps) {
   const navigate = useNavigate();
-  const { language } = useTheme();
+  const { language, t, theme, toggleTheme } = useTheme();
+  const [user, setUser] = useState<UserType | null>(null);
+  const [imgError, setImgError] = useState(false);
+
+  useEffect(() => {
+    authService.getCurrentUser()
+      .then((u) => { setUser(u); setImgError(false); })
+      .catch(() => {});
+  }, []);
+
+  const initials = user
+    ? `${(user.firstName?.[0] || '').toUpperCase()}${(user.lastName?.[0] || '').toUpperCase()}`
+    : '';
+
+  const handleLogout = async () => {
+    await authService.logout();
+    navigate('/login');
+  };
+
   const [isCollapsed, setIsCollapsed] = useState(() => {
     const stored = localStorage.getItem('sqordia-sidebar-collapsed');
     return stored ? JSON.parse(stored) : defaultCollapsed;
@@ -164,8 +193,8 @@ export default function CollapsibleSidebar({
     <motion.aside
       className={cn(
         'fixed left-0 top-0 h-full z-40',
-        'bg-white dark:bg-warm-gray-900',
-        'border-r border-warm-gray-100 dark:border-warm-gray-800',
+        'bg-white dark:bg-card',
+        'border-r border-warm-gray-100 dark:border-border',
         'flex flex-col',
         'shadow-sm',
         'hidden lg:flex' // Hide on mobile
@@ -176,7 +205,7 @@ export default function CollapsibleSidebar({
     >
       {/* Header */}
       <div className={cn(
-        'border-b border-warm-gray-100 dark:border-warm-gray-800',
+        'border-b border-warm-gray-100 dark:border-border',
         isCollapsed ? 'px-2 py-3' : 'px-3 py-3'
       )}>
         {/* Back to Dashboard button */}
@@ -185,10 +214,10 @@ export default function CollapsibleSidebar({
           className={cn(
             'flex items-center gap-2 w-full rounded-lg transition-colors duration-150',
             'text-warm-gray-500 hover:text-warm-gray-700 dark:text-warm-gray-400 dark:hover:text-warm-gray-200',
-            'hover:bg-warm-gray-100 dark:hover:bg-warm-gray-800',
+            'hover:bg-warm-gray-100 dark:hover:bg-secondary',
             isCollapsed ? 'p-2 justify-center' : 'px-2 py-1.5 mb-3'
           )}
-          aria-label={language === 'fr' ? 'Retour au tableau de bord' : 'Back to dashboard'}
+          aria-label={t('preview.sidebar.backToDashboard')}
         >
           {isCollapsed ? (
             <Home size={18} />
@@ -196,7 +225,7 @@ export default function CollapsibleSidebar({
             <>
               <ArrowLeft size={16} />
               <span className="text-xs font-medium">
-                {language === 'fr' ? 'Tableau de bord' : 'Dashboard'}
+                {t('preview.sidebar.dashboard')}
               </span>
             </>
           )}
@@ -227,7 +256,7 @@ export default function CollapsibleSidebar({
                     'inline-flex items-center text-[10px] font-medium px-1.5 py-0.5 rounded',
                     planStatus.toLowerCase().includes('generated') || planStatus.toLowerCase().includes('généré')
                       ? 'bg-green-50 text-green-600 dark:bg-green-900/30 dark:text-green-400'
-                      : 'bg-warm-gray-100 text-warm-gray-500 dark:bg-warm-gray-800 dark:text-warm-gray-400'
+                      : 'bg-warm-gray-100 text-warm-gray-500 dark:bg-secondary dark:text-warm-gray-400'
                   )}>
                     {planStatus}
                   </span>
@@ -241,10 +270,10 @@ export default function CollapsibleSidebar({
             className={cn(
               'flex-shrink-0 p-1.5 rounded-md',
               'text-warm-gray-400 hover:text-warm-gray-600 dark:hover:text-warm-gray-300',
-              'hover:bg-warm-gray-100 dark:hover:bg-warm-gray-800',
+              'hover:bg-warm-gray-100 dark:hover:bg-secondary',
               'transition-colors duration-150'
             )}
-            aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            aria-label={isCollapsed ? t('preview.sidebar.expandSidebar') : t('preview.sidebar.collapseSidebar')}
           >
             {isCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
           </button>
@@ -260,7 +289,7 @@ export default function CollapsibleSidebar({
         {onCoverPageClick && (
           <NavItem
             icon={BookOpen}
-            label={language === 'fr' ? 'Page couverture' : 'Cover Page'}
+            label={t('preview.sidebar.coverPage')}
             isActive={isCoverPageActive}
             isCollapsed={isCollapsed}
             onClick={onCoverPageClick}
@@ -271,7 +300,7 @@ export default function CollapsibleSidebar({
         {onTOCClick && (
           <NavItem
             icon={List}
-            label={language === 'fr' ? 'Table des matières' : 'Table of Contents'}
+            label={t('preview.sidebar.toc')}
             isActive={isTOCActive}
             isCollapsed={isCollapsed}
             onClick={onTOCClick}
@@ -280,7 +309,7 @@ export default function CollapsibleSidebar({
 
         {/* Divider */}
         {!isCollapsed && (
-          <div className="my-2 mx-2 border-t border-warm-gray-100 dark:border-warm-gray-800" />
+          <div className="my-2 mx-2 border-t border-warm-gray-100 dark:border-border" />
         )}
         {isCollapsed && <div className="my-2" />}
 
@@ -309,7 +338,7 @@ export default function CollapsibleSidebar({
 
       {/* Progress Section */}
       <div className={cn(
-        'border-t border-warm-gray-100 dark:border-warm-gray-800',
+        'border-t border-warm-gray-100 dark:border-border',
         isCollapsed ? 'px-2 py-3' : 'px-4 py-3'
       )}>
         <AnimatePresence mode="wait">
@@ -322,13 +351,13 @@ export default function CollapsibleSidebar({
             >
               <div className="flex items-center justify-between mb-2">
                 <span className="text-[11px] font-medium text-warm-gray-500 dark:text-warm-gray-400 uppercase tracking-wide">
-                  {language === 'fr' ? 'Progression' : 'Progress'}
+                  {t('preview.sidebar.progress')}
                 </span>
                 <span className="text-sm font-semibold text-momentum-orange">
                   {completionPercent}%
                 </span>
               </div>
-              <div className="h-1.5 rounded-full bg-warm-gray-100 dark:bg-warm-gray-800 overflow-hidden">
+              <div className="h-1.5 rounded-full bg-warm-gray-100 dark:bg-secondary overflow-hidden">
                 <motion.div
                   className="h-full bg-gradient-to-r from-momentum-orange to-orange-400 rounded-full"
                   initial={{ width: 0 }}
@@ -337,7 +366,7 @@ export default function CollapsibleSidebar({
                 />
               </div>
               <p className="text-[11px] text-warm-gray-400 dark:text-warm-gray-500 mt-1.5">
-                {completedCount} / {sections.length} {language === 'fr' ? 'sections' : 'sections'}
+                {completedCount} / {sections.length} {t('preview.sidebar.sections')}
               </p>
             </motion.div>
           ) : (
@@ -356,7 +385,7 @@ export default function CollapsibleSidebar({
                     fill="none"
                     stroke="currentColor"
                     strokeWidth="3"
-                    className="text-warm-gray-100 dark:text-warm-gray-800"
+                    className="text-warm-gray-100 dark:text-secondary"
                   />
                   <motion.circle
                     cx="16"
@@ -381,9 +410,79 @@ export default function CollapsibleSidebar({
         </AnimatePresence>
       </div>
 
+      {/* User Controls */}
+      <div className={cn(
+        'border-t border-warm-gray-100 dark:border-border',
+        isCollapsed ? 'p-2 flex flex-col items-center gap-2' : 'px-3 py-2 flex items-center gap-2'
+      )}>
+        {!isCollapsed && <LanguageDropdown variant="toggle" className="flex-shrink-0" />}
+
+        <button
+          onClick={toggleTheme}
+          className={cn(
+            'flex-shrink-0 p-1.5 rounded-md',
+            'text-warm-gray-400 hover:text-warm-gray-600 dark:hover:text-warm-gray-300',
+            'hover:bg-warm-gray-100 dark:hover:bg-secondary',
+            'transition-colors duration-150'
+          )}
+          aria-label={theme === 'light' ? t('nav.switchToDark') : t('nav.switchToLight')}
+        >
+          {theme === 'light' ? <Moon size={16} /> : <Sun size={16} />}
+        </button>
+
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button
+              className="flex items-center justify-center w-7 h-7 rounded-full ring-1 ring-warm-gray-200 dark:ring-border hover:ring-momentum-orange/50 transition-all overflow-hidden shrink-0"
+              aria-label="User menu"
+            >
+              {user?.profilePictureUrl && !imgError ? (
+                <img
+                  src={user.profilePictureUrl}
+                  alt={`${user.firstName} ${user.lastName}`}
+                  className="w-full h-full object-cover"
+                  onError={() => setImgError(true)}
+                />
+              ) : (
+                <span className="w-full h-full flex items-center justify-center bg-momentum-orange text-white text-[10px] font-semibold">
+                  {initials || <User className="w-3.5 h-3.5" />}
+                </span>
+              )}
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" side={isCollapsed ? 'right' : 'top'} className="w-48" sideOffset={8}>
+            {user && (
+              <>
+                <div className="px-3 py-2">
+                  <p className="text-sm font-medium truncate">{user.firstName} {user.lastName}</p>
+                  <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+                </div>
+                <DropdownMenuSeparator />
+              </>
+            )}
+            <DropdownMenuItem asChild>
+              <Link to="/profile" className="flex items-center gap-2 cursor-pointer">
+                <Settings className="w-4 h-4" />
+                {t('nav.settings')}
+              </Link>
+            </DropdownMenuItem>
+            {isCollapsed && (
+              <div className="px-2 py-1.5">
+                <LanguageDropdown variant="toggle" className="w-full justify-center" />
+              </div>
+            )}
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={handleLogout} className="flex items-center gap-2 cursor-pointer text-destructive focus:text-destructive">
+              <LogOut className="w-4 h-4" />
+              {t('nav.logout') || 'Logout'}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+
       {/* Actions */}
       <div className={cn(
-        'border-t border-warm-gray-100 dark:border-warm-gray-800',
+        'border-t border-warm-gray-100 dark:border-border',
         isCollapsed ? 'p-2 space-y-2' : 'p-3 flex gap-2'
       )}>
         {/* Export */}
@@ -400,7 +499,7 @@ export default function CollapsibleSidebar({
               'focus:outline-none focus:ring-2 focus:ring-momentum-orange/50 focus:ring-offset-1',
               isCollapsed ? 'w-10 h-10' : 'w-full px-4 py-2.5 text-sm'
             )}
-            title={language === 'fr' ? 'Exporter' : 'Export'}
+            title={t('preview.sidebar.export')}
           >
             {isExporting ? (
               <Loader2 size={16} className="animate-spin" />
@@ -410,8 +509,8 @@ export default function CollapsibleSidebar({
             {!isCollapsed && (
               <span>
                 {isExporting
-                  ? (language === 'fr' ? 'Export...' : 'Exporting...')
-                  : (language === 'fr' ? 'Exporter' : 'Export')}
+                  ? t('preview.sidebar.exporting')
+                  : t('preview.sidebar.export')}
               </span>
             )}
           </button>
@@ -425,8 +524,8 @@ export default function CollapsibleSidebar({
                 transition={{ duration: 0.15 }}
                 className={cn(
                   'absolute bottom-full left-0 right-0 mb-2',
-                  'bg-white dark:bg-warm-gray-800',
-                  'border border-warm-gray-200 dark:border-warm-gray-700',
+                  'bg-white dark:bg-secondary',
+                  'border border-warm-gray-200 dark:border-border',
                   'rounded-lg shadow-elevated overflow-hidden'
                 )}
               >
@@ -435,7 +534,7 @@ export default function CollapsibleSidebar({
                   className={cn(
                     'flex items-center gap-2.5 w-full px-3 py-2.5 text-sm',
                     'text-warm-gray-700 dark:text-warm-gray-200',
-                    'hover:bg-warm-gray-50 dark:hover:bg-warm-gray-700',
+                    'hover:bg-warm-gray-50 dark:hover:bg-secondary',
                     'transition-colors'
                   )}
                 >
@@ -447,7 +546,7 @@ export default function CollapsibleSidebar({
                   className={cn(
                     'flex items-center gap-2.5 w-full px-3 py-2.5 text-sm',
                     'text-warm-gray-700 dark:text-warm-gray-200',
-                    'hover:bg-warm-gray-50 dark:hover:bg-warm-gray-700',
+                    'hover:bg-warm-gray-50 dark:hover:bg-secondary',
                     'transition-colors'
                   )}
                 >
@@ -464,19 +563,19 @@ export default function CollapsibleSidebar({
           onClick={onShareClick}
           className={cn(
             'flex items-center justify-center gap-2 rounded-lg',
-            'border border-warm-gray-200 dark:border-warm-gray-700',
+            'border border-warm-gray-200 dark:border-border',
             'text-warm-gray-600 dark:text-warm-gray-300',
-            'hover:bg-warm-gray-50 dark:hover:bg-warm-gray-800',
-            'hover:border-warm-gray-300 dark:hover:border-warm-gray-600',
+            'hover:bg-warm-gray-50 dark:hover:bg-secondary',
+            'hover:border-warm-gray-300 dark:hover:border-border',
             'transition-colors duration-150',
             'focus:outline-none focus:ring-2 focus:ring-warm-gray-300/50 focus:ring-offset-1',
             isCollapsed ? 'w-10 h-10' : 'px-4 py-2.5 text-sm font-medium'
           )}
-          title={language === 'fr' ? 'Partager' : 'Share'}
+          title={t('preview.sidebar.share')}
         >
           <Share2 size={16} />
           {!isCollapsed && (
-            <span>{language === 'fr' ? 'Partager' : 'Share'}</span>
+            <span>{t('preview.sidebar.share')}</span>
           )}
         </button>
       </div>
@@ -518,7 +617,7 @@ function NavItem({
           : 'gap-2.5 px-3 py-2 rounded-lg',
         isActive
           ? 'bg-orange-50 dark:bg-orange-900/20 text-warm-gray-900 dark:text-white'
-          : 'text-warm-gray-600 dark:text-warm-gray-400 hover:bg-warm-gray-50 dark:hover:bg-warm-gray-800/50'
+          : 'text-warm-gray-600 dark:text-warm-gray-400 hover:bg-warm-gray-50 dark:hover:bg-secondary/50'
       )}
       title={isCollapsed ? `${number ? `${number}. ` : ''}${label}` : undefined}
     >
@@ -580,7 +679,7 @@ function NavItem({
         <motion.div
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
-          className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-white dark:border-warm-gray-900"
+          className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-white dark:border-card"
         />
       )}
 

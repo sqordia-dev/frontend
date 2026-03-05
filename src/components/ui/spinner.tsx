@@ -2,6 +2,9 @@ import * as React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
+// Re-export branded loader for convenience
+export { SqordiaLoader, SqordiaPageLoader, SqordiaInlineLoader } from "./SqordiaLoader";
+
 const spinnerVariants = cva("animate-spin", {
   variants: {
     size: {

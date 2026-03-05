@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Loader2, AlertCircle, ArrowLeft, Edit3 } from 'lucide-react';
+import { AlertCircle, Edit3 } from 'lucide-react';
+import { Skeleton, SkeletonText } from '../../components/ui/skeleton';
+import { Button } from '../../components/ui/button';
 import {
   PreviewLayoutV2,
   SectionCardV2,
@@ -25,6 +27,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import SEO from '../../components/SEO';
 import { exportService, type ExportFormat } from '../../lib/export-service';
 import { translateSectionTitle } from '../../utils/section-title-translations';
+import { AIPreviewCoach } from '../../components/preview/ai-preview-coach';
 
 /**
  * Business Plan Preview Page (Redesigned)
@@ -35,7 +38,7 @@ export default function BusinessPlanPreviewPage() {
   const { id: planId } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const toast = useToast();
-  const { language } = useTheme();
+  const { language, t } = useTheme();
 
   // State
   const [preview, setPreview] = useState<BusinessPlanPreview | null>(null);
@@ -179,6 +182,12 @@ export default function BusinessPlanPreviewPage() {
       title: translateSectionTitle(s.title, language),
     }));
   }, [preview?.sections, language]);
+
+  // Derive active section for AI Preview Coach
+  const activeSection = useMemo(() => {
+    if (!activeSectionId || !sectionsForDisplay.length) return null;
+    return sectionsForDisplay.find(s => s.id === activeSectionId) || null;
+  }, [activeSectionId, sectionsForDisplay]);
 
   // Handle section click - scroll to section
   const handleSectionClick = useCallback((sectionId: string) => {
@@ -447,17 +456,41 @@ export default function BusinessPlanPreviewPage() {
           noindex={true}
           nofollow={true}
         />
-        <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
-          <div className="text-center">
-            <Loader2
-              size={48}
-              className="animate-spin mx-auto mb-4 text-momentum-orange"
-              aria-hidden="true"
-            />
-            <p className="text-gray-600 dark:text-gray-400">
-              Loading your business plan...
-            </p>
+        <div className="min-h-screen bg-warm-gray-50 dark:bg-background">
+          {/* Desktop: sidebar skeleton */}
+          <div className="hidden lg:block fixed left-0 top-0 h-full w-[260px] bg-white dark:bg-card border-r border-warm-gray-100 dark:border-border p-4 space-y-4">
+            <Skeleton className="h-6 w-3/4 bg-warm-gray-200 dark:bg-border" />
+            <Skeleton className="h-4 w-16 rounded bg-warm-gray-200 dark:bg-border" />
+            <div className="mt-6 space-y-2">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <Skeleton key={i} className="h-8 w-full rounded-lg bg-warm-gray-200 dark:bg-border" />
+              ))}
+            </div>
           </div>
+          {/* Mobile: header skeleton */}
+          <div className="lg:hidden fixed top-0 left-0 right-0 h-14 bg-white/95 dark:bg-card/95 backdrop-blur-xl border-b border-warm-gray-200/50 dark:border-border/50 z-40 flex items-center px-4">
+            <Skeleton className="h-5 w-32 bg-warm-gray-200 dark:bg-border" />
+          </div>
+          {/* Main content skeleton */}
+          <div className="lg:ml-[260px] pt-16 lg:pt-6 px-4 sm:px-6 lg:px-8">
+            <div className="mx-auto max-w-[720px] py-4">
+              {/* Cover page skeleton */}
+              <Skeleton className="h-64 w-full rounded-xl mb-12 bg-warm-gray-200 dark:bg-border" />
+              {/* Section skeletons */}
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="mb-12 space-y-4">
+                  <div className="flex items-center gap-3">
+                    <Skeleton className="h-5 w-5 bg-warm-gray-200 dark:bg-border" />
+                    <Skeleton className="h-5 w-5 bg-warm-gray-200 dark:bg-border" />
+                    <Skeleton className="h-7 w-48 bg-warm-gray-200 dark:bg-border" />
+                  </div>
+                  <SkeletonText lines={4} />
+                  <div className="h-px bg-gradient-to-r from-transparent via-warm-gray-200 dark:via-secondary to-transparent" />
+                </div>
+              ))}
+            </div>
+          </div>
+          <p className="sr-only">{t('preview.loading')}</p>
         </div>
       </>
     );
@@ -473,28 +506,27 @@ export default function BusinessPlanPreviewPage() {
           noindex={true}
           nofollow={true}
         />
-        <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
+        <div className="min-h-screen flex items-center justify-center bg-warm-gray-50 dark:bg-background px-4">
           <div className="text-center max-w-md">
             <AlertCircle
               size={48}
               className="mx-auto mb-4 text-red-500"
               aria-hidden="true"
             />
-            <h1 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-              {error || 'Plan Not Found'}
+            <h1 className="text-xl font-bold text-warm-gray-900 dark:text-white mb-2">
+              {error || t('preview.error.title')}
             </h1>
-            <p className="text-gray-600 dark:text-gray-400 mb-6">
+            <p className="text-warm-gray-600 dark:text-warm-gray-400 mb-6">
               {error
-                ? 'Please check the URL and try again.'
-                : 'The business plan could not be found.'}
+                ? t('preview.error.checkUrl')
+                : t('preview.error.notFound')}
             </p>
-            <button
+            <Button
+              variant="brand"
               onClick={() => navigate('/dashboard')}
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-momentum-orange hover:bg-orange-600 text-white font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-momentum-orange focus:ring-offset-2"
             >
-              <ArrowLeft size={18} aria-hidden="true" />
-              Back to Dashboard
-            </button>
+              {t('preview.error.backToDashboard')}
+            </Button>
           </div>
         </div>
       </>
@@ -532,15 +564,17 @@ export default function BusinessPlanPreviewPage() {
               <div className="relative rounded-xl overflow-hidden">
                 <CoverPagePreview
                   settings={coverPageSettings}
-                  className="border border-warm-gray-200 dark:border-warm-gray-800"
+                  className="border border-warm-gray-200 dark:border-border"
                 />
-                <button
+                <Button
+                  variant="outline"
+                  size="sm"
                   onClick={() => setIsCoverPageEditorOpen(true)}
-                  className="absolute top-4 right-4 flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-warm-gray-700 dark:text-warm-gray-300 bg-white/90 dark:bg-warm-gray-800/90 hover:bg-white dark:hover:bg-warm-gray-700 border border-warm-gray-200 dark:border-warm-gray-700 rounded-lg shadow-sm transition-colors"
+                  className="absolute top-4 right-4 bg-white/90 dark:bg-secondary/90 hover:bg-white dark:hover:bg-secondary shadow-sm"
                 >
                   <Edit3 size={14} />
-                  {language === 'fr' ? 'Modifier' : 'Edit Cover'}
-                </button>
+                  {t('preview.section.editCover')}
+                </Button>
               </div>
             </div>
           </ScrollReveal>
@@ -556,19 +590,21 @@ export default function BusinessPlanPreviewPage() {
                 activeSectionId={activeSectionId}
                 style={tocSettings?.style as TOCStyle || 'classic'}
               />
-              <button
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={() => setIsTOCStyleSelectorOpen(true)}
-                className="absolute top-4 right-4 flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-warm-gray-700 dark:text-warm-gray-300 bg-white/90 dark:bg-warm-gray-800/90 hover:bg-white dark:hover:bg-warm-gray-700 border border-warm-gray-200 dark:border-warm-gray-700 rounded-lg shadow-sm transition-colors"
+                className="absolute top-4 right-4 bg-white/90 dark:bg-secondary/90 hover:bg-white dark:hover:bg-secondary shadow-sm"
               >
                 <Edit3 size={14} />
-                {language === 'fr' ? 'Style' : 'Change Style'}
-              </button>
+                {t('preview.section.changeStyle')}
+              </Button>
             </div>
           </div>
         </ScrollReveal>
 
         {/* Divider before sections */}
-        <div className="mb-12 h-px bg-gradient-to-r from-transparent via-warm-gray-200 dark:via-warm-gray-800 to-transparent" />
+        <div className="mb-12 h-px bg-gradient-to-r from-transparent via-warm-gray-200 dark:via-secondary to-transparent" />
 
         {/* Business Plan Sections - Minimal Notion-style */}
         {sectionsForDisplay.map((section, index) => (
@@ -629,6 +665,15 @@ export default function BusinessPlanPreviewPage() {
           planId={planId}
           onClose={() => setIsTOCStyleSelectorOpen(false)}
           onSave={handleTOCSettingsSave}
+        />
+      )}
+
+      {/* AI Preview Coach */}
+      {planId && !isLoading && preview && (
+        <AIPreviewCoach
+          businessPlanId={planId}
+          activeSection={activeSection}
+          language={language}
         />
       )}
     </>

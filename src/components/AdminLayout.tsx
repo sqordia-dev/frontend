@@ -8,7 +8,9 @@ import {
   Brain,
   Flag,
   Sparkles,
+  Mail,
 } from 'lucide-react';
+import { AdminAIAssistant } from './admin/AdminAIAssistant';
 import { authService } from '../lib/auth-service';
 import { useTheme } from '../contexts/ThemeContext';
 import AppSidebar, {
@@ -34,6 +36,7 @@ const PAGE_TITLES: Record<string, { en: string; fr: string }> = {
   '/admin/organizations': { en: 'Organizations', fr: 'Organisations' },
   '/admin/activity-logs': { en: 'Activity Logs', fr: "Journal d'activité" },
   '/admin/settings': { en: 'Settings', fr: 'Paramètres' },
+  '/admin/email-templates': { en: 'Email Templates', fr: 'Modèles courriel' },
 };
 
 export default function AdminLayout() {
@@ -111,6 +114,12 @@ export default function AdminLayout() {
           icon: ListTodo,
           shortcut: '⌘6',
         },
+        {
+          name: language === 'fr' ? 'Modèles courriel' : 'Email Templates',
+          href: '/admin/email-templates',
+          icon: Mail,
+          shortcut: '⌘7',
+        },
       ],
     },
   ];
@@ -183,6 +192,9 @@ export default function AdminLayout() {
         onLanguageChange={setLanguage}
         showUserProfile={false}
       />
+
+      {/* AI Assistant Chat Widget */}
+      <AdminAIAssistant />
     </div>
   );
 }
