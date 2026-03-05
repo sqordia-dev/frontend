@@ -2,32 +2,35 @@ import { useState, useRef, useEffect, useMemo, FormEvent } from 'react';
 import { Bot, X, Send, Trash2, Loader2, Maximize2, Minimize2, Brain, Database, Search } from 'lucide-react';
 import { marked } from 'marked';
 import { useAdminAIAssistant } from '../../hooks/useAdminAIAssistant';
+import { useTheme } from '../../contexts/ThemeContext';
 
 // Configure marked for GFM tables
 marked.setOptions({ gfm: true, breaks: true });
-
-const EXAMPLE_PROMPTS = [
-  'How many users signed up this week?',
-  'Show me the top 5 organizations by member count',
-  'What is the current system health status?',
-  'Give me an overview of AI usage this month',
-];
-
-/** Tool call display config */
-const TOOL_LABELS: Record<string, { label: string; icon: 'search' | 'database' | 'brain' }> = {
-  query_system_overview: { label: 'Querying system overview', icon: 'database' },
-  query_users: { label: 'Searching users', icon: 'search' },
-  query_organizations: { label: 'Searching organizations', icon: 'search' },
-  query_business_plans: { label: 'Searching business plans', icon: 'search' },
-  query_ai_usage: { label: 'Checking AI usage', icon: 'database' },
-  query_system_health: { label: 'Checking system health', icon: 'database' },
-};
 
 const ToolIcon = ({ type }: { type: 'search' | 'database' | 'brain' }) => {
   const cls = 'h-3 w-3 shrink-0';
   if (type === 'search') return <Search className={cls} />;
   if (type === 'database') return <Database className={cls} />;
   return <Brain className={cls} />;
+};
+
+/** Tool call display config (icon mapping only — labels come from i18n) */
+const TOOL_ICONS: Record<string, 'search' | 'database' | 'brain'> = {
+  query_system_overview: 'database',
+  query_users: 'search',
+  query_organizations: 'search',
+  query_business_plans: 'search',
+  query_ai_usage: 'database',
+  query_system_health: 'database',
+};
+
+const TOOL_I18N_KEYS: Record<string, string> = {
+  query_system_overview: 'admin.ai.tool.systemOverview',
+  query_users: 'admin.ai.tool.users',
+  query_organizations: 'admin.ai.tool.organizations',
+  query_business_plans: 'admin.ai.tool.businessPlans',
+  query_ai_usage: 'admin.ai.tool.aiUsage',
+  query_system_health: 'admin.ai.tool.systemHealth',
 };
 
 /** Parse markdown, memoised per content string */
@@ -39,9 +42,10 @@ function useRenderedMarkdown(content: string) {
 }
 
 /** Thinking / processing indicator shown before tokens arrive */
-function ThinkingIndicator({ toolCalls }: { toolCalls: string[] }) {
+function ThinkingIndicator({ toolCalls, t }: { toolCalls: string[]; t: (key: string) => string }) {
   const activeTool = toolCalls.length > 0 ? toolCalls[toolCalls.length - 1] : null;
-  const toolInfo = activeTool ? TOOL_LABELS[activeTool] : null;
+  const toolIcon = activeTool ? TOOL_ICONS[activeTool] : null;
+  const toolLabel = activeTool && TOOL_I18N_KEYS[activeTool] ? t(TOOL_I18N_KEYS[activeTool]) : null;
 
   return (
     <div className="flex justify-start">
@@ -55,13 +59,13 @@ function ThinkingIndicator({ toolCalls }: { toolCalls: string[] }) {
           </div>
           {/* Status text */}
           <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">
-            {toolInfo ? (
+            {toolIcon && toolLabel ? (
               <span className="flex items-center gap-1.5">
-                <ToolIcon type={toolInfo.icon} />
-                {toolInfo.label}...
+                <ToolIcon type={toolIcon} />
+                {toolLabel}...
               </span>
             ) : (
-              'Analyzing your request...'
+              t('admin.ai.analyzing')
             )}
           </span>
         </div>
@@ -77,19 +81,21 @@ function AssistantBubble({
   isStreaming,
   isFullScreen,
   toolCalls,
+  t,
 }: {
   content: string;
   isLast: boolean;
   isStreaming: boolean;
   isFullScreen: boolean;
   toolCalls: string[];
+  t: (key: string) => string;
 }) {
   const html = useRenderedMarkdown(content);
   const isEmpty = !content.trim();
 
   // Show thinking indicator if this is the last message, streaming, and no content yet
   if (isEmpty && isLast && isStreaming) {
-    return <ThinkingIndicator toolCalls={toolCalls} />;
+    return <ThinkingIndicator toolCalls={toolCalls} t={t} />;
   }
 
   // Don't render empty non-streaming bubbles
@@ -111,12 +117,20 @@ function AssistantBubble({
 }
 
 export function AdminAIAssistant() {
+  const { t, language } = useTheme();
   const [isOpen, setIsOpen] = useState(false);
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [input, setInput] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const { messages, isStreaming, activeToolCalls, error, sendMessage, clearConversation } = useAdminAIAssistant();
+
+  const examplePrompts = useMemo(() => [
+    t('admin.ai.prompt1'),
+    t('admin.ai.prompt2'),
+    t('admin.ai.prompt3'),
+    t('admin.ai.prompt4'),
+  ], [t, language]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -141,8 +155,8 @@ export function AdminAIAssistant() {
   };
 
   const toolCallLabel = (name: string) => {
-    const info = TOOL_LABELS[name];
-    return info ? `${info.label}...` : `Running ${name}...`;
+    const key = TOOL_I18N_KEYS[name];
+    return key ? `${t(key)}...` : `Running ${name}...`;
   };
 
   const handleClose = () => {
@@ -164,7 +178,7 @@ export function AdminAIAssistant() {
         <button
           onClick={() => setIsOpen(true)}
           className="fixed bottom-6 right-6 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-momentum-orange text-white shadow-lg transition-transform hover:scale-110 hover:bg-[#e55f00] hover:shadow-xl"
-          aria-label="Open AI Assistant"
+          aria-label={t('admin.ai.open')}
         >
           <Bot className="h-6 w-6" />
         </button>
@@ -184,20 +198,20 @@ export function AdminAIAssistant() {
               <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-white/15">
                 <Bot className="h-4 w-4" />
               </div>
-              <span className="font-semibold">Admin AI Assistant</span>
+              <span className="font-semibold">{t('admin.ai.title')}</span>
             </div>
             <div className="flex items-center gap-1">
-              <button onClick={clearConversation} className="rounded p-1 text-white/70 hover:bg-white/10 hover:text-white" title="Clear conversation">
+              <button onClick={clearConversation} className="rounded p-1 text-white/70 hover:bg-white/10 hover:text-white" title={t('admin.ai.clear')}>
                 <Trash2 className="h-4 w-4" />
               </button>
               <button
                 onClick={() => setIsFullScreen(prev => !prev)}
                 className="rounded p-1 text-white/70 hover:bg-white/10 hover:text-white"
-                title={isFullScreen ? 'Exit full screen' : 'Full screen'}
+                title={isFullScreen ? t('admin.ai.exitFullscreen') : t('admin.ai.fullscreen')}
               >
                 {isFullScreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
               </button>
-              <button onClick={handleClose} className="rounded p-1 text-white/70 hover:bg-white/10 hover:text-white" title="Close">
+              <button onClick={handleClose} className="rounded p-1 text-white/70 hover:bg-white/10 hover:text-white" title={t('admin.ai.close')}>
                 <X className="h-4 w-4" />
               </button>
             </div>
@@ -210,9 +224,9 @@ export function AdminAIAssistant() {
                 <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-momentum-orange text-white mb-3">
                   <Bot className="h-6 w-6" />
                 </div>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Ask me about your system data</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">{t('admin.ai.emptyState')}</p>
                 <div className={`space-y-2 ${isFullScreen ? 'grid grid-cols-2 gap-3 space-y-0 max-w-2xl' : 'w-full'}`}>
-                  {EXAMPLE_PROMPTS.map((prompt) => (
+                  {examplePrompts.map((prompt) => (
                     <button
                       key={prompt}
                       onClick={() => handleExampleClick(prompt)}
@@ -240,6 +254,7 @@ export function AdminAIAssistant() {
                   isStreaming={isStreaming}
                   isFullScreen={isFullScreen}
                   toolCalls={activeToolCalls}
+                  t={t}
                 />
               ),
             )}
@@ -268,7 +283,7 @@ export function AdminAIAssistant() {
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Ask about system data..."
+              placeholder={t('admin.ai.placeholder')}
               className={`flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-momentum-orange focus:ring-1 focus:ring-momentum-orange dark:border-gray-600 dark:bg-gray-700 dark:text-white ${isFullScreen ? 'py-3 text-base' : ''}`}
               disabled={isStreaming}
             />
