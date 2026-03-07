@@ -36,7 +36,6 @@ import { PersonaType, User as UserType } from '../lib/types';
 import SEO from '../components/SEO';
 import AIInterviewer from '../components/questionnaire/AIInterviewer';
 import NotionStyleEditor from '../components/questionnaire/NotionStyleEditor';
-import { AICoachBubble, AICoachBubbleRef } from '../components/ai-coach';
 import { useFeatureFlag } from '../hooks/useFeatureFlag';
 import { apiClient } from '../lib/api-client';
 import LanguageDropdown from '../components/layout/LanguageDropdown';
@@ -243,7 +242,6 @@ function InterviewQuestionnaireContent() {
 
   // Refs
   const questionRefs = useRef<Map<string, HTMLDivElement>>(new Map());
-  const coachRef = useRef<AICoachBubbleRef>(null);
   const savedAnswersRef = useRef<Record<string, string>>({});
   const saveTimersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
 
@@ -922,6 +920,7 @@ function InterviewQuestionnaireContent() {
                 )}
                 onStepClick={(idx) => {
                   setSectionDirection(idx > currentSectionIndex ? 1 : -1);
+                  flushAllSectionAnswers();
                   setCurrentSectionIndex(idx);
                 }}
               />
@@ -1339,23 +1338,6 @@ function InterviewQuestionnaireContent() {
         )}
         </AnimatePresence>
       </div>
-
-      {/* AI Coach Bubble - Floating chat assistant */}
-      {effectiveCoachQuestion && planId && (
-        <AICoachBubble
-          ref={coachRef}
-          businessPlanId={planId}
-          questionId={effectiveCoachQuestion.id}
-          questionNumber={questions.indexOf(effectiveCoachQuestion) + 1}
-          questionText={effectiveCoachQuestion.questionText}
-          currentAnswer={answers[effectiveCoachQuestion.id] || null}
-          language={language}
-          persona={persona || 'Entrepreneur'}
-          onSuggestionApply={(text) => handleAnswerChange(effectiveCoachQuestion.id, text)}
-          isOpenControlled={isCoachOpen}
-          onOpenChange={setIsCoachOpen}
-        />
-      )}
 
       {/* Coach Panel — Expert advice overlay */}
       <CoachPanel
