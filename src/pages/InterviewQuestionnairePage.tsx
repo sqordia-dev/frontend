@@ -24,6 +24,9 @@ import {
   Command,
   MessageSquare,
   Save,
+  Rocket,
+  Clock,
+  BookmarkCheck,
 } from 'lucide-react';
 import { businessPlanService } from '../lib/business-plan-service';
 import { useTheme } from '../contexts/ThemeContext';
@@ -34,12 +37,18 @@ import SEO from '../components/SEO';
 import AIInterviewer from '../components/questionnaire/AIInterviewer';
 import NotionStyleEditor from '../components/questionnaire/NotionStyleEditor';
 import { AICoachBubble, AICoachBubbleRef } from '../components/ai-coach';
-// Feature flag imports reserved for future gating
-// import { useFeatureFlags } from '../hooks/useFeatureFlag';
+import { useFeatureFlag } from '../hooks/useFeatureFlag';
 import { apiClient } from '../lib/api-client';
 import LanguageDropdown from '../components/layout/LanguageDropdown';
 import { authService } from '../lib/auth-service';
 import { motion, AnimatePresence } from 'framer-motion';
+import { organizationService } from '../lib/organization-service';
+import ProfileContextPanel from '../components/questionnaire/ProfileContextPanel';
+import type { OrganizationProfile, SkippedQuestionDto } from '../types/organization-profile';
+import SectionStepper from '../components/questionnaire/SectionStepper';
+import ProgressBar from '../components/questionnaire/ProgressBar';
+import QuestionCard from '../components/questionnaire/QuestionCard';
+import CoachPanel from '../components/questionnaire/CoachPanel';
 
 interface Question {
   id: string;
@@ -83,21 +92,43 @@ const TRANSLATIONS = {
     previous: 'Previous',
     next: 'Next',
     questionOf: 'Question {current} of {total}',
+    sectionOf: 'Section {current} of {total}: {name}',
+    sectionProgress: '{answered} of {total} questions answered',
     generatePlan: 'Generate Plan',
     saveError: 'Failed to save. Please try again.',
     shortcuts: 'Shortcuts',
     shortcutsTitle: 'Keyboard Shortcuts',
-    shortcutNext: 'Next question',
-    shortcutPrev: 'Previous question',
+    shortcutNext: 'Next section',
+    shortcutPrev: 'Previous section',
     shortcutCoach: 'Open AI Coach',
-    shortcutSave: 'Save answer',
+    shortcutSave: 'Save all answers',
     shortcutClose: 'Close dialog',
     shortcutHelp: 'Show shortcuts',
     pressKey: 'Press',
+    toClose: 'to close',
     autoSaving: 'Saving...',
     autoSaved: 'Saved',
     autoSaveError: 'Save failed',
     unsavedChanges: 'Unsaved changes',
+    proactiveTitle: 'Need help getting started?',
+    proactiveDraft: 'Draft an answer for me',
+    proactiveHint: 'Give me a hint',
+    generatePreview: 'Generate Preview',
+    generatePreviewTooltip: 'Answer at least 5 questions to generate a preview',
+    generatePreviewTitle: 'Generate with partial answers?',
+    generatePreviewBody: "You've answered {answered} of {total} questions. The AI will generate your plan with available information. You can always regenerate later with more answers.",
+    generatePreviewConfirm: 'Generate Now',
+    generatePreviewCancel: 'Keep Answering',
+    welcomeHeading: "Let's Build Your Business Plan",
+    welcomeSubtext: "We'll guide you through 7 sections about your business. This usually takes 15-20 minutes.",
+    welcomeSaveNote: 'You can save and come back anytime',
+    welcomeEstimate: '15-20 min',
+    welcomeCta: "Let's Begin",
+    welcomeSections: 'What we will cover',
+    interviewComplete: 'Interview Complete!',
+    interviewCompleteDesc: 'You can now generate your business plan.',
+    viewCompanyContext: 'View company context',
+    context: 'Context',
   },
   fr: {
     loading: 'Chargement de votre entrevue...',
@@ -110,6 +141,8 @@ const TRANSLATIONS = {
     previous: 'Précédent',
     next: 'Suivant',
     questionOf: 'Question {current} sur {total}',
+    sectionOf: 'Section {current} sur {total} : {name}',
+    sectionProgress: '{answered} sur {total} questions répondues',
     generatePlan: 'Générer le plan',
     saveError: 'Échec de la sauvegarde. Veuillez réessayer.',
     autoSaving: 'Sauvegarde...',
@@ -118,13 +151,33 @@ const TRANSLATIONS = {
     unsavedChanges: 'Modifications non sauvegardées',
     shortcuts: 'Raccourcis',
     shortcutsTitle: 'Raccourcis clavier',
-    shortcutNext: 'Question suivante',
-    shortcutPrev: 'Question précédente',
+    shortcutNext: 'Section suivante',
+    shortcutPrev: 'Section précédente',
     shortcutCoach: 'Ouvrir le coach IA',
-    shortcutSave: 'Sauvegarder la réponse',
+    shortcutSave: 'Sauvegarder les réponses',
     shortcutClose: 'Fermer le dialogue',
     shortcutHelp: 'Afficher les raccourcis',
     pressKey: 'Appuyez sur',
+    toClose: 'pour fermer',
+    proactiveTitle: 'Besoin d\'aide pour commencer\u00a0?',
+    proactiveDraft: 'Rédiger une réponse pour moi',
+    proactiveHint: 'Donnez-moi un indice',
+    generatePreview: 'Aperçu',
+    generatePreviewTooltip: 'Répondez à au moins 5 questions pour générer un aperçu',
+    generatePreviewTitle: 'Générer avec des réponses partielles ?',
+    generatePreviewBody: "Vous avez répondu à {answered} des {total} questions. L'IA générera votre plan avec les informations disponibles. Vous pourrez toujours régénérer plus tard avec davantage de réponses.",
+    generatePreviewConfirm: 'Générer maintenant',
+    generatePreviewCancel: 'Continuer à répondre',
+    welcomeHeading: "Construisons votre plan d'affaires",
+    welcomeSubtext: "Nous vous guiderons à travers 7 sections sur votre entreprise. Cela prend généralement 15 à 20 minutes.",
+    welcomeSaveNote: 'Vous pouvez sauvegarder et revenir à tout moment',
+    welcomeEstimate: '15-20 min',
+    welcomeCta: 'Commencer',
+    welcomeSections: 'Ce que nous allons couvrir',
+    interviewComplete: 'Entrevue complétée !',
+    interviewCompleteDesc: "Vous pouvez maintenant générer votre plan d'affaires.",
+    viewCompanyContext: 'Voir le contexte entreprise',
+    context: 'Contexte',
   },
 };
 
@@ -145,7 +198,6 @@ function InterviewQuestionnaireContent() {
   const navigate = useNavigate();
   const { theme, language, toggleTheme } = useTheme();
   const t = TRANSLATIONS[language as keyof typeof TRANSLATIONS] || TRANSLATIONS.en;
-  // AI Coach is always visible (flag gating removed to match production behavior)
 
   // Get context for global answer tracking and business context
   const {
@@ -160,36 +212,39 @@ function InterviewQuestionnaireContent() {
 
   // State
   const [questions, setQuestions] = useState<Question[]>([]);
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [persona, setPersona] = useState<PersonaType | null>(null);
-  const [expandedSections, setExpandedSections] = useState<Set<number>>(new Set([1]));
-  const [isAIPolishing, setIsAIPolishing] = useState(false);
+  const [activeQuestionId, setActiveQuestionId] = useState<string | null>(null);
+  const [aiPolishingIds, setAiPolishingIds] = useState<Set<string>>(new Set());
   const [user, setUser] = useState<UserType | null>(null);
   const [showShortcuts, setShowShortcuts] = useState(false);
   const [isCoachOpen, setIsCoachOpen] = useState(false);
+  const [showWelcome, setShowWelcome] = useState(true);
   const [autoSaveStatus, setAutoSaveStatus] = useState<'idle' | 'dirty' | 'saving' | 'saved' | 'error'>('idle');
   const autoSaveStatusTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [showPreviewConfirm, setShowPreviewConfirm] = useState(false);
+  const [showCompletionBanner, setShowCompletionBanner] = useState(false);
+  const [showProfileContext, setShowProfileContext] = useState(false);
+
+  // Proactive AI Coach suggestion state
+  const [showProactiveSuggestion, setShowProactiveSuggestion] = useState(false);
+  const proactiveSuggestionShownFor = useRef<Set<string>>(new Set());
+  const inactivityTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const coachUsedForRef = useRef<Set<string>>(new Set());
+
+  // Adaptive interview state
+  const { isEnabled: adaptiveEnabled } = useFeatureFlag('adaptive-interview', true);
+  const [orgProfile, setOrgProfile] = useState<OrganizationProfile | null>(null);
+  const [skippedQuestions, setSkippedQuestions] = useState<SkippedQuestionDto[]>([]);
 
   // Refs
   const questionRefs = useRef<Map<string, HTMLDivElement>>(new Map());
   const coachRef = useRef<AICoachBubbleRef>(null);
   const savedAnswersRef = useRef<Record<string, string>>({});
-  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  // Current question
-  const currentQuestion = questions[currentQuestionIndex];
-  const currentStep = currentQuestion?.stepNumber || 1;
-  const stepInfo = STEPS.find(s => s.number === currentStep);
-
-  // Progress calculation
-  const answeredCount = questions.filter(q => {
-    const answer = answers[q.id] || '';
-    return answer.trim().length >= 10;
-  }).length;
-  const progressPercent = questions.length > 0 ? (answeredCount / questions.length) * 100 : 0;
+  const saveTimersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
 
   // Group questions by step
   const questionsByStep = useMemo(() => {
@@ -202,6 +257,45 @@ function InterviewQuestionnaireContent() {
     });
     return grouped;
   }, [questions]);
+
+  // Section-based derived state
+  const activeSections = useMemo(() => {
+    return STEPS.filter(s => questionsByStep.has(s.number));
+  }, [questionsByStep]);
+
+  const currentSection = activeSections[currentSectionIndex];
+  const currentSectionQuestions = useMemo(() =>
+    questionsByStep.get(activeSections[currentSectionIndex]?.number) || [],
+    [questionsByStep, activeSections, currentSectionIndex]
+  );
+
+  const focusedQuestion = activeQuestionId
+    ? questions.find(q => q.id === activeQuestionId) || null
+    : null;
+
+  const sectionAnsweredCount = useMemo(() =>
+    currentSectionQuestions.filter(q => (answers[q.id] || '').trim().length >= 10).length,
+    [currentSectionQuestions, answers]
+  );
+
+  // Global progress % (for ProgressBar)
+  const globalPercent = useMemo(() => {
+    const allQuestions = activeSections.flatMap(s => questionsByStep.get(s.number) || []);
+    const answered = allQuestions.filter(q => (answers[q.id] || '').trim().length >= 10).length;
+    return allQuestions.length > 0 ? Math.round((answered / allQuestions.length) * 100) : 0;
+  }, [activeSections, questionsByStep, answers]);
+
+  // Progress calculation (includes pre-filled/skipped questions from profile)
+  const answeredCount = questions.filter(q => {
+    const answer = answers[q.id] || '';
+    return answer.trim().length >= 10;
+  }).length;
+  const totalWithSkipped = questions.length + skippedQuestions.length;
+  const answeredWithSkipped = answeredCount + skippedQuestions.length;
+  const progressPercent = totalWithSkipped > 0 ? (answeredWithSkipped / totalWithSkipped) * 100 : 0;
+
+  // Effective question for AI Coach (active question or first in section)
+  const effectiveCoachQuestion = focusedQuestion || currentSectionQuestions[0] || null;
 
   // Get persona from localStorage or user profile
   useEffect(() => {
@@ -221,12 +315,18 @@ function InterviewQuestionnaireContent() {
     }
   }, []);
 
-  // Load current user
+  // Load current user and org profile
   useEffect(() => {
     authService.getCurrentUser()
       .then(userData => setUser(userData))
       .catch(console.error);
-  }, []);
+
+    if (adaptiveEnabled) {
+      organizationService.getMyOrganizationProfile()
+        .then(profile => setOrgProfile(profile))
+        .catch(() => {});
+    }
+  }, [adaptiveEnabled]);
 
   // Fetch questions
   useEffect(() => {
@@ -306,28 +406,60 @@ function InterviewQuestionnaireContent() {
         };
       });
 
-      setQuestions(mappedQuestions);
+      // Adaptive filtering: if org profile has values for questions with profileFieldKey, skip them
+      let filteredQuestions = mappedQuestions;
+      const skipped: SkippedQuestionDto[] = [];
+
+      if (adaptiveEnabled && orgProfile) {
+        try {
+          const adaptiveResponse = await apiClient.get(
+            `/api/v1/business-plans/${planId}/adaptive-interview/questions?language=${language}`
+          );
+          const adaptiveData = adaptiveResponse.data?.value || adaptiveResponse.data;
+          if (adaptiveData?.skippedQuestions?.length > 0) {
+            const skippedIds = new Set(adaptiveData.skippedQuestions.map((sq: any) => sq.id));
+            filteredQuestions = mappedQuestions.filter(q => !skippedIds.has(q.id));
+            skipped.push(...adaptiveData.skippedQuestions);
+          }
+        } catch {
+          // If adaptive endpoint fails, just use all questions
+        }
+      }
+
+      setSkippedQuestions(skipped);
+      setQuestions(filteredQuestions);
 
       // Initialize answers in context (with question number mapping)
       const initialAnswers: Record<string, string> = {};
-      mappedQuestions.forEach(q => {
+      filteredQuestions.forEach(q => {
         if (q.responseText) {
           initialAnswers[q.id] = q.responseText;
         }
       });
       // Use context's bulk setter to initialize all answers with question number mapping
-      setContextAnswers(initialAnswers, mappedQuestions.map(q => ({
+      setContextAnswers(initialAnswers, filteredQuestions.map(q => ({
         id: q.id,
         questionNumber: q.questionNumber,
       })));
       // Track what's already persisted to avoid redundant saves
       savedAnswersRef.current = { ...initialAnswers };
 
-      // Find first unanswered question
-      const firstUnanswered = mappedQuestions.findIndex(q => !initialAnswers[q.id] || initialAnswers[q.id].trim().length < 10);
+      // If user already has answered questions, skip the welcome screen
+      const hasExistingProgress = Object.keys(initialAnswers).length > 0;
+      if (hasExistingProgress) {
+        setShowWelcome(false);
+      }
+
+      // Find first unanswered question and navigate to its section
+      const firstUnanswered = filteredQuestions.findIndex(q => !initialAnswers[q.id] || initialAnswers[q.id].trim().length < 10);
       if (firstUnanswered >= 0) {
-        setCurrentQuestionIndex(firstUnanswered);
-        setExpandedSections(new Set([mappedQuestions[firstUnanswered].stepNumber]));
+        const firstUnansweredStep = filteredQuestions[firstUnanswered].stepNumber;
+        // Compute active sections inline since useMemo hasn't recomputed yet
+        const activeSteps = STEPS.filter(s =>
+          filteredQuestions.some(q => q.stepNumber === s.number)
+        );
+        const sectionIdx = activeSteps.findIndex(s => s.number === firstUnansweredStep);
+        setCurrentSectionIndex(sectionIdx >= 0 ? sectionIdx : 0);
       }
     } catch (err: any) {
       console.error('Failed to fetch questions:', err);
@@ -368,7 +500,6 @@ function InterviewQuestionnaireContent() {
 
   // Handle answer change - updates context with question number mapping
   const handleAnswerChange = useCallback((questionId: string, value: string) => {
-    // Find question number for this question
     const question = questions.find(q => q.id === questionId);
     setContextAnswer(questionId, question?.questionNumber, value);
   }, [questions, setContextAnswer]);
@@ -388,153 +519,225 @@ function InterviewQuestionnaireContent() {
     autoSaveStatusTimerRef.current = setTimeout(() => setAutoSaveStatus('idle'), 3000);
   }, []);
 
-  // Save current answer if it has unsaved changes
-  const flushCurrentAnswer = useCallback(() => {
-    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
-    if (currentQuestion) {
-      const currentAnswer = answers[currentQuestion.id] || '';
-      if (currentAnswer.trim() && currentAnswer !== savedAnswersRef.current[currentQuestion.id]) {
+  // Flush all dirty answers in current section
+  const flushAllSectionAnswers = useCallback(() => {
+    // Clear all pending save timers
+    saveTimersRef.current.forEach((timer) => clearTimeout(timer));
+    saveTimersRef.current.clear();
+
+    // Save all dirty answers in current section
+    currentSectionQuestions.forEach(q => {
+      const currentAnswer = answers[q.id] || '';
+      if (currentAnswer.trim() && currentAnswer !== savedAnswersRef.current[q.id]) {
         setAutoSaveStatus('saving');
-        saveAnswer(currentQuestion.id, currentAnswer).then(ok => {
-          if (ok) savedAnswersRef.current[currentQuestion.id] = currentAnswer;
+        saveAnswer(q.id, currentAnswer).then(ok => {
+          if (ok) savedAnswersRef.current[q.id] = currentAnswer;
           showSavedStatus(ok ? 'saved' : 'error');
         });
       }
-    }
-  }, [currentQuestion, answers, saveAnswer, showSavedStatus]);
+    });
+  }, [currentSectionQuestions, answers, saveAnswer, showSavedStatus]);
 
-  // Debounced auto-save: save 2s after the user stops typing
+  // Per-question debounced auto-save
   useEffect(() => {
-    if (!planId || !currentQuestion) return;
-    const currentAnswer = answers[currentQuestion.id] || '';
-    const savedAnswer = savedAnswersRef.current[currentQuestion.id] || '';
-    if (currentAnswer === savedAnswer) return;
+    if (!planId) return;
 
-    setAutoSaveStatus('dirty');
-    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    currentSectionQuestions.forEach(q => {
+      const currentAnswer = answers[q.id] || '';
+      const savedAnswer = savedAnswersRef.current[q.id] || '';
 
-    const questionId = currentQuestion.id;
-    saveTimerRef.current = setTimeout(async () => {
-      if (currentAnswer.trim()) {
-        setAutoSaveStatus('saving');
-        const ok = await saveAnswer(questionId, currentAnswer);
-        if (ok) savedAnswersRef.current[questionId] = currentAnswer;
-        showSavedStatus(ok ? 'saved' : 'error');
+      if (currentAnswer === savedAnswer) {
+        // Clear timer if answer is now saved
+        const existingTimer = saveTimersRef.current.get(q.id);
+        if (existingTimer) {
+          clearTimeout(existingTimer);
+          saveTimersRef.current.delete(q.id);
+        }
+        return;
       }
-    }, 2000);
 
-    return () => { if (saveTimerRef.current) clearTimeout(saveTimerRef.current); };
-  }, [answers, currentQuestion, planId, saveAnswer, showSavedStatus]);
+      setAutoSaveStatus('dirty');
 
-  // Warn before closing/refreshing tab with unsaved changes
+      // Debounce: clear previous timer and set new one
+      const existingTimer = saveTimersRef.current.get(q.id);
+      if (existingTimer) clearTimeout(existingTimer);
+
+      const questionId = q.id;
+      const answerToSave = currentAnswer;
+      const timer = setTimeout(async () => {
+        if (answerToSave.trim()) {
+          setAutoSaveStatus('saving');
+          const ok = await saveAnswer(questionId, answerToSave);
+          if (ok) savedAnswersRef.current[questionId] = answerToSave;
+          showSavedStatus(ok ? 'saved' : 'error');
+        }
+        saveTimersRef.current.delete(questionId);
+      }, 2000);
+
+      saveTimersRef.current.set(questionId, timer);
+    });
+  }, [answers, currentSectionQuestions, planId, saveAnswer, showSavedStatus]);
+
+  // Warn user about unsaved changes
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      let hasUnsaved = !!saveTimerRef.current;
-      if (!hasUnsaved && currentQuestion) {
-        const currentAnswer = answers[currentQuestion.id] || '';
-        const savedAnswer = savedAnswersRef.current[currentQuestion.id] || '';
-        hasUnsaved = currentAnswer !== savedAnswer && !!currentAnswer.trim();
-      }
-      if (hasUnsaved) {
+      if (autoSaveStatus === 'dirty' || autoSaveStatus === 'saving') {
         e.preventDefault();
         e.returnValue = '';
       }
     };
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-  }, [currentQuestion, answers]);
+  }, [autoSaveStatus]);
+
+  // Detect when all questions are answered and show completion banner
+  useEffect(() => {
+    if (answeredCount > 0 && answeredCount >= questions.length && questions.length > 0 && !showCompletionBanner) {
+      setShowCompletionBanner(true);
+    }
+  }, [answeredCount, questions.length]);
 
   // Cleanup timers on unmount
   useEffect(() => {
     return () => {
-      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+      saveTimersRef.current.forEach((timer) => clearTimeout(timer));
+      saveTimersRef.current.clear();
       if (autoSaveStatusTimerRef.current) clearTimeout(autoSaveStatusTimerRef.current);
+      if (inactivityTimerRef.current) clearTimeout(inactivityTimerRef.current);
     };
   }, []);
 
-  // Navigate to next question
-  const goToNext = useCallback(() => {
-    if (currentQuestionIndex < questions.length - 1) {
-      flushCurrentAnswer();
-      const nextIndex = currentQuestionIndex + 1;
-      setCurrentQuestionIndex(nextIndex);
-      setExpandedSections(prev => new Set([...prev, questions[nextIndex].stepNumber]));
-
-      // Scroll to question
-      setTimeout(() => {
-        const questionEl = questionRefs.current.get(questions[nextIndex].id);
-        questionEl?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }, 100);
+  // Proactive AI Coach suggestion: show after 15s of inactivity on an empty focused question
+  useEffect(() => {
+    if (inactivityTimerRef.current) {
+      clearTimeout(inactivityTimerRef.current);
+      inactivityTimerRef.current = null;
     }
-  }, [currentQuestionIndex, questions, flushCurrentAnswer]);
+    setShowProactiveSuggestion(false);
 
-  // Navigate to previous question
-  const goToPrevious = useCallback(() => {
-    if (currentQuestionIndex > 0) {
-      flushCurrentAnswer();
-      const prevIndex = currentQuestionIndex - 1;
-      setCurrentQuestionIndex(prevIndex);
+    if (!activeQuestionId) return;
 
-      setTimeout(() => {
-        const questionEl = questionRefs.current.get(questions[prevIndex].id);
-        questionEl?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }, 100);
+    const currentAnswer = answers[activeQuestionId] || '';
+
+    if (
+      proactiveSuggestionShownFor.current.has(activeQuestionId) ||
+      currentAnswer.trim().length >= 10 ||
+      coachUsedForRef.current.has(activeQuestionId) ||
+      isCoachOpen
+    ) {
+      return;
     }
-  }, [currentQuestionIndex, questions, flushCurrentAnswer]);
 
-  // Jump to specific question
-  const jumpToQuestion = useCallback((index: number) => {
-    flushCurrentAnswer();
-    setCurrentQuestionIndex(index);
-    setExpandedSections(prev => new Set([...prev, questions[index].stepNumber]));
-
-    setTimeout(() => {
-      const questionEl = questionRefs.current.get(questions[index].id);
-      questionEl?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }, 100);
-  }, [questions, flushCurrentAnswer]);
-
-  // Toggle section expansion
-  const toggleSection = useCallback((stepNumber: number) => {
-    setExpandedSections(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(stepNumber)) {
-        newSet.delete(stepNumber);
-      } else {
-        newSet.add(stepNumber);
+    const questionId = activeQuestionId;
+    inactivityTimerRef.current = setTimeout(() => {
+      const answerAtTrigger = answers[questionId] || '';
+      if (
+        answerAtTrigger.trim().length < 10 &&
+        !proactiveSuggestionShownFor.current.has(questionId) &&
+        !coachUsedForRef.current.has(questionId)
+      ) {
+        setShowProactiveSuggestion(true);
+        proactiveSuggestionShownFor.current.add(questionId);
       }
-      return newSet;
-    });
-  }, []);
+    }, 15000);
+
+    return () => {
+      if (inactivityTimerRef.current) {
+        clearTimeout(inactivityTimerRef.current);
+        inactivityTimerRef.current = null;
+      }
+    };
+  }, [activeQuestionId, isCoachOpen]);
+
+  // Dismiss proactive suggestion when user starts typing
+  useEffect(() => {
+    if (!activeQuestionId || !showProactiveSuggestion) return;
+    const currentAnswer = answers[activeQuestionId] || '';
+    if (currentAnswer.trim().length > 0) {
+      setShowProactiveSuggestion(false);
+    }
+  }, [answers, activeQuestionId, showProactiveSuggestion]);
+
+  // Track when AI coach is opened for a question
+  useEffect(() => {
+    if (isCoachOpen && activeQuestionId) {
+      coachUsedForRef.current.add(activeQuestionId);
+      setShowProactiveSuggestion(false);
+    }
+  }, [isCoachOpen, activeQuestionId]);
+
+  // Navigate to next section
+  const goToNextSection = useCallback(() => {
+    if (currentSectionIndex < activeSections.length - 1) {
+      flushAllSectionAnswers();
+      const nextIndex = currentSectionIndex + 1;
+      setCurrentSectionIndex(nextIndex);
+      setActiveQuestionId(null);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [currentSectionIndex, activeSections, flushAllSectionAnswers]);
+
+  // Navigate to previous section
+  const goToPreviousSection = useCallback(() => {
+    if (currentSectionIndex > 0) {
+      flushAllSectionAnswers();
+      const prevIndex = currentSectionIndex - 1;
+      setCurrentSectionIndex(prevIndex);
+      setActiveQuestionId(null);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [currentSectionIndex, activeSections, flushAllSectionAnswers]);
+
+  // Jump to a specific section by step number
+  const jumpToSection = useCallback((sectionNumber: number) => {
+    const sectionIdx = activeSections.findIndex(s => s.number === sectionNumber);
+    if (sectionIdx >= 0) {
+      flushAllSectionAnswers();
+      setCurrentSectionIndex(sectionIdx);
+      setActiveQuestionId(null);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [activeSections, flushAllSectionAnswers]);
+
+  // Jump to a specific question (navigates to its section)
+  const jumpToQuestion = useCallback((questionId: string) => {
+    const question = questions.find(q => q.id === questionId);
+    if (!question) return;
+
+    const sectionIdx = activeSections.findIndex(s => s.number === question.stepNumber);
+    if (sectionIdx >= 0 && sectionIdx !== currentSectionIndex) {
+      flushAllSectionAnswers();
+      setCurrentSectionIndex(sectionIdx);
+    }
+
+    setActiveQuestionId(questionId);
+  }, [questions, activeSections, currentSectionIndex, flushAllSectionAnswers]);
 
   // Handle AI Action (Ask Sqordia) - with full business context from QuestionnaireContext
   const handleAIAction = useCallback(async (questionId: string, action: string) => {
     const answer = answers[questionId];
-    // For 'generate' action, we don't require existing content
     if (action !== 'generate' && (!answer || answer.trim().length < 10)) return;
 
-    setIsAIPolishing(true);
+    setAiPolishingIds(prev => new Set(prev).add(questionId));
     try {
-      // Use context methods for business data
+      const question = questions.find(q => q.id === questionId);
       const previousAnswers = answersByNumber;
       const businessName = getBusinessName();
       const businessSector = getBusinessSector();
 
-      // Build context summary for the current question
-      const contextSummary = currentQuestion?.questionNumber
-        ? buildContextSummary(currentQuestion.questionNumber, language)
+      const contextSummary = question?.questionNumber
+        ? buildContextSummary(question.questionNumber, language)
         : '';
 
       const response = await apiClient.post('/api/v1/ai/transform-answer', {
         questionId,
-        questionNumber: currentQuestion?.questionNumber,
-        questionText: currentQuestion?.questionText,
-        answer: answer || '', // Empty string for generate action
-        action, // 'generate', 'polish', 'shorten', 'expand', 'professional', 'examples', 'simplify'
-        context: contextSummary || currentQuestion?.questionText,
+        questionNumber: question?.questionNumber,
+        questionText: question?.questionText,
+        answer: answer || '',
+        action,
+        context: contextSummary || question?.questionText,
         persona: persona || 'Entrepreneur',
         language,
-        // Context fields for personalized AI responses
         previousAnswers,
         businessName,
         businessSector,
@@ -544,29 +747,59 @@ function InterviewQuestionnaireContent() {
                               response.data?.polishedText || response.data?.value?.polishedText ||
                               response.data?.generatedText || response.data?.value?.generatedText;
       if (transformedText) {
-        // Update via context to maintain global state
-        setContextAnswer(questionId, currentQuestion?.questionNumber, transformedText);
+        setContextAnswer(questionId, question?.questionNumber, transformedText);
       }
     } catch (err) {
       console.error('AI Action failed:', err);
     } finally {
-      setIsAIPolishing(false);
+      setAiPolishingIds(prev => {
+        const next = new Set(prev);
+        next.delete(questionId);
+        return next;
+      });
     }
-  }, [answers, answersByNumber, currentQuestion, persona, language, getBusinessName, getBusinessSector, buildContextSummary, setContextAnswer]);
+  }, [answers, answersByNumber, questions, persona, language, getBusinessName, getBusinessSector, buildContextSummary, setContextAnswer]);
+
+  // Focus mode: continue to next unanswered question
+  const handleContinueQuestion = useCallback((questionId: string) => {
+    handleSave(questionId);
+    const currentIdx = currentSectionQuestions.findIndex(q => q.id === questionId);
+    const nextQuestion = currentSectionQuestions.slice(currentIdx + 1).find(q =>
+      (answers[q.id] || '').trim().length < 10
+    );
+    if (nextQuestion) {
+      setActiveQuestionId(nextQuestion.id);
+    } else {
+      setActiveQuestionId(null);
+    }
+  }, [currentSectionQuestions, answers, handleSave]);
+
+  // Focus mode: skip to next question
+  const handleSkipQuestion = useCallback((questionId: string) => {
+    const currentIdx = currentSectionQuestions.findIndex(q => q.id === questionId);
+    const nextQuestion = currentSectionQuestions[currentIdx + 1];
+    if (nextQuestion) setActiveQuestionId(nextQuestion.id);
+  }, [currentSectionQuestions]);
+
+  // Auto-set activeQuestionId when section changes
+  useEffect(() => {
+    const firstUnanswered = currentSectionQuestions.find(q => (answers[q.id] || '').trim().length < 10);
+    setActiveQuestionId(firstUnanswered?.id ?? currentSectionQuestions[0]?.id ?? null);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentSectionIndex]); // only on section change, not on every answer change
 
   // Complete questionnaire
   const handleComplete = useCallback(() => {
     if (planId) {
-      flushCurrentAnswer();
+      flushAllSectionAnswers();
       localStorage.removeItem(`questionnaire_step_${planId}`);
       navigate(`/generation/${planId}`);
     }
-  }, [planId, navigate, flushCurrentAnswer]);
+  }, [planId, navigate, flushAllSectionAnswers]);
 
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Don't trigger shortcuts when typing in input/textarea
       const target = e.target as HTMLElement;
       const isTyping = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable;
 
@@ -601,43 +834,31 @@ function InterviewQuestionnaireContent() {
         return;
       }
 
-      // Ctrl/Cmd + S - Save current answer
+      // Ctrl/Cmd + S - Save all section answers
       if (e.key === 's' || e.key === 'S') {
         e.preventDefault();
-        if (currentQuestion) {
-          handleSave(currentQuestion.id);
-        }
+        flushAllSectionAnswers();
         return;
       }
 
-      // Ctrl/Cmd + ArrowRight - Next question
+      // Ctrl/Cmd + ArrowRight - Next section
       if (e.key === 'ArrowRight') {
         e.preventDefault();
-        goToNext();
+        goToNextSection();
         return;
       }
 
-      // Ctrl/Cmd + ArrowLeft - Previous question
+      // Ctrl/Cmd + ArrowLeft - Previous section
       if (e.key === 'ArrowLeft') {
         e.preventDefault();
-        goToPrevious();
-        return;
-      }
-
-      // Ctrl/Cmd + Enter - Save and go to next
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        if (currentQuestion) {
-          handleSave(currentQuestion.id);
-          setTimeout(() => goToNext(), 300);
-        }
+        goToPreviousSection();
         return;
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [currentQuestion, showShortcuts, isCoachOpen, goToNext, goToPrevious, handleSave]);
+  }, [showShortcuts, isCoachOpen, goToNextSection, goToPreviousSection, flushAllSectionAnswers]);
 
   // Theme colors - refined palette
   const bgColor = theme === 'dark' ? 'bg-slate-950' : 'bg-gradient-to-br from-slate-50 via-white to-orange-50/30';
@@ -678,29 +899,28 @@ function InterviewQuestionnaireContent() {
           <div className="flex items-center justify-between gap-4">
             {/* Back button */}
             <button
-              onClick={() => { flushCurrentAnswer(); navigate('/dashboard'); }}
+              onClick={() => { flushAllSectionAnswers(); navigate('/dashboard'); }}
               className={`flex items-center gap-2 px-3 py-2 rounded-xl ${mutedColor} hover:text-orange-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all`}
             >
               <ArrowLeft size={18} />
               <span className="text-sm font-medium hidden sm:inline">{t.backToDashboard}</span>
             </button>
 
-            {/* Progress - Enhanced visual */}
-            <div className="flex-1 max-w-md mx-4 hidden sm:block">
-              <div className="flex items-center justify-between mb-1.5">
-                <span className={`text-xs font-medium ${mutedColor}`}>
-                  {t.answered}
-                </span>
-                <span className="text-xs font-semibold text-orange-500">
-                  {answeredCount} / {questions.length}
-                </span>
-              </div>
-              <div className="h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden shadow-inner">
-                <div
-                  className="h-full bg-gradient-to-r from-orange-500 via-orange-400 to-amber-400 transition-all duration-700 ease-out rounded-full shadow-sm"
-                  style={{ width: `${progressPercent}%` }}
-                />
-              </div>
+            {/* Section Stepper */}
+            <div className="flex-1 flex justify-center hidden sm:flex">
+              <SectionStepper
+                steps={activeSections.map((s, idx) => ({ number: idx + 1, title: s.title, titleFr: s.titleFr ?? s.title }))}
+                currentIndex={currentSectionIndex}
+                completedIndices={new Set(
+                  activeSections
+                    .map((s, idx) => ({ s, idx }))
+                    .filter(({ s }) => (questionsByStep.get(s.number) || []).every(q => (answers[q.id] || '').trim().length >= 10))
+                    .map(({ idx }) => idx)
+                )}
+                onStepClick={(idx) => {
+                  setCurrentSectionIndex(idx);
+                }}
+              />
             </div>
 
             {/* Auto-save status indicator */}
@@ -740,8 +960,68 @@ function InterviewQuestionnaireContent() {
               </div>
             </div>
 
+            {/* Generate Preview button - desktop */}
+            <div className="relative hidden sm:block group">
+              <button
+                onClick={() => {
+                  if (answeredCount >= 5) setShowPreviewConfirm(true);
+                }}
+                disabled={answeredCount < 5}
+                className={`
+                  flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm font-medium
+                  transition-all duration-200
+                  ${answeredCount >= 5
+                    ? `border ${borderColor} ${textColor} hover:bg-gradient-to-r hover:from-orange-500 hover:to-amber-400 hover:text-white hover:border-transparent hover:shadow-md hover:shadow-orange-500/25`
+                    : `border border-slate-200 dark:border-slate-700 text-slate-400 dark:text-slate-500 cursor-not-allowed opacity-60`
+                  }
+                `}
+              >
+                <Sparkles size={15} />
+                <span>{t.generatePreview}</span>
+              </button>
+              {answeredCount < 5 && (
+                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 rounded-lg bg-slate-900 dark:bg-slate-700 text-white text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none shadow-lg z-50">
+                  {t.generatePreviewTooltip}
+                  <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 w-2 h-2 rotate-45 bg-slate-900 dark:bg-slate-700" />
+                </div>
+              )}
+            </div>
+
+            {/* Generate Preview button - mobile (icon only) */}
+            <div className="relative sm:hidden group">
+              <button
+                onClick={() => {
+                  if (answeredCount >= 5) setShowPreviewConfirm(true);
+                }}
+                disabled={answeredCount < 5}
+                className={`
+                  p-2.5 rounded-xl transition-all duration-200
+                  ${answeredCount >= 5
+                    ? `${mutedColor} hover:bg-gradient-to-r hover:from-orange-500 hover:to-amber-400 hover:text-white hover:shadow-md hover:shadow-orange-500/25`
+                    : `text-slate-400 dark:text-slate-500 cursor-not-allowed opacity-60`
+                  }
+                `}
+                aria-label={t.generatePreview}
+              >
+                <Sparkles size={18} />
+              </button>
+              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 rounded-lg bg-slate-900 dark:bg-slate-700 text-white text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none shadow-lg z-50">
+                {answeredCount < 5 ? t.generatePreviewTooltip : t.generatePreview}
+                <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 w-2 h-2 rotate-45 bg-slate-900 dark:bg-slate-700" />
+              </div>
+            </div>
+
             {/* Right controls */}
             <div className="flex items-center gap-1">
+              <button
+                onClick={() => setShowProfileContext(true)}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm ${mutedColor} hover:text-orange-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors`}
+                title={t.viewCompanyContext}
+              >
+                <Building2 className="w-4 h-4" />
+                <span className="hidden sm:inline">{t.context}</span>
+              </button>
+
               <LanguageDropdown variant="toggle" />
 
               <button
@@ -778,124 +1058,102 @@ function InterviewQuestionnaireContent() {
         </div>
       </header>
 
+      {/* Global Progress Bar */}
+      <ProgressBar percent={globalPercent} />
+
       {/* Main Content */}
       <div className="max-w-5xl mx-auto px-4 md:px-6 py-6 md:py-8 lg:pr-16 pb-24 md:pb-8">
-        <div className="flex gap-8">
-          {/* Sidebar - Section Navigation */}
-          <aside className="w-72 flex-shrink-0 hidden lg:block">
-            <div className={`sticky top-24 ${cardBg} rounded-2xl border ${borderColor} overflow-hidden shadow-sm`}>
-              <div className="px-5 py-4 border-b border-slate-200/80 dark:border-slate-700/80 bg-gradient-to-r from-slate-50 to-transparent dark:from-slate-800/50 dark:to-transparent">
-                <h3 className={`font-semibold ${textColor} flex items-center gap-2`}>
-                  <div className="w-1.5 h-5 rounded-full bg-gradient-to-b from-orange-500 to-amber-400" />
-                  {t.sections}
-                </h3>
+        <AnimatePresence mode="wait">
+        {showWelcome ? (
+          <motion.div
+            key="welcome"
+            initial={{ opacity: 0, scale: 0.96 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.96, y: -20 }}
+            transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+            className="flex items-center justify-center min-h-[60vh]"
+          >
+            <div className={`w-full max-w-2xl ${cardBg} rounded-3xl border ${borderColor} shadow-xl p-8 md:p-12`}>
+              {/* Heading */}
+              <div className="text-center mb-8">
+                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-orange-500 to-amber-400 flex items-center justify-center shadow-lg shadow-orange-500/30 mx-auto mb-6">
+                  <Rocket className="w-8 h-8 text-white" />
+                </div>
+                <h1 className={`text-2xl md:text-3xl font-bold ${textColor} mb-3`}>
+                  {t.welcomeHeading}
+                </h1>
+                <p className={`text-base ${mutedColor} max-w-md mx-auto leading-relaxed`}>
+                  {t.welcomeSubtext}
+                </p>
               </div>
-              <nav className="p-3 space-y-1">
-                {STEPS.map(step => {
-                  const stepQuestions = questionsByStep.get(step.number) || [];
-                  const stepAnswered = stepQuestions.filter(q => answers[q.id]?.trim().length >= 10).length;
-                  const isComplete = stepQuestions.length > 0 && stepAnswered === stepQuestions.length;
-                  const isExpanded = expandedSections.has(step.number);
-                  const isCurrentStep = currentStep === step.number;
-                  const StepIcon = step.icon;
 
-                  return (
-                    <div key={step.number}>
-                      <button
-                        onClick={() => toggleSection(step.number)}
-                        className={`
-                          w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-left
-                          transition-all duration-200
-                          ${isCurrentStep
-                            ? 'bg-gradient-to-r from-orange-500/15 to-amber-500/10 text-orange-600 dark:text-orange-400 shadow-sm'
-                            : theme === 'dark'
-                              ? 'hover:bg-slate-800/70 text-slate-300'
-                              : 'hover:bg-slate-100/80 text-slate-700'
-                          }
-                        `}
+              {/* Time estimate badge */}
+              <div className="flex justify-center mb-8">
+                <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full ${theme === 'dark' ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-600'}`}>
+                  <Clock size={15} className="text-orange-500" />
+                  <span className="text-sm font-medium">{t.welcomeEstimate}</span>
+                </div>
+              </div>
+
+              {/* Section timeline */}
+              <div className="mb-8">
+                <h3 className={`text-sm font-semibold ${mutedColor} uppercase tracking-wider mb-4 text-center`}>
+                  {t.welcomeSections}
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {STEPS.map((step, idx) => {
+                    const StepIcon = step.icon;
+                    return (
+                      <motion.div
+                        key={step.number}
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.1 + idx * 0.06, duration: 0.3 }}
+                        className={`flex items-center gap-3 px-4 py-3 rounded-xl ${theme === 'dark' ? 'bg-slate-800/60' : 'bg-slate-50/80'} border ${theme === 'dark' ? 'border-slate-700/50' : 'border-slate-200/60'}`}
                       >
-                        <div className={`
-                          w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0
-                          ${isComplete
-                            ? 'bg-green-500/15 text-green-500'
-                            : isCurrentStep
-                              ? 'bg-orange-500/20 text-orange-500'
-                              : theme === 'dark'
-                                ? 'bg-slate-700 text-slate-400'
-                                : 'bg-slate-200/80 text-slate-500'
-                          }
-                        `}>
-                          {isComplete ? (
-                            <CheckCircle2 size={16} />
-                          ) : (
-                            <StepIcon size={16} />
-                          )}
+                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${theme === 'dark' ? 'bg-slate-700 text-orange-400' : 'bg-orange-100 text-orange-600'}`}>
+                          <StepIcon size={16} />
                         </div>
-                        <span className="flex-1 text-sm font-medium truncate">
-                          {language === 'fr' ? step.titleFr : step.title}
-                        </span>
-                        <div className="flex items-center gap-2">
-                          <span className={`
-                            text-xs font-medium px-2 py-0.5 rounded-full
-                            ${isComplete
-                              ? 'bg-green-500/15 text-green-600 dark:text-green-400'
-                              : theme === 'dark'
-                                ? 'bg-slate-700 text-slate-400'
-                                : 'bg-slate-200/80 text-slate-500'
-                            }
-                          `}>
-                            {stepAnswered}/{stepQuestions.length}
+                        <div className="flex-1 min-w-0">
+                          <span className={`text-sm font-medium ${textColor} truncate block`}>
+                            {language === 'fr' ? step.titleFr : step.title}
                           </span>
-                          <div className={`transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}>
-                            <ChevronDown size={16} className={mutedColor} />
-                          </div>
                         </div>
-                      </button>
+                        <span className={`text-xs font-medium ${mutedColor}`}>{step.number}/7</span>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              </div>
 
-                      {/* Expanded questions */}
-                      {isExpanded && (
-                        <div className="ml-5 mt-1.5 mb-2 pl-4 border-l-2 border-slate-200 dark:border-slate-700 space-y-0.5">
-                          {stepQuestions.map((q) => {
-                            const globalIdx = questions.findIndex(x => x.id === q.id);
-                            const isAnswered = answers[q.id]?.trim().length >= 10;
-                            const isCurrent = globalIdx === currentQuestionIndex;
+              {/* Save note */}
+              <div className="flex items-center justify-center gap-2 mb-8">
+                <BookmarkCheck size={16} className="text-emerald-500" />
+                <span className={`text-sm ${mutedColor}`}>{t.welcomeSaveNote}</span>
+              </div>
 
-                            return (
-                              <button
-                                key={q.id}
-                                onClick={() => jumpToQuestion(globalIdx)}
-                                className={`
-                                  w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-left text-xs
-                                  transition-all duration-150
-                                  ${isCurrent
-                                    ? 'bg-gradient-to-r from-orange-500 to-orange-400 text-white shadow-sm shadow-orange-500/20'
-                                    : isAnswered
-                                      ? theme === 'dark'
-                                        ? 'text-green-400 hover:bg-slate-800/70'
-                                        : 'text-green-600 hover:bg-slate-100/80'
-                                      : theme === 'dark'
-                                        ? 'text-slate-400 hover:bg-slate-800/70 hover:text-slate-300'
-                                        : 'text-slate-500 hover:bg-slate-100/80 hover:text-slate-700'
-                                  }
-                                `}
-                              >
-                                {isAnswered && !isCurrent && <CheckCircle2 size={12} className="flex-shrink-0" />}
-                                {!isAnswered && !isCurrent && <div className="w-3 h-3 rounded-full border-2 border-slate-300 dark:border-slate-600 flex-shrink-0" />}
-                                <span className="truncate font-medium">Q{globalIdx + 1}</span>
-                              </button>
-                            );
-                          })}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </nav>
+              {/* CTA Button */}
+              <div className="text-center">
+                <motion.button
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => setShowWelcome(false)}
+                  className="inline-flex items-center gap-3 px-10 py-4 rounded-2xl font-semibold text-lg bg-gradient-to-r from-orange-500 to-amber-400 text-white shadow-lg shadow-orange-500/30 hover:shadow-xl hover:shadow-orange-500/40 hover:from-orange-600 hover:to-amber-500 transition-all duration-200"
+                >
+                  {t.welcomeCta}
+                  <ArrowRight size={20} />
+                </motion.button>
+              </div>
             </div>
-          </aside>
-
-          {/* Main Interview Area */}
-          <main className="flex-1 min-w-0">
+          </motion.div>
+        ) : (
+          <motion.div
+            key="interview"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+          >
+        <div className="max-w-2xl mx-auto">
             {/* Error Banner */}
             {error && (
               <div className="mb-6 p-4 rounded-2xl bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 flex items-start gap-3 shadow-sm">
@@ -909,117 +1167,188 @@ function InterviewQuestionnaireContent() {
               </div>
             )}
 
-            {/* Current Question */}
-            {currentQuestion && (
-              <div
-                ref={el => {
-                  if (el) questionRefs.current.set(currentQuestion.id, el);
-                }}
-                className="mb-8 animate-in fade-in slide-in-from-bottom-2 duration-300"
-              >
-                {/* AI Interviewer */}
+            {/* Adaptive Interview: Profile Context Panel */}
+            {(showProfileContext || (adaptiveEnabled && skippedQuestions.length > 0)) && (
+              <ProfileContextPanel
+                skippedQuestions={skippedQuestions}
+                profileCompletenessScore={orgProfile?.profileCompletenessScore ?? 0}
+              />
+            )}
+
+            {/* Completion Celebration Banner */}
+            <AnimatePresence>
+              {showCompletionBanner && (
+                <motion.div
+                  initial={{ opacity: 0, y: -20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  className="mb-6 p-4 rounded-xl bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-950/30 dark:to-teal-950/30 border border-emerald-200 dark:border-emerald-800"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="flex-shrink-0 w-10 h-10 rounded-full bg-emerald-100 dark:bg-emerald-900 flex items-center justify-center">
+                      <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-semibold text-emerald-800 dark:text-emerald-200">
+                        {t.interviewComplete}
+                      </p>
+                      <p className="text-sm text-emerald-600 dark:text-emerald-400">
+                        {t.interviewCompleteDesc}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => setShowPreviewConfirm(true)}
+                      className="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium transition-colors"
+                    >
+                      {t.generatePlan}
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Section-Based Content — Focus Mode */}
+            {currentSection && currentSectionQuestions.length > 0 && (
+              <div className="mb-8">
+                {/* Section Header */}
+                <div className="mb-6">
+                  <h2 className={`text-xl font-bold ${textColor}`}>
+                    {language === 'fr' ? currentSection.titleFr : currentSection.title}
+                  </h2>
+                  <div className="flex items-center gap-3 mt-1">
+                    <p className={`text-sm ${mutedColor}`}>
+                      {sectionAnsweredCount} / {currentSectionQuestions.length}{' '}
+                      {language === 'fr' ? 'questions répondues' : 'questions answered'}
+                    </p>
+                    <div className="flex gap-1">
+                      {currentSectionQuestions.map((_, i) => (
+                        <div key={i} className={`w-2 h-2 rounded-full ${
+                          i < sectionAnsweredCount ? 'bg-orange-500' : theme === 'dark' ? 'bg-slate-700' : 'bg-slate-200'
+                        }`} />
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* AI Interviewer - Section-level intro */}
                 <AIInterviewer
-                  questionText={currentQuestion.questionText}
-                  helpText={currentQuestion.helpText}
-                  questionNumber={currentQuestionIndex + 1}
-                  totalQuestions={questions.length}
-                  sectionTitle={stepInfo?.title || ''}
-                  previousAnswer={currentQuestionIndex > 0 ? answers[questions[currentQuestionIndex - 1].id] : undefined}
-                  isAnswered={answers[currentQuestion.id]?.trim().length >= 10}
+                  questionText=""
+                  sectionTitle={language === 'fr' ? (currentSection.titleFr || currentSection.title) : currentSection.title}
+                  questionNumber={1}
+                  totalQuestions={currentSectionQuestions.length}
+                  isAnswered={sectionAnsweredCount === currentSectionQuestions.length}
                   persona={persona || 'Entrepreneur'}
-                  expertAdviceFR={currentQuestion.expertAdviceFR}
-                  expertAdviceEN={currentQuestion.expertAdviceEN}
+                  sectionMode={true}
                 />
 
-                {/* Answer Editor - key forces re-mount when question changes */}
-                <div className="ml-0 lg:ml-16 mt-4">
-                  <div className={`${cardBg} rounded-2xl border ${borderColor} p-4 md:p-6 shadow-sm`}>
-                    <NotionStyleEditor
-                      key={currentQuestion.id}
-                      value={answers[currentQuestion.id] || ''}
-                      onChange={(value) => handleAnswerChange(currentQuestion.id, value)}
-                      onSave={() => handleSave(currentQuestion.id)}
-                      isSaving={saving === currentQuestion.id}
-                      isRequired={currentQuestion.isRequired}
-                      minLength={10}
-                      onAIAction={(action) => handleAIAction(currentQuestion.id, action)}
-                      isAIProcessing={isAIPolishing}
-                      questionId={currentQuestion.id}
-                      placeholder={t.placeholder}
-                    />
-                  </div>
+                {/* Questions in focus mode */}
+                <div className="space-y-2">
+                  {currentSectionQuestions.map((q, qIdx) => {
+                    const isAnswered = (answers[q.id] || '').trim().length >= 10;
+                    const isActive = q.id === activeQuestionId;
+                    const cardState = isActive ? 'active' : isAnswered ? 'answered' : 'upcoming';
+
+                    return (
+                      <QuestionCard
+                        key={q.id}
+                        question={q}
+                        index={qIdx}
+                        state={cardState}
+                        answer={answers[q.id] || ''}
+                        isSaving={saving === q.id}
+                        isAIProcessing={aiPolishingIds.has(q.id)}
+                        language={language as 'en' | 'fr'}
+                        onAnswerChange={(value) => handleAnswerChange(q.id, value)}
+                        onContinue={() => handleContinueQuestion(q.id)}
+                        onSkip={() => handleSkipQuestion(q.id)}
+                        onEdit={() => setActiveQuestionId(q.id)}
+                        onAIAction={(action) => handleAIAction(q.id, action)}
+                        onHint={() => {
+                          setActiveQuestionId(q.id);
+                          setIsCoachOpen(true);
+                        }}
+                      />
+                    );
+                  })}
                 </div>
               </div>
             )}
 
-            {/* Navigation */}
-            <div className={`flex items-center justify-between pt-6 mt-6 border-t ${borderColor}`}>
+            {/* Section Navigation */}
+            <div className="flex justify-between mt-8 pt-4 border-t border-slate-200 dark:border-slate-800">
               <button
-                onClick={goToPrevious}
-                disabled={currentQuestionIndex === 0}
-                className={`
-                  flex items-center gap-2.5 px-5 py-2.5 rounded-xl font-medium
-                  transition-all duration-200 group
-                  ${currentQuestionIndex === 0
-                    ? 'text-slate-400 cursor-not-allowed opacity-50'
-                    : `${textColor} hover:bg-slate-100 dark:hover:bg-slate-800 hover:shadow-sm`
-                  }
-                `}
+                onClick={goToPreviousSection}
+                disabled={currentSectionIndex === 0}
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all ${
+                  currentSectionIndex === 0
+                    ? 'opacity-40 cursor-not-allowed'
+                    : theme === 'dark' ? 'text-slate-300 hover:bg-slate-800' : 'text-slate-600 hover:bg-slate-100'
+                }`}
               >
-                <ArrowLeft size={18} className={currentQuestionIndex > 0 ? 'group-hover:-translate-x-1 transition-transform' : ''} />
-                <span className="hidden sm:inline">{t.previous}</span>
+                <ArrowLeft size={16} />
+                {language === 'fr' ? 'Section précédente' : 'Previous Section'}
               </button>
 
-              <div className={`text-sm font-medium ${mutedColor} px-4 py-2 rounded-full bg-slate-100/80 dark:bg-slate-800/80`}>
-                {t.questionOf.replace('{current}', String(currentQuestionIndex + 1)).replace('{total}', String(questions.length))}
-              </div>
-
-              {currentQuestionIndex < questions.length - 1 ? (
+              {currentSectionIndex < activeSections.length - 1 ? (
                 <button
-                  onClick={goToNext}
-                  className="flex items-center gap-2.5 px-6 py-2.5 rounded-xl font-medium bg-gradient-to-r from-orange-500 to-orange-400 text-white hover:from-orange-600 hover:to-orange-500 shadow-md shadow-orange-500/25 hover:shadow-lg hover:shadow-orange-500/30 transition-all duration-200 group"
+                  onClick={goToNextSection}
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all bg-gradient-to-r from-orange-500 to-amber-400 text-white shadow-md hover:shadow-lg"
                 >
-                  <span className="hidden sm:inline">{t.next}</span>
-                  <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+                  {language === 'fr' ? 'Section suivante' : 'Next Section'}
+                  <ArrowRight size={16} />
                 </button>
               ) : (
                 <button
                   onClick={handleComplete}
                   disabled={answeredCount < questions.length}
                   className={`
-                    flex items-center gap-2.5 px-6 py-2.5 rounded-xl font-medium
-                    transition-all duration-200 group
+                    flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all
                     ${answeredCount >= questions.length
-                      ? 'bg-gradient-to-r from-green-500 to-emerald-400 text-white shadow-md shadow-green-500/25 hover:shadow-lg hover:shadow-green-500/30 hover:from-green-600 hover:to-emerald-500'
-                      : 'bg-slate-200/80 dark:bg-slate-700/80 text-slate-400 dark:text-slate-500 cursor-not-allowed'
+                      ? 'bg-gradient-to-r from-green-500 to-emerald-400 text-white shadow-md hover:shadow-lg'
+                      : 'opacity-40 cursor-not-allowed bg-slate-200 dark:bg-slate-700 text-slate-400'
                     }
                   `}
                 >
-                  <Sparkles size={18} className={answeredCount >= questions.length ? 'group-hover:scale-110 transition-transform' : ''} />
-                  <span className="hidden sm:inline">{t.generatePlan}</span>
+                  <Sparkles size={16} />
+                  {t.generatePlan}
                 </button>
               )}
             </div>
-          </main>
-        </div>
+          </div>
+          </motion.div>
+        )}
+        </AnimatePresence>
       </div>
 
       {/* AI Coach Bubble - Floating chat assistant */}
-      {currentQuestion && planId && (
+      {effectiveCoachQuestion && planId && (
         <AICoachBubble
           ref={coachRef}
           businessPlanId={planId}
-          questionId={currentQuestion.id}
-          questionNumber={currentQuestionIndex + 1}
-          questionText={currentQuestion.questionText}
-          currentAnswer={answers[currentQuestion.id] || null}
+          questionId={effectiveCoachQuestion.id}
+          questionNumber={questions.indexOf(effectiveCoachQuestion) + 1}
+          questionText={effectiveCoachQuestion.questionText}
+          currentAnswer={answers[effectiveCoachQuestion.id] || null}
           language={language}
           persona={persona || 'Entrepreneur'}
-          onSuggestionApply={(text) => handleAnswerChange(currentQuestion.id, text)}
+          onSuggestionApply={(text) => handleAnswerChange(effectiveCoachQuestion.id, text)}
           isOpenControlled={isCoachOpen}
           onOpenChange={setIsCoachOpen}
         />
       )}
+
+      {/* Coach Panel — Expert advice overlay */}
+      <CoachPanel
+        isOpen={isCoachOpen}
+        onClose={() => setIsCoachOpen(false)}
+        expertAdvice={
+          (() => {
+            const activeQ = currentSectionQuestions.find(q => q.id === activeQuestionId);
+            return (language === 'fr' ? activeQ?.expertAdviceFR : activeQ?.expertAdviceEN) ?? '';
+          })()
+        }
+        language={language as 'en' | 'fr'}
+      />
 
       {/* Keyboard Shortcuts Button */}
       <button
@@ -1103,11 +1432,6 @@ function InterviewQuestionnaireContent() {
                   theme={theme}
                 />
                 <ShortcutRow
-                  keys={['Ctrl', 'Enter']}
-                  description={`${t.shortcutSave} + ${t.shortcutNext}`}
-                  theme={theme}
-                />
-                <ShortcutRow
                   keys={['Esc']}
                   description={t.shortcutClose}
                   theme={theme}
@@ -1122,8 +1446,89 @@ function InterviewQuestionnaireContent() {
               {/* Footer hint */}
               <div className="px-6 py-3 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-200 dark:border-slate-700">
                 <p className={`text-xs ${mutedColor} text-center`}>
-                  {t.pressKey} <kbd className="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-700 font-mono text-[10px]">Esc</kbd> {language === 'fr' ? 'pour fermer' : 'to close'}
+                  {t.pressKey} <kbd className="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-700 font-mono text-[10px]">Esc</kbd> {t.toClose}
                 </p>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Generate Preview Confirmation Dialog */}
+      <AnimatePresence>
+        {showPreviewConfirm && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/40 dark:bg-black/60 z-50 backdrop-blur-sm"
+              onClick={() => setShowPreviewConfirm(false)}
+            />
+
+            {/* Dialog */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 400 }}
+              className={`
+                fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50
+                w-full max-w-md mx-4
+                ${theme === 'dark' ? 'bg-slate-900' : 'bg-white'}
+                rounded-2xl shadow-2xl border ${borderColor}
+                overflow-hidden
+              `}
+            >
+              {/* Header */}
+              <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-700">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-amber-400 flex items-center justify-center">
+                    <Sparkles className="w-5 h-5 text-white" />
+                  </div>
+                  <h2 className={`text-lg font-semibold ${textColor}`}>{t.generatePreviewTitle}</h2>
+                </div>
+                <button
+                  onClick={() => setShowPreviewConfirm(false)}
+                  className={`p-2 rounded-lg ${mutedColor} hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors`}
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              {/* Body */}
+              <div className="px-6 py-5">
+                <p className={`text-sm leading-relaxed ${theme === 'dark' ? 'text-slate-300' : 'text-slate-600'}`}>
+                  {t.generatePreviewBody
+                    .replace('{answered}', String(answeredCount))
+                    .replace('{total}', String(questions.length))
+                  }
+                </p>
+              </div>
+
+              {/* Actions */}
+              <div className="px-6 py-4 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-200 dark:border-slate-700 flex items-center justify-end gap-3">
+                <button
+                  onClick={() => setShowPreviewConfirm(false)}
+                  className={`
+                    px-4 py-2.5 rounded-xl text-sm font-medium
+                    border ${borderColor} ${textColor}
+                    hover:bg-slate-100 dark:hover:bg-slate-800
+                    transition-all duration-200
+                  `}
+                >
+                  {t.generatePreviewCancel}
+                </button>
+                <button
+                  onClick={() => {
+                    setShowPreviewConfirm(false);
+                    handleComplete();
+                  }}
+                  className="px-5 py-2.5 rounded-xl text-sm font-medium bg-gradient-to-r from-orange-500 to-amber-400 text-white hover:from-orange-600 hover:to-amber-500 shadow-md shadow-orange-500/25 hover:shadow-lg hover:shadow-orange-500/30 transition-all duration-200"
+                >
+                  {t.generatePreviewConfirm}
+                </button>
               </div>
             </motion.div>
           </>
