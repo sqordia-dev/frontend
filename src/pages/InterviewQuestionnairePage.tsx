@@ -213,6 +213,7 @@ function InterviewQuestionnaireContent() {
   // State
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
+  const [sectionDirection, setSectionDirection] = useState<1 | -1>(1);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -671,6 +672,7 @@ function InterviewQuestionnaireContent() {
     if (currentSectionIndex < activeSections.length - 1) {
       flushAllSectionAnswers();
       const nextIndex = currentSectionIndex + 1;
+      setSectionDirection(1);
       setCurrentSectionIndex(nextIndex);
       setActiveQuestionId(null);
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -682,6 +684,7 @@ function InterviewQuestionnaireContent() {
     if (currentSectionIndex > 0) {
       flushAllSectionAnswers();
       const prevIndex = currentSectionIndex - 1;
+      setSectionDirection(-1);
       setCurrentSectionIndex(prevIndex);
       setActiveQuestionId(null);
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -918,6 +921,7 @@ function InterviewQuestionnaireContent() {
                     .map(({ idx }) => idx)
                 )}
                 onStepClick={(idx) => {
+                  setSectionDirection(idx > currentSectionIndex ? 1 : -1);
                   setCurrentSectionIndex(idx);
                 }}
               />
@@ -1208,6 +1212,20 @@ function InterviewQuestionnaireContent() {
             </AnimatePresence>
 
             {/* Section-Based Content — Focus Mode */}
+            <AnimatePresence mode="wait" custom={sectionDirection}>
+              <motion.div
+                key={currentSectionIndex}
+                custom={sectionDirection}
+                variants={{
+                  enter: (dir: number) => ({ x: dir > 0 ? 60 : -60, opacity: 0 }),
+                  center: { x: 0, opacity: 1 },
+                  exit: (dir: number) => ({ x: dir > 0 ? -60 : 60, opacity: 0 }),
+                }}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                transition={{ duration: 0.25, ease: 'easeInOut' }}
+              >
             {currentSection && currentSectionQuestions.length > 0 && (
               <div className="mb-8">
                 {/* Section Header */}
@@ -1314,6 +1332,8 @@ function InterviewQuestionnaireContent() {
                 </button>
               )}
             </div>
+              </motion.div>
+            </AnimatePresence>
           </div>
           </motion.div>
         )}
