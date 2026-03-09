@@ -115,11 +115,11 @@ export class CreatePlanPage extends BasePage {
 
     await this.clickCreate();
 
-    // Wait for navigation with longer timeout
-    await this.page.waitForURL(/\/questionnaire\//, { timeout: 60000 });
+    // Wait for navigation with longer timeout (app redirects /questionnaire → /interview)
+    await this.page.waitForURL(/\/interview\//, { timeout: 60000 });
 
     // Extract and return the plan ID
-    const match = this.page.url().match(/\/questionnaire\/([^/]+)/);
+    const match = this.page.url().match(/\/interview\/([^/]+)/);
     return match ? match[1] : '';
   }
 

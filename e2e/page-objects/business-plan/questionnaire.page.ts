@@ -6,7 +6,7 @@ import { BasePage } from '../base.page';
  * Handles the business plan questionnaire/interview flow
  */
 export class QuestionnairePage extends BasePage {
-  readonly path = '/questionnaire';
+  readonly path = '/interview';
   readonly feature = 'questionnaire';
 
   // ==================== LOCATORS ====================
@@ -193,7 +193,7 @@ export class QuestionnairePage extends BasePage {
    * Navigate to questionnaire for a specific plan
    */
   async gotoForPlan(planId: string): Promise<void> {
-    await this.page.goto(`/questionnaire/${planId}`);
+    await this.page.goto(`/interview/${planId}`);
     await this.waitForQuestionnaireReady();
   }
 
@@ -379,7 +379,7 @@ export class QuestionnairePage extends BasePage {
    * Assert questionnaire is loaded
    */
   async expectQuestionnaireLoaded(): Promise<void> {
-    await expect(this.page).toHaveURL(/\/questionnaire\//);
+    await expect(this.page).toHaveURL(/\/interview\//);
     // Wait for any content indicating the questionnaire is ready
     const hasContent = await Promise.race([
       this.answerEditor.waitFor({ state: 'visible', timeout: 10000 }).then(() => true),

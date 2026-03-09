@@ -117,7 +117,7 @@ test.describe('Questionnaire @questionnaire @business-plan', () => {
 
     // Verify we're still on questionnaire and navigation occurred
     const currentUrl = questionnairePage.page.url();
-    expect(currentUrl).toContain('/questionnaire/');
+    expect(currentUrl).toContain('/interview/');
 
     // Verify questionnaire is still loaded and functional
     await questionnairePage.expectQuestionnaireLoaded();
