@@ -131,16 +131,10 @@ export default function PersonaSelectionPage() {
     }
   };
 
-  const isDark = theme === 'dark';
-  const strategyBlue = '#1A2B47';
-  const momentumOrange = '#FF6B00';
-
   return (
-    <div className="min-h-screen flex flex-col" style={{ 
-      backgroundColor: isDark ? '#111827' : '#F9FAFB' 
-    }}>
+    <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-900">
       <SEO
-        title={language === 'fr' 
+        title={language === 'fr'
           ? "Sélectionnez votre profil | Sqordia"
           : "Select Your Profile | Sqordia"}
         description={language === 'fr'
@@ -155,17 +149,10 @@ export default function PersonaSelectionPage() {
       <div className="w-full py-6 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <Link to="/dashboard" className="flex items-center gap-3">
-            <div 
-              className="p-2 rounded-lg"
-              style={{ backgroundColor: strategyBlue }}
-            >
-              <Brain 
-                className="w-6 h-6 text-white" 
-              />
+            <div className="p-2 rounded-lg bg-strategy-blue">
+              <Brain className="w-6 h-6 text-white" />
             </div>
-            <span className="text-xl font-bold" style={{ 
-              color: isDark ? '#F9FAFB' : strategyBlue 
-            }}>
+            <span className="text-xl font-bold text-strategy-blue dark:text-gray-50">
               Sqordia
             </span>
           </Link>
@@ -177,24 +164,16 @@ export default function PersonaSelectionPage() {
         <div className="max-w-6xl w-full">
           {/* Title Section */}
           <div className="text-center mb-12">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold mb-6" 
-              style={{ 
-                backgroundColor: isDark ? 'rgba(255, 107, 0, 0.15)' : 'rgba(255, 107, 0, 0.1)',
-                color: momentumOrange 
-              }}>
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold mb-6 bg-momentum-orange/10 dark:bg-momentum-orange/15 text-momentum-orange">
               <Target size={16} />
-              <span>{language === 'fr' ? 'Étape 1 sur 2' : 'Step 1 of 2'}</span>
+              <span>{language === 'fr' ? 'Personnalisation' : 'Personalization'}</span>
             </div>
-            <h1 className="text-4xl sm:text-5xl font-bold mb-4" style={{ 
-              color: isDark ? '#F9FAFB' : strategyBlue 
-            }}>
-              {language === 'fr' 
+            <h1 className="text-4xl sm:text-5xl font-bold mb-4 text-strategy-blue dark:text-gray-50">
+              {language === 'fr'
                 ? 'Choisissez votre profil'
                 : 'Choose Your Profile'}
             </h1>
-            <p className="text-lg" style={{ 
-              color: isDark ? '#D1D5DB' : '#6B7280' 
-            }}>
+            <p className="text-lg text-gray-500 dark:text-gray-300">
               {language === 'fr'
                 ? 'Sélectionnez le type de profil qui correspond le mieux à vos besoins. Cela personnalisera votre expérience.'
                 : 'Select the profile type that best matches your needs. This will personalize your experience.'}
@@ -221,83 +200,65 @@ export default function PersonaSelectionPage() {
                   key={persona.id}
                   onClick={() => !isDisabled && handleSelectPersona(persona.id)}
                   disabled={isDisabled}
-                  className={`
-                    relative p-8 rounded-2xl border-2 transition-all duration-300 text-left
-                    ${isSelected
-                      ? 'ring-4 ring-opacity-30 scale-105'
-                      : persona.comingSoon
-                        ? ''
-                        : 'hover:scale-102 hover:shadow-xl'
-                    }
-                    ${isDisabled ? 'cursor-not-allowed' : 'cursor-pointer'}
-                  `}
                   style={{
-                    backgroundColor: isDark ? '#1F2937' : '#FFFFFF',
-                    borderColor: isSelected ? persona.color : (isDark ? '#374151' : '#E5E7EB'),
+                    borderColor: isSelected ? persona.color : undefined,
                     boxShadow: isSelected
                       ? `0 0 0 4px ${persona.color}40, 0 10px 25px -5px rgba(0, 0, 0, 0.1)`
-                      : '0 1px 3px rgba(0, 0, 0, 0.1)',
-                    opacity: persona.comingSoon ? 0.6 : 1,
-                    filter: persona.comingSoon ? 'grayscale(40%)' : 'none'
+                      : undefined,
                   }}
+                  className={`
+                    relative group rounded-2xl border-2 p-8 text-left transition-all duration-300
+                    bg-white dark:bg-gray-800
+                    ${isSelected
+                      ? 'scale-105'
+                      : persona.comingSoon
+                        ? ''
+                        : 'hover:scale-[1.02] hover:shadow-xl'
+                    }
+                    ${isSelected ? '' : 'border-gray-200 dark:border-gray-700 shadow-sm'}
+                    ${persona.comingSoon ? 'opacity-60 grayscale-[40%]' : ''}
+                    ${isDisabled ? 'cursor-not-allowed' : 'cursor-pointer'}
+                  `}
                 >
                   {/* Coming Soon Badge */}
                   {persona.comingSoon && (
-                    <div
-                      className="absolute top-4 right-4 px-3 py-1 rounded-full text-xs font-semibold"
-                      style={{
-                        backgroundColor: isDark ? '#374151' : '#E5E7EB',
-                        color: isDark ? '#9CA3AF' : '#6B7280'
-                      }}
-                    >
+                    <div className="absolute top-4 right-4 px-3 py-1 rounded-full text-xs font-semibold bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400">
                       {language === 'fr' ? 'Bientôt' : 'Coming Soon'}
                     </div>
                   )}
                   {/* Icon */}
-                  <div 
-                    className="w-16 h-16 rounded-xl flex items-center justify-center mb-6 transition-transform"
-                    style={{ 
-                      backgroundColor: `${persona.color}15`,
-                      transform: isSelected ? 'scale(1.1)' : 'scale(1)'
-                    }}
+                  <div
+                    className={`w-16 h-16 rounded-xl flex items-center justify-center mb-6 transition-transform ${isSelected ? 'scale-110' : ''}`}
+                    style={{ backgroundColor: `${persona.color}15` }}
                   >
-                    <Icon 
-                      className="w-8 h-8" 
-                      style={{ color: persona.color }} 
-                    />
+                    <Icon className="w-8 h-8" style={{ color: persona.color }} />
                   </div>
 
                   {/* Title */}
-                  <h3 className="text-xl font-bold mb-2" style={{ 
-                    color: isDark ? '#F9FAFB' : strategyBlue 
-                  }}>
+                  <h3 className="text-xl font-bold mb-2 text-foreground">
                     {language === 'fr' ? persona.titleFr : persona.title}
                   </h3>
 
                   {/* Description */}
-                  <p className="text-sm mb-6" style={{ 
-                    color: isDark ? '#9CA3AF' : '#6B7280' 
-                  }}>
+                  <p className="text-sm mb-6 text-muted-foreground">
                     {language === 'fr' ? persona.descriptionFr : persona.description}
                   </p>
 
                   {/* Features */}
                   <ul className="space-y-2 mb-6">
                     {(language === 'fr' ? persona.featuresFr : persona.features).map((feature, idx) => (
-                      <li key={idx} className="flex items-start gap-2 text-sm" style={{ 
-                        color: isDark ? '#D1D5DB' : '#4B5563' 
-                      }}>
-                        <CheckCircle2 
-                          size={16} 
-                          className="flex-shrink-0 mt-0.5" 
-                          style={{ color: persona.color }} 
+                      <li key={idx} className="flex items-start gap-2 text-sm text-gray-600 dark:text-gray-300">
+                        <CheckCircle2
+                          size={16}
+                          className="flex-shrink-0 mt-0.5"
+                          style={{ color: persona.color }}
                         />
                         <span>{feature}</span>
                       </li>
                     ))}
                   </ul>
 
-                  {/* Selected Indicator - only show if not coming soon */}
+                  {/* Selected Indicator */}
                   {isSelected && !persona.comingSoon && (
                     <div className="absolute top-4 right-4">
                       <div
@@ -313,13 +274,10 @@ export default function PersonaSelectionPage() {
                     </div>
                   )}
 
-                  {/* Hover Arrow - only show if not coming soon */}
+                  {/* Hover Arrow */}
                   {!isSelected && !loading && !persona.comingSoon && (
                     <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <ArrowRight
-                        size={20}
-                        style={{ color: persona.color }}
-                      />
+                      <ArrowRight size={20} style={{ color: persona.color }} />
                     </div>
                   )}
                 </button>
@@ -329,9 +287,7 @@ export default function PersonaSelectionPage() {
 
           {/* Help Text */}
           <div className="text-center">
-            <p className="text-sm" style={{ 
-              color: isDark ? '#9CA3AF' : '#6B7280' 
-            }}>
+            <p className="text-sm text-muted-foreground">
               {language === 'fr'
                 ? 'Vous pourrez modifier ce choix plus tard dans vos paramètres de profil.'
                 : 'You can change this selection later in your profile settings.'}

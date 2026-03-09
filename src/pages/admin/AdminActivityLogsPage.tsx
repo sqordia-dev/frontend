@@ -41,6 +41,7 @@ import {
 import { useTheme } from '../../contexts/ThemeContext';
 import { getUserFriendlyError } from '../../utils/error-messages';
 import { cn } from '../../lib/utils';
+import { Button } from '../../components/ui/button';
 
 // Action type mapping for human-readable names and icons
 const ACTION_CONFIG: Record<string, { label: string; labelFr: string; icon: LucideIcon; color: string; category: string }> = {
@@ -347,15 +348,54 @@ export default function AdminActivityLogsPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-[60vh]">
-        <div className="flex flex-col items-center gap-4">
-          <div className="relative">
-            <div className="w-12 h-12 rounded-full border-2 border-muted" />
-            <div className="absolute top-0 left-0 w-12 h-12 rounded-full border-2 border-momentum-orange border-t-transparent animate-spin" />
+      <div className="space-y-6 animate-pulse">
+        {/* Header skeleton */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <div className="h-7 w-40 bg-gray-200 dark:bg-gray-700 rounded" />
+            <div className="mt-2 h-4 w-72 bg-gray-200 dark:bg-gray-700 rounded" />
           </div>
-          <p className="text-sm text-muted-foreground">
-            {language === 'fr' ? 'Chargement des logs...' : 'Loading activity logs...'}
-          </p>
+          <div className="h-10 w-28 bg-gray-200 dark:bg-gray-700 rounded-lg" />
+        </div>
+        {/* Stats skeleton */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="bg-card rounded-xl border border-border/50 p-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-lg" />
+                <div className="space-y-2">
+                  <div className="h-6 w-12 bg-gray-200 dark:bg-gray-700 rounded" />
+                  <div className="h-3 w-20 bg-gray-200 dark:bg-gray-700 rounded" />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+        {/* Search skeleton */}
+        <div className="flex flex-col sm:flex-row gap-3">
+          <div className="flex-1 h-10 bg-gray-200 dark:bg-gray-700 rounded-lg" />
+          <div className="h-10 w-28 bg-gray-200 dark:bg-gray-700 rounded-lg" />
+        </div>
+        {/* Timeline skeleton */}
+        <div className="bg-card rounded-xl border border-border/50 overflow-hidden">
+          <div className="px-4 py-3 bg-muted/30 border-b border-border/50">
+            <div className="h-4 w-24 bg-gray-200 dark:bg-gray-700 rounded" />
+          </div>
+          <div className="divide-y divide-border/50">
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="px-4 py-4 flex items-start gap-4">
+                <div className="w-9 h-9 bg-gray-200 dark:bg-gray-700 rounded-lg flex-shrink-0" />
+                <div className="flex-1 space-y-2">
+                  <div className="h-4 w-40 bg-gray-200 dark:bg-gray-700 rounded" />
+                  <div className="h-3 w-56 bg-gray-200 dark:bg-gray-700 rounded" />
+                  <div className="flex gap-4">
+                    <div className="h-3 w-16 bg-gray-200 dark:bg-gray-700 rounded" />
+                    <div className="h-3 w-24 bg-gray-200 dark:bg-gray-700 rounded" />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     );
@@ -375,16 +415,16 @@ export default function AdminActivityLogsPage() {
               : 'Track all actions performed on the platform'}
           </p>
         </div>
-        <button
+        <Button
+          variant="outline"
           onClick={handleRefresh}
           disabled={isRefreshing}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-card border border-border hover:bg-muted transition-colors disabled:opacity-50"
         >
           <RefreshCw className={cn("w-4 h-4", isRefreshing && "animate-spin")} />
           <span className="text-sm font-medium">
             {language === 'fr' ? 'Actualiser' : 'Refresh'}
           </span>
-        </button>
+        </Button>
       </div>
 
       {/* Stats Cards */}

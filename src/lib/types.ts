@@ -70,9 +70,12 @@ export interface BusinessPlan {
   planType?: 'BusinessPlan' | 'StrategicPlan';
   persona?: PersonaType;
   status: string;
+  organizationId?: string;
+  organizationName?: string;
   createdAt: string;
   updatedAt?: string;
   isDeleted?: boolean;
+  exportCount?: number;
   coverSettings?: {
     backgroundColor?: string;
     accentColor?: string;
@@ -210,6 +213,20 @@ export interface Organization {
   size?: string;
   website?: string;
   createdAt: string;
+  // Business context fields
+  organizationType?: string;
+  logoUrl?: string;
+  isActive?: boolean;
+  sector?: string;
+  teamSize?: string;
+  fundingStatus?: string;
+  targetMarket?: string;
+  businessStage?: string;
+  goalsJson?: string;
+  city?: string;
+  province?: string;
+  country?: string;
+  profileCompletenessScore?: number;
 }
 
 export interface CreateOrganizationRequest {

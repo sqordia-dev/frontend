@@ -31,6 +31,7 @@ import {
 } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { getUserFriendlyError } from '../../utils/error-messages';
+import SEO from '../../components/SEO';
 import { cn } from '../../lib/utils';
 import { SqordiaLoader } from '../../components/ui/SqordiaLoader';
 
@@ -424,6 +425,11 @@ export default function AdminOverviewPage() {
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
+      <SEO
+        title={language === 'fr' ? 'Tableau de bord Admin | Sqordia' : 'Admin Dashboard | Sqordia'}
+        description={language === 'fr' ? 'Vue d\'ensemble de la plateforme Sqordia' : 'Sqordia platform overview'}
+        noindex={true}
+      />
       {/* Coming Soon Toast */}
       <AnimatePresence>
         {comingSoonToast && (

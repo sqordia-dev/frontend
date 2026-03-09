@@ -2,13 +2,11 @@ import { useState, useEffect, useCallback } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  ChevronDown,
   ChevronLeft,
   ChevronRight,
   LogOut,
   Sun,
   Moon,
-  Check,
   PanelLeftClose,
   PanelLeft,
   User,
@@ -16,34 +14,7 @@ import {
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { useTheme } from '../../contexts/ThemeContext';
-import CA from 'country-flag-icons/react/3x2/CA';
-
-// Quebec Flag Component
-const QuebecFlag = ({ size = 20 }: { size?: number }) => (
-  <img
-    src="/quebec-flag.svg"
-    alt="Quebec Flag"
-    width={size}
-    height={size * 0.67}
-    style={{ objectFit: 'contain', display: 'block' }}
-  />
-);
-
-// Flag Icon Wrapper Component
-const FlagIcon = ({
-  FlagComponent,
-  size = 20,
-}: {
-  FlagComponent: React.ComponentType<any>;
-  size?: number;
-}) => (
-  <div style={{ width: size, height: size * 0.67, display: 'inline-block', lineHeight: 0 }}>
-    <FlagComponent
-      style={{ width: '100%', height: '100%', display: 'block' }}
-      title=""
-    />
-  </div>
-);
+import LanguageDropdown from '../layout/LanguageDropdown';
 
 // Types
 export interface SidebarNavItem {
@@ -98,10 +69,6 @@ export interface AppSidebarProps {
   onMobileMenuClose?: () => void;
 }
 
-const languages = [
-  { code: 'en', label: 'English', displayCode: 'EN', FlagComponent: CA },
-  { code: 'fr', label: 'Français', displayCode: 'FR', FlagComponent: QuebecFlag },
-];
 
 export default function AppSidebar({
   brand,
@@ -119,7 +86,7 @@ export default function AppSidebar({
 }: AppSidebarProps) {
   const location = useLocation();
   const navigate = useNavigate();
-  const { theme, toggleTheme, language, setLanguage, t } = useTheme();
+  const { theme, toggleTheme, language, t } = useTheme();
 
   const [isCollapsed, setIsCollapsed] = useState(() => {
     if (typeof window === 'undefined') return defaultCollapsed;
@@ -127,27 +94,12 @@ export default function AppSidebar({
     return saved !== null ? saved === 'true' : defaultCollapsed;
   });
 
-  const [isLangOpen, setIsLangOpen] = useState(false);
-
-  const currentLang = languages.find(l => l.code === language);
 
   // Persist collapse state
   useEffect(() => {
     localStorage.setItem(storageKey, isCollapsed.toString());
   }, [isCollapsed, storageKey]);
 
-  // Close language dropdown on outside click
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as HTMLElement;
-      if (isLangOpen && !target.closest('.language-selector')) {
-        setIsLangOpen(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [isLangOpen]);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -383,78 +335,10 @@ export default function AppSidebar({
           {/* Custom footer content */}
           {footerContent}
 
-          {/* Language Selector */}
+          {/* Language Toggle */}
           {showLanguageSelector && (
-            <div className="relative language-selector mb-1">
-              <button
-                onClick={() => setIsLangOpen(!isLangOpen)}
-                className={cn(
-                  "flex items-center gap-3 w-full h-10 rounded-lg transition-all duration-150",
-                  "text-gray-600 dark:text-gray-400",
-                  "hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white",
-                  isCollapsed ? "justify-center px-2" : "px-3"
-                )}
-                title={isCollapsed ? currentLang?.label : undefined}
-              >
-                <div className="flex h-5 w-7 items-center justify-center rounded overflow-hidden border border-gray-200 dark:border-gray-700 shrink-0">
-                  {currentLang?.FlagComponent && (
-                    <FlagIcon FlagComponent={currentLang.FlagComponent} size={28} />
-                  )}
-                </div>
-                <AnimatePresence mode="wait">
-                  {!isCollapsed && (
-                    <motion.div
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      className="flex-1 flex items-center justify-between"
-                    >
-                      <span className="text-sm font-medium">{currentLang?.label}</span>
-                      <ChevronDown className={cn(
-                        "h-4 w-4 text-gray-400 transition-transform duration-200",
-                        isLangOpen && "rotate-180"
-                      )} />
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </button>
-
-              {/* Language dropdown */}
-              <AnimatePresence>
-                {isLangOpen && !isCollapsed && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 4 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 4 }}
-                    transition={{ duration: 0.15 }}
-                    className="absolute bottom-full left-0 right-0 mb-1.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg overflow-hidden z-50"
-                  >
-                    {languages.map((lang) => (
-                      <button
-                        key={lang.code}
-                        onClick={() => {
-                          setLanguage(lang.code as 'en' | 'fr');
-                          setIsLangOpen(false);
-                        }}
-                        className={cn(
-                          'w-full flex items-center gap-3 px-3 py-2.5 text-sm transition-colors',
-                          language === lang.code
-                            ? 'bg-momentum-orange/10 text-momentum-orange font-medium'
-                            : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
-                        )}
-                      >
-                        <div className="flex h-4 w-6 items-center justify-center rounded-sm overflow-hidden border border-gray-200/50 dark:border-gray-700/50 shrink-0">
-                          <FlagIcon FlagComponent={lang.FlagComponent} size={24} />
-                        </div>
-                        <span className="flex-1 text-left">{lang.label}</span>
-                        {language === lang.code && (
-                          <Check className="h-4 w-4 text-momentum-orange" />
-                        )}
-                      </button>
-                    ))}
-                  </motion.div>
-                )}
-              </AnimatePresence>
+            <div className={cn("mb-1", isCollapsed ? "flex justify-center" : "px-1")}>
+              <LanguageDropdown variant="toggle" />
             </div>
           )}
 

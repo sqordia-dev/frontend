@@ -2,7 +2,9 @@ import { useEffect, useState } from 'react';
 import { templateService } from '../../lib/template-service';
 import { Search, Plus, Edit, Trash2, Eye, Copy, Archive, CheckCircle, XCircle, Filter, X } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useToast } from '../../contexts/ToastContext';
 import { getUserFriendlyError } from '../../utils/error-messages';
+import { Button } from '../../components/ui/button';
 
 export default function AdminTemplatesPage() {
   const [templates, setTemplates] = useState<any[]>([]);
@@ -30,6 +32,7 @@ export default function AdminTemplatesPage() {
   });
   const [saving, setSaving] = useState(false);
   const { t } = useTheme();
+  const toast = useToast();
 
   useEffect(() => {
     loadTemplates();
@@ -61,7 +64,7 @@ export default function AdminTemplatesPage() {
       await templateService.deleteTemplate(id);
       await loadTemplates();
     } catch (err: any) {
-      alert(getUserFriendlyError(err, 'delete'));
+      toast.error('Delete Error', getUserFriendlyError(err, 'delete'));
     }
   };
 
@@ -70,7 +73,7 @@ export default function AdminTemplatesPage() {
       await templateService.publishTemplate(id);
       await loadTemplates();
     } catch (err: any) {
-      alert(getUserFriendlyError(err, 'save'));
+      toast.error('Publish Error', getUserFriendlyError(err, 'save'));
     }
   };
 
@@ -79,7 +82,7 @@ export default function AdminTemplatesPage() {
       await templateService.archiveTemplate(id);
       await loadTemplates();
     } catch (err: any) {
-      alert(getUserFriendlyError(err, 'save'));
+      toast.error('Archive Error', getUserFriendlyError(err, 'save'));
     }
   };
 
@@ -91,13 +94,13 @@ export default function AdminTemplatesPage() {
       await templateService.cloneTemplate(id, newName);
       await loadTemplates();
     } catch (err: any) {
-      alert(getUserFriendlyError(err, 'save'));
+      toast.error('Clone Error', getUserFriendlyError(err, 'save'));
     }
   };
 
   const handleSave = async () => {
     if (!formData.name || !formData.description || !formData.category || !formData.type || !formData.language) {
-      alert(t('admin.templates.requiredFields'));
+      toast.warning('Validation', t('admin.templates.requiredFields'));
       return;
     }
 
@@ -149,7 +152,7 @@ export default function AdminTemplatesPage() {
       });
       await loadTemplates();
     } catch (err: any) {
-      alert(getUserFriendlyError(err, 'save'));
+      toast.error('Save Error', getUserFriendlyError(err, 'save'));
     } finally {
       setSaving(false);
     }
@@ -187,8 +190,46 @@ export default function AdminTemplatesPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FF6B00]"></div>
+      <div className="space-y-4 animate-pulse">
+        {/* Button skeleton */}
+        <div className="flex items-center justify-between">
+          <div className="h-10 w-36 bg-gray-200 dark:bg-gray-700 rounded-lg" />
+        </div>
+        {/* Filters skeleton */}
+        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-4">
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="flex-1 h-10 bg-gray-200 dark:bg-gray-700 rounded-lg" />
+            <div className="h-10 w-40 bg-gray-200 dark:bg-gray-700 rounded-lg" />
+          </div>
+        </div>
+        {/* Table skeleton */}
+        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden">
+          <div className="px-6 py-3 bg-gray-50 dark:bg-gray-700">
+            <div className="flex gap-6">
+              {[...Array(6)].map((_, i) => (
+                <div key={i} className="h-3 w-16 bg-gray-200 dark:bg-gray-600 rounded" />
+              ))}
+            </div>
+          </div>
+          <div className="divide-y divide-gray-200 dark:divide-gray-700">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="px-6 py-4 flex items-center gap-6">
+                <div className="flex-1 space-y-2">
+                  <div className="h-4 w-36 bg-gray-200 dark:bg-gray-700 rounded" />
+                  <div className="h-3 w-56 bg-gray-200 dark:bg-gray-700 rounded" />
+                </div>
+                <div className="h-5 w-16 bg-gray-200 dark:bg-gray-700 rounded" />
+                <div className="h-5 w-14 bg-gray-200 dark:bg-gray-700 rounded" />
+                <div className="h-4 w-8 bg-gray-200 dark:bg-gray-700 rounded" />
+                <div className="h-4 w-12 bg-gray-200 dark:bg-gray-700 rounded" />
+                <div className="flex gap-2">
+                  <div className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded" />
+                  <div className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     );
   }
@@ -196,7 +237,8 @@ export default function AdminTemplatesPage() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <button
+        <Button
+          variant="brand"
           onClick={() => {
             setEditingTemplate(null);
       setFormData({
@@ -216,11 +258,10 @@ export default function AdminTemplatesPage() {
             });
             setShowCreateModal(true);
           }}
-          className="flex items-center gap-2 px-4 py-2 text-white rounded-lg transition-colors bg-[#FF6B00] hover:bg-[#E55F00]"
         >
           <Plus size={18} />
           {t('admin.templates.create')}
-        </button>
+        </Button>
       </div>
 
       {error && (
@@ -314,50 +355,57 @@ export default function AdminTemplatesPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex items-center justify-end gap-2">
-                        <button
+                        <Button
+                          variant="ghost"
+                          size="icon"
                           onClick={() => window.open(`/template/${template.id}`, '_blank')}
-                          className="p-2 text-gray-600 dark:text-gray-400 transition-colors hover:text-[#FF6B00]"
                           title={t('admin.templates.preview')}
                         >
                           <Eye size={18} />
-                        </button>
-                        <button
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
                           onClick={() => openEditModal(template)}
-                          className="p-2 text-gray-600 dark:text-gray-400 transition-colors hover:text-[#FF6B00]"
                           title={t('admin.templates.edit')}
                         >
                           <Edit size={18} />
-                        </button>
-                        <button
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
                           onClick={() => handleClone(template.id)}
-                          className="p-2 text-gray-600 dark:text-gray-400 transition-colors hover:text-[#FF6B00]"
                           title={t('admin.templates.clone')}
                         >
                           <Copy size={18} />
-                        </button>
+                        </Button>
                         {!template.isPublic && (
-                          <button
+                          <Button
+                            variant="brand-ghost"
+                            size="icon"
                             onClick={() => handlePublish(template.id)}
-                            className="p-2 transition-colors text-[#FF6B00] hover:text-[#E55F00]"
                             title={t('admin.templates.publish')}
                           >
                             <CheckCircle size={18} />
-                          </button>
+                          </Button>
                         )}
-                        <button
+                        <Button
+                          variant="ghost"
+                          size="icon"
                           onClick={() => handleArchive(template.id)}
-                          className="p-2 text-gray-600 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-400 transition-colors"
                           title={t('admin.templates.archive')}
                         >
                           <Archive size={18} />
-                        </button>
-                        <button
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          size="icon"
+                          className="bg-transparent hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400 shadow-none"
                           onClick={() => handleDelete(template.id)}
-                          className="p-2 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 transition-colors"
                           title={t('admin.templates.delete')}
                         >
                           <Trash2 size={18} />
-                        </button>
+                        </Button>
                       </div>
                     </td>
                   </tr>
@@ -377,15 +425,16 @@ export default function AdminTemplatesPage() {
                 <h3 className="text-xl font-bold text-gray-900 dark:text-white">
                   {editingTemplate ? t('admin.templates.editTemplate') : t('admin.templates.createTemplate')}
                 </h3>
-                <button
+                <Button
+                  variant="ghost"
+                  size="icon"
                   onClick={() => {
                     setShowCreateModal(false);
                     setEditingTemplate(null);
                   }}
-                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
                 >
                   <X size={24} />
-                </button>
+                </Button>
               </div>
             </div>
             <div className="p-6 space-y-4">
@@ -542,22 +591,22 @@ export default function AdminTemplatesPage() {
                 </label>
               </div>
               <div className="flex justify-end gap-3 pt-4">
-                <button
+                <Button
+                  variant="outline"
                   onClick={() => {
                     setShowCreateModal(false);
                     setEditingTemplate(null);
                   }}
-                  className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
                 >
                   {t('admin.templates.cancel')}
-                </button>
-                <button
+                </Button>
+                <Button
+                  variant="brand"
                   onClick={handleSave}
                   disabled={saving || !formData.name || !formData.description || !formData.category || !formData.type || !formData.language}
-                  className="px-4 py-2 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors bg-[#FF6B00] hover:bg-[#E55F00]"
                 >
                   {saving ? t('admin.templates.saving') : (editingTemplate ? t('admin.templates.update') : t('admin.templates.create'))}
-                </button>
+                </Button>
               </div>
             </div>
           </div>

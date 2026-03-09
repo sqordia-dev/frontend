@@ -30,7 +30,8 @@ import {
   Heart,
   BarChart3,
   Settings,
-  RefreshCw
+  RefreshCw,
+  ShieldCheck
 } from 'lucide-react';
 import { businessPlanService } from '../lib/business-plan-service';
 import type { BusinessPlan } from '../lib/types';
@@ -43,6 +44,10 @@ import CashFlowTable, { CashFlowData } from '../components/CashFlowTable';
 import PlanViewTour from '../components/PlanViewTour';
 import SEO from '../components/SEO';
 import { getUserFriendlyError } from '../utils/error-messages';
+import { sanitizeHtml } from '../utils/sanitize';
+import { QualityDashboard } from '../components/ai/QualityDashboard';
+import { runJudgeEvaluation } from '../lib/ai-evaluation-service';
+import type { JudgeEvaluationResult } from '../lib/ai-evaluation-service';
 
 // Markdown parser function
 const parseMarkdown = (markdown: string): string => {
@@ -580,6 +585,8 @@ export default function PlanViewPage() {
   const [cashFlowData, setCashFlowData] = useState<CashFlowData[]>([]);
   const [loadingFinancials, setLoadingFinancials] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [judgeEvaluation, setJudgeEvaluation] = useState<JudgeEvaluationResult | null>(null);
+  const [qualityLoading, setQualityLoading] = useState(false);
   const coverImageInputRef = useRef<HTMLInputElement | null>(null);
   const sectionRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
   const modalContentRef = useRef<HTMLDivElement | null>(null);
@@ -606,7 +613,7 @@ export default function PlanViewPage() {
       // If plan is Draft or questionnaire is incomplete, redirect to wizard
       if ((planStatus === 'Draft' || planStatus === 'draft' || !isComplete) && planStatus !== 'Completed') {
         const nextQuestionId = progressData?.unansweredQuestionIds?.[0];
-        const wizardUrl = `/questionnaire/${id}${nextQuestionId ? `#question-${nextQuestionId}` : ''}`;
+        const wizardUrl = `/interview/${id}${nextQuestionId ? `#question-${nextQuestionId}` : ''}`;
         navigate(wizardUrl);
         return;
       }
@@ -726,6 +733,10 @@ export default function PlanViewPage() {
       }
     } catch (err) {
       console.error('Failed to load financial data:', err);
+      toast.error(
+        t('planView.financialError') || 'Financial Data Error',
+        t('planView.financialErrorDesc') || 'Failed to load financial data.'
+      );
     } finally {
       setLoadingFinancials(false);
     }
@@ -836,6 +847,10 @@ export default function PlanViewPage() {
     } catch (err) {
       console.error('Failed to load business plan:', err);
       setError('Failed to load business plan. Please try again.');
+      toast.error(
+        t('planView.loadError') || 'Loading Error',
+        t('planView.loadErrorDesc') || 'Failed to load business plan. Please try again.'
+      );
     } finally {
       setLoading(false);
     }
@@ -856,6 +871,10 @@ export default function PlanViewPage() {
       }
     } catch (err) {
       console.error('Failed to load sections:', err);
+      toast.error(
+        t('planView.sectionsError') || 'Sections Error',
+        t('planView.sectionsErrorDesc') || 'Failed to load plan sections.'
+      );
     }
   };
 
@@ -1235,6 +1254,10 @@ export default function PlanViewPage() {
       setShares(data);
     } catch (error: any) {
       console.error('Failed to load shares:', error);
+      toast.error(
+        t('planView.sharesError') || 'Shares Error',
+        t('planView.sharesErrorDesc') || 'Failed to load sharing information.'
+      );
     } finally {
       setLoadingShares(false);
     }
@@ -1371,6 +1394,31 @@ export default function PlanViewPage() {
     { id: 'contents', title: t('planView.contents'), icon: BookOpen },
     ...(sections || []).map(s => ({ id: s.sectionName, title: translateSectionTitle(s.title), icon: FileText }))
   ], [sections, t, language]);
+
+  const handleRunQualityCheck = async () => {
+    if (!plan || sections.length === 0) return;
+    setQualityLoading(true);
+    try {
+      const execSummary = sections.find(s => s.sectionName === 'executive-summary');
+      const sectionContent = execSummary?.content || '';
+      const sectionName = execSummary?.title || 'Executive Summary';
+      const result = await runJudgeEvaluation(
+        sectionName,
+        sectionContent,
+        plan.title || '',
+        language,
+      );
+      setJudgeEvaluation(result);
+    } catch (err) {
+      console.error('Quality check failed:', err);
+      toast.error(
+        language === 'fr' ? 'Erreur' : 'Error',
+        language === 'fr' ? 'La vérification de qualité a échoué.' : 'Quality check failed.'
+      );
+    } finally {
+      setQualityLoading(false);
+    }
+  };
 
   const toggleCategory = (category: string) => {
     setExpandedCategories(prev => {
@@ -1684,6 +1732,35 @@ export default function PlanViewPage() {
                   );
                 })}
             </ul>
+
+            {/* Quality Dashboard link */}
+            <div className="mt-4 pt-4 border-t-2 border-gray-200 dark:border-gray-700">
+              <button
+                onClick={() => {
+                  const qualityEl = document.getElementById('quality-dashboard-section');
+                  if (qualityEl) {
+                    const offset = 120;
+                    const elementPosition = qualityEl.getBoundingClientRect().top;
+                    const offsetPosition = elementPosition + window.pageYOffset - offset;
+                    window.scrollTo({ top: offsetPosition, behavior: 'smooth' });
+                  }
+                  setActiveSection('quality-dashboard');
+                  setMobileSidebarOpen(false);
+                }}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded transition-all text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-orange-500 ${
+                  activeSection === 'quality-dashboard'
+                    ? 'bg-gray-900 dark:bg-gray-700 text-white border-l-4'
+                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/50 border-l-4 border-transparent'
+                }`}
+                style={activeSection === 'quality-dashboard' ? { borderLeftColor: momentumOrange } : {}}
+                aria-current={activeSection === 'quality-dashboard' ? 'true' : undefined}
+              >
+                <ShieldCheck size={18} className="flex-shrink-0" aria-hidden="true" />
+                <span className={`text-sm flex-1 ${activeSection === 'quality-dashboard' ? 'font-semibold' : 'font-medium'}`}>
+                  {language === 'fr' ? 'Qualité IA' : 'AI Quality'}
+                </span>
+              </button>
+            </div>
           </div>
         </aside>
 
@@ -2001,7 +2078,7 @@ export default function PlanViewPage() {
                                               <div
                                                 className="section-content text-gray-700 dark:text-gray-300 leading-relaxed rich-text-content mb-8 break-words overflow-wrap-anywhere"
                                                 style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}
-                                                dangerouslySetInnerHTML={{ __html: parseMarkdown(section.content) }}
+                                                dangerouslySetInnerHTML={{ __html: sanitizeHtml(parseMarkdown(section.content)) }}
                                               />
                                               
                                               {/* Financial Tables - Show in financial-projections section */}
@@ -2204,6 +2281,56 @@ export default function PlanViewPage() {
                   .filter(Boolean);
               })()
             )}
+          </div>
+
+          {/* Quality Dashboard Section */}
+          <div
+            id="quality-dashboard-section"
+            className="px-4 sm:px-6 md:px-8 lg:px-12 py-8"
+          >
+            <div className="max-w-5xl mx-auto">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
+                  <ShieldCheck size={24} className="text-orange-500" aria-hidden="true" />
+                  {language === 'fr' ? 'Qualité IA' : 'AI Quality'}
+                </h2>
+                <button
+                  onClick={handleRunQualityCheck}
+                  disabled={qualityLoading || !plan}
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold text-white transition-colors disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-orange-500"
+                  style={{ backgroundColor: qualityLoading ? '#999' : momentumOrange }}
+                  onMouseEnter={(e) => { if (!qualityLoading) e.currentTarget.style.backgroundColor = momentumOrangeHover; }}
+                  onMouseLeave={(e) => { if (!qualityLoading) e.currentTarget.style.backgroundColor = momentumOrange; }}
+                >
+                  {qualityLoading ? (
+                    <Loader2 size={16} className="animate-spin" aria-hidden="true" />
+                  ) : (
+                    <Sparkles size={16} aria-hidden="true" />
+                  )}
+                  {qualityLoading
+                    ? (language === 'fr' ? 'Analyse en cours...' : 'Analyzing...')
+                    : (language === 'fr' ? 'Vérifier la qualité' : 'Run Quality Check')
+                  }
+                </button>
+              </div>
+
+              {judgeEvaluation ? (
+                <QualityDashboard judgeEvaluation={judgeEvaluation} />
+              ) : (
+                <div className="rounded-xl border bg-card p-8 shadow-card dark:border-white/10 text-center">
+                  <ShieldCheck size={48} className="mx-auto mb-4 text-gray-300 dark:text-gray-600" aria-hidden="true" />
+                  <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                    {language === 'fr' ? 'Aucune évaluation disponible' : 'No evaluation yet'}
+                  </h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 max-w-md mx-auto">
+                    {language === 'fr'
+                      ? 'Cliquez sur "Vérifier la qualité" pour lancer une évaluation IA de votre sommaire exécutif. L\'IA analysera la cohérence, la clarté et la complétude de votre contenu.'
+                      : 'Click "Run Quality Check" to trigger an AI evaluation of your executive summary. The AI will analyze coherence, clarity, and completeness of your content.'
+                    }
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
         </main>
       </div>

@@ -18,7 +18,7 @@ class SubscriptionService {
     isYearly: boolean
   ): Promise<string> {
     try {
-      const response = await apiClient.post<CheckoutSessionResponse>(
+      const response = await apiClient.post<any>(
         '/api/v1/subscriptions/checkout',
         {
           planId,
@@ -53,7 +53,7 @@ class SubscriptionService {
    */
   async createBillingPortalSession(returnUrl: string): Promise<string> {
     try {
-      const response = await apiClient.post<BillingPortalResponse>(
+      const response = await apiClient.post<any>(
         '/api/v1/subscriptions/billing-portal',
         {
           returnUrl,
@@ -152,7 +152,7 @@ class SubscriptionService {
    */
   async getCurrent(): Promise<any> {
     try {
-      const response = await apiClient.get('/api/v1/subscriptions/current');
+      const response = await apiClient.get<any>('/api/v1/subscriptions/current');
 
       // Handle new 200 response format: { subscription: null, message: "No subscription found" }
       if (response.data?.subscription === null) {

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -24,7 +24,6 @@ import {
   List,
   Check,
   Loader2,
-  FileType,
   ArrowLeft,
   Home,
   Sun,
@@ -44,7 +43,7 @@ import {
   DropdownMenuSeparator, DropdownMenuTrigger,
 } from '../ui/dropdown-menu';
 
-export type ExportFormat = 'pdf' | 'word';
+export type ExportFormat = 'pdf' | 'word' | 'powerpoint';
 
 interface CollapsibleSidebarProps {
   planName: string;
@@ -159,8 +158,6 @@ export default function CollapsibleSidebar({
     const stored = localStorage.getItem('sqordia-sidebar-collapsed');
     return stored ? JSON.parse(stored) : defaultCollapsed;
   });
-  const [showExportMenu, setShowExportMenu] = useState(false);
-  const exportMenuRef = useRef<HTMLDivElement>(null);
 
   // Persist collapse state
   useEffect(() => {
@@ -168,16 +165,6 @@ export default function CollapsibleSidebar({
     onCollapseChange?.(isCollapsed);
   }, [isCollapsed, onCollapseChange]);
 
-  // Close export menu on outside click
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (exportMenuRef.current && !exportMenuRef.current.contains(e.target as Node)) {
-        setShowExportMenu(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
 
   // Calculate completion
   const completedCount = sections.filter(s => s.content && s.content.trim().length > 0).length;
@@ -359,7 +346,7 @@ export default function CollapsibleSidebar({
               </div>
               <div className="h-1.5 rounded-full bg-warm-gray-100 dark:bg-secondary overflow-hidden">
                 <motion.div
-                  className="h-full bg-gradient-to-r from-momentum-orange to-orange-400 rounded-full"
+                  className="h-full bg-momentum-orange rounded-full"
                   initial={{ width: 0 }}
                   animate={{ width: `${completionPercent}%` }}
                   transition={{ duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
@@ -486,9 +473,9 @@ export default function CollapsibleSidebar({
         isCollapsed ? 'p-2 space-y-2' : 'p-3 flex gap-2'
       )}>
         {/* Export */}
-        <div ref={exportMenuRef} className={cn('relative', !isCollapsed && 'flex-1')}>
+        <div className={cn(!isCollapsed && 'flex-1')}>
           <button
-            onClick={() => setShowExportMenu(!showExportMenu)}
+            onClick={() => onExportClick()}
             disabled={isExporting}
             className={cn(
               'flex items-center justify-center gap-2 rounded-lg',
@@ -514,48 +501,6 @@ export default function CollapsibleSidebar({
               </span>
             )}
           </button>
-
-          <AnimatePresence>
-            {showExportMenu && !isCollapsed && (
-              <motion.div
-                initial={{ opacity: 0, y: 4, scale: 0.95 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: 4, scale: 0.95 }}
-                transition={{ duration: 0.15 }}
-                className={cn(
-                  'absolute bottom-full left-0 right-0 mb-2',
-                  'bg-white dark:bg-secondary',
-                  'border border-warm-gray-200 dark:border-border',
-                  'rounded-lg shadow-elevated overflow-hidden'
-                )}
-              >
-                <button
-                  onClick={() => { onExportClick('pdf'); setShowExportMenu(false); }}
-                  className={cn(
-                    'flex items-center gap-2.5 w-full px-3 py-2.5 text-sm',
-                    'text-warm-gray-700 dark:text-warm-gray-200',
-                    'hover:bg-warm-gray-50 dark:hover:bg-secondary',
-                    'transition-colors'
-                  )}
-                >
-                  <Download size={15} className="text-red-500" />
-                  <span>PDF</span>
-                </button>
-                <button
-                  onClick={() => { onExportClick('word'); setShowExportMenu(false); }}
-                  className={cn(
-                    'flex items-center gap-2.5 w-full px-3 py-2.5 text-sm',
-                    'text-warm-gray-700 dark:text-warm-gray-200',
-                    'hover:bg-warm-gray-50 dark:hover:bg-secondary',
-                    'transition-colors'
-                  )}
-                >
-                  <FileType size={15} className="text-blue-500" />
-                  <span>Word</span>
-                </button>
-              </motion.div>
-            )}
-          </AnimatePresence>
         </div>
 
         {/* Share */}

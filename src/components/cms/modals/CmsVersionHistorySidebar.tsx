@@ -117,7 +117,7 @@ export function CmsVersionHistorySidebar({
       <div className="flex-1 overflow-y-auto p-6 relative custom-scrollbar">
         {isLoading ? (
           <div className="flex items-center justify-center py-12">
-            <div className="w-6 h-6 border-2 border-[#FF6B00] border-t-transparent rounded-full animate-spin" />
+            <div className="w-6 h-6 border-2 border-momentum-orange border-t-transparent rounded-full animate-spin" />
           </div>
         ) : (
           <>

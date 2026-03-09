@@ -59,7 +59,7 @@ export const privacyService = {
    */
   async getConsents(): Promise<ConsentStatusResponse> {
     try {
-      const response = await apiClient.get('/api/v1/privacy/consents');
+      const response = await apiClient.get<ConsentStatusResponse>('/api/v1/privacy/consents');
       return response.data;
     } catch (error: any) {
       const errorMessage =
@@ -80,7 +80,7 @@ export const privacyService = {
     accepted: boolean = true
   ): Promise<ConsentStatusResponse> {
     try {
-      const response = await apiClient.put('/api/v1/privacy/consents', {
+      const response = await apiClient.put<ConsentStatusResponse>('/api/v1/privacy/consents', {
         consentType,
         version,
         accepted
@@ -101,7 +101,7 @@ export const privacyService = {
    */
   async exportData(): Promise<UserDataExportResponse> {
     try {
-      const response = await apiClient.get('/api/v1/privacy/export');
+      const response = await apiClient.get<UserDataExportResponse>('/api/v1/privacy/export');
       return response.data;
     } catch (error: any) {
       const errorMessage =
@@ -122,7 +122,7 @@ export const privacyService = {
     reason?: string
   ): Promise<AccountDeletionResponse> {
     try {
-      const response = await apiClient.post('/api/v1/privacy/delete-account', {
+      const response = await apiClient.post<AccountDeletionResponse>('/api/v1/privacy/delete-account', {
         deletionType,
         password,
         reason

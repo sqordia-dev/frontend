@@ -34,7 +34,7 @@ export const businessInfoSchema = z.object({
     "cooperative",
     "other",
   ], {
-    required_error: "Please select a legal structure",
+    message: "Please select a legal structure",
   }),
   industry: z.string().min(1, "Please select an industry"),
   subIndustry: z.string().optional(),
@@ -74,7 +74,7 @@ export const targetMarketSchema = z.object({
     "national",
     "international",
   ], {
-    required_error: "Please select your market size",
+    message: "Please select your market size",
   }),
   customerSegments: z.array(z.string())
     .min(1, "Please add at least one customer segment"),

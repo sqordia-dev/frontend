@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { authService } from '../../lib/auth-service';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useToast } from '../../contexts/ToastContext';
 import { MobileBottomNav, type NavItemConfig } from '@/components/layout/MobileBottomNav';
 import {
   ArrowLeft,
@@ -28,6 +29,8 @@ import {
   Layers,
   Sparkles,
   Bot,
+  Play,
+  Zap,
   LayoutDashboard,
   Users,
   Palette,
@@ -64,6 +67,8 @@ import { StepTitleEditor } from '../../components/admin/questionnaire/StepTitleE
 import { questionnaireVersionService } from '../../lib/questionnaire-version-service';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { cmsAiService } from '../../lib/cms-ai-service';
+import { adminQuestionTemplateService, type TestCoachPromptResponse } from '../../lib/admin-question-template-service';
 
 // Quebec Flag Component
 const QuebecFlag = ({ className = '' }: { className?: string }) => (
@@ -251,6 +256,7 @@ function QuestionEditor({
   onSave,
   onClose,
 }: QuestionEditorProps) {
+  const toast = useToast();
   const [formData, setFormData] = useState({
     questionText: '',
     questionTextEN: '',
@@ -272,6 +278,65 @@ function QuestionEditor({
 
   // Tab state for expert/coach sections
   const [activeTab, setActiveTab] = useState<'basic' | 'expert' | 'coach'>('basic');
+
+  // AI generation states
+  const [isGeneratingExpertFR, setIsGeneratingExpertFR] = useState(false);
+  const [isGeneratingExpertEN, setIsGeneratingExpertEN] = useState(false);
+  const [isGeneratingCoachFR, setIsGeneratingCoachFR] = useState(false);
+  const [isGeneratingCoachEN, setIsGeneratingCoachEN] = useState(false);
+
+  // Test coach prompt states
+  const [testAnswer, setTestAnswer] = useState('');
+  const [testLanguage, setTestLanguage] = useState<'fr' | 'en'>('fr');
+  const [isTestingPrompt, setIsTestingPrompt] = useState(false);
+  const [testResult, setTestResult] = useState<TestCoachPromptResponse | null>(null);
+  const [testError, setTestError] = useState<string | null>(null);
+
+  // AI generation handler
+  const handleAiGenerate = async (
+    brief: string,
+    language: string,
+    field: keyof typeof formData,
+    setLoading: (v: boolean) => void,
+  ) => {
+    const currentValue = formData[field] as string;
+    if (currentValue && !confirm('This will overwrite existing content. Continue?')) return;
+    setLoading(true);
+    try {
+      const result = await cmsAiService.generate({
+        brief,
+        blockType: 'Text',
+        language,
+        sectionContext: 'questionnaire',
+      });
+      setFormData(prev => ({ ...prev, [field]: result.content }));
+    } catch (err) {
+      console.error('AI generation failed:', err);
+      toast.error('AI Generation Error', 'AI generation failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Test coach prompt handler
+  const handleTestCoachPrompt = async () => {
+    if (!question?.id) return;
+    setIsTestingPrompt(true);
+    setTestResult(null);
+    setTestError(null);
+    try {
+      const result = await adminQuestionTemplateService.testCoachPrompt(question.id, {
+        answer: testAnswer,
+        language: testLanguage,
+      });
+      setTestResult(result);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Test failed. Make sure the question is saved with a coach prompt.';
+      setTestError(message);
+    } finally {
+      setIsTestingPrompt(false);
+    }
+  };
 
   useEffect(() => {
     if (question) {
@@ -706,11 +771,28 @@ function QuestionEditor({
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <div className="flex items-center gap-1.5 mb-1.5">
-                    <div className="flex h-4 w-6 items-center justify-center rounded overflow-hidden border border-border/50">
-                      <QuebecFlag className="w-6 h-4" />
+                  <div className="flex items-center justify-between mb-1.5">
+                    <div className="flex items-center gap-1.5">
+                      <div className="flex h-4 w-6 items-center justify-center rounded overflow-hidden border border-border/50">
+                        <QuebecFlag className="w-6 h-4" />
+                      </div>
+                      <span className="text-[10px] font-semibold text-muted-foreground uppercase">FR</span>
                     </div>
-                    <span className="text-[10px] font-semibold text-muted-foreground uppercase">FR</span>
+                    {isEditMode && (
+                      <button
+                        onClick={() => handleAiGenerate(
+                          `Generate expert advice in French for this business plan question: ${formData.questionText}`,
+                          'fr',
+                          'expertAdviceFR',
+                          setIsGeneratingExpertFR,
+                        )}
+                        disabled={isGeneratingExpertFR || !formData.questionText}
+                        className="flex items-center gap-1 px-2 py-0.5 text-[10px] font-semibold text-orange-600 bg-orange-50 hover:bg-orange-100 rounded-md transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                      >
+                        {isGeneratingExpertFR ? <Loader2 size={10} className="animate-spin" /> : <Sparkles size={10} />}
+                        Generate
+                      </button>
+                    )}
                   </div>
                   <textarea
                     value={formData.expertAdviceFR}
@@ -725,11 +807,28 @@ function QuestionEditor({
                 </div>
 
                 <div>
-                  <div className="flex items-center gap-1.5 mb-1.5">
-                    <div className="flex h-4 w-6 items-center justify-center rounded overflow-hidden border border-border/50">
-                      <CA className="w-6 h-4" title="" />
+                  <div className="flex items-center justify-between mb-1.5">
+                    <div className="flex items-center gap-1.5">
+                      <div className="flex h-4 w-6 items-center justify-center rounded overflow-hidden border border-border/50">
+                        <CA className="w-6 h-4" title="" />
+                      </div>
+                      <span className="text-[10px] font-semibold text-muted-foreground uppercase">EN</span>
                     </div>
-                    <span className="text-[10px] font-semibold text-muted-foreground uppercase">EN</span>
+                    {isEditMode && (
+                      <button
+                        onClick={() => handleAiGenerate(
+                          `Generate expert advice in English for this business plan question: ${formData.questionText || formData.questionTextEN}`,
+                          'en',
+                          'expertAdviceEN',
+                          setIsGeneratingExpertEN,
+                        )}
+                        disabled={isGeneratingExpertEN || (!formData.questionText && !formData.questionTextEN)}
+                        className="flex items-center gap-1 px-2 py-0.5 text-[10px] font-semibold text-orange-600 bg-orange-50 hover:bg-orange-100 rounded-md transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                      >
+                        {isGeneratingExpertEN ? <Loader2 size={10} className="animate-spin" /> : <Sparkles size={10} />}
+                        Generate
+                      </button>
+                    )}
                   </div>
                   <textarea
                     value={formData.expertAdviceEN}
@@ -764,11 +863,28 @@ function QuestionEditor({
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <div className="flex items-center gap-1.5 mb-1.5">
-                    <div className="flex h-4 w-6 items-center justify-center rounded overflow-hidden border border-border/50">
-                      <QuebecFlag className="w-6 h-4" />
+                  <div className="flex items-center justify-between mb-1.5">
+                    <div className="flex items-center gap-1.5">
+                      <div className="flex h-4 w-6 items-center justify-center rounded overflow-hidden border border-border/50">
+                        <QuebecFlag className="w-6 h-4" />
+                      </div>
+                      <span className="text-[10px] font-semibold text-muted-foreground uppercase">FR</span>
                     </div>
-                    <span className="text-[10px] font-semibold text-muted-foreground uppercase">FR</span>
+                    {isEditMode && (
+                      <button
+                        onClick={() => handleAiGenerate(
+                          `Generate an AI coach system prompt in French for this business plan question: ${formData.questionText}. The prompt should instruct the AI to analyze the user's answer and provide personalized coaching suggestions.`,
+                          'fr',
+                          'coachPromptFR',
+                          setIsGeneratingCoachFR,
+                        )}
+                        disabled={isGeneratingCoachFR || !formData.questionText}
+                        className="flex items-center gap-1 px-2 py-0.5 text-[10px] font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-md transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                      >
+                        {isGeneratingCoachFR ? <Loader2 size={10} className="animate-spin" /> : <Bot size={10} />}
+                        Generate
+                      </button>
+                    )}
                   </div>
                   <textarea
                     value={formData.coachPromptFR}
@@ -783,11 +899,28 @@ function QuestionEditor({
                 </div>
 
                 <div>
-                  <div className="flex items-center gap-1.5 mb-1.5">
-                    <div className="flex h-4 w-6 items-center justify-center rounded overflow-hidden border border-border/50">
-                      <CA className="w-6 h-4" title="" />
+                  <div className="flex items-center justify-between mb-1.5">
+                    <div className="flex items-center gap-1.5">
+                      <div className="flex h-4 w-6 items-center justify-center rounded overflow-hidden border border-border/50">
+                        <CA className="w-6 h-4" title="" />
+                      </div>
+                      <span className="text-[10px] font-semibold text-muted-foreground uppercase">EN</span>
                     </div>
-                    <span className="text-[10px] font-semibold text-muted-foreground uppercase">EN</span>
+                    {isEditMode && (
+                      <button
+                        onClick={() => handleAiGenerate(
+                          `Generate an AI coach system prompt in English for this business plan question: ${formData.questionText || formData.questionTextEN}. The prompt should instruct the AI to analyze the user's answer and provide personalized coaching suggestions.`,
+                          'en',
+                          'coachPromptEN',
+                          setIsGeneratingCoachEN,
+                        )}
+                        disabled={isGeneratingCoachEN || (!formData.questionText && !formData.questionTextEN)}
+                        className="flex items-center gap-1 px-2 py-0.5 text-[10px] font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-md transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                      >
+                        {isGeneratingCoachEN ? <Loader2 size={10} className="animate-spin" /> : <Bot size={10} />}
+                        Generate
+                      </button>
+                    )}
                   </div>
                   <textarea
                     value={formData.coachPromptEN}
@@ -801,6 +934,95 @@ function QuestionEditor({
                   </p>
                 </div>
               </div>
+
+              {/* Test Coach Prompt Section */}
+              {question?.id && (
+                <div className="border border-border/60 rounded-xl p-4 space-y-4 bg-muted/20">
+                  <div className="flex items-center gap-2">
+                    <Play size={14} className="text-emerald-600" />
+                    <span className="text-xs font-bold text-foreground uppercase tracking-wide">Test Coach Prompt</span>
+                    <span className="text-[10px] text-muted-foreground">(tests the saved prompt)</span>
+                  </div>
+
+                  <div className="grid grid-cols-[120px_1fr] gap-3 items-start">
+                    <div>
+                      <label className={labelClass}>Language</label>
+                      <div className="flex items-center gap-1 mt-1">
+                        <button
+                          onClick={() => setTestLanguage('fr')}
+                          className={cn(
+                            'px-2.5 py-1 text-[10px] font-semibold rounded-md transition-colors',
+                            testLanguage === 'fr'
+                              ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300'
+                              : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                          )}
+                        >
+                          FR
+                        </button>
+                        <button
+                          onClick={() => setTestLanguage('en')}
+                          className={cn(
+                            'px-2.5 py-1 text-[10px] font-semibold rounded-md transition-colors',
+                            testLanguage === 'en'
+                              ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300'
+                              : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                          )}
+                        >
+                          EN
+                        </button>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className={labelClass}>Sample Answer</label>
+                      <textarea
+                        value={testAnswer}
+                        onChange={(e) => setTestAnswer(e.target.value)}
+                        className={cn(inputClass, "resize-none h-20 text-sm")}
+                        placeholder="Type a sample user answer to test the coach prompt..."
+                      />
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={handleTestCoachPrompt}
+                    disabled={isTestingPrompt || !testAnswer.trim()}
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    {isTestingPrompt ? <Loader2 size={12} className="animate-spin" /> : <Zap size={12} />}
+                    Test Prompt
+                  </button>
+
+                  {testError && (
+                    <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3">
+                      <div className="flex items-start gap-2">
+                        <XCircle size={14} className="text-red-500 shrink-0 mt-0.5" />
+                        <p className="text-xs text-red-700 dark:text-red-300">{testError}</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {testResult && (
+                    <div className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-xl p-4 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-emerald-800 dark:text-emerald-300 uppercase tracking-wide">AI Response</span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
+                            {testResult.provider}/{testResult.model}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="text-sm text-foreground leading-relaxed whitespace-pre-wrap bg-white dark:bg-card rounded-lg p-3 border border-border/40">
+                        {testResult.output}
+                      </div>
+                      <div className="flex items-center gap-4 text-[10px] text-muted-foreground">
+                        <span>Response time: <strong>{testResult.responseTimeMs}ms</strong></span>
+                        <span>Tokens: <strong>{testResult.tokensUsed}</strong></span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           )}
           </div>

@@ -98,7 +98,7 @@ export const settingsService = {
   async getThemeColor(): Promise<string> {
     try {
       // Use category endpoint to get theme settings (safer than route parameter with dots)
-      const response = await apiClient.get('/api/v1/settings/category/Theme');
+      const response = await apiClient.get<any>('/api/v1/settings/category/Theme');
       
       // Handle Result wrapper response
       if (response.data && typeof response.data === 'object' && 'isSuccess' in response.data) {
@@ -124,7 +124,7 @@ export const settingsService = {
 
   async setThemeColor(colorId: string): Promise<void> {
     try {
-      const response = await apiClient.post('/api/v1/settings', {
+      const response = await apiClient.post<any>('/api/v1/settings', {
         Key: 'Theme.Color',
         Value: colorId,
         Category: 'Theme',

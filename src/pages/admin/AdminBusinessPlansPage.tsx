@@ -2,12 +2,15 @@ import { useEffect, useState } from 'react';
 import { adminService } from '../../lib/admin-service';
 import { Search, FileText, RefreshCw, AlertCircle, LayoutGrid, List } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useToast } from '../../contexts/ToastContext';
 import { getUserFriendlyError } from '../../utils/error-messages';
 import { useIsMobile } from '../../hooks';
 import { cn } from '../../lib/utils';
+import { Button } from '../../components/ui/button';
 
 export default function AdminBusinessPlansPage() {
   const { t } = useTheme();
+  const toast = useToast();
   const isMobile = useIsMobile();
   const [plans, setPlans] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -50,9 +53,9 @@ export default function AdminBusinessPlansPage() {
     try {
       setRegenerating(planId);
       await adminService.regenerateBusinessPlan(planId);
-      alert('Business plan regeneration started');
+      toast.success('Regeneration Started', 'Business plan regeneration has been started.');
     } catch (err: any) {
-      alert(getUserFriendlyError(err, 'generate'));
+      toast.error('Regeneration Error', getUserFriendlyError(err, 'generate'));
     } finally {
       setRegenerating(null);
     }
@@ -65,8 +68,40 @@ export default function AdminBusinessPlansPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FF6B00]"></div>
+      <div className="space-y-6 animate-pulse">
+        {/* Header skeleton */}
+        <div>
+          <div className="h-8 w-56 bg-gray-200 dark:bg-gray-700 rounded" />
+          <div className="mt-2 h-4 w-80 bg-gray-200 dark:bg-gray-700 rounded" />
+        </div>
+        {/* Table card skeleton */}
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+          <div className="p-3 sm:p-4 border-b border-gray-200 dark:border-gray-700">
+            <div className="h-10 w-full bg-gray-200 dark:bg-gray-700 rounded-lg" />
+          </div>
+          {/* Table header skeleton */}
+          <div className="px-4 lg:px-6 py-3 bg-gray-50 dark:bg-gray-700/50">
+            <div className="flex gap-4">
+              {[...Array(5)].map((_, i) => (
+                <div key={i} className="h-3 w-20 bg-gray-200 dark:bg-gray-600 rounded" />
+              ))}
+            </div>
+          </div>
+          {/* Table rows skeleton */}
+          <div className="divide-y divide-gray-200 dark:divide-gray-700">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="px-4 lg:px-6 py-4 flex items-center gap-4">
+                <div className="w-9 h-9 bg-gray-200 dark:bg-gray-700 rounded flex-shrink-0" />
+                <div className="flex-1 space-y-2">
+                  <div className="h-4 w-40 bg-gray-200 dark:bg-gray-700 rounded" />
+                  <div className="h-3 w-24 bg-gray-200 dark:bg-gray-700 rounded" />
+                </div>
+                <div className="h-5 w-20 bg-gray-200 dark:bg-gray-700 rounded-full" />
+                <div className="hidden md:block h-4 w-24 bg-gray-200 dark:bg-gray-700 rounded" />
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     );
   }
@@ -210,14 +245,15 @@ export default function AdminBusinessPlansPage() {
                         {plan.createdAt ? new Date(plan.createdAt).toLocaleDateString() : '-'}
                       </td>
                       <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <button
+                        <Button
+                          variant="brand-ghost"
+                          size="sm"
                           onClick={() => handleRegenerate(plan.id)}
                           disabled={regenerating === plan.id}
-                          className="inline-flex items-center transition-colors disabled:opacity-50 text-[#FF6B00] hover:text-[#E55F00]"
                         >
                           <RefreshCw className={cn('w-4 h-4', regenerating === plan.id && 'animate-spin')} />
-                          <span className="hidden sm:inline ml-1">{t('admin.businessPlans.regenerate')}</span>
-                        </button>
+                          <span className="hidden sm:inline">{t('admin.businessPlans.regenerate')}</span>
+                        </Button>
                       </td>
                     </tr>
                   ))
@@ -283,14 +319,15 @@ export default function AdminBusinessPlansPage() {
                          plan.status === 'InProgress' ? t('admin.businessPlans.inProgress') :
                          t('admin.businessPlans.draft')}
                       </span>
-                      <button
+                      <Button
+                        variant="brand-ghost"
+                        size="sm"
                         onClick={() => handleRegenerate(plan.id)}
                         disabled={regenerating === plan.id}
-                        className="inline-flex items-center text-xs transition-colors disabled:opacity-50 text-[#FF6B00] hover:text-[#E55F00]"
                       >
-                        <RefreshCw className={`w-4 h-4 mr-1 ${regenerating === plan.id ? 'animate-spin' : ''}`} />
+                        <RefreshCw className={`w-4 h-4 ${regenerating === plan.id ? 'animate-spin' : ''}`} />
                         {t('admin.businessPlans.regenerate')}
-                      </button>
+                      </Button>
                     </div>
                   </div>
                 ))}

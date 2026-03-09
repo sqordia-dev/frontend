@@ -1915,7 +1915,7 @@ export default function BlogPostPage() {
                       alert('Link copied to clipboard!');
                     }
                   }}
-                  className="w-full mt-6 flex items-center justify-center gap-2.5 px-6 py-3 bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-700 hover:to-orange-600 text-white rounded-xl font-semibold transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5"
+                  className="w-full mt-6 flex items-center justify-center gap-2.5 px-6 py-3 bg-momentum-orange hover:bg-[#E56000] text-white rounded-xl font-semibold transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5"
                 >
                   <Share2 size={18} />
                   <span>Share Article</span>
@@ -1951,7 +1951,7 @@ export default function BlogPostPage() {
                           alert('Link copied to clipboard!');
                         }
                       }}
-                      className="flex items-center gap-2.5 px-8 py-4 bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-700 hover:to-orange-600 text-white rounded-xl font-semibold transition-all duration-300 hover:shadow-xl hover:-translate-y-1 hover:scale-105"
+                      className="flex items-center gap-2.5 px-8 py-4 bg-momentum-orange hover:bg-[#E56000] text-white rounded-xl font-semibold transition-all duration-300 hover:shadow-xl hover:-translate-y-1 hover:scale-105"
                     >
                       <Share2 size={20} />
                       <span>Share</span>

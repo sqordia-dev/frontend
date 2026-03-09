@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { User, Mail, Building2, Phone, MapPin, Save, ArrowLeft, Shield, Lock, Key, AlertCircle, Upload, Image as ImageIcon, X, Rocket, Briefcase, Heart, ExternalLink, Download, Trash2, FileText, CheckCircle, Clock, Monitor, Smartphone, Globe, Eye, EyeOff } from 'lucide-react';
 import { authService } from '../lib/auth-service';
@@ -9,19 +9,26 @@ import { PersonaType } from '../lib/types';
 import SEO from '../components/SEO';
 import { useCmsContent } from '../hooks/useCmsContent';
 import { getUserFriendlyError } from '../utils/error-messages';
+import { useToast } from '../contexts/ToastContext';
+import { useFeatureFlag } from '../hooks/useFeatureFlag';
 
-const tabs = [
+const OrganizationProfileTab = lazy(() => import('../components/profile/OrganizationProfileTab'));
+
+const baseTabs = [
   { id: 'profile', label: 'Profile', icon: User },
+  { id: 'organization', label: 'Organization', icon: Building2 },
   { id: 'security', label: 'Security', icon: Shield },
   { id: 'sessions', label: 'Sessions', icon: Monitor },
   { id: 'privacy', label: 'Privacy & Data', icon: Lock },
 ] as const;
 
-type TabId = typeof tabs[number]['id'];
+type TabId = typeof baseTabs[number]['id'];
 
 export default function ProfilePage() {
   const { getContent: cms } = useCmsContent('profile');
   const navigate = useNavigate();
+  const toast = useToast();
+  const { isEnabled: showOrgTab } = useFeatureFlag('profile-org-tab', true);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -116,6 +123,7 @@ export default function ProfilePage() {
       setTwoFactorEnabled(status.isEnabled);
     } catch (err: any) {
       console.error('Failed to load 2FA status:', err);
+      toast.error('Security Error', 'Failed to load two-factor authentication status.');
     }
   };
 
@@ -125,6 +133,7 @@ export default function ProfilePage() {
       setSessions(data);
     } catch (err: any) {
       console.error('Failed to load sessions:', err);
+      toast.error('Sessions Error', 'Failed to load active sessions.');
     }
   };
 
@@ -172,6 +181,7 @@ export default function ProfilePage() {
       console.error('Profile picture upload error:', err);
       setError(getUserFriendlyError(err, 'upload'));
       setProfileImageError(true);
+      toast.error('Upload Error', getUserFriendlyError(err, 'upload'));
     } finally {
       setUploadingPicture(false);
     }
@@ -261,6 +271,7 @@ export default function ProfilePage() {
       setConsents(data.consents);
     } catch (err: any) {
       console.error('Failed to load consents:', err);
+      toast.error('Privacy Error', 'Failed to load consent preferences.');
     } finally {
       setLoadingConsents(false);
     }
@@ -437,7 +448,7 @@ export default function ProfilePage() {
           {/* Tab Navigation */}
           <div className="border-b border-gray-200 dark:border-gray-700/50 bg-gray-50/50 dark:bg-gray-800/30">
             <nav className="flex gap-1 px-3 sm:px-4 py-2 overflow-x-auto scrollbar-hide -mx-px" aria-label="Settings tabs">
-              {tabs.map((tab) => {
+              {baseTabs.filter(tab => tab.id !== 'organization' || showOrgTab).map((tab) => {
                 const Icon = tab.icon;
                 const isActive = activeTab === tab.id;
                 return (
@@ -791,6 +802,15 @@ export default function ProfilePage() {
                   </button>
                 </div>
               </form>
+            )}
+
+            {/* Organization Tab */}
+            {activeTab === 'organization' && showOrgTab && (
+              <div className="p-6">
+                <Suspense fallback={<div className="flex justify-center py-12"><div className="w-8 h-8 border-4 border-orange-500 border-t-transparent rounded-full animate-spin" /></div>}>
+                  <OrganizationProfileTab />
+                </Suspense>
+              </div>
             )}
 
             {/* Security Tab */}

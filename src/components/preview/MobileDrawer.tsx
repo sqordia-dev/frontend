@@ -162,7 +162,7 @@ export default function MobileDrawer({
             {/* Solid container with subtle shadow */}
             <div className="relative bg-white dark:bg-card rounded-t-3xl border-t border-x border-warm-gray-200 dark:border-border shadow-[0_-8px_32px_rgba(0,0,0,0.15)] dark:shadow-[0_-8px_32px_rgba(0,0,0,0.5)] flex flex-col h-full">
               {/* Gradient accent line at top */}
-              <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-momentum-orange via-orange-400 to-amber-400 rounded-t-3xl" />
+              <div className="absolute top-0 left-0 right-0 h-[2px] bg-momentum-orange rounded-t-3xl" />
 
               {/* Drag handle */}
               <div className="flex justify-center pt-3 pb-2">

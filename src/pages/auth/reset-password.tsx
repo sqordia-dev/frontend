@@ -2,6 +2,7 @@ import { useState, useEffect, FormEvent } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { ArrowRight, ArrowLeft, CheckCircle, AlertCircle } from 'lucide-react';
 import { authService } from '../../lib/auth-service';
+import { useTheme } from '../../contexts/ThemeContext';
 import { useCmsContent } from '../../hooks/useCmsContent';
 import { getUserFriendlyError } from '../../utils/error-messages';
 import SEO from '../../components/SEO';
@@ -19,6 +20,7 @@ import { calculatePasswordStrength } from '../../utils/password-strength';
 export default function ResetPasswordPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { language } = useTheme();
   const { getContent: cms } = useCmsContent('auth');
 
   const token = searchParams.get('token') || '';
@@ -64,7 +66,7 @@ export default function ResetPasswordPage() {
     e.preventDefault();
     setServerError('');
 
-    const validationErrors = validateResetPasswordForm(formData);
+    const validationErrors = validateResetPasswordForm(formData, language);
     if (validationErrors.length > 0) {
       setErrors(validationErrors);
       return;

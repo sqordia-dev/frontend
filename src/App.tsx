@@ -4,6 +4,8 @@ import { ToastProvider } from './contexts/ToastContext';
 import { SkipLink } from '@/components/ui/skip-link';
 import PageLoader from './components/PageLoader';
 import ScrollToTop from './components/ScrollToTop';
+import ErrorBoundary from './components/ErrorBoundary';
+import SessionExpiryWarning from './components/SessionExpiryWarning';
 
 // Critical path - eagerly loaded for fast initial render
 import LandingPage from './pages/LandingPageNew';
@@ -94,6 +96,8 @@ const EmailTemplatesDocPage = lazy(() => import('./pages/admin/EmailTemplatesDoc
 const CmsEditorPage = lazy(() => import('./pages/admin/CmsEditorPage'));
 const CmsQuestionnairePage = lazy(() => import('./pages/admin/CmsQuestionnairePage'));
 const AdminQuestionnairePreviewPage = lazy(() => import('./pages/admin/AdminQuestionnairePreviewPage'));
+const ContentManagerPage = lazy(() => import('./pages/admin/content/ContentManagerPage'));
+const QuestionnaireManagerPage = lazy(() => import('./pages/admin/questionnaire/QuestionnaireManagerPage'));
 
 // Component to handle scroll restoration prevention
 function ScrollRestorationHandler() {
@@ -127,6 +131,13 @@ function RedirectToPreview() {
   return <Navigate to={`/business-plan/${id}/preview`} replace />;
 }
 
+// Redirect old /questionnaire/:planId to new /interview/:planId
+function RedirectToInterview() {
+  const location = useLocation();
+  const planId = location.pathname.split('/')[2];
+  return <Navigate to={`/interview/${planId}${location.hash}`} replace />;
+}
+
 function App() {
   // Prevent scroll restoration globally
   useEffect(() => {
@@ -144,6 +155,8 @@ function App() {
           {/* Skip to main content link for accessibility */}
           <SkipLink targetId="main-content" />
 
+            <SessionExpiryWarning />
+            <ErrorBoundary>
             <Suspense fallback={<PageLoader />}>
               <Routes>
             {/* Public routes - Landing and Auth (critical path) */}
@@ -168,14 +181,8 @@ function App() {
                 </ProtectedRoute>
               }
             />
-            <Route
-              path="/persona-selection"
-              element={
-                <ProtectedRoute>
-                  <PersonaSelectionPage />
-                </ProtectedRoute>
-              }
-            />
+            {/* Redirect legacy persona-selection to onboarding */}
+            <Route path="/persona-selection" element={<Navigate to="/onboarding" replace />} />
 
             {/* Public content pages */}
             <Route path="/template/:templateId" element={<TemplateDetailPage />} />
@@ -226,9 +233,9 @@ function App() {
               <Route index element={<CreatePlanPage />} />
             </Route>
 
-            {/* Questionnaire - full screen */}
+            {/* Interview - full screen */}
             <Route
-              path="/questionnaire/:planId"
+              path="/interview/:planId"
               element={
                 <ProtectedRoute>
                   <InterviewQuestionnairePage />
@@ -237,6 +244,7 @@ function App() {
             />
 
             {/* Legacy route redirects */}
+            <Route path="/questionnaire/:planId" element={<RedirectToInterview />} />
             <Route path="/plans/:id" element={<RedirectToPreview />} />
             <Route path="/plans/:id/preview" element={<RedirectToPreview />} />
 
@@ -373,12 +381,15 @@ function App() {
               <Route path="email-templates" element={<AdminEmailTemplatesPage />} />
               <Route path="email-templates/docs" element={<EmailTemplatesDocPage />} />
               <Route path="metrics" element={<AdminMetricsPage />} />
+              <Route path="content" element={<ContentManagerPage />} />
+              <Route path="questionnaire" element={<QuestionnaireManagerPage />} />
             </Route>
 
             {/* 404 catch-all route - must be last */}
             <Route path="*" element={<NotFoundPage />} />
               </Routes>
             </Suspense>
+            </ErrorBoundary>
         </Router>
     </ToastProvider>
   );

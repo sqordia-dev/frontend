@@ -3,8 +3,8 @@ import { useNavigate, Link } from 'react-router-dom';
 import { AlertCircle } from 'lucide-react';
 import { authService } from '../../lib/auth-service';
 import { signInWithGoogle } from '../../lib/google-auth';
-import { useTheme } from '../../contexts/ThemeContext';
 import { useCmsContent } from '../../hooks/useCmsContent';
+import { useTheme } from '../../contexts/ThemeContext';
 import { getUserFriendlyError } from '../../utils/error-messages';
 import SEO from '../../components/SEO';
 import { getCanonicalUrl } from '../../utils/seo';
@@ -16,6 +16,7 @@ import {
   Divider,
 } from '../../components/auth';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -27,6 +28,7 @@ import {
 
 export default function SignupPage() {
   const navigate = useNavigate();
+  const { language } = useTheme();
   const { getContent: cms } = useCmsContent('auth');
 
   const [formData, setFormData] = useState<SignupFormData>({
@@ -50,13 +52,14 @@ export default function SignupPage() {
       [name]: type === 'checkbox' ? checked : value,
     }));
     setErrors(prev => prev.filter(err => err.field !== name));
+    setServerError('');
   };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setServerError('');
 
-    const validationErrors = validateSignupForm(formData);
+    const validationErrors = validateSignupForm(formData, language);
     if (validationErrors.length > 0) {
       setErrors(validationErrors);
       return;
@@ -70,14 +73,29 @@ export default function SignupPage() {
         lastName: formData.lastName,
         email: formData.email,
         password: formData.password,
-        confirmPassword: formData.confirmPassword,
+        confirmPassword: formData.confirmPassword || '',
         userName: formData.email, // Use email as username
         userType: 'Entrepreneur', // Default to Entrepreneur, can be changed in onboarding
         organizationName: formData.organizationName || undefined,
       });
-      navigate('/login', { state: { message: cms('auth.signup.success', 'register.success') } });
+
+      // Auto-login after successful registration
+      try {
+        const loginResponse = await authService.login({
+          email: formData.email,
+          password: formData.password,
+        });
+        if (loginResponse.user?.onboardingCompleted) {
+          navigate('/dashboard');
+        } else {
+          navigate('/onboarding');
+        }
+      } catch {
+        // If auto-login fails, fall back to login page with success message
+        navigate('/login', { state: { message: cms('auth.signup.success', 'register.success') } });
+      }
     } catch (err: any) {
-      setServerError(getUserFriendlyError(err, 'signup'));
+      setServerError(getUserFriendlyError(err, 'signup', language));
     } finally {
       setLoading(false);
     }
@@ -85,6 +103,7 @@ export default function SignupPage() {
 
   const handleGoogleSignUp = async () => {
     setServerError('');
+    setLoading(true);
     try {
       const googleUser = await signInWithGoogle();
       const tokens = {
@@ -102,12 +121,15 @@ export default function SignupPage() {
         navigate('/onboarding');
       }
     } catch (err: any) {
-      setServerError(getUserFriendlyError(err, 'signup'));
+      setServerError(getUserFriendlyError(err, 'signup', language));
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleMicrosoftSignUp = async () => {
     setServerError('');
+    setLoading(true);
     try {
       const response = await authService.signInWithMicrosoft();
       // Check if returning user has completed onboarding
@@ -120,7 +142,9 @@ export default function SignupPage() {
         navigate('/onboarding');
       }
     } catch (err: any) {
-      setServerError(getUserFriendlyError(err, 'signup'));
+      setServerError(getUserFriendlyError(err, 'signup', language));
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -239,24 +263,6 @@ export default function SignupPage() {
           )}
         </div>
 
-        {/* Organization (Optional) */}
-        <div>
-          <Label htmlFor="organizationName" className="mb-2 block text-sm font-semibold">
-            {cms('auth.signup.organization_label', 'register.organization')}{' '}
-            <span className="font-normal text-muted-foreground">{cms('auth.signup.optional', 'register.optional')}</span>
-          </Label>
-          <Input
-            id="organizationName"
-            name="organizationName"
-            type="text"
-            value={formData.organizationName}
-            onChange={handleChange}
-            autoComplete="organization"
-            className="h-12"
-            placeholder={cms('auth.signup.organization_placeholder', 'register.organization.placeholder')}
-          />
-        </div>
-
         {/* Password */}
         <div>
           <PasswordInput
@@ -295,15 +301,17 @@ export default function SignupPage() {
         {/* Terms Checkbox */}
         <div className="pt-1">
           <label className="flex items-start gap-3">
-            <input
-              type="checkbox"
-              name="acceptTerms"
-              checked={formData.acceptTerms}
-              onChange={handleChange}
-              required
-              className="mt-1 h-4 w-4 rounded border-gray-300 text-momentum-orange focus:ring-2 focus:ring-momentum-orange focus:ring-offset-0"
-              aria-describedby={getFieldError(errors, 'acceptTerms') ? 'terms-error' : undefined}
-            />
+            <div className="mt-1">
+              <Checkbox
+                name="acceptTerms"
+                checked={formData.acceptTerms}
+                onCheckedChange={(checked) =>
+                  setFormData(prev => ({ ...prev, acceptTerms: checked }))
+                }
+                required
+                aria-describedby={getFieldError(errors, 'acceptTerms') ? 'terms-error' : undefined}
+              />
+            </div>
             <span className="text-sm leading-relaxed text-muted-foreground">
               {cms('auth.signup.terms_prefix', 'register.terms')}{' '}
               <Link

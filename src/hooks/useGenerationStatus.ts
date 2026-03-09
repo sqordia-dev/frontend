@@ -5,6 +5,8 @@ import { generationService } from '../lib/generation-service';
 interface UseGenerationStatusOptions {
   /** Polling interval in milliseconds (default: 2000) */
   pollInterval?: number;
+  /** Maximum time to poll before timing out, in ms (default: 300000 = 5 min) */
+  timeoutMs?: number;
   /** Whether to auto-start polling (default: true) */
   autoStart?: boolean;
   /** Callback when generation completes */
@@ -44,6 +46,7 @@ export function useGenerationStatus(
 ): UseGenerationStatusReturn {
   const {
     pollInterval = 2000,
+    timeoutMs = 300_000, // 5 minutes
     autoStart = true,
     onComplete,
     onError,
@@ -55,6 +58,7 @@ export function useGenerationStatus(
 
   // Refs for cleanup and callbacks
   const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isMountedRef = useRef(true);
   const hasStartedRef = useRef(false);
   const onCompleteRef = useRef(onComplete);
@@ -94,6 +98,10 @@ export function useGenerationStatus(
           clearInterval(pollIntervalRef.current);
           pollIntervalRef.current = null;
         }
+        if (timeoutRef.current) {
+          clearTimeout(timeoutRef.current);
+          timeoutRef.current = null;
+        }
         onCompleteRef.current?.();
       }
 
@@ -102,6 +110,10 @@ export function useGenerationStatus(
         if (pollIntervalRef.current) {
           clearInterval(pollIntervalRef.current);
           pollIntervalRef.current = null;
+        }
+        if (timeoutRef.current) {
+          clearTimeout(timeoutRef.current);
+          timeoutRef.current = null;
         }
         setError(statusData.errorMessage || 'Generation failed');
         onErrorRef.current?.(statusData.errorMessage || 'Generation failed');
@@ -120,20 +132,36 @@ export function useGenerationStatus(
 
   // Start polling
   const startPolling = useCallback(() => {
-    // Clear existing interval
-    if (pollIntervalRef.current) {
-      clearInterval(pollIntervalRef.current);
-    }
+    // Clear existing interval and timeout
+    if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
 
     // Start new polling interval
     pollIntervalRef.current = setInterval(fetchStatus, pollInterval);
-  }, [fetchStatus, pollInterval]);
+
+    // Set timeout to stop polling after max duration
+    timeoutRef.current = setTimeout(() => {
+      if (pollIntervalRef.current) {
+        clearInterval(pollIntervalRef.current);
+        pollIntervalRef.current = null;
+      }
+      if (isMountedRef.current) {
+        const msg = 'Generation is taking longer than expected. Please check back later or try again.';
+        setError(msg);
+        onErrorRef.current?.(msg);
+      }
+    }, timeoutMs);
+  }, [fetchStatus, pollInterval, timeoutMs]);
 
   // Stop polling
   const stopPolling = useCallback(() => {
     if (pollIntervalRef.current) {
       clearInterval(pollIntervalRef.current);
       pollIntervalRef.current = null;
+    }
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
     }
   }, []);
 

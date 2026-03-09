@@ -33,7 +33,7 @@ export const businessPlanService = {
     }
 
     try {
-      const response = await apiClient.get('/api/v1/business-plans');
+      const response = await apiClient.get<any>('/api/v1/business-plans');
 
       // Backend may return a paginated response { items: [...] } or a plain array
       const data = response.data;
@@ -142,31 +142,31 @@ export const businessPlanService = {
   },
 
   async exportToPDF(id: string): Promise<Blob> {
-    const response = await apiClient.get(`/api/v1/business-plans/${id}/export/pdf`, {
+    const response = await apiClient.get<any>(`/api/v1/business-plans/${id}/export/pdf`, {
       responseType: 'blob',
     });
     return response.data;
   },
 
   async exportToWord(id: string): Promise<Blob> {
-    const response = await apiClient.get(`/api/v1/business-plans/${id}/export/word`, {
+    const response = await apiClient.get<any>(`/api/v1/business-plans/${id}/export/word`, {
       responseType: 'blob',
     });
     return response.data;
   },
 
   async exportToHTML(id: string): Promise<string> {
-    const response = await apiClient.get(`/api/v1/business-plans/${id}/export/html`);
+    const response = await apiClient.get<any>(`/api/v1/business-plans/${id}/export/html`);
     return response.data;
   },
 
   async getExportStatus(id: string): Promise<any> {
-    const response = await apiClient.get(`/api/v1/business-plans/${id}/export/status`);
+    const response = await apiClient.get<any>(`/api/v1/business-plans/${id}/export/status`);
     return response.data;
   },
 
   async getExportTemplates(id: string): Promise<any[]> {
-    const response = await apiClient.get(`/api/v1/business-plans/${id}/export/templates`);
+    const response = await apiClient.get<any>(`/api/v1/business-plans/${id}/export/templates`);
     return response.data;
   },
 
@@ -211,12 +211,12 @@ export const businessPlanService = {
   },
 
   async getAvailableSections(): Promise<string[]> {
-    const response = await apiClient.get('/api/v1/business-plans/available-sections');
+    const response = await apiClient.get<any>('/api/v1/business-plans/available-sections');
     return response.data;
   },
 
   async getPlanTypes(): Promise<any[]> {
-    const response = await apiClient.get('/api/v1/business-plans/plan-types');
+    const response = await apiClient.get<any>('/api/v1/business-plans/plan-types');
     return response.data;
   },
 
@@ -226,7 +226,7 @@ export const businessPlanService = {
   },
 
   async getSections(id: string): Promise<any[]> {
-    const response = await apiClient.get(`/api/v1/business-plans/${id}/sections`);
+    const response = await apiClient.get<any>(`/api/v1/business-plans/${id}/sections`);
     return response.data;
   },
 
@@ -405,7 +405,7 @@ export const businessPlanService = {
     const config = language ? {
       headers: { 'Accept-Language': language }
     } : undefined;
-    const response = await apiClient.get(`/api/v1/business-plans/${id}/questionnaire/responses`, undefined, config);
+    const response = await apiClient.get<any>(`/api/v1/business-plans/${id}/questionnaire/responses`, undefined, config);
     // Handle wrapped response format
     if (response.data?.value) {
       return Array.isArray(response.data.value) ? response.data.value : [];
@@ -444,7 +444,7 @@ export const businessPlanService = {
   },
 
   async getFinancialProjections(id: string): Promise<any[]> {
-    const response = await apiClient.get(`/api/v1/business-plans/${id}/financial-projections`);
+    const response = await apiClient.get<any>(`/api/v1/business-plans/${id}/financial-projections`);
     return response.data;
   },
 
@@ -473,7 +473,7 @@ export const businessPlanService = {
   },
 
   async getFinancialProjectionTemplates(id: string): Promise<any[]> {
-    const response = await apiClient.get(`/api/v1/business-plans/${id}/financial-projections/templates`);
+    const response = await apiClient.get<any>(`/api/v1/business-plans/${id}/financial-projections/templates`);
     return response.data;
   },
 
@@ -487,7 +487,7 @@ export const businessPlanService = {
   },
 
   async exportFinancialProjections(id: string, format: string): Promise<Blob> {
-    const response = await apiClient.get(`/api/v1/business-plans/${id}/financial-projections/export?format=${format}`, {
+    const response = await apiClient.get<any>(`/api/v1/business-plans/${id}/financial-projections/export?format=${format}`, {
       responseType: 'blob',
     });
     return response.data;
@@ -578,7 +578,7 @@ export const businessPlanService = {
       const formData = new FormData();
       formData.append('file', file);
       
-      const response = await apiClient.post(`/api/v1/business-plans/${id}/cover/upload-image`, formData);
+      const response = await apiClient.post<any>(`/api/v1/business-plans/${id}/cover/upload-image`, formData);
       
       const data = response.data;
       

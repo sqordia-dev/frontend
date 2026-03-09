@@ -42,8 +42,7 @@ export const optionalTextSchema = z.object({
 // Number-based question validations
 export const numberQuestionSchema = z.object({
   value: z.number({
-    required_error: "Please enter a number",
-    invalid_type_error: "Must be a valid number",
+    message: "Please enter a valid number",
   }),
 });
 
@@ -78,8 +77,7 @@ export const multiSelectWithLimitSchema = (max: number) =>
 // Date-based question validations
 export const dateQuestionSchema = z.object({
   value: z.date({
-    required_error: "Please select a date",
-    invalid_type_error: "Invalid date format",
+    message: "Please select a valid date",
   }),
 });
 
@@ -178,7 +176,7 @@ export function createQuestionSchema(
     case "yes_no":
       return z.object({
         value: required
-          ? z.boolean({ required_error: "Please select an option" })
+          ? z.boolean({ message: "Please select an option" })
           : z.boolean().optional(),
       });
 

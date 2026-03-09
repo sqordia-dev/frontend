@@ -1,142 +1,56 @@
-import { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, ArrowRight, Lightbulb, Rocket, Building2, Users, Wallet, ChevronDown, Check } from 'lucide-react';
-import { StepProps, BusinessStage, TeamSize, FundingStatus } from '../../../types/onboarding';
+import { useState } from 'react';
+import { ArrowLeft, ArrowRight, Lightbulb, Rocket, Building, Users, DollarSign, Target, SkipForward } from 'lucide-react';
 import { useTheme } from '../../../contexts/ThemeContext';
+import type { StepProps } from '../OnboardingWizard';
 
-interface StageOption {
-  id: BusinessStage;
-  titleKey: string;
-  descKey: string;
-  icon: React.ElementType;
-  color: string;
-  bgLight: string;
-  bgDark: string;
-}
-
-const stageOptions: StageOption[] = [
-  {
-    id: 'Idea',
-    titleKey: 'onboarding.step2.stage.idea',
-    descKey: 'onboarding.step2.stage.idea.desc',
-    icon: Lightbulb,
-    color: '#F59E0B',
-    bgLight: 'bg-amber-50',
-    bgDark: 'dark:bg-amber-900/20',
-  },
-  {
-    id: 'Startup',
-    titleKey: 'onboarding.step2.stage.startup',
-    descKey: 'onboarding.step2.stage.startup.desc',
-    icon: Rocket,
-    color: '#FF6B00',
-    bgLight: 'bg-orange-50',
-    bgDark: 'dark:bg-orange-900/20',
-  },
-  {
-    id: 'Established',
-    titleKey: 'onboarding.step2.stage.established',
-    descKey: 'onboarding.step2.stage.established.desc',
-    icon: Building2,
-    color: '#10B981',
-    bgLight: 'bg-emerald-50',
-    bgDark: 'dark:bg-emerald-900/20',
-  },
+const BUSINESS_STAGES = [
+  { value: 'Idea', labelKey: 'onboarding.step2.stage.idea', icon: Lightbulb },
+  { value: 'Startup', labelKey: 'onboarding.step2.stage.startup', icon: Rocket },
+  { value: 'Established', labelKey: 'onboarding.step2.stage.established', icon: Building },
 ];
 
-interface TeamSizeOption {
-  id: TeamSize;
-  labelKey: string;
-}
-
-const teamSizeOptions: TeamSizeOption[] = [
-  { id: 'Solo', labelKey: 'onboarding.step2.teamSize.solo' },
-  { id: '2-5', labelKey: 'onboarding.step2.teamSize.small' },
-  { id: '6-20', labelKey: 'onboarding.step2.teamSize.medium' },
-  { id: '20+', labelKey: 'onboarding.step2.teamSize.large' },
+const TEAM_SIZES = [
+  { value: 'Solo', label: 'Solo' },
+  { value: '2-5', label: '2-5' },
+  { value: '6-20', label: '6-20' },
+  { value: '20+', label: '20+' },
 ];
 
-interface FundingOption {
-  id: FundingStatus;
-  titleKey: string;
-  descKey: string;
-}
-
-const fundingOptions: FundingOption[] = [
-  { id: 'Bootstrapped', titleKey: 'onboarding.step2.funding.bootstrapped', descKey: 'onboarding.step2.funding.bootstrapped.desc' },
-  { id: 'Seeking', titleKey: 'onboarding.step2.funding.seeking', descKey: 'onboarding.step2.funding.seeking.desc' },
-  { id: 'Funded', titleKey: 'onboarding.step2.funding.funded', descKey: 'onboarding.step2.funding.funded.desc' },
+const FUNDING_STATUSES = [
+  { value: 'Bootstrapped', labelKey: 'onboarding.step2.funding.bootstrapped' },
+  { value: 'Seeking', labelKey: 'onboarding.step2.funding.seeking' },
+  { value: 'Funded', labelKey: 'onboarding.step2.funding.funded' },
 ];
 
-/**
- * Step 2: Business Context
- * Collects business stage, team size, and funding status
- */
-export default function BusinessContextStep({
-  data,
-  onNext,
-  onBack,
-  isFirstStep,
-}: StepProps) {
+const TARGET_MARKETS = [
+  { value: 'B2B', label: 'B2B' },
+  { value: 'B2C', label: 'B2C' },
+  { value: 'B2B2C', label: 'B2B2C' },
+  { value: 'B2G', label: 'B2G' },
+];
+
+export default function BusinessContextStep({ data, onNext, onBack }: StepProps) {
   const { t } = useTheme();
-  const [businessStage, setBusinessStage] = useState<BusinessStage | undefined>(data.businessStage);
-  const [teamSize, setTeamSize] = useState<TeamSize | undefined>(data.teamSize);
-  const [fundingStatus, setFundingStatus] = useState<FundingStatus | undefined>(data.fundingStatus);
-  const [isTeamDropdownOpen, setIsTeamDropdownOpen] = useState(false);
-  const [isFundingDropdownOpen, setIsFundingDropdownOpen] = useState(false);
-  const teamDropdownRef = useRef<HTMLDivElement>(null);
-  const fundingDropdownRef = useRef<HTMLDivElement>(null);
-
-  // Handle click outside to close dropdowns
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (teamDropdownRef.current && !teamDropdownRef.current.contains(event.target as Node)) {
-        setIsTeamDropdownOpen(false);
-      }
-      if (fundingDropdownRef.current && !fundingDropdownRef.current.contains(event.target as Node)) {
-        setIsFundingDropdownOpen(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  const handleStageSelect = (stage: BusinessStage) => {
-    setBusinessStage(stage);
-  };
-
-  const handleStageKeyDown = (e: React.KeyboardEvent, stage: BusinessStage) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      handleStageSelect(stage);
-    }
-  };
+  const [businessStage, setBusinessStage] = useState(data.businessStage || '');
+  const [teamSize, setTeamSize] = useState(data.teamSize || '');
+  const [fundingStatus, setFundingStatus] = useState(data.fundingStatus || '');
+  const [targetMarket, setTargetMarket] = useState(data.targetMarket || '');
 
   const handleContinue = () => {
-    if (businessStage && teamSize && fundingStatus) {
-      onNext({
-        businessStage,
-        teamSize,
-        fundingStatus,
-      });
-    }
+    onNext({
+      businessStage: businessStage || undefined,
+      teamSize: teamSize || undefined,
+      fundingStatus: fundingStatus || undefined,
+      targetMarket: targetMarket || undefined,
+    });
   };
 
-  const isValid = businessStage && teamSize && fundingStatus;
-
-  const getSelectedTeamLabel = () => {
-    const option = teamSizeOptions.find(o => o.id === teamSize);
-    return option ? t(option.labelKey) : null;
-  };
-
-  const getSelectedFundingTitle = () => {
-    const option = fundingOptions.find(o => o.id === fundingStatus);
-    return option ? t(option.titleKey) : null;
+  const handleSkip = () => {
+    onNext({});
   };
 
   return (
     <div className="flex flex-col h-full">
-      {/* Header */}
       <div className="text-center mb-8">
         <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-3">
           {t('onboarding.step2.title')}
@@ -146,302 +60,139 @@ export default function BusinessContextStep({
         </p>
       </div>
 
-      {/* Form */}
       <div className="space-y-6 max-w-2xl mx-auto w-full">
-        {/* Business Stage - Radio Cards */}
+        {/* Business Stage */}
         <div>
           <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3">
-            {t('onboarding.step2.stage')} <span className="text-red-500">*</span>
+            {t('onboarding.step2.stage')}
+            <span className="text-gray-400 text-xs ml-2 font-normal">(optional)</span>
           </label>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            {stageOptions.map((stage) => {
+          <div className="grid grid-cols-3 gap-3">
+            {BUSINESS_STAGES.map((stage) => {
               const Icon = stage.icon;
-              const isSelected = businessStage === stage.id;
-
+              const isSelected = businessStage === stage.value;
               return (
                 <button
-                  key={stage.id}
-                  onClick={() => handleStageSelect(stage.id)}
-                  onKeyDown={(e) => handleStageKeyDown(e, stage.id)}
-                  className={`
-                    relative p-4 rounded-xl border-2 text-left transition-all duration-200 group
-                    focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-900
-                    ${isSelected
-                      ? `border-transparent ${stage.bgLight} ${stage.bgDark} shadow-md`
-                      : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800/50 hover:border-gray-300 dark:hover:border-gray-600 hover:shadow-sm'
-                    }
-                  `}
-                  style={{
-                    borderColor: isSelected ? stage.color : undefined,
-                  }}
-                  aria-pressed={isSelected}
-                  aria-label={`${t(stage.titleKey)}: ${t(stage.descKey)}`}
+                  key={stage.value}
+                  onClick={() => setBusinessStage(isSelected ? '' : stage.value)}
+                  className={`p-4 rounded-xl border-2 text-center transition-all ${
+                    isSelected
+                      ? 'border-orange-500 bg-orange-50 dark:bg-orange-900/20 shadow-md'
+                      : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 hover:shadow-sm'
+                  }`}
                 >
-                  {/* Icon */}
-                  <div
-                    className={`
-                      w-11 h-11 rounded-xl flex items-center justify-center mb-3
-                      transition-transform duration-200 group-hover:scale-105
-                    `}
-                    style={{ backgroundColor: `${stage.color}15` }}
-                  >
-                    <Icon
-                      size={22}
-                      style={{ color: stage.color }}
-                      aria-hidden="true"
-                    />
-                  </div>
-
-                  {/* Title and description */}
-                  <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-0.5">
-                    {t(stage.titleKey)}
-                  </h3>
-                  <p className="text-sm leading-snug text-gray-500 dark:text-gray-400">
-                    {t(stage.descKey)}
-                  </p>
-
-                  {/* Selected indicator */}
-                  {isSelected && (
-                    <div
-                      className="absolute top-3 right-3 w-6 h-6 rounded-full flex items-center justify-center shadow-sm"
-                      style={{ backgroundColor: stage.color }}
-                      aria-hidden="true"
-                    >
-                      <Check size={14} className="text-white" strokeWidth={3} />
-                    </div>
-                  )}
+                  <Icon size={24} className={`mx-auto mb-2 ${isSelected ? 'text-orange-500' : 'text-gray-400'}`} />
+                  <span className={`text-sm font-medium ${isSelected ? 'text-orange-600' : 'text-gray-700 dark:text-gray-300'}`}>
+                    {t(stage.labelKey)}
+                  </span>
                 </button>
               );
             })}
           </div>
         </div>
 
-        {/* Team Size - Select */}
-        <div ref={teamDropdownRef}>
-          <label
-            htmlFor="teamSize"
-            className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2"
-          >
-            {t('onboarding.step2.teamSize')} <span className="text-red-500">*</span>
+        {/* Team Size */}
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3">
+            <Users size={16} className="inline mr-2 text-gray-400" />
+            {t('onboarding.step2.teamSize')}
+            <span className="text-gray-400 text-xs ml-2 font-normal">(optional)</span>
           </label>
-          <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-              <Users size={20} className="text-gray-400" aria-hidden="true" />
-            </div>
-            <button
-              type="button"
-              id="teamSize"
-              onClick={() => setIsTeamDropdownOpen(!isTeamDropdownOpen)}
-              onKeyDown={(e) => {
-                if (e.key === 'Escape') setIsTeamDropdownOpen(false);
-              }}
-              className={`
-                w-full rounded-xl border px-4 py-3.5 pl-12 pr-12 text-base text-left
-                transition-all duration-200
-                bg-white dark:bg-gray-800/50
-                focus:outline-none focus:ring-2 focus:ring-offset-0
-                min-h-[52px]
-                ${teamSize
-                  ? 'text-gray-900 dark:text-white'
-                  : 'text-gray-400 dark:text-gray-500'
-                }
-                ${isTeamDropdownOpen
-                  ? 'border-orange-500 ring-2 ring-orange-500/20'
-                  : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
-                }
-              `}
-              aria-haspopup="listbox"
-              aria-expanded={isTeamDropdownOpen}
-            >
-              {getSelectedTeamLabel() || t('onboarding.step2.teamSize.placeholder')}
-            </button>
-            <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
-              <ChevronDown
-                size={20}
-                className={`text-gray-400 transition-transform duration-200 ${isTeamDropdownOpen ? 'rotate-180' : ''}`}
-                aria-hidden="true"
-              />
-            </div>
-
-            {/* Dropdown menu */}
-            {isTeamDropdownOpen && (
-              <ul
-                className="absolute z-20 mt-2 w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl max-h-60 overflow-auto py-2"
-                role="listbox"
-                aria-label={t('onboarding.step2.teamSize')}
-              >
-                {teamSizeOptions.map((option) => (
-                  <li
-                    key={option.id}
-                    role="option"
-                    aria-selected={teamSize === option.id}
-                    tabIndex={0}
-                    onClick={() => {
-                      setTeamSize(option.id);
-                      setIsTeamDropdownOpen(false);
-                    }}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        setTeamSize(option.id);
-                        setIsTeamDropdownOpen(false);
-                      }
-                    }}
-                    className={`
-                      px-4 py-2.5 cursor-pointer transition-colors flex items-center justify-between
-                      ${teamSize === option.id
-                        ? 'bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400'
-                        : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50'
-                      }
-                    `}
-                  >
-                    <span>{t(option.labelKey)}</span>
-                    {teamSize === option.id && (
-                      <Check size={16} className="text-orange-500" />
-                    )}
-                  </li>
-                ))}
-              </ul>
-            )}
+          <div className="flex gap-2">
+            {TEAM_SIZES.map((size) => {
+              const isSelected = teamSize === size.value;
+              return (
+                <button
+                  key={size.value}
+                  onClick={() => setTeamSize(isSelected ? '' : size.value)}
+                  className={`flex-1 px-4 py-3 rounded-xl border-2 text-sm font-medium transition-all ${
+                    isSelected
+                      ? 'border-orange-500 bg-orange-50 dark:bg-orange-900/20 text-orange-600'
+                      : 'border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:border-gray-300'
+                  }`}
+                >
+                  {size.label}
+                </button>
+              );
+            })}
           </div>
         </div>
 
-        {/* Funding Status - Select */}
-        <div ref={fundingDropdownRef}>
-          <label
-            htmlFor="fundingStatus"
-            className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2"
-          >
-            {t('onboarding.step2.funding')} <span className="text-red-500">*</span>
-          </label>
-          <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-              <Wallet size={20} className="text-gray-400" aria-hidden="true" />
-            </div>
-            <button
-              type="button"
-              id="fundingStatus"
-              onClick={() => setIsFundingDropdownOpen(!isFundingDropdownOpen)}
-              onKeyDown={(e) => {
-                if (e.key === 'Escape') setIsFundingDropdownOpen(false);
-              }}
-              className={`
-                w-full rounded-xl border px-4 py-3.5 pl-12 pr-12 text-base text-left
-                transition-all duration-200
-                bg-white dark:bg-gray-800/50
-                focus:outline-none focus:ring-2 focus:ring-offset-0
-                min-h-[52px]
-                ${fundingStatus
-                  ? 'text-gray-900 dark:text-white'
-                  : 'text-gray-400 dark:text-gray-500'
-                }
-                ${isFundingDropdownOpen
-                  ? 'border-orange-500 ring-2 ring-orange-500/20'
-                  : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
-                }
-              `}
-              aria-haspopup="listbox"
-              aria-expanded={isFundingDropdownOpen}
-            >
-              {getSelectedFundingTitle() || t('onboarding.step2.funding.placeholder')}
-            </button>
-            <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
-              <ChevronDown
-                size={20}
-                className={`text-gray-400 transition-transform duration-200 ${isFundingDropdownOpen ? 'rotate-180' : ''}`}
-                aria-hidden="true"
-              />
-            </div>
-
-            {/* Dropdown menu */}
-            {isFundingDropdownOpen && (
-              <ul
-                className="absolute z-20 mt-2 w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl max-h-60 overflow-auto py-2"
-                role="listbox"
-                aria-label={t('onboarding.step2.funding')}
-              >
-                {fundingOptions.map((option) => (
-                  <li
-                    key={option.id}
-                    role="option"
-                    aria-selected={fundingStatus === option.id}
-                    tabIndex={0}
-                    onClick={() => {
-                      setFundingStatus(option.id);
-                      setIsFundingDropdownOpen(false);
-                    }}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        setFundingStatus(option.id);
-                        setIsFundingDropdownOpen(false);
-                      }
-                    }}
-                    className={`
-                      px-4 py-2.5 cursor-pointer transition-colors
-                      ${fundingStatus === option.id
-                        ? 'bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400'
-                        : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50'
-                      }
-                    `}
+        {/* Funding & Target Market row */}
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3">
+              <DollarSign size={16} className="inline mr-1 text-gray-400" />
+              {t('onboarding.step2.funding')}
+              <span className="text-gray-400 text-xs ml-1 font-normal">(opt.)</span>
+            </label>
+            <div className="space-y-2">
+              {FUNDING_STATUSES.map((f) => {
+                const isSelected = fundingStatus === f.value;
+                return (
+                  <button
+                    key={f.value}
+                    onClick={() => setFundingStatus(isSelected ? '' : f.value)}
+                    className={`w-full px-4 py-2.5 rounded-xl border-2 text-sm font-medium text-left transition-all ${
+                      isSelected
+                        ? 'border-orange-500 bg-orange-50 dark:bg-orange-900/20 text-orange-600'
+                        : 'border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:border-gray-300'
+                    }`}
                   >
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <div className="font-medium">{t(option.titleKey)}</div>
-                        <div className="text-xs text-gray-500 dark:text-gray-400">{t(option.descKey)}</div>
-                      </div>
-                      {fundingStatus === option.id && (
-                        <Check size={16} className="text-orange-500 ml-2" />
-                      )}
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            )}
+                    {t(f.labelKey)}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3">
+              <Target size={16} className="inline mr-1 text-gray-400" />
+              Target Market
+              <span className="text-gray-400 text-xs ml-1 font-normal">(opt.)</span>
+            </label>
+            <div className="space-y-2">
+              {TARGET_MARKETS.map((m) => {
+                const isSelected = targetMarket === m.value;
+                return (
+                  <button
+                    key={m.value}
+                    onClick={() => setTargetMarket(isSelected ? '' : m.value)}
+                    className={`w-full px-4 py-2.5 rounded-xl border-2 text-sm font-medium text-left transition-all ${
+                      isSelected
+                        ? 'border-orange-500 bg-orange-50 dark:bg-orange-900/20 text-orange-600'
+                        : 'border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:border-gray-300'
+                    }`}
+                  >
+                    {m.label}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Spacer */}
       <div className="flex-1 min-h-[24px]" />
 
-      {/* Navigation buttons */}
       <div className="flex items-center justify-between pt-6 border-t border-gray-200 dark:border-gray-700/50">
-        <button
-          onClick={onBack}
-          disabled={isFirstStep}
-          className={`
-            inline-flex items-center gap-2 px-5 py-2.5 rounded-xl
-            font-medium transition-all duration-200 min-h-[44px]
-            focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2
-            dark:focus:ring-offset-gray-900
-            ${isFirstStep
-              ? 'text-gray-300 dark:text-gray-600 cursor-not-allowed'
-              : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'
-            }
-          `}
-        >
-          <ArrowLeft size={18} aria-hidden="true" />
-          {t('onboarding.back')}
+        <button onClick={onBack} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 min-h-[44px]">
+          <ArrowLeft size={18} /> {t('onboarding.back')}
         </button>
-
-        <button
-          onClick={handleContinue}
-          disabled={!isValid}
-          className={`
-            inline-flex items-center gap-2 px-7 py-2.5 rounded-xl
-            font-semibold transition-all duration-200 min-h-[44px]
-            focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2
-            dark:focus:ring-offset-gray-900
-            ${isValid
-              ? 'bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg shadow-orange-500/25 hover:shadow-orange-500/40'
-              : 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 cursor-not-allowed'
-            }
-          `}
-        >
-          {t('onboarding.continue')}
-          <ArrowRight size={18} aria-hidden="true" />
-        </button>
+        <div className="flex gap-3">
+          <button
+            onClick={handleSkip}
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-100 min-h-[44px]"
+          >
+            <SkipForward size={16} /> Skip
+          </button>
+          <button
+            onClick={handleContinue}
+            className="inline-flex items-center gap-2 px-7 py-2.5 rounded-xl font-semibold bg-momentum-orange hover:bg-[#E56000] text-white shadow-md shadow-momentum-orange/20 min-h-[44px]"
+          >
+            {t('onboarding.continue')} <ArrowRight size={18} />
+          </button>
+        </div>
       </div>
     </div>
   );

@@ -1,22 +1,43 @@
 import { useState, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Brain } from 'lucide-react';
+import { Brain, X } from 'lucide-react';
+import { useTheme } from '../../contexts/ThemeContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import StepIndicator from './StepIndicator';
 import CompanyPersonaStep from './steps/CompanyPersonaStep';
 import BusinessContextStep from './steps/BusinessContextStep';
-import GoalsMarketStep from './steps/GoalsMarketStep';
+import GoalsObjectivesStep from './steps/GoalsObjectivesStep';
 import FeatureTourStep from './steps/FeatureTourStep';
-import { OnboardingData, OnboardingStep, StepProps } from '../../types/onboarding';
 import { onboardingService } from '../../lib/onboarding-service';
 import { useToast } from '../../contexts/ToastContext';
 import { getUserFriendlyError } from '../../utils/error-messages';
+import type { OnboardingProfileCompleteRequest } from '../../types/organization-profile';
 
-// Define the steps configuration - 4 step onboarding flow
-const STEPS: OnboardingStep[] = [
+export interface OnboardingData {
+  companyName?: string;
+  industry?: string;
+  sector?: string;
+  persona?: string;
+  businessStage?: string;
+  teamSize?: string;
+  fundingStatus?: string;
+  targetMarket?: string;
+  goals?: string[];
+}
+
+export interface StepProps {
+  data: OnboardingData;
+  onNext: (stepData: Partial<OnboardingData>) => void;
+  onBack: () => void;
+  onComplete: () => void;
+  isFirstStep: boolean;
+  isLastStep: boolean;
+}
+
+const STEPS = [
   { id: 'company-persona', title: 'Company', component: CompanyPersonaStep },
   { id: 'business-context', title: 'Context', component: BusinessContextStep },
-  { id: 'goals-market', title: 'Goals', component: GoalsMarketStep },
+  { id: 'goals-objectives', title: 'Goals', component: GoalsObjectivesStep },
   { id: 'feature-tour', title: 'Start', component: FeatureTourStep },
 ];
 
@@ -26,10 +47,6 @@ interface OnboardingWizardProps {
   initialData?: Partial<OnboardingData>;
 }
 
-/**
- * Main onboarding wizard component
- * Manages step state, data accumulation, and navigation
- */
 export default function OnboardingWizard({
   userName,
   initialStep = 0,
@@ -37,56 +54,35 @@ export default function OnboardingWizard({
 }: OnboardingWizardProps) {
   const navigate = useNavigate();
   const { error: showError, success: showSuccess } = useToast();
+  const { language, t } = useTheme();
 
-  // Current step index
   const [currentStep, setCurrentStep] = useState(initialStep);
-
-  // Accumulated data from all steps
-  const [data, setData] = useState<OnboardingData>({
-    userName,
-    ...initialData,
-  });
-
-  // Direction for animation (1 = forward, -1 = backward)
+  const [data, setData] = useState<OnboardingData>({ ...initialData });
   const [direction, setDirection] = useState(1);
-
-  // Loading state for completion
   const [isCompleting, setIsCompleting] = useState(false);
 
-  // Get current step configuration
   const stepConfig = STEPS[currentStep];
   const CurrentStepComponent = stepConfig.component;
   const isFirstStep = currentStep === 0;
   const isLastStep = currentStep === STEPS.length - 1;
-
-  // Step titles for indicator
   const stepTitles = useMemo(() => STEPS.map(s => s.title), []);
 
-  // Handle moving to next step
-  const handleNext = useCallback(async (stepData: Partial<OnboardingData>) => {
-    // Merge new data with existing data
+  const handleNext = useCallback((stepData: Partial<OnboardingData>) => {
     const updatedData = { ...data, ...stepData };
     setData(updatedData);
 
-    // Save progress to backend (fire and forget)
-    try {
-      await onboardingService.saveOnboardingProgress({
-        currentStep: currentStep + 1,
-        data: updatedData,
-      });
-    } catch (err) {
-      console.warn('Failed to save onboarding progress:', err);
-      // Don't block the user, just log the error
-    }
+    // Save progress (fire and forget)
+    onboardingService.saveOnboardingProgress({
+      currentStep: currentStep + 1,
+      data: updatedData as any,
+    }).catch(() => {});
 
-    // Move to next step
     if (currentStep < STEPS.length - 1) {
       setDirection(1);
       setCurrentStep(currentStep + 1);
     }
   }, [currentStep, data]);
 
-  // Handle moving to previous step
   const handleBack = useCallback(() => {
     if (currentStep > 0) {
       setDirection(-1);
@@ -94,66 +90,50 @@ export default function OnboardingWizard({
     }
   }, [currentStep]);
 
-  // Handle completing onboarding
   const handleComplete = useCallback(async () => {
-    // Use companyName or businessName for backward compatibility
-    const businessName = data.companyName || data.businessName;
-
-    if (!data.persona || !businessName) {
-      showError('Missing required data', 'Please complete all required fields.');
+    if (!data.persona || !data.companyName) {
+      showError('Missing required data', 'Please provide a company name and select a persona.');
       return;
     }
 
     setIsCompleting(true);
 
     try {
-      const result = await onboardingService.completeOnboarding({
+      const request: OnboardingProfileCompleteRequest = {
+        companyName: data.companyName,
         persona: data.persona,
-        businessName: businessName,
         industry: data.industry,
-        description: data.targetMarket, // Use target market as description
-        templateId: undefined, // No template selection in new flow
-        onboardingContext: {
-          industry: data.industry,
-          businessStage: data.businessStage,
-          teamSize: data.teamSize,
-          fundingStatus: data.fundingStatus,
-          goals: data.goals,
-          targetMarket: data.targetMarket,
-        },
-      });
+        sector: data.sector,
+        businessStage: data.businessStage,
+        teamSize: data.teamSize,
+        fundingStatus: data.fundingStatus,
+        targetMarket: data.targetMarket,
+        goalsJson: data.goals ? JSON.stringify(data.goals) : undefined,
+        createBusinessPlan: true,
+      };
+
+      const result = await onboardingService.completeOnboardingProfile(request);
 
       showSuccess('Success!', 'Your business plan has been created.');
 
-      // Navigate to the newly created plan
-      navigate(`/questionnaire/${result.planId}`);
+      if (result.businessPlanId) {
+        navigate(`/interview/${result.businessPlanId}`);
+      } else {
+        navigate('/dashboard');
+      }
     } catch (err: any) {
       console.error('Failed to complete onboarding:', err);
-      showError(
-        'Failed to create plan',
-        getUserFriendlyError(err, 'save')
-      );
+      showError('Failed to create plan', getUserFriendlyError(err, 'save'));
       setIsCompleting(false);
     }
   }, [data, navigate, showError, showSuccess]);
 
-  // Animation variants
   const variants = {
-    enter: (direction: number) => ({
-      x: direction > 0 ? 100 : -100,
-      opacity: 0,
-    }),
-    center: {
-      x: 0,
-      opacity: 1,
-    },
-    exit: (direction: number) => ({
-      x: direction < 0 ? 100 : -100,
-      opacity: 0,
-    }),
+    enter: (dir: number) => ({ x: dir > 0 ? 100 : -100, opacity: 0 }),
+    center: { x: 0, opacity: 1 },
+    exit: (dir: number) => ({ x: dir < 0 ? 100 : -100, opacity: 0 }),
   };
 
-  // Props to pass to each step component
   const stepProps: StepProps = {
     data,
     onNext: handleNext,
@@ -165,41 +145,40 @@ export default function OnboardingWizard({
 
   return (
     <div className="min-h-screen flex flex-col bg-neutral-50 dark:bg-gray-900">
-      {/* Header */}
       <header className="w-full py-6 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
-          {/* Logo */}
           <a href="/" className="flex items-center gap-3 group">
-            <div
-              className="p-2 rounded-lg transition-transform group-hover:scale-105"
-              style={{ backgroundColor: '#1A2B47' }}
-            >
+            <div className="p-2 rounded-lg transition-transform group-hover:scale-105" style={{ backgroundColor: '#1A2B47' }}>
               <Brain className="w-6 h-6 text-white" aria-hidden="true" />
             </div>
-            <span className="text-xl font-bold text-gray-900 dark:text-white">
-              Sqordia
-            </span>
+            <span className="text-xl font-bold text-gray-900 dark:text-white">Sqordia</span>
           </a>
-
-          {/* Step indicator - show on steps 1-3, hide on feature tour (step 4) */}
           {!isLastStep && (
-            <StepIndicator
-              currentStep={currentStep}
-              totalSteps={STEPS.length - 1}
-              stepTitles={stepTitles.slice(0, -1)}
-            />
+            <div className="flex flex-col items-center">
+              <StepIndicator
+                currentStep={currentStep}
+                totalSteps={STEPS.length - 1}
+                stepTitles={stepTitles.slice(0, -1)}
+              />
+              <p className="text-center text-xs text-muted-foreground mt-1 sm:hidden">
+                {STEPS[currentStep]?.title}
+              </p>
+            </div>
           )}
-
-          {/* Spacer to balance header */}
-          <div className="w-[100px]" />
+          <div className="w-[100px] flex justify-end">
+            <button
+              onClick={() => navigate('/dashboard')}
+              className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
+              aria-label={t('onboarding.skipForNow')}
+            >
+              <span className="hidden sm:inline">{t('onboarding.skip')}</span>
+              <X className="w-4 h-4" />
+            </button>
+          </div>
         </div>
       </header>
 
-      {/* Main content */}
-      <main
-        id="main-content"
-        className="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8 py-8"
-      >
+      <main id="main-content" className="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8 py-8">
         <div className="w-full max-w-2xl">
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6 sm:p-10 min-h-[500px]">
             <AnimatePresence mode="wait" custom={direction}>
@@ -210,10 +189,7 @@ export default function OnboardingWizard({
                 initial="enter"
                 animate="center"
                 exit="exit"
-                transition={{
-                  x: { type: 'spring', stiffness: 300, damping: 30 },
-                  opacity: { duration: 0.2 },
-                }}
+                transition={{ x: { type: 'spring', stiffness: 300, damping: 30 }, opacity: { duration: 0.2 } }}
                 className="h-full"
               >
                 <CurrentStepComponent {...stepProps} />
@@ -223,33 +199,20 @@ export default function OnboardingWizard({
         </div>
       </main>
 
-      {/* Footer */}
       <footer className="py-4 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto text-center text-sm text-gray-500 dark:text-gray-400">
           <p>
             Need help?{' '}
-            <a
-              href="mailto:support@sqordia.com"
-              className="text-orange-600 hover:text-orange-700 dark:text-orange-400 dark:hover:text-orange-300 underline focus:outline-none focus:ring-2 focus:ring-orange-500 rounded"
-            >
-              Contact support
-            </a>
+            <a href="mailto:support@sqordia.com" className="text-orange-600 hover:text-orange-700 underline">Contact support</a>
           </p>
         </div>
       </footer>
 
-      {/* Loading overlay */}
       {isCompleting && (
-        <div
-          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
-          role="status"
-          aria-label="Creating your business plan"
-        >
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" role="status" aria-label="Creating your business plan">
           <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 flex flex-col items-center gap-4 shadow-xl">
             <div className="w-12 h-12 border-4 border-orange-500 border-t-transparent rounded-full animate-spin" />
-            <p className="text-lg font-medium text-gray-900 dark:text-white">
-              Creating your business plan...
-            </p>
+            <p className="text-lg font-medium text-gray-900 dark:text-white">Creating your business plan...</p>
           </div>
         </div>
       )}

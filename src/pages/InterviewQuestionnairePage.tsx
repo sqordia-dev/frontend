@@ -7,7 +7,6 @@ import {
   Sparkles,
   Loader2,
   AlertCircle,
-  ChevronDown,
   ChevronRight,
   X,
   Building2,
@@ -22,21 +21,24 @@ import {
   User,
   Keyboard,
   Command,
-  MessageSquare,
-  Save,
   Rocket,
   Clock,
   BookmarkCheck,
+  LogOut,
+  CreditCard,
 } from 'lucide-react';
 import { businessPlanService } from '../lib/business-plan-service';
 import { useTheme } from '../contexts/ThemeContext';
 import { QuestionnaireProvider, useQuestionnaire } from '../contexts/QuestionnaireContext';
 import { getUserFriendlyError } from '../utils/error-messages';
+import { useToast } from '../contexts/ToastContext';
 import { PersonaType, User as UserType } from '../lib/types';
 import SEO from '../components/SEO';
-import AIInterviewer from '../components/questionnaire/AIInterviewer';
-import NotionStyleEditor from '../components/questionnaire/NotionStyleEditor';
 import { useFeatureFlag } from '../hooks/useFeatureFlag';
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem,
+  DropdownMenuSeparator, DropdownMenuTrigger,
+} from '../components/ui/dropdown-menu';
 import { apiClient } from '../lib/api-client';
 import LanguageDropdown from '../components/layout/LanguageDropdown';
 import { authService } from '../lib/auth-service';
@@ -44,10 +46,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { organizationService } from '../lib/organization-service';
 import ProfileContextPanel from '../components/questionnaire/ProfileContextPanel';
 import type { OrganizationProfile, SkippedQuestionDto } from '../types/organization-profile';
-import SectionStepper from '../components/questionnaire/SectionStepper';
-import ProgressBar from '../components/questionnaire/ProgressBar';
+import SectionSidebar from '../components/questionnaire/SectionSidebar';
+import ProfileCompletionBanner from '../components/ProfileCompletionBanner';
 import QuestionCard from '../components/questionnaire/QuestionCard';
 import CoachPanel from '../components/questionnaire/CoachPanel';
+import { evaluateAnswerCompleteness } from '../lib/ai-evaluation-service';
 
 interface Question {
   id: string;
@@ -78,105 +81,89 @@ interface StepInfo {
   icon: React.ElementType;
 }
 
-// Translations
-const TRANSLATIONS = {
-  en: {
-    loading: 'Loading your interview...',
-    seoTitle: 'Business Plan Interview | Sqordia',
-    seoDescription: 'Answer questions to create your business plan with AI assistance.',
-    backToDashboard: 'Back to Dashboard',
-    answered: 'answered',
-    sections: 'Sections',
-    placeholder: 'Start typing your answer...',
-    previous: 'Previous',
-    next: 'Next',
-    questionOf: 'Question {current} of {total}',
-    sectionOf: 'Section {current} of {total}: {name}',
-    sectionProgress: '{answered} of {total} questions answered',
-    generatePlan: 'Generate Plan',
-    saveError: 'Failed to save. Please try again.',
-    shortcuts: 'Shortcuts',
-    shortcutsTitle: 'Keyboard Shortcuts',
-    shortcutNext: 'Next section',
-    shortcutPrev: 'Previous section',
-    shortcutCoach: 'Open AI Coach',
-    shortcutSave: 'Save all answers',
-    shortcutClose: 'Close dialog',
-    shortcutHelp: 'Show shortcuts',
-    pressKey: 'Press',
-    toClose: 'to close',
-    autoSaving: 'Saving...',
-    autoSaved: 'Saved',
-    autoSaveError: 'Save failed',
-    unsavedChanges: 'Unsaved changes',
-    proactiveTitle: 'Need help getting started?',
-    proactiveDraft: 'Draft an answer for me',
-    proactiveHint: 'Give me a hint',
-    generatePreview: 'Generate Preview',
-    generatePreviewTooltip: 'Answer at least 5 questions to generate a preview',
-    generatePreviewTitle: 'Generate with partial answers?',
-    generatePreviewBody: "You've answered {answered} of {total} questions. The AI will generate your plan with available information. You can always regenerate later with more answers.",
-    generatePreviewConfirm: 'Generate Now',
-    generatePreviewCancel: 'Keep Answering',
-    welcomeHeading: "Let's Build Your Business Plan",
-    welcomeSubtext: "We'll guide you through 7 sections about your business. This usually takes 15-20 minutes.",
-    welcomeSaveNote: 'You can save and come back anytime',
-    welcomeEstimate: '15-20 min',
-    welcomeCta: "Let's Begin",
-    welcomeSections: 'What we will cover',
-    interviewComplete: 'Interview Complete!',
-    interviewCompleteDesc: 'You can now generate your business plan.',
-    viewCompanyContext: 'View company context',
-    context: 'Context',
+// Helper to create a property-access proxy over the global t() function for interview keys
+function createInterviewTranslations(t: (key: string) => string) {
+  return {
+    loading: t('interview.loading'),
+    seoTitle: t('interview.seoTitle'),
+    seoDescription: t('interview.seoDescription'),
+    backToDashboard: t('interview.backToDashboard'),
+    answered: t('interview.answered'),
+    sections: t('interview.sections'),
+    placeholder: t('interview.placeholder'),
+    previous: t('interview.previous'),
+    next: t('interview.next'),
+    questionOf: t('interview.questionOf'),
+    sectionOf: t('interview.sectionOf'),
+    sectionProgress: t('interview.sectionProgress'),
+    generatePlan: t('interview.generatePlan'),
+    saveError: t('interview.saveError'),
+    shortcuts: t('interview.shortcuts'),
+    shortcutsTitle: t('interview.shortcutsTitle'),
+    shortcutNext: t('interview.shortcutNext'),
+    shortcutPrev: t('interview.shortcutPrev'),
+    shortcutCoach: t('interview.shortcutCoach'),
+    shortcutSave: t('interview.shortcutSave'),
+    shortcutClose: t('interview.shortcutClose'),
+    shortcutHelp: t('interview.shortcutHelp'),
+    pressKey: t('interview.pressKey'),
+    toClose: t('interview.toClose'),
+    autoSaving: t('interview.autoSaving'),
+    autoSaved: t('interview.autoSaved'),
+    autoSaveError: t('interview.autoSaveError'),
+    unsavedChanges: t('interview.unsavedChanges'),
+    proactiveTitle: t('interview.proactiveTitle'),
+    proactiveDraft: t('interview.proactiveDraft'),
+    proactiveHint: t('interview.proactiveHint'),
+    generatePreview: t('interview.generatePreview'),
+    generatePreviewTooltip: t('interview.generatePreviewTooltip'),
+    generatePreviewTitle: t('interview.generatePreviewTitle'),
+    generatePreviewBody: t('interview.generatePreviewBody'),
+    generatePreviewConfirm: t('interview.generatePreviewConfirm'),
+    generatePreviewCancel: t('interview.generatePreviewCancel'),
+    welcomeHeading: t('interview.welcomeHeading'),
+    welcomeSubtext: t('interview.welcomeSubtext'),
+    welcomeSaveNote: t('interview.welcomeSaveNote'),
+    welcomeEstimate: t('interview.welcomeEstimate'),
+    welcomeCta: t('interview.welcomeCta'),
+    welcomeSections: t('interview.welcomeSections'),
+    interviewComplete: t('interview.interviewComplete'),
+    interviewCompleteDesc: t('interview.interviewCompleteDesc'),
+    viewCompanyContext: t('interview.viewCompanyContext'),
+    context: t('interview.context'),
+    questionsAnswered: t('interview.questionsAnswered'),
+  };
+}
+
+// Section intro messages (extracted from AIInterviewer)
+const SECTION_INTROS: Record<string, { en: string; fr: string }> = {
+  'Identity & Vision': {
+    en: "Let's start with the foundation of your business. This section helps define who you are.",
+    fr: "Commençons par les fondations de votre entreprise. Cette section aide à définir qui vous êtes.",
   },
-  fr: {
-    loading: 'Chargement de votre entrevue...',
-    seoTitle: "Entrevue plan d'affaires | Sqordia",
-    seoDescription: "Répondez aux questions pour créer votre plan d'affaires avec l'aide de l'IA.",
-    backToDashboard: 'Retour au tableau de bord',
-    answered: 'répondu',
-    sections: 'Sections',
-    placeholder: 'Commencez à taper votre réponse...',
-    previous: 'Précédent',
-    next: 'Suivant',
-    questionOf: 'Question {current} sur {total}',
-    sectionOf: 'Section {current} sur {total} : {name}',
-    sectionProgress: '{answered} sur {total} questions répondues',
-    generatePlan: 'Générer le plan',
-    saveError: 'Échec de la sauvegarde. Veuillez réessayer.',
-    autoSaving: 'Sauvegarde...',
-    autoSaved: 'Sauvegardé',
-    autoSaveError: 'Échec de sauvegarde',
-    unsavedChanges: 'Modifications non sauvegardées',
-    shortcuts: 'Raccourcis',
-    shortcutsTitle: 'Raccourcis clavier',
-    shortcutNext: 'Section suivante',
-    shortcutPrev: 'Section précédente',
-    shortcutCoach: 'Ouvrir le coach IA',
-    shortcutSave: 'Sauvegarder les réponses',
-    shortcutClose: 'Fermer le dialogue',
-    shortcutHelp: 'Afficher les raccourcis',
-    pressKey: 'Appuyez sur',
-    toClose: 'pour fermer',
-    proactiveTitle: 'Besoin d\'aide pour commencer\u00a0?',
-    proactiveDraft: 'Rédiger une réponse pour moi',
-    proactiveHint: 'Donnez-moi un indice',
-    generatePreview: 'Aperçu',
-    generatePreviewTooltip: 'Répondez à au moins 5 questions pour générer un aperçu',
-    generatePreviewTitle: 'Générer avec des réponses partielles ?',
-    generatePreviewBody: "Vous avez répondu à {answered} des {total} questions. L'IA générera votre plan avec les informations disponibles. Vous pourrez toujours régénérer plus tard avec davantage de réponses.",
-    generatePreviewConfirm: 'Générer maintenant',
-    generatePreviewCancel: 'Continuer à répondre',
-    welcomeHeading: "Construisons votre plan d'affaires",
-    welcomeSubtext: "Nous vous guiderons à travers 7 sections sur votre entreprise. Cela prend généralement 15 à 20 minutes.",
-    welcomeSaveNote: 'Vous pouvez sauvegarder et revenir à tout moment',
-    welcomeEstimate: '15-20 min',
-    welcomeCta: 'Commencer',
-    welcomeSections: 'Ce que nous allons couvrir',
-    interviewComplete: 'Entrevue complétée !',
-    interviewCompleteDesc: "Vous pouvez maintenant générer votre plan d'affaires.",
-    viewCompanyContext: 'Voir le contexte entreprise',
-    context: 'Contexte',
+  'The Offering': {
+    en: "Now let's explore what makes your product or service unique.",
+    fr: "Explorons maintenant ce qui rend votre produit ou service unique.",
+  },
+  'Market Analysis': {
+    en: "Understanding your market is crucial. Let's map out your opportunity.",
+    fr: "Comprendre votre marché est crucial. Cartographions votre opportunité.",
+  },
+  'Operations & People': {
+    en: "Time to think about how you'll run things day-to-day.",
+    fr: "Il est temps de réfléchir à la gestion quotidienne.",
+  },
+  'Financials & Risks': {
+    en: "Let's get into the numbers - this is where your plan becomes bankable.",
+    fr: "Passons aux chiffres - c'est ici que votre plan devient finançable.",
+  },
+  'Team': {
+    en: "Great teams build great companies. Tell me about yours.",
+    fr: "Les grandes équipes bâtissent de grandes entreprises. Parlez-moi de la vôtre.",
+  },
+  'Financials': {
+    en: "Final stretch! Let's nail down your financial projections.",
+    fr: "Dernière ligne droite! Finalisons vos projections financières.",
   },
 };
 
@@ -195,8 +182,9 @@ const STEPS: StepInfo[] = [
 function InterviewQuestionnaireContent() {
   const { planId } = useParams();
   const navigate = useNavigate();
-  const { theme, language, toggleTheme } = useTheme();
-  const t = TRANSLATIONS[language as keyof typeof TRANSLATIONS] || TRANSLATIONS.en;
+  const { theme, language, toggleTheme, t: globalT } = useTheme();
+  const t = useMemo(() => createInterviewTranslations(globalT), [language, globalT]);
+  const toast = useToast();
 
   // Get context for global answer tracking and business context
   const {
@@ -228,6 +216,9 @@ function InterviewQuestionnaireContent() {
   const [showPreviewConfirm, setShowPreviewConfirm] = useState(false);
   const [showCompletionBanner, setShowCompletionBanner] = useState(false);
   const [showProfileContext, setShowProfileContext] = useState(false);
+
+  // Answer completeness scores (from AI evaluation)
+  const [completenessScores, setCompletenessScores] = useState<Record<string, number>>({});
 
   // Proactive AI Coach suggestion state
   const [showProactiveSuggestion, setShowProactiveSuggestion] = useState(false);
@@ -293,6 +284,34 @@ function InterviewQuestionnaireContent() {
   const answeredWithSkipped = answeredCount + skippedQuestions.length;
   const progressPercent = totalWithSkipped > 0 ? (answeredWithSkipped / totalWithSkipped) * 100 : 0;
 
+  // Time estimate: ~2 min per unanswered question
+  const remainingQuestions = questions.length - answeredCount;
+  const estimatedMinutes = Math.max(1, Math.round(remainingQuestions * 2));
+
+  // Section data for sidebar
+  const sidebarSections = useMemo(() =>
+    activeSections.map(s => {
+      const sectionQ = questionsByStep.get(s.number) || [];
+      return {
+        number: s.number,
+        title: s.title,
+        titleFr: s.titleFr,
+        icon: s.icon,
+        questionCount: sectionQ.length,
+        answeredCount: sectionQ.filter(q => (answers[q.id] || '').trim().length >= 10).length,
+      };
+    }),
+    [activeSections, questionsByStep, answers]
+  );
+
+  // Section intro message
+  const sectionIntro = useMemo(() => {
+    if (!currentSection) return '';
+    const intros = SECTION_INTROS[currentSection.title];
+    if (!intros) return '';
+    return language === 'fr' ? intros.fr : intros.en;
+  }, [currentSection, language]);
+
   // Effective question for AI Coach (active question or first in section)
   const effectiveCoachQuestion = focusedQuestion || currentSectionQuestions[0] || null;
 
@@ -302,7 +321,7 @@ function InterviewQuestionnaireContent() {
     if (storedPersona) {
       setPersona(storedPersona);
     } else {
-      apiClient.get('/api/v1/auth/me')
+      apiClient.get<any>('/api/v1/auth/me')
         .then(response => {
           const userPersona = response.data?.persona || response.data?.value?.persona;
           if (userPersona) {
@@ -314,18 +333,40 @@ function InterviewQuestionnaireContent() {
     }
   }, []);
 
-  // Load current user and org profile
+  // Load current user and org profile (tied to business plan's organization)
   useEffect(() => {
     authService.getCurrentUser()
       .then(userData => setUser(userData))
       .catch(console.error);
 
-    if (adaptiveEnabled) {
+    if (planId) {
+      // Fetch the plan's organizationId, then load that org's profile
+      businessPlanService.getBusinessPlan(planId)
+        .then(plan => {
+          if (plan.organizationId) {
+            return organizationService.getMyOrganizationProfile(plan.organizationId);
+          }
+          return organizationService.getMyOrganizationProfile();
+        })
+        .then(profile => setOrgProfile(profile))
+        .catch(() => {});
+    } else {
       organizationService.getMyOrganizationProfile()
         .then(profile => setOrgProfile(profile))
         .catch(() => {});
     }
-  }, [adaptiveEnabled]);
+  }, [planId]);
+
+  // Warn user about unsaved changes before leaving
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (autoSaveStatus === 'dirty' || autoSaveStatus === 'saving') {
+        e.preventDefault();
+      }
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [autoSaveStatus]);
 
   // Fetch questions
   useEffect(() => {
@@ -341,7 +382,7 @@ function InterviewQuestionnaireContent() {
     setError(null);
 
     try {
-      const response = await apiClient.get(`/api/v1/questionnaire/templates/${persona}?language=${language}`);
+      const response = await apiClient.get<any>(`/api/v1/questionnaire/templates/${persona}?language=${language}`);
 
       // Fetch existing responses
       let existingResponses: Record<string, string> = {};
@@ -411,7 +452,7 @@ function InterviewQuestionnaireContent() {
 
       if (adaptiveEnabled && orgProfile) {
         try {
-          const adaptiveResponse = await apiClient.get(
+          const adaptiveResponse = await apiClient.get<any>(
             `/api/v1/business-plans/${planId}/adaptive-interview/questions?language=${language}`
           );
           const adaptiveData = adaptiveResponse.data?.value || adaptiveResponse.data;
@@ -463,6 +504,10 @@ function InterviewQuestionnaireContent() {
     } catch (err: any) {
       console.error('Failed to fetch questions:', err);
       setError(getUserFriendlyError(err, 'load'));
+      toast.error(
+        language === 'fr' ? 'Erreur de chargement' : 'Loading Error',
+        getUserFriendlyError(err, 'load')
+      );
     } finally {
       setLoading(false);
     }
@@ -491,6 +536,10 @@ function InterviewQuestionnaireContent() {
         ? 'Échec de la sauvegarde. Veuillez réessayer.'
         : 'Failed to save. Please try again.';
       setError(errorMsg);
+      toast.error(
+        language === 'fr' ? 'Erreur de sauvegarde' : 'Save Error',
+        errorMsg
+      );
       return false;
     } finally {
       setSaving(null);
@@ -730,7 +779,7 @@ function InterviewQuestionnaireContent() {
         ? buildContextSummary(question.questionNumber, language)
         : '';
 
-      const response = await apiClient.post('/api/v1/ai/transform-answer', {
+      const response = await apiClient.post<any>('/api/v1/ai/transform-answer', {
         questionId,
         questionNumber: question?.questionNumber,
         questionText: question?.questionText,
@@ -742,6 +791,19 @@ function InterviewQuestionnaireContent() {
         previousAnswers,
         businessName,
         businessSector,
+        organizationContext: orgProfile ? {
+          companyName: orgProfile.name,
+          industry: orgProfile.industry,
+          sector: orgProfile.sector,
+          businessStage: orgProfile.businessStage,
+          teamSize: orgProfile.teamSize,
+          fundingStatus: orgProfile.fundingStatus,
+          targetMarket: orgProfile.targetMarket,
+          city: orgProfile.city,
+          province: orgProfile.province,
+          country: orgProfile.country,
+          goals: orgProfile.goalsJson,
+        } : undefined,
       });
 
       const transformedText = response.data?.transformedText || response.data?.value?.transformedText ||
@@ -752,6 +814,10 @@ function InterviewQuestionnaireContent() {
       }
     } catch (err) {
       console.error('AI Action failed:', err);
+      toast.error(
+        language === 'fr' ? 'Erreur IA' : 'AI Error',
+        language === 'fr' ? 'L\'action IA a échoué. Veuillez réessayer.' : 'AI action failed. Please try again.'
+      );
     } finally {
       setAiPolishingIds(prev => {
         const next = new Set(prev);
@@ -759,11 +825,31 @@ function InterviewQuestionnaireContent() {
         return next;
       });
     }
-  }, [answers, answersByNumber, questions, persona, language, getBusinessName, getBusinessSector, buildContextSummary, setContextAnswer]);
+  }, [answers, answersByNumber, questions, persona, language, getBusinessName, getBusinessSector, buildContextSummary, setContextAnswer, orgProfile]);
 
   // Focus mode: continue to next unanswered question
   const handleContinueQuestion = useCallback((questionId: string) => {
     handleSave(questionId);
+
+    // Evaluate answer completeness in the background (non-blocking)
+    const question = questions.find(q => q.id === questionId);
+    const answerText = answers[questionId] || '';
+    if (question && answerText.trim().length >= 10) {
+      evaluateAnswerCompleteness(
+        question.questionNumber ?? 0,
+        question.questionText,
+        answerText,
+        language,
+        persona || 'entrepreneur',
+      )
+        .then(result => {
+          setCompletenessScores(prev => ({ ...prev, [questionId]: result.completenessScore }));
+        })
+        .catch(() => {
+          // Fail silently — don't show the ring if evaluation is unavailable
+        });
+    }
+
     const currentIdx = currentSectionQuestions.findIndex(q => q.id === questionId);
     const nextQuestion = currentSectionQuestions.slice(currentIdx + 1).find(q =>
       (answers[q.id] || '').trim().length < 10
@@ -773,7 +859,7 @@ function InterviewQuestionnaireContent() {
     } else {
       setActiveQuestionId(null);
     }
-  }, [currentSectionQuestions, answers, handleSave]);
+  }, [currentSectionQuestions, answers, handleSave, questions, language, persona]);
 
   // Focus mode: skip to next question
   const handleSkipQuestion = useCallback((questionId: string) => {
@@ -862,7 +948,7 @@ function InterviewQuestionnaireContent() {
   }, [showShortcuts, isCoachOpen, goToNextSection, goToPreviousSection, flushAllSectionAnswers]);
 
   // Theme colors - refined palette
-  const bgColor = theme === 'dark' ? 'bg-slate-950' : 'bg-gradient-to-br from-slate-50 via-white to-orange-50/30';
+  const bgColor = theme === 'dark' ? 'bg-slate-950' : 'bg-gradient-to-br from-slate-50 via-white to-momentum-orange/5';
   const cardBg = theme === 'dark' ? 'bg-slate-900/80 backdrop-blur-sm' : 'bg-white/80 backdrop-blur-sm';
   const borderColor = theme === 'dark' ? 'border-slate-800' : 'border-slate-200/80';
   const textColor = theme === 'dark' ? 'text-slate-100' : 'text-slate-900';
@@ -873,10 +959,10 @@ function InterviewQuestionnaireContent() {
       <div className={`min-h-screen ${bgColor} flex items-center justify-center`}>
         <div className="text-center">
           <div className="relative">
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-orange-500 to-amber-400 flex items-center justify-center shadow-lg shadow-orange-500/30 mx-auto mb-6">
+            <div className="w-16 h-16 rounded-2xl bg-momentum-orange flex items-center justify-center shadow-lg shadow-momentum-orange/20 mx-auto mb-6">
               <Loader2 className="w-8 h-8 animate-spin text-white" />
             </div>
-            <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-orange-500 to-amber-400 blur-xl opacity-30 animate-pulse" />
+            <div className="absolute inset-0 rounded-2xl bg-momentum-orange blur-xl opacity-20 animate-pulse" />
           </div>
           <p className={`font-medium ${textColor} mb-1`}>{t.loading}</p>
           <p className={`text-sm ${mutedColor}`}>Preparing your interview...</p>
@@ -901,29 +987,21 @@ function InterviewQuestionnaireContent() {
             {/* Back button */}
             <button
               onClick={() => { flushAllSectionAnswers(); navigate('/dashboard'); }}
-              className={`flex items-center gap-2 px-3 py-2 rounded-xl ${mutedColor} hover:text-orange-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all`}
+              className={`flex items-center gap-2 px-3 py-2 rounded-xl ${mutedColor} hover:text-momentum-orange hover:bg-slate-100 dark:hover:bg-slate-800 transition-all`}
             >
               <ArrowLeft size={18} />
               <span className="text-sm font-medium hidden sm:inline">{t.backToDashboard}</span>
             </button>
 
-            {/* Section Stepper */}
-            <div className="flex-1 flex justify-center hidden sm:flex">
-              <SectionStepper
-                steps={activeSections.map((s, idx) => ({ number: idx + 1, title: s.title, titleFr: s.titleFr ?? s.title }))}
-                currentIndex={currentSectionIndex}
-                completedIndices={new Set(
-                  activeSections
-                    .map((s, idx) => ({ s, idx }))
-                    .filter(({ s }) => (questionsByStep.get(s.number) || []).every(q => (answers[q.id] || '').trim().length >= 10))
-                    .map(({ idx }) => idx)
-                )}
-                onStepClick={(idx) => {
-                  setSectionDirection(idx > currentSectionIndex ? 1 : -1);
-                  flushAllSectionAnswers();
-                  setCurrentSectionIndex(idx);
-                }}
-              />
+            {/* Progress percentage — desktop only */}
+            <div className="hidden sm:flex items-center gap-2 flex-1 justify-center">
+              <div className="h-1.5 w-40 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden">
+                <div
+                  className="h-full bg-momentum-orange rounded-full transition-all duration-700 ease-out"
+                  style={{ width: `${globalPercent}%` }}
+                />
+              </div>
+              <span className={`text-xs font-semibold ${textColor}`}>{globalPercent}%</span>
             </div>
 
             {/* Auto-save status indicator */}
@@ -936,7 +1014,7 @@ function InterviewQuestionnaireContent() {
                   </span>
                 )}
                 {autoSaveStatus === 'saving' && (
-                  <span className="flex items-center gap-1 text-orange-500">
+                  <span className="flex items-center gap-1 text-momentum-orange">
                     <Loader2 size={12} className="animate-spin" />
                     {t.autoSaving}
                   </span>
@@ -956,9 +1034,23 @@ function InterviewQuestionnaireContent() {
               </div>
             )}
 
+            {/* Time estimate - desktop */}
+            {remainingQuestions > 0 && (
+              <span className={`hidden sm:flex items-center gap-1 text-xs ${mutedColor}`}>
+                <Clock size={12} />
+                ~{estimatedMinutes} min
+              </span>
+            )}
+
             {/* Mobile progress */}
             <div className="flex items-center gap-2 sm:hidden">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center shadow-lg shadow-orange-500/20">
+              {remainingQuestions > 0 && (
+                <span className={`text-[10px] ${mutedColor} flex items-center gap-1`}>
+                  <Clock size={10} />
+                  ~{estimatedMinutes} min
+                </span>
+              )}
+              <div className="w-10 h-10 rounded-full bg-momentum-orange flex items-center justify-center shadow-lg shadow-momentum-orange/20">
                 <span className="text-white text-xs font-bold">{Math.round(progressPercent)}%</span>
               </div>
             </div>
@@ -974,7 +1066,7 @@ function InterviewQuestionnaireContent() {
                   flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm font-medium
                   transition-all duration-200
                   ${answeredCount >= 5
-                    ? `border ${borderColor} ${textColor} hover:bg-gradient-to-r hover:from-orange-500 hover:to-amber-400 hover:text-white hover:border-transparent hover:shadow-md hover:shadow-orange-500/25`
+                    ? `border ${borderColor} ${textColor} hover:bg-momentum-orange hover:text-white hover:border-transparent hover:shadow-md hover:shadow-momentum-orange/20`
                     : `border border-slate-200 dark:border-slate-700 text-slate-400 dark:text-slate-500 cursor-not-allowed opacity-60`
                   }
                 `}
@@ -1000,7 +1092,7 @@ function InterviewQuestionnaireContent() {
                 className={`
                   p-2.5 rounded-xl transition-all duration-200
                   ${answeredCount >= 5
-                    ? `${mutedColor} hover:bg-gradient-to-r hover:from-orange-500 hover:to-amber-400 hover:text-white hover:shadow-md hover:shadow-orange-500/25`
+                    ? `${mutedColor} hover:bg-momentum-orange hover:text-white hover:shadow-md hover:shadow-momentum-orange/20`
                     : `text-slate-400 dark:text-slate-500 cursor-not-allowed opacity-60`
                   }
                 `}
@@ -1018,7 +1110,7 @@ function InterviewQuestionnaireContent() {
             <div className="flex items-center gap-1">
               <button
                 onClick={() => setShowProfileContext(true)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm ${mutedColor} hover:text-orange-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors`}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm ${mutedColor} hover:text-momentum-orange hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors`}
                 title={t.viewCompanyContext}
               >
                 <Building2 className="w-4 h-4" />
@@ -1029,43 +1121,90 @@ function InterviewQuestionnaireContent() {
 
               <button
                 onClick={toggleTheme}
-                className={`p-2.5 rounded-xl transition-all hover:bg-slate-100 dark:hover:bg-slate-800 ${mutedColor} hover:text-orange-500`}
+                className={`p-2.5 rounded-xl transition-all hover:bg-slate-100 dark:hover:bg-slate-800 ${mutedColor} hover:text-momentum-orange`}
                 aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
               >
                 {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
               </button>
 
               {user && (
-                <Link
-                  to="/profile"
-                  className="flex items-center gap-2 px-2 py-1.5 rounded-xl transition-all hover:bg-slate-100 dark:hover:bg-slate-800"
-                >
-                  {user.profilePictureUrl ? (
-                    <img
-                      src={user.profilePictureUrl}
-                      alt={user.firstName || 'User'}
-                      className="w-8 h-8 rounded-full object-cover ring-2 ring-white dark:ring-slate-800 shadow-sm"
-                    />
-                  ) : (
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center ring-2 ring-white dark:ring-slate-800 shadow-sm">
-                      <User size={14} className="text-white" />
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button className="flex items-center gap-2 px-2 py-1.5 rounded-xl transition-all hover:bg-slate-100 dark:hover:bg-slate-800 outline-none">
+                      {user.profilePictureUrl ? (
+                        <img
+                          src={user.profilePictureUrl}
+                          alt={user.firstName || 'User'}
+                          className="w-8 h-8 rounded-full object-cover ring-2 ring-white dark:ring-slate-800 shadow-sm"
+                        />
+                      ) : (
+                        <div className="w-8 h-8 rounded-full bg-momentum-orange flex items-center justify-center ring-2 ring-white dark:ring-slate-800 shadow-sm">
+                          <User size={14} className="text-white" />
+                        </div>
+                      )}
+                      <span className={`text-sm font-medium hidden md:inline ${textColor}`}>
+                        {user.firstName || user.email?.split('@')[0]}
+                      </span>
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-52">
+                    <div className="px-3 py-2">
+                      <p className="text-sm font-semibold truncate">
+                        {user.firstName} {user.lastName}
+                      </p>
+                      <p className="text-xs text-muted-foreground truncate">{user.email}</p>
                     </div>
-                  )}
-                  <span className={`text-sm font-medium hidden md:inline ${textColor}`}>
-                    {user.firstName || user.email?.split('@')[0]}
-                  </span>
-                </Link>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                      <Link to="/profile" className="flex items-center gap-2 cursor-pointer">
+                        <User size={14} />
+                        {language === 'fr' ? 'Profil' : 'Profile'}
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to="/subscription" className="flex items-center gap-2 cursor-pointer">
+                        <CreditCard size={14} />
+                        {language === 'fr' ? 'Abonnement' : 'Billing'}
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={async () => {
+                        await authService.logout();
+                        navigate('/login');
+                      }}
+                      className="flex items-center gap-2 cursor-pointer text-red-600 dark:text-red-400 focus:text-red-600 dark:focus:text-red-400"
+                    >
+                      <LogOut size={14} />
+                      {language === 'fr' ? 'Déconnexion' : 'Logout'}
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               )}
             </div>
           </div>
         </div>
       </header>
 
-      {/* Global Progress Bar */}
-      <ProgressBar percent={globalPercent} />
+      {/* Main Content — Two-column layout */}
+      <div className="max-w-6xl mx-auto flex gap-6 px-4 md:px-6 pb-24 md:pb-8">
+        {/* Section Sidebar */}
+        {!showWelcome && (
+          <SectionSidebar
+            sections={sidebarSections}
+            currentIndex={currentSectionIndex}
+            globalPercent={globalPercent}
+            estimatedMinutes={estimatedMinutes}
+            onSectionClick={(idx) => {
+              setSectionDirection(idx > currentSectionIndex ? 1 : -1);
+              flushAllSectionAnswers();
+              setCurrentSectionIndex(idx);
+            }}
+          />
+        )}
 
-      {/* Main Content */}
-      <div className="max-w-5xl mx-auto px-4 md:px-6 py-6 md:py-8 lg:pr-16 pb-24 md:pb-8">
+        {/* Content area */}
+        <div className="flex-1 min-w-0 py-6 md:py-8">
         <AnimatePresence mode="wait">
         {showWelcome ? (
           <motion.div
@@ -1076,76 +1215,87 @@ function InterviewQuestionnaireContent() {
             transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
             className="flex items-center justify-center min-h-[60vh]"
           >
-            <div className={`w-full max-w-2xl ${cardBg} rounded-3xl border ${borderColor} shadow-xl p-8 md:p-12`}>
-              {/* Heading */}
-              <div className="text-center mb-8">
-                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-orange-500 to-amber-400 flex items-center justify-center shadow-lg shadow-orange-500/30 mx-auto mb-6">
-                  <Rocket className="w-8 h-8 text-white" />
-                </div>
-                <h1 className={`text-2xl md:text-3xl font-bold ${textColor} mb-3`}>
-                  {t.welcomeHeading}
-                </h1>
-                <p className={`text-base ${mutedColor} max-w-md mx-auto leading-relaxed`}>
-                  {t.welcomeSubtext}
-                </p>
+            <div className={`w-full max-w-2xl ${cardBg} rounded-3xl border ${borderColor} shadow-xl overflow-hidden`}>
+              {/* Hero header with gradient */}
+              <div className="relative px-8 md:px-12 pt-10 pb-8 text-center overflow-hidden">
+                {/* Decorative background glow */}
+                <div className="absolute inset-0 bg-gradient-to-b from-momentum-orange/5 via-transparent to-transparent dark:from-momentum-orange/10" />
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-32 bg-momentum-orange/8 dark:bg-momentum-orange/15 rounded-full blur-3xl" />
+
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1, duration: 0.4 }}
+                  className="relative"
+                >
+                  <div className="w-16 h-16 rounded-2xl bg-momentum-orange flex items-center justify-center shadow-lg shadow-momentum-orange/20 mx-auto mb-5">
+                    <Rocket className="w-8 h-8 text-white" />
+                  </div>
+                  <h1 className={`text-2xl md:text-3xl font-bold ${textColor} mb-2`}>
+                    {t.welcomeHeading}
+                  </h1>
+                  <p className={`text-base ${mutedColor} max-w-sm mx-auto leading-relaxed`}>
+                    {t.welcomeSubtext}
+                  </p>
+
+                  {/* Time estimate badge */}
+                  <div className="flex justify-center mt-5">
+                    <div className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium ${theme === 'dark' ? 'bg-slate-800 text-slate-300 border border-slate-700' : 'bg-white text-slate-600 border border-slate-200 shadow-sm'}`}>
+                      <Clock size={14} className="text-momentum-orange" />
+                      {t.welcomeEstimate}
+                    </div>
+                  </div>
+                </motion.div>
               </div>
 
-              {/* Time estimate badge */}
-              <div className="flex justify-center mb-8">
-                <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full ${theme === 'dark' ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-600'}`}>
-                  <Clock size={15} className="text-orange-500" />
-                  <span className="text-sm font-medium">{t.welcomeEstimate}</span>
-                </div>
-              </div>
-
-              {/* Section timeline */}
-              <div className="mb-8">
-                <h3 className={`text-sm font-semibold ${mutedColor} uppercase tracking-wider mb-4 text-center`}>
+              {/* Section grid */}
+              <div className="px-8 md:px-12 pb-4">
+                <h3 className={`text-[11px] font-semibold ${mutedColor} uppercase tracking-[0.15em] mb-3 text-center`}>
                   {t.welcomeSections}
                 </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 gap-2">
                   {STEPS.map((step, idx) => {
                     const StepIcon = step.icon;
+                    const isOdd = STEPS.length % 2 !== 0 && idx === STEPS.length - 1;
                     return (
                       <motion.div
                         key={step.number}
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.1 + idx * 0.06, duration: 0.3 }}
-                        className={`flex items-center gap-3 px-4 py-3 rounded-xl ${theme === 'dark' ? 'bg-slate-800/60' : 'bg-slate-50/80'} border ${theme === 'dark' ? 'border-slate-700/50' : 'border-slate-200/60'}`}
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.15 + idx * 0.05, duration: 0.3 }}
+                        className={`group flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-colors ${isOdd ? 'col-span-2 max-w-[50%] mx-auto w-full' : ''} ${theme === 'dark' ? 'bg-slate-800/40 hover:bg-slate-800/70 border border-slate-700/40' : 'bg-slate-50/60 hover:bg-slate-100/80 border border-slate-200/50'}`}
                       >
-                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${theme === 'dark' ? 'bg-slate-700 text-orange-400' : 'bg-orange-100 text-orange-600'}`}>
-                          <StepIcon size={16} />
+                        <div className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors ${theme === 'dark' ? 'bg-slate-700/80 text-momentum-orange group-hover:bg-slate-700' : 'bg-momentum-orange/10 text-momentum-orange group-hover:bg-momentum-orange/15'}`}>
+                          <StepIcon size={14} />
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <span className={`text-sm font-medium ${textColor} truncate block`}>
-                            {language === 'fr' ? step.titleFr : step.title}
-                          </span>
-                        </div>
-                        <span className={`text-xs font-medium ${mutedColor}`}>{step.number}/7</span>
+                        <span className={`text-sm font-medium ${textColor} truncate flex-1`}>
+                          {language === 'fr' ? step.titleFr : step.title}
+                        </span>
+                        <span className={`text-[11px] font-semibold tabular-nums ${theme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}>{step.number}/{STEPS.length}</span>
                       </motion.div>
                     );
                   })}
                 </div>
               </div>
 
-              {/* Save note */}
-              <div className="flex items-center justify-center gap-2 mb-8">
-                <BookmarkCheck size={16} className="text-emerald-500" />
-                <span className={`text-sm ${mutedColor}`}>{t.welcomeSaveNote}</span>
-              </div>
+              {/* Footer: save note + CTA */}
+              <div className="px-8 md:px-12 pt-4 pb-8">
+                <div className={`flex items-center justify-center gap-2 mb-6 px-4 py-2 rounded-lg ${theme === 'dark' ? 'bg-emerald-950/30' : 'bg-emerald-50/60'}`}>
+                  <BookmarkCheck size={14} className="text-emerald-500 flex-shrink-0" />
+                  <span className={`text-xs ${theme === 'dark' ? 'text-emerald-400/80' : 'text-emerald-700/70'}`}>{t.welcomeSaveNote}</span>
+                </div>
 
-              {/* CTA Button */}
-              <div className="text-center">
-                <motion.button
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => setShowWelcome(false)}
-                  className="inline-flex items-center gap-3 px-10 py-4 rounded-2xl font-semibold text-lg bg-gradient-to-r from-orange-500 to-amber-400 text-white shadow-lg shadow-orange-500/30 hover:shadow-xl hover:shadow-orange-500/40 hover:from-orange-600 hover:to-amber-500 transition-all duration-200"
-                >
-                  {t.welcomeCta}
-                  <ArrowRight size={20} />
-                </motion.button>
+                <div className="text-center">
+                  <motion.button
+                    whileHover={{ scale: 1.02, y: -1 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => setShowWelcome(false)}
+                    className="inline-flex items-center gap-3 px-10 py-3.5 rounded-2xl font-semibold text-base bg-momentum-orange text-white shadow-lg shadow-momentum-orange/20 hover:bg-[#E56000] hover:shadow-xl hover:shadow-momentum-orange/30 transition-all duration-200"
+                  >
+                    {t.welcomeCta}
+                    <ArrowRight size={18} />
+                  </motion.button>
+                </div>
               </div>
             </div>
           </motion.div>
@@ -1235,28 +1385,32 @@ function InterviewQuestionnaireContent() {
                   <div className="flex items-center gap-3 mt-1">
                     <p className={`text-sm ${mutedColor}`}>
                       {sectionAnsweredCount} / {currentSectionQuestions.length}{' '}
-                      {language === 'fr' ? 'questions répondues' : 'questions answered'}
+                      {t.questionsAnswered}
                     </p>
                     <div className="flex gap-1">
                       {currentSectionQuestions.map((_, i) => (
                         <div key={i} className={`w-2 h-2 rounded-full ${
-                          i < sectionAnsweredCount ? 'bg-orange-500' : theme === 'dark' ? 'bg-slate-700' : 'bg-slate-200'
+                          i < sectionAnsweredCount ? 'bg-momentum-orange' : theme === 'dark' ? 'bg-slate-700' : 'bg-slate-200'
                         }`} />
                       ))}
                     </div>
                   </div>
                 </div>
 
-                {/* AI Interviewer - Section-level intro */}
-                <AIInterviewer
-                  questionText=""
-                  sectionTitle={language === 'fr' ? (currentSection.titleFr || currentSection.title) : currentSection.title}
-                  questionNumber={1}
-                  totalQuestions={currentSectionQuestions.length}
-                  isAnswered={sectionAnsweredCount === currentSectionQuestions.length}
-                  persona={persona || 'Entrepreneur'}
-                  sectionMode={true}
-                />
+                {/* Profile completion nudge */}
+                {currentSectionIndex === 0 && (
+                  <div className="mb-4">
+                    <ProfileCompletionBanner variant="interview" orgProfile={orgProfile} threshold={80} />
+                  </div>
+                )}
+
+                {/* Section intro banner */}
+                {sectionIntro && (
+                  <p className={`flex items-center gap-2 text-sm ${mutedColor} mb-6`}>
+                    <Sparkles size={14} className="text-momentum-orange flex-shrink-0" />
+                    {sectionIntro}
+                  </p>
+                )}
 
                 {/* Questions in focus mode */}
                 <div className="space-y-2">
@@ -1284,6 +1438,7 @@ function InterviewQuestionnaireContent() {
                           setActiveQuestionId(q.id);
                           setIsCoachOpen(true);
                         }}
+                        completenessScore={completenessScores[q.id]}
                       />
                     );
                   })}
@@ -1309,7 +1464,7 @@ function InterviewQuestionnaireContent() {
               {currentSectionIndex < activeSections.length - 1 ? (
                 <button
                   onClick={goToNextSection}
-                  className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all bg-gradient-to-r from-orange-500 to-amber-400 text-white shadow-md hover:shadow-lg"
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all bg-momentum-orange text-white shadow-md shadow-momentum-orange/20 hover:bg-[#E56000] hover:shadow-lg"
                 >
                   {language === 'fr' ? 'Section suivante' : 'Next Section'}
                   <ArrowRight size={16} />
@@ -1337,6 +1492,7 @@ function InterviewQuestionnaireContent() {
           </motion.div>
         )}
         </AnimatePresence>
+        </div>
       </div>
 
       {/* Coach Panel — Expert advice overlay */}
@@ -1359,7 +1515,7 @@ function InterviewQuestionnaireContent() {
           fixed bottom-4 left-4 z-30 hidden lg:flex items-center gap-2
           px-3 py-2 rounded-xl text-xs font-medium
           ${cardBg} border ${borderColor} ${mutedColor}
-          hover:text-orange-500 hover:border-orange-500/30
+          hover:text-momentum-orange hover:border-momentum-orange/30
           transition-all duration-200 shadow-sm
         `}
         title={t.shortcuts}
@@ -1398,7 +1554,7 @@ function InterviewQuestionnaireContent() {
               {/* Header */}
               <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-700">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-amber-400 flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-xl bg-momentum-orange flex items-center justify-center">
                     <Keyboard className="w-5 h-5 text-white" />
                   </div>
                   <h2 className={`text-lg font-semibold ${textColor}`}>{t.shortcutsTitle}</h2>
@@ -1486,7 +1642,7 @@ function InterviewQuestionnaireContent() {
               {/* Header */}
               <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-700">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-amber-400 flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-xl bg-momentum-orange flex items-center justify-center">
                     <Sparkles className="w-5 h-5 text-white" />
                   </div>
                   <h2 className={`text-lg font-semibold ${textColor}`}>{t.generatePreviewTitle}</h2>
@@ -1527,7 +1683,7 @@ function InterviewQuestionnaireContent() {
                     setShowPreviewConfirm(false);
                     handleComplete();
                   }}
-                  className="px-5 py-2.5 rounded-xl text-sm font-medium bg-gradient-to-r from-orange-500 to-amber-400 text-white hover:from-orange-600 hover:to-amber-500 shadow-md shadow-orange-500/25 hover:shadow-lg hover:shadow-orange-500/30 transition-all duration-200"
+                  className="px-5 py-2.5 rounded-xl text-sm font-medium bg-momentum-orange text-white hover:bg-[#E56000] shadow-md shadow-momentum-orange/20 hover:shadow-lg hover:shadow-momentum-orange/25 transition-all duration-200"
                 >
                   {t.generatePreviewConfirm}
                 </button>

@@ -101,7 +101,7 @@ export function StickyTableOfContents({
       <nav className="flex-shrink-0 w-[280px] h-full overflow-hidden" aria-label="Table of contents">
       <div className="relative h-full mr-2 backdrop-blur-xl bg-white/80 dark:bg-gray-900/80 rounded-l-2xl border border-white/20 dark:border-gray-700/50 shadow-[0_8px_32px_rgba(0,0,0,0.08)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.3)] overflow-hidden">
         {/* Gradient accent line at top */}
-        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-momentum-orange via-orange-400 to-amber-400" />
+        <div className="absolute top-0 left-0 right-0 h-[2px] bg-momentum-orange" />
 
         {/* Header */}
         <div className="px-5 pt-5 pb-4">
@@ -164,7 +164,7 @@ export function StickyTableOfContents({
                       'transition-all duration-200',
                       'focus:outline-none focus-visible:ring-2 focus-visible:ring-momentum-orange/50',
                       isActive
-                        ? 'bg-gradient-to-r from-momentum-orange/10 to-orange-400/5 dark:from-momentum-orange/20 dark:to-orange-400/10'
+                        ? 'bg-momentum-orange/10 dark:bg-momentum-orange/20'
                         : 'hover:bg-gray-100/80 dark:hover:bg-gray-800/50'
                     )}
                     whileHover={{ x: 2 }}
@@ -190,7 +190,7 @@ export function StickyTableOfContents({
                               key="active"
                               initial={{ scale: 0 }}
                               animate={{ scale: 1 }}
-                              className="w-4 h-4 rounded-full bg-gradient-to-br from-momentum-orange to-orange-400 flex items-center justify-center"
+                              className="w-4 h-4 rounded-full bg-momentum-orange flex items-center justify-center"
                             >
                               <motion.div
                                 className="w-1.5 h-1.5 rounded-full bg-white"
@@ -299,7 +299,7 @@ export function MiniTableOfContents({
               'transition-all duration-200',
               'focus:outline-none focus-visible:ring-2 focus-visible:ring-momentum-orange/50',
               isActive
-                ? 'bg-gradient-to-r from-momentum-orange to-orange-400 text-white shadow-lg shadow-orange-500/25'
+                ? 'bg-momentum-orange text-white shadow-lg shadow-momentum-orange/20'
                 : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
             )}
             whileHover={{ scale: 1.02 }}
@@ -354,7 +354,7 @@ export function VerticalDotIndicator({
               className={cn(
                 'w-2.5 h-2.5 rounded-full transition-colors duration-300',
                 isActive
-                  ? 'bg-gradient-to-br from-momentum-orange to-orange-400'
+                  ? 'bg-momentum-orange'
                   : isPast
                     ? 'bg-emerald-400'
                     : 'bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500'

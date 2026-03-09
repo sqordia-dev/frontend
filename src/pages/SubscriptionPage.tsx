@@ -7,6 +7,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import SEO from '../components/SEO';
 import { getCanonicalUrl } from '../utils/seo';
 import { getUserFriendlyError } from '../utils/error-messages';
+import { useToast } from '../contexts/ToastContext';
 
 interface Subscription {
   id: string;
@@ -59,6 +60,7 @@ export default function SubscriptionPage() {
   const location = useLocation();
   const [searchParams] = useSearchParams();
   const { t, theme, language } = useTheme();
+  const toast = useToast();
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -255,7 +257,10 @@ export default function SubscriptionPage() {
       window.location.href = portalUrl;
     } catch (err: any) {
       console.error('Failed to open billing portal:', err);
-      alert(err.message || t('subscription.billingPortalError') || 'Failed to open billing portal');
+      toast.error(
+        t('subscription.billingPortalError') || 'Billing Portal Error',
+        err.message || 'Failed to open billing portal'
+      );
     } finally {
       setOpeningPortal(false);
     }
@@ -272,10 +277,16 @@ export default function SubscriptionPage() {
       setCancelling(true);
       await apiClient.post('/api/v1/subscriptions/cancel');
       await loadSubscription();
-      alert('Subscription cancelled successfully. It will remain active until the end of the billing period.');
+      toast.success(
+        t('subscription.cancelledTitle') || 'Subscription Cancelled',
+        t('subscription.cancelledMessage') || 'Your subscription has been cancelled. It will remain active until the end of the billing period.'
+      );
     } catch (err: any) {
       console.error('Failed to cancel subscription:', err);
-      alert(getUserFriendlyError(err, 'subscription'));
+      toast.error(
+        t('subscription.cancelError') || 'Cancellation Error',
+        getUserFriendlyError(err, 'subscription')
+      );
     } finally {
       setCancelling(false);
     }
@@ -300,6 +311,10 @@ export default function SubscriptionPage() {
       setPlans(plansData);
     } catch (err: any) {
       console.error('Failed to load plans:', err);
+      toast.error(
+        t('subscription.plansError') || 'Plans Error',
+        t('subscription.plansErrorDesc') || 'Failed to load subscription plans.'
+      );
     } finally {
       setLoadingPlans(false);
     }
@@ -330,7 +345,10 @@ export default function SubscriptionPage() {
         if (isActiveSubscription) {
           try {
             await subscriptionService.changePlan(newPlanId, billingCycle === 'yearly');
-            alert(t('subscription.planChanged') || `Successfully changed to ${newPlan.name}!`);
+            toast.success(
+              t('subscription.planChanged') || 'Plan Changed',
+              `Successfully changed to ${newPlan.name}!`
+            );
             setShowChangePlanModal(false);
             await loadSubscription();
             return;
@@ -340,14 +358,20 @@ export default function SubscriptionPage() {
         } else {
           try {
             await subscriptionService.changePlan(newPlanId, billingCycle === 'yearly');
-            alert(t('subscription.planChanged') || `Successfully changed to ${newPlan.name}!`);
+            toast.success(
+              t('subscription.planChanged') || 'Plan Changed',
+              `Successfully changed to ${newPlan.name}!`
+            );
             setShowChangePlanModal(false);
             await loadSubscription();
             return;
           } catch (changeErr: any) {
             try {
               await subscriptionService.subscribe(newPlanId, subscription.organizationId, billingCycle === 'yearly');
-              alert(t('subscription.subscribed') || `Successfully subscribed to ${newPlan.name}!`);
+              toast.success(
+                t('subscription.subscribed') || 'Subscribed',
+                `Successfully subscribed to ${newPlan.name}!`
+              );
               setShowChangePlanModal(false);
               await loadSubscription();
               return;
@@ -372,11 +396,13 @@ export default function SubscriptionPage() {
       window.location.href = checkoutUrl;
     } catch (err: any) {
       console.error('Failed to change plan:', err);
-      if (err.message?.includes('already has an active subscription') || 
+      if (err.message?.includes('already has an active subscription') ||
           err.message?.includes('Organization already has')) {
         setError('You already have an active subscription. Please use the change plan option instead.');
+        toast.error('Plan Change Error', 'You already have an active subscription. Please use the change plan option instead.');
       } else {
         setError(getUserFriendlyError(err, 'subscription'));
+        toast.error(t('subscription.changePlanError') || 'Plan Change Error', getUserFriendlyError(err, 'subscription'));
       }
     } finally {
       setChangingPlanId(null);

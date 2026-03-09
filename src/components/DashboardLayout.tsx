@@ -1,4 +1,4 @@
-import { Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { Outlet, useLocation, useNavigate, Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import {
   LayoutDashboard,
@@ -19,12 +19,51 @@ import {
   SidebarInset,
   SidebarProvider,
 } from '@/components/ui/sidebar';
+import {
+  Breadcrumb,
+  BreadcrumbList,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from '@/components/ui/breadcrumb';
 
 // Reusable sidebar component (desktop only)
 import { AppSidebar, type NavItem, type AppSidebarUser } from '@/components/layout/AppSidebar';
 
 // Mobile bottom navigation
 import { MobileBottomNav } from '@/components/layout/MobileBottomNav';
+
+// ── Route → breadcrumb label mapping ────────────────────────────────────────
+const ROUTE_LABELS: Record<string, string> = {
+  '/dashboard': 'nav.dashboard',
+  '/create-plan': 'nav.createPlan',
+  '/profile': 'nav.settings',
+  '/subscription': 'nav.subscription',
+  '/invoices': 'nav.invoices',
+};
+
+function DashboardBreadcrumb({ pathname, t }: { pathname: string; t: (key: string) => string }) {
+  const labelKey = ROUTE_LABELS[pathname];
+  // Don't show breadcrumbs on dashboard index (it's the home page)
+  if (!labelKey || pathname === '/dashboard') return null;
+
+  return (
+    <Breadcrumb className="mb-4">
+      <BreadcrumbList>
+        <BreadcrumbItem>
+          <BreadcrumbLink asChild>
+            <Link to="/dashboard">{t('nav.dashboard')}</Link>
+          </BreadcrumbLink>
+        </BreadcrumbItem>
+        <BreadcrumbSeparator />
+        <BreadcrumbItem>
+          <BreadcrumbPage>{t(labelKey)}</BreadcrumbPage>
+        </BreadcrumbItem>
+      </BreadcrumbList>
+    </Breadcrumb>
+  );
+}
 
 // ── Main layout ─────────────────────────────────────────────────────────────
 export default function DashboardLayout() {
@@ -123,11 +162,12 @@ export default function DashboardLayout() {
 
           {/* Main content area */}
           <SidebarInset className="flex flex-col w-full">
-            <main 
-              id="main-content" 
-              className="flex-1 p-4 sm:p-6 lg:p-8 pb-24 md:pb-8" 
+            <main
+              id="main-content"
+              className="flex-1 p-4 sm:p-6 lg:p-8 pb-24 md:pb-8"
               tabIndex={-1}
             >
+              <DashboardBreadcrumb pathname={location.pathname} t={t} />
               <Outlet />
             </main>
           </SidebarInset>

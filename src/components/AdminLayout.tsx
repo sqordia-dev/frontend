@@ -10,6 +10,7 @@ import {
   Sparkles,
   Mail,
   BarChart3,
+  ClipboardList,
 } from 'lucide-react';
 import { AdminAIAssistant } from './admin/AdminAIAssistant';
 import { authService } from '../lib/auth-service';
@@ -39,6 +40,8 @@ const PAGE_TITLES: Record<string, { en: string; fr: string }> = {
   '/admin/settings': { en: 'Settings', fr: 'Paramètres' },
   '/admin/email-templates': { en: 'Email Templates', fr: 'Modèles courriel' },
   '/admin/metrics': { en: 'Metrics & Insights', fr: 'Métriques et analyses' },
+  '/admin/content': { en: 'Content Manager', fr: 'Gestionnaire de contenu' },
+  '/admin/questionnaire': { en: 'Questionnaire Manager', fr: 'Gestionnaire de questionnaire' },
 };
 
 export default function AdminLayout() {
@@ -93,40 +96,46 @@ export default function AdminLayout() {
           shortcut: '⌘2',
         },
         {
-          name: language === 'fr' ? 'Gestionnaire de contenu' : 'Content Manager',
-          href: '/admin/cms',
+          name: language === 'fr' ? 'Contenu' : 'Content',
+          href: '/admin/content',
           icon: Palette,
           shortcut: '⌘3',
+        },
+        {
+          name: language === 'fr' ? 'Questionnaire' : 'Questionnaire',
+          href: '/admin/questionnaire',
+          icon: ClipboardList,
+          shortcut: '⌘4',
         },
         {
           name: 'AI Studio',
           href: '/admin/ai-studio',
           icon: Sparkles,
-          shortcut: '⌘4',
+          shortcut: '⌘5',
         },
         {
           name: t('admin.nav.featureFlags'),
           href: '/admin/feature-flags',
           icon: Flag,
-          shortcut: '⌘5',
+          shortcut: '⌘6',
         },
         {
           name: language === 'fr' ? 'Suivi des problèmes' : 'Issue Tracker',
           href: '/admin/bug-report',
           icon: ListTodo,
-          shortcut: '⌘6',
+          shortcut: '⌘7',
         },
         {
           name: language === 'fr' ? 'Modèles courriel' : 'Email Templates',
           href: '/admin/email-templates',
           icon: Mail,
-          shortcut: '⌘7',
+          shortcut: '⌘8',
         },
         {
           name: t('admin.nav.metrics'),
           href: '/admin/metrics',
           icon: BarChart3,
-          shortcut: '⌘8',
+          shortcut: '⌘9',
         },
       ],
     },
@@ -136,7 +145,8 @@ export default function AdminLayout() {
   const mobileMainNav: NavItemConfig[] = [
     { name: language === 'fr' ? 'Aperçu' : 'Overview', href: '/admin', icon: LayoutDashboard },
     { name: language === 'fr' ? 'Utilisateurs' : 'Users', href: '/admin/users', icon: Users },
-    { name: 'CMS', href: '/admin/cms', icon: Palette },
+    { name: language === 'fr' ? 'Contenu' : 'Content', href: '/admin/content', icon: Palette },
+    { name: 'Questionnaire', href: '/admin/questionnaire', icon: ClipboardList },
   ];
 
   const mobileMoreNav: NavItemConfig[] = [

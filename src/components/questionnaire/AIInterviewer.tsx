@@ -14,6 +14,7 @@ interface AIInterviewerProps {
   // V3 expert advice from database
   expertAdviceFR?: string;
   expertAdviceEN?: string;
+  sectionMode?: boolean;
 }
 
 // Translations
@@ -95,6 +96,7 @@ export default function AIInterviewer({
   persona = 'Entrepreneur',
   expertAdviceFR,
   expertAdviceEN,
+  sectionMode = false,
 }: AIInterviewerProps) {
   const { theme, language } = useTheme();
   const [isTyping, setIsTyping] = useState(true);
@@ -113,7 +115,7 @@ export default function AIInterviewer({
     return t.followUps[qNumber % t.followUps.length];
   };
 
-  const isFirstQuestion = questionNumber === 1;
+  const isFirstQuestion = sectionMode || questionNumber === 1;
   const intro = getContextualIntro(sectionTitle, questionNumber, isFirstQuestion);
 
   // Get full expert advice for the slide-over panel
@@ -184,14 +186,16 @@ export default function AIInterviewer({
               )}
             </p>
 
-            {/* Question */}
-            <div className={`${textColor} text-lg font-medium leading-relaxed`}>
-              <span className="text-orange-500 font-bold mr-2">Q{questionNumber}.</span>
-              {questionText}
-            </div>
+            {/* Question - hidden in section mode */}
+            {!sectionMode && questionText && (
+              <div className={`${textColor} text-lg font-medium leading-relaxed`}>
+                <span className="text-orange-500 font-bold mr-2">Q{questionNumber}.</span>
+                {questionText}
+              </div>
+            )}
 
-            {/* Need Help Button - Shows when expert advice is available */}
-            {hasExpertAdvice && !showCoachBubble && (
+            {/* Need Help Button - Shows when expert advice is available, hidden in section mode */}
+            {!sectionMode && hasExpertAdvice && !showCoachBubble && (
               <button
                 onClick={() => setShowCoachBubble(true)}
                 className={`
@@ -213,7 +217,7 @@ export default function AIInterviewer({
       </div>
 
       {/* AI Coach Bubble - Expert Tips */}
-      {showCoachBubble && hasExpertAdvice && (
+      {!sectionMode && showCoachBubble && hasExpertAdvice && (
         <div className="ml-0 lg:ml-16 animate-in slide-in-from-top-4 fade-in duration-300">
           <div className={`
             relative rounded-2xl border overflow-hidden

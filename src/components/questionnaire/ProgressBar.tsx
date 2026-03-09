@@ -8,11 +8,11 @@ export default function ProgressBar({ percent }: ProgressBarProps) {
   return (
     <div className="h-1 w-full bg-slate-200 dark:bg-slate-700">
       <div
-        className="h-full bg-gradient-to-r from-orange-500 via-orange-400 to-amber-400 transition-all duration-700 ease-out relative"
+        className="h-full bg-momentum-orange transition-all duration-700 ease-out relative"
         style={{ width: `${clamped}%` }}
       >
         {clamped > 5 && (
-          <span className="absolute right-1 -top-4 text-[10px] font-semibold text-orange-500">
+          <span className="absolute right-1 -top-4 text-[10px] font-semibold text-momentum-orange">
             {Math.round(clamped)}%
           </span>
         )}

@@ -21,7 +21,7 @@ function extractApiData<T>(data: unknown): T {
 export const adminService = {
   async getOverview(): Promise<any> {
     try {
-      const response = await apiClient.get('/api/v1/admin/overview');
+      const response = await apiClient.get<any>('/api/v1/admin/overview');
       const data = response.data as ApiData;
       // Check if it's a Result wrapper first
       if (data && typeof data === 'object' && 'isSuccess' in data) {
@@ -47,7 +47,7 @@ export const adminService = {
   },
 
   async getSystemHealth(): Promise<any> {
-    const response = await apiClient.get('/api/v1/admin/system-health');
+    const response = await apiClient.get<any>('/api/v1/admin/system-health');
     // Backend returns value directly (not wrapped in Result)
     // Check if it's a Result wrapper first
     const data = response.data as ApiData;
@@ -64,8 +64,8 @@ export const adminService = {
   async getUsers(params?: any): Promise<any> {
     try {
       const queryString = params ? `?${new URLSearchParams(params).toString()}` : '';
-      const response = await apiClient.get(`/api/v1/admin/users${queryString}`);
-      
+      const response = await apiClient.get<any>(`/api/v1/admin/users${queryString}`);
+
       // Backend returns value directly (not wrapped in Result)
       // Check if it's a Result wrapper first
       if (response.data && typeof response.data === 'object' && 'isSuccess' in response.data) {
@@ -118,7 +118,7 @@ export const adminService = {
   async getOrganizations(params?: any): Promise<any> {
     try {
       const queryString = params ? `?${new URLSearchParams(params).toString()}` : '';
-      const response = await apiClient.get(`/api/v1/admin/organizations${queryString}`);
+      const response = await apiClient.get<any>(`/api/v1/admin/organizations${queryString}`);
       
       // Backend returns value directly (not wrapped in Result)
       // Check if it's a Result wrapper first
@@ -172,7 +172,7 @@ export const adminService = {
   async getBusinessPlans(params?: any): Promise<any> {
     try {
       const queryString = params ? `?${new URLSearchParams(params).toString()}` : '';
-      const response = await apiClient.get(`/api/v1/admin/business-plans${queryString}`);
+      const response = await apiClient.get<any>(`/api/v1/admin/business-plans${queryString}`);
       
       // Backend returns value directly (not wrapped in Result)
       // Check if it's a Result wrapper first
@@ -224,7 +224,7 @@ export const adminService = {
   async getActivityLogs(filters?: any): Promise<any> {
     try {
       const queryString = filters ? `?${new URLSearchParams(filters).toString()}` : '';
-      const response = await apiClient.get(`/api/v1/admin/activity-logs${queryString}`);
+      const response = await apiClient.get<any>(`/api/v1/admin/activity-logs${queryString}`);
       
       // Backend returns Result<PaginatedList<AdminActivityLog>>
       if (response.data && typeof response.data === 'object' && 'isSuccess' in response.data) {
@@ -267,7 +267,7 @@ export const adminService = {
   },
 
   async getReport(reportType: string): Promise<any> {
-    const response = await apiClient.get(`/api/v1/admin/reports/${reportType}`);
+    const response = await apiClient.get<any>(`/api/v1/admin/reports/${reportType}`);
     return response.data;
   },
 
@@ -276,7 +276,7 @@ export const adminService = {
     if (startDate) params.append('startDate', startDate);
     if (endDate) params.append('endDate', endDate);
     const queryString = params.toString() ? `?${params.toString()}` : '';
-    const response = await apiClient.get(`/api/v1/admin/ai-usage-stats${queryString}`);
+    const response = await apiClient.get<any>(`/api/v1/admin/ai-usage-stats${queryString}`);
     if (response.data?.isSuccess && response.data.value) {
       return response.data.value;
     } else if (response.data && !response.data.isSuccess) {
@@ -287,7 +287,7 @@ export const adminService = {
 
   async getAIPrompts(): Promise<any[]> {
     try {
-      const response = await apiClient.get('/api/v1/admin/ai-prompts');
+      const response = await apiClient.get<any>('/api/v1/admin/ai-prompts');
       // Backend returns array directly (not wrapped in Result)
       if (Array.isArray(response.data)) {
         return response.data;
@@ -309,13 +309,13 @@ export const adminService = {
   },
 
   async getAIPrompt(promptId: string): Promise<any> {
-    const response = await apiClient.get(`/api/v1/admin/ai-prompts/${promptId}`);
+    const response = await apiClient.get<any>(`/api/v1/admin/ai-prompts/${promptId}`);
     return response.data;
   },
 
   async createAIPrompt(data: any): Promise<string> {
     try {
-      const response = await apiClient.post('/api/v1/admin/ai-prompts', data);
+      const response = await apiClient.post<any>('/api/v1/admin/ai-prompts', data);
       // Backend returns { Id: string } on creation
       return response.data?.Id || response.data?.id || response.data;
     } catch (error: any) {
@@ -363,23 +363,23 @@ export const adminService = {
   },
 
   async getAIPromptVersions(parentPromptId: string): Promise<any[]> {
-    const response = await apiClient.get(`/api/v1/admin/ai-prompts/${parentPromptId}/versions`);
+    const response = await apiClient.get<any>(`/api/v1/admin/ai-prompts/${parentPromptId}/versions`);
     return response.data;
   },
 
   async getAIPromptStats(): Promise<any> {
-    const response = await apiClient.get('/api/v1/admin/ai-prompts/stats');
+    const response = await apiClient.get<any>('/api/v1/admin/ai-prompts/stats');
     return response.data;
   },
 
   async testAIPrompt(promptId: string, testData: any): Promise<any> {
-    const response = await apiClient.post('/api/v1/admin/ai-prompts/test', { promptId, ...testData });
+    const response = await apiClient.post<any>('/api/v1/admin/ai-prompts/test', { promptId, ...testData });
     return response.data;
   },
 
   async migrateDefaultPrompts(): Promise<{ migrated: number; prompts: any[] }> {
     try {
-      const response = await apiClient.post('/api/v1/admin/ai-prompts/migrate-defaults');
+      const response = await apiClient.post<any>('/api/v1/admin/ai-prompts/migrate-defaults');
       return response.data;
     } catch (error: any) {
       if (error.response?.data?.error) {
@@ -392,7 +392,7 @@ export const adminService = {
   // ======== User Management ========
 
   async getUserDetail(userId: string): Promise<any> {
-    const response = await apiClient.get(`/api/v1/admin/users/${userId}`);
+    const response = await apiClient.get<any>(`/api/v1/admin/users/${userId}`);
     if (response.data?.isSuccess && response.data.value) {
       return response.data.value;
     }
@@ -403,7 +403,7 @@ export const adminService = {
     const queryString = params ? `?${new URLSearchParams(
       Object.entries(params).filter(([, v]) => v !== undefined && v !== null && v !== '').map(([k, v]) => [k, String(v)])
     ).toString()}` : '';
-    const response = await apiClient.get(`/api/v1/admin/users${queryString}`);
+    const response = await apiClient.get<any>(`/api/v1/admin/users${queryString}`);
 
     if (response.data?.isSuccess && response.data.value) {
       return response.data.value;
@@ -433,7 +433,7 @@ export const adminService = {
     emailVerified?: boolean;
     roleIds?: string[];
   }): Promise<string> {
-    const response = await apiClient.post('/api/v1/admin/users', data);
+    const response = await apiClient.post<any>('/api/v1/admin/users', data);
     if (response.data?.isSuccess && response.data.value) {
       return response.data.value;
     }
@@ -457,7 +457,7 @@ export const adminService = {
   },
 
   async getUserSessions(userId: string): Promise<any[]> {
-    const response = await apiClient.get(`/api/v1/admin/users/${userId}/sessions`);
+    const response = await apiClient.get<any>(`/api/v1/admin/users/${userId}/sessions`);
     if (response.data?.isSuccess && response.data.value) {
       return response.data.value;
     }
@@ -473,7 +473,7 @@ export const adminService = {
   },
 
   async getUserLoginHistory(userId: string, limit: number = 50): Promise<any[]> {
-    const response = await apiClient.get(`/api/v1/admin/users/${userId}/login-history?limit=${limit}`);
+    const response = await apiClient.get<any>(`/api/v1/admin/users/${userId}/login-history?limit=${limit}`);
     if (response.data?.isSuccess && response.data.value) {
       return response.data.value;
     }
@@ -484,7 +484,7 @@ export const adminService = {
     const queryString = params ? `?${new URLSearchParams(
       Object.entries(params).filter(([, v]) => v !== undefined && v !== null && v !== '').map(([k, v]) => [k, String(v)])
     ).toString()}` : '';
-    const response = await apiClient.get(`/api/v1/admin/users/export${queryString}`, {
+    const response = await apiClient.get<any>(`/api/v1/admin/users/export${queryString}`, {
       responseType: 'blob'
     });
 
@@ -510,7 +510,7 @@ export const adminService = {
   },
 
   async bulkUpdateUserStatus(userIds: string[], status: string, reason: string): Promise<any> {
-    const response = await apiClient.post('/api/v1/admin/users/bulk-status', { userIds, status, reason });
+    const response = await apiClient.post<any>('/api/v1/admin/users/bulk-status', { userIds, status, reason });
     if (response.data?.isSuccess && response.data.value) {
       return response.data.value;
     }
@@ -520,12 +520,12 @@ export const adminService = {
   // ======== AI Insights ========
 
   async getAiInsights(): Promise<any[]> {
-    const response = await apiClient.get('/api/v1/admin/ai-insights');
+    const response = await apiClient.get<any>('/api/v1/admin/ai-insights');
     return extractApiData<any[]>(response.data);
   },
 
   async runBatchAnalysis(): Promise<any> {
-    const response = await apiClient.post('/api/v1/admin/analytics/run-batch');
+    const response = await apiClient.post<any>('/api/v1/admin/analytics/run-batch');
     return extractApiData<any>(response.data);
   },
 };

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Download, CheckCircle, XCircle, Clock, AlertCircle, ArrowLeft, FileText, Receipt, CreditCard } from 'lucide-react';
 import { apiClient } from '../lib/api-client';
 import { useTheme } from '../contexts/ThemeContext';
+import { useToast } from '../contexts/ToastContext';
 import SEO from '../components/SEO';
 import { getCanonicalUrl } from '../utils/seo';
 import { getUserFriendlyError } from '../utils/error-messages';
@@ -82,6 +83,7 @@ const translations = {
 export default function InvoicesPage() {
   const navigate = useNavigate();
   const { theme, language } = useTheme();
+  const toast = useToast();
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -160,7 +162,7 @@ export default function InvoicesPage() {
       window.URL.revokeObjectURL(url);
     } catch (err: any) {
       console.error('Failed to download invoice:', err);
-      alert(getUserFriendlyError(err, 'download'));
+      toast.error('Download Error', getUserFriendlyError(err, 'download'));
     } finally {
       setDownloadingId(null);
     }

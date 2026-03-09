@@ -7,8 +7,10 @@ import {
   Sparkles, CheckCircle, Clock, BarChart3, Copy, RefreshCw, LayoutGrid, List, ArrowLeft
 } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useToast } from '../../contexts/ToastContext';
 import RichTextEditor from '../../components/RichTextEditor';
 import { getUserFriendlyError } from '../../utils/error-messages';
+import { Button } from '../../components/ui/button';
 
 // Section definitions with categories
 const SECTION_CATEGORIES = {
@@ -85,6 +87,7 @@ export default function AdminAIPromptsPage() {
   const [testingPrompt, setTestingPrompt] = useState(false);
   const [testResult, setTestResult] = useState<string | null>(null);
   const { t } = useTheme();
+  const toast = useToast();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -111,13 +114,13 @@ export default function AdminAIPromptsPage() {
       setMigrating(true);
       setError(null);
       const result = await adminService.migrateDefaultPrompts();
-      alert(t('admin.promptsStudio.migrateSuccess').replace('{count}', result.migrated.toString()));
+      toast.success('Migration Complete', t('admin.promptsStudio.migrateSuccess').replace('{count}', result.migrated.toString()));
       await loadPrompts();
     } catch (err: any) {
       console.error('Migration error:', err);
       const errorMessage = getUserFriendlyError(err, 'save');
       setError(errorMessage);
-      alert(errorMessage);
+      toast.error('Migration Error', errorMessage);
     } finally {
       setMigrating(false);
     }
@@ -182,7 +185,7 @@ export default function AdminAIPromptsPage() {
       await adminService.deleteAIPrompt(promptId);
       await loadPrompts();
     } catch (err: any) {
-      alert(getUserFriendlyError(err, 'delete'));
+      toast.error('Delete Error', getUserFriendlyError(err, 'delete'));
     }
   };
 
@@ -191,7 +194,7 @@ export default function AdminAIPromptsPage() {
       await adminService.updateAIPromptStatus(promptId, !currentStatus);
       await loadPrompts();
     } catch (err: any) {
-      alert(getUserFriendlyError(err, 'save'));
+      toast.error('Status Update Error', getUserFriendlyError(err, 'save'));
     }
   };
 
@@ -225,7 +228,7 @@ export default function AdminAIPromptsPage() {
     const userPromptText = extractText(formData.userPromptTemplate);
 
     if (!formData.name || !formData.description || !systemPromptText || !userPromptText) {
-      alert(t('admin.aiPrompts.requiredFields'));
+      toast.warning('Validation', t('admin.aiPrompts.requiredFields'));
       return;
     }
 
@@ -247,7 +250,7 @@ export default function AdminAIPromptsPage() {
       resetForm();
       await loadPrompts();
     } catch (err: any) {
-      alert(getUserFriendlyError(err, 'save'));
+      toast.error('Save Error', getUserFriendlyError(err, 'save'));
     } finally {
       setSaving(false);
     }
@@ -328,8 +331,49 @@ export default function AdminAIPromptsPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FF6B00]"></div>
+      <div className="space-y-6 animate-pulse">
+        {/* Header skeleton */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-lg" />
+            <div className="space-y-2">
+              <div className="h-7 w-48 bg-gray-200 dark:bg-gray-700 rounded" />
+              <div className="h-4 w-64 bg-gray-200 dark:bg-gray-700 rounded" />
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-36 bg-gray-200 dark:bg-gray-700 rounded-lg" />
+            <div className="h-10 w-32 bg-gray-200 dark:bg-gray-700 rounded-lg" />
+          </div>
+        </div>
+        {/* Filters skeleton */}
+        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-4">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="h-10 bg-gray-200 dark:bg-gray-700 rounded-lg" />
+            ))}
+          </div>
+        </div>
+        {/* Cards skeleton */}
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+          {[...Array(6)].map((_, i) => (
+            <div key={i} className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5 space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="h-5 w-32 bg-gray-200 dark:bg-gray-700 rounded" />
+                <div className="h-6 w-12 bg-gray-200 dark:bg-gray-700 rounded-full" />
+              </div>
+              <div className="h-4 w-24 bg-gray-200 dark:bg-gray-700 rounded" />
+              <div className="space-y-2">
+                <div className="h-3 w-full bg-gray-200 dark:bg-gray-700 rounded" />
+                <div className="h-3 w-3/4 bg-gray-200 dark:bg-gray-700 rounded" />
+              </div>
+              <div className="flex gap-2 pt-2">
+                <div className="h-5 w-16 bg-gray-200 dark:bg-gray-700 rounded-full" />
+                <div className="h-5 w-16 bg-gray-200 dark:bg-gray-700 rounded-full" />
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     );
   }
@@ -339,13 +383,14 @@ export default function AdminAIPromptsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <button
+          <Button
+            variant="outline"
+            size="icon"
             onClick={() => navigate('/dashboard')}
-            className="flex items-center justify-center w-10 h-10 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
             title={t('admin.promptsStudio.backToDashboard')}
           >
             <ArrowLeft className="w-5 h-5" />
-          </button>
+          </Button>
           <div>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t('admin.promptsStudio.title')}</h1>
             <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
@@ -354,21 +399,21 @@ export default function AdminAIPromptsPage() {
           </div>
         </div>
         <div className="flex items-center gap-3">
-          <button
+          <Button
+            variant="outline"
             onClick={handleMigrateDefaults}
             disabled={migrating}
-            className="flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
           >
-            <Upload className="w-4 h-4 mr-2" />
+            <Upload className="w-4 h-4" />
             {migrating ? t('admin.promptsStudio.migrating') : t('admin.promptsStudio.importDefaults')}
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="brand"
             onClick={openCreateModal}
-            className="flex items-center px-4 py-2 text-white rounded-lg transition-colors shadow-sm hover:shadow-md bg-[#FF6B00] hover:bg-[#E55F00]"
           >
-            <Plus className="w-4 h-4 mr-2" />
+            <Plus className="w-4 h-4" />
             {t('admin.aiPrompts.newPrompt')}
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -574,27 +619,30 @@ export default function AdminAIPromptsPage() {
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
-                          <button
+                          <Button
+                            variant="outline"
+                            size="sm"
                             onClick={() => openEditModal(prompt)}
-                            className="flex items-center px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                           >
-                            <Edit className="w-4 h-4 mr-1" />
+                            <Edit className="w-4 h-4" />
                             {t('admin.aiPrompts.edit')}
-                          </button>
-                          <button
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
                             onClick={() => handleDuplicate(prompt)}
-                            className="flex items-center px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                           >
-                            <Copy className="w-4 h-4 mr-1" />
+                            <Copy className="w-4 h-4" />
                             {t('admin.promptsStudio.duplicate')}
-                          </button>
-                          <button
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            size="sm"
                             onClick={() => handleDelete(prompt.id)}
-                            className="flex items-center px-3 py-1.5 text-sm border border-red-300 dark:border-red-600 rounded text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
                           >
-                            <Trash className="w-4 h-4 mr-1" />
+                            <Trash className="w-4 h-4" />
                             {t('admin.aiPrompts.delete')}
-                          </button>
+                          </Button>
                         </div>
                       </div>
                     ))}
@@ -664,27 +712,31 @@ export default function AdminAIPromptsPage() {
                             </div>
                           </div>
                           <div className="flex items-center gap-2 flex-shrink-0">
-                            <button
+                            <Button
+                              variant="brand-ghost"
+                              size="icon"
                               onClick={() => openEditModal(prompt)}
-                              className="p-2 rounded transition-colors text-[#FF6B00] hover:bg-[#FF6B00]/[0.08]"
                               title={t('admin.aiPrompts.edit')}
                             >
                               <Edit className="w-4 h-4" />
-                            </button>
-                            <button
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
                               onClick={() => handleDuplicate(prompt)}
-                              className="p-2 rounded transition-colors text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
                               title={t('admin.promptsStudio.duplicate')}
                             >
                               <Copy className="w-4 h-4" />
-                            </button>
-                            <button
+                            </Button>
+                            <Button
+                              variant="destructive"
+                              size="icon"
+                              className="bg-transparent hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 shadow-none"
                               onClick={() => handleDelete(prompt.id)}
-                              className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
                               title={t('admin.aiPrompts.delete')}
                             >
                               <Trash className="w-4 h-4" />
-                            </button>
+                            </Button>
                           </div>
                         </div>
                       </div>
@@ -716,17 +768,18 @@ export default function AdminAIPromptsPage() {
                   </p>
                 </div>
               </div>
-              <button
+              <Button
+                variant="ghost"
+                size="icon"
                 onClick={() => {
                   setShowCreateModal(false);
                   setEditingPrompt(null);
                   resetForm();
                   setTestResult(null);
                 }}
-                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
               >
                 <X size={24} />
-              </button>
+              </Button>
             </div>
 
             {/* Content */}
@@ -913,36 +966,36 @@ export default function AdminAIPromptsPage() {
             <div className="p-6 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 {editingPrompt && (
-                  <button
+                  <Button
+                    variant="outline"
                     onClick={handleTestPrompt}
                     disabled={testingPrompt}
-                    className="flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
                   >
-                    <TestTube className="w-4 h-4 mr-2" />
+                    <TestTube className="w-4 h-4" />
                     {testingPrompt ? t('admin.promptsStudio.testing') : t('admin.promptsStudio.testPrompt')}
-                  </button>
+                  </Button>
                 )}
               </div>
               <div className="flex items-center gap-3">
-                <button
+                <Button
+                  variant="outline"
                   onClick={() => {
                     setShowCreateModal(false);
                     setEditingPrompt(null);
                     resetForm();
                     setTestResult(null);
                   }}
-                  className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                 >
                   {t('admin.aiPrompts.cancel')}
-                </button>
-                <button
+                </Button>
+                <Button
+                  variant="brand"
                   onClick={handleSave}
                   disabled={saving || !formData.name || !formData.description || !formData.systemPrompt || !formData.userPromptTemplate}
-                  className="flex items-center px-4 py-2 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm hover:shadow-md bg-[#FF6B00] hover:bg-[#E55F00]"
                 >
-                  <Save className="w-4 h-4 mr-2" />
+                  <Save className="w-4 h-4" />
                   {saving ? t('admin.aiPrompts.saving') : (editingPrompt ? t('admin.promptsStudio.updatePrompt') : t('admin.promptsStudio.createPrompt'))}
-                </button>
+                </Button>
               </div>
             </div>
           </div>

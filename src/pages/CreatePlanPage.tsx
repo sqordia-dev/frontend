@@ -54,7 +54,7 @@ export default function CreatePlanPage() {
       }
     } catch (err) {
       console.error('Failed to fetch organizations:', err);
-      setError('Failed to load organization. Please try again.');
+      setError(t('createPlan.failedToLoadOrg'));
     } finally {
       setIsLoadingOrg(false);
     }
@@ -64,12 +64,12 @@ export default function CreatePlanPage() {
     e.preventDefault();
 
     if (!projectName.trim()) {
-      setError('Project name is required');
+      setError(t('createPlan.projectNameRequired'));
       return;
     }
 
     if (!organizationId) {
-      setError('Organization not found. Please refresh the page.');
+      setError(t('createPlan.orgNotFound'));
       return;
     }
 
@@ -97,7 +97,7 @@ export default function CreatePlanPage() {
         persona: persona as 'Entrepreneur' | 'Consultant' | 'OBNL',
       });
 
-      navigate(`/questionnaire/${plan.id}`);
+      navigate(`/interview/${plan.id}`);
     } catch (error: any) {
       console.error('Failed to create project:', error);
       setError(getUserFriendlyError(error, 'save'));
@@ -158,7 +158,7 @@ export default function CreatePlanPage() {
           {/* Header */}
           <div className="text-center mb-8">
             {/* AI Badge */}
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold tracking-wide mb-6 bg-gradient-to-r from-momentum-orange to-[#ff8533] text-white shadow-lg shadow-momentum-orange/25">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold tracking-wide mb-6 bg-momentum-orange text-white shadow-lg shadow-momentum-orange/20">
               <Sparkles className="h-3.5 w-3.5" />
               <span>{t('createPlan.aiBadge')}</span>
             </div>

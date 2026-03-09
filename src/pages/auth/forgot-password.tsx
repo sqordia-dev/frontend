@@ -2,6 +2,7 @@ import { useState, FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { Mail, ArrowRight, ArrowLeft, CheckCircle } from 'lucide-react';
 import { authService } from '../../lib/auth-service';
+import { useTheme } from '../../contexts/ThemeContext';
 import { useCmsContent } from '../../hooks/useCmsContent';
 import { getUserFriendlyError } from '../../utils/error-messages';
 import SEO from '../../components/SEO';
@@ -18,6 +19,7 @@ import {
 } from '../../utils/auth-validation';
 
 export default function ForgotPasswordPage() {
+  const { language } = useTheme();
   const { getContent: cms } = useCmsContent('auth');
 
   const [formData, setFormData] = useState<ForgotPasswordFormData>({
@@ -43,7 +45,7 @@ export default function ForgotPasswordPage() {
     e.preventDefault();
     setServerError('');
 
-    const validationErrors = validateForgotPasswordForm(formData);
+    const validationErrors = validateForgotPasswordForm(formData, language);
     if (validationErrors.length > 0) {
       setErrors(validationErrors);
       return;

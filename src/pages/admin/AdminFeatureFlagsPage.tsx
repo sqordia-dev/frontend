@@ -3,8 +3,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from '../../contexts/ThemeContext';
 import {
   Flag,
-  ToggleRight,
-  ToggleLeft,
   AlertTriangle,
   RefreshCw,
   Plus,
@@ -12,113 +10,53 @@ import {
   Sparkles,
   FileOutput,
   Crown,
-  ChevronDown,
   Calendar,
-  User,
-  MoreHorizontal,
   Clock,
-  Archive,
   X,
   Check,
   Zap,
   Shield,
-  TrendingUp
+  Settings2,
 } from 'lucide-react';
 import { useFeatureFlagsAdmin } from '../../hooks/useFeatureFlag';
 import {
   FeatureFlag,
   FeatureFlagType,
   FeatureFlagState,
-  FEATURE_FLAG_CATEGORIES,
-  getFeatureFlagTypeLabel,
-  getFeatureFlagStateInfo,
-  CreateFeatureFlagRequest
+  CreateFeatureFlagRequest,
 } from '../../lib/feature-flags-service';
+import { Button } from '../../components/ui/button';
+import { cn } from '../../lib/utils';
 
-// Category configuration with gradients
-const categoryConfig: Record<string, { icon: React.ReactNode; gradient: string; bg: string; text: string }> = {
+// ── Category config ─────────────────────────────────────────────
+const categoryConfig: Record<string, { icon: React.ReactNode; color: string; bg: string }> = {
   AI: {
     icon: <Sparkles className="w-4 h-4" />,
-    gradient: 'from-orange-500 to-orange-600',
-    bg: 'bg-orange-50 dark:bg-orange-950/30',
-    text: 'text-orange-700 dark:text-orange-300'
+    color: 'text-orange-600 dark:text-orange-400',
+    bg: 'bg-orange-100 dark:bg-orange-900/30',
   },
   Export: {
     icon: <FileOutput className="w-4 h-4" />,
-    gradient: 'from-strategy-blue to-slate-700',
-    bg: 'bg-slate-50 dark:bg-slate-900/30',
-    text: 'text-strategy-blue dark:text-slate-300'
+    color: 'text-blue-600 dark:text-blue-400',
+    bg: 'bg-blue-100 dark:bg-blue-900/30',
   },
   Premium: {
     icon: <Crown className="w-4 h-4" />,
-    gradient: 'from-amber-500 to-amber-600',
-    bg: 'bg-amber-50 dark:bg-amber-950/30',
-    text: 'text-amber-700 dark:text-amber-300'
+    color: 'text-amber-600 dark:text-amber-400',
+    bg: 'bg-amber-100 dark:bg-amber-900/30',
   },
   General: {
-    icon: <Flag className="w-4 h-4" />,
-    gradient: 'from-slate-500 to-gray-600',
-    bg: 'bg-slate-50 dark:bg-slate-950/30',
-    text: 'text-slate-700 dark:text-slate-300'
-  }
+    icon: <Settings2 className="w-4 h-4" />,
+    color: 'text-gray-600 dark:text-gray-400',
+    bg: 'bg-gray-100 dark:bg-gray-800',
+  },
 };
 
-// Animation variants
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.05 }
-  }
-};
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 10 },
-  visible: { opacity: 1, y: 0 }
-};
-
-// Stats card component
-function StatsCard({
-  title,
-  value,
-  icon,
-  gradient,
-  delay = 0
-}: {
-  title: string;
-  value: number;
-  icon: React.ReactNode;
-  gradient: string;
-  delay?: number;
-}) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, delay }}
-      className="group relative overflow-hidden bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-5 hover:shadow-lg hover:shadow-gray-200/50 dark:hover:shadow-gray-900/50 transition-all duration-300"
-    >
-      {/* Subtle gradient overlay on hover */}
-      <div className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-0 group-hover:opacity-[0.03] transition-opacity duration-300`} />
-
-      <div className="relative flex items-center justify-between">
-        <div>
-          <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">{title}</p>
-          <p className="text-3xl font-semibold text-gray-900 dark:text-white tracking-tight">{value}</p>
-        </div>
-        <div className={`p-3 rounded-xl bg-gradient-to-br ${gradient} text-white shadow-lg`}>
-          {icon}
-        </div>
-      </div>
-    </motion.div>
-  );
-}
-
-// Toggle switch component
-function ToggleSwitch({
+// ── Toggle switch ───────────────────────────────────────────────
+function Toggle({
   enabled,
   onChange,
-  disabled
+  disabled,
 }: {
   enabled: boolean;
   onChange: () => void;
@@ -128,316 +66,157 @@ function ToggleSwitch({
     <button
       onClick={onChange}
       disabled={disabled}
-      className={`
-        relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full
-        border-2 border-transparent transition-all duration-300 ease-in-out
-        focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-gray-900
-        ${enabled
-          ? 'bg-gradient-to-r from-emerald-500 to-green-500 focus:ring-emerald-500'
-          : 'bg-gray-200 dark:bg-gray-700 focus:ring-gray-400'
-        }
-        ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-md'}
-      `}
+      className={cn(
+        'relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-gray-950',
+        enabled
+          ? 'bg-emerald-500 focus:ring-emerald-500'
+          : 'bg-gray-300 dark:bg-gray-600 focus:ring-gray-400',
+        disabled && 'opacity-50 cursor-not-allowed',
+      )}
+      role="switch"
+      aria-checked={enabled}
     >
       <span
-        className={`
-          pointer-events-none inline-block h-5 w-5 transform rounded-full
-          bg-white shadow-lg ring-0 transition-transform duration-300 ease-in-out
-          ${enabled ? 'translate-x-5' : 'translate-x-0'}
-        `}
-      >
-        <span
-          className={`
-            absolute inset-0 flex h-full w-full items-center justify-center
-            transition-opacity duration-200
-            ${enabled ? 'opacity-0' : 'opacity-100'}
-          `}
-        >
-          <X className="w-3 h-3 text-gray-400" />
-        </span>
-        <span
-          className={`
-            absolute inset-0 flex h-full w-full items-center justify-center
-            transition-opacity duration-200
-            ${enabled ? 'opacity-100' : 'opacity-0'}
-          `}
-        >
-          <Check className="w-3 h-3 text-emerald-600" />
-        </span>
-      </span>
+        className={cn(
+          'pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow-sm ring-0 transition-transform duration-200',
+          enabled ? 'translate-x-5' : 'translate-x-0',
+        )}
+      />
     </button>
   );
 }
 
-// Feature flag row component
-function FeatureFlagRow({
+// ── Single flag row ─────────────────────────────────────────────
+function FlagRow({
   flag,
   onToggle,
-  onMarkStale,
-  onArchive,
-  isToggling
+  isToggling,
+  t,
+  language,
 }: {
   flag: FeatureFlag;
   onToggle: (name: string, enabled: boolean) => void;
-  onMarkStale: (name: string) => void;
-  onArchive: (name: string) => void;
   isToggling: boolean;
+  t: (key: string) => string;
+  language: string;
 }) {
-  const { t, language } = useTheme();
-  const [showMenu, setShowMenu] = useState(false);
-  const config = categoryConfig[flag.category] || categoryConfig.General;
-
-  const formatDate = (dateString: string | undefined) => {
-    if (!dateString) return null;
-    return new Date(dateString).toLocaleDateString(language === 'fr' ? 'fr-CA' : 'en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric'
-    });
-  };
-
-  // Get translated state label
-  const getStateLabel = (state: FeatureFlagState | undefined | null) => {
-    if (state === undefined || state === null) {
-      return t('admin.featureFlags.state.Active'); // Default to Active
-    }
-    const stateKeys: Record<number, string> = {
-      [FeatureFlagState.Active]: 'Active',
-      [FeatureFlagState.PotentiallyStale]: 'PotentiallyStale',
-      [FeatureFlagState.Stale]: 'Stale',
-      [FeatureFlagState.Archived]: 'Archived'
-    };
-    const key = stateKeys[state] || 'Active';
-    return t(`admin.featureFlags.state.${key}`);
-  };
-
-  // Get translated type label
-  const getTypeLabel = (type: FeatureFlagType) => {
-    return t(`admin.featureFlags.type.${type === FeatureFlagType.Temporary ? 'Temporary' : 'Permanent'}`);
-  };
-
-  // Get translated description (falls back to original if no translation)
   const getDescription = () => {
-    const translationKey = `admin.featureFlags.desc.${flag.name}`;
-    const translated = t(translationKey);
-    // If translation exists (not returning the key itself), use it
-    if (translated !== translationKey) {
-      return translated;
-    }
-    // Fall back to original description
-    return flag.description || t('admin.featureFlags.noDescription');
+    const key = `admin.featureFlags.desc.${flag.name}`;
+    const translated = t(key);
+    return translated !== key ? translated : flag.description || '';
   };
 
-  const stateInfo = getFeatureFlagStateInfo(flag.state);
+  const isStale =
+    flag.state === FeatureFlagState.Stale ||
+    flag.state === FeatureFlagState.PotentiallyStale;
+
+  const isExpiringSoon = flag.expiresAt && new Date(flag.expiresAt) < new Date(Date.now() + 7 * 86400000);
 
   return (
-    <motion.div
-      layout
-      initial={{ opacity: 0, scale: 0.98 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.98 }}
-      className="group relative bg-white dark:bg-gray-900/50 rounded-xl border border-gray-100 dark:border-gray-800 p-4 hover:border-gray-200 dark:hover:border-gray-700 transition-all duration-200"
+    <div
+      className={cn(
+        'group flex items-center gap-4 px-4 py-3 -mx-4 rounded-lg transition-colors',
+        'hover:bg-gray-50 dark:hover:bg-white/[0.02]',
+      )}
     >
-      <div className="flex items-start gap-4">
-        {/* Category icon */}
-        <div className={`flex-shrink-0 p-2.5 rounded-lg bg-gradient-to-br ${config.gradient} text-white shadow-sm`}>
-          {config.icon}
+      {/* Info */}
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium text-gray-900 dark:text-white truncate">
+            {flag.name}
+          </span>
+          {flag.type === FeatureFlagType.Temporary && (
+            <span className="shrink-0 inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-medium rounded bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400">
+              <Clock className="w-2.5 h-2.5" />
+              {t('admin.featureFlags.type.Temporary')}
+            </span>
+          )}
+          {isStale && (
+            <span className="shrink-0 inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-medium rounded bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400">
+              <AlertTriangle className="w-2.5 h-2.5" />
+              {t('admin.featureFlags.state.Stale')}
+            </span>
+          )}
+          {isExpiringSoon && !isStale && (
+            <span className="shrink-0 inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-medium rounded bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400">
+              <Calendar className="w-2.5 h-2.5" />
+              {language === 'fr' ? 'Expire bientôt' : 'Expiring soon'}
+            </span>
+          )}
         </div>
-
-        {/* Content */}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <h4 className="font-mono text-sm font-semibold text-gray-900 dark:text-white">
-                {flag.name}
-              </h4>
-              <p className="mt-0.5 text-sm text-gray-500 dark:text-gray-400 line-clamp-1">
-                {getDescription()}
-              </p>
-            </div>
-
-            {/* Toggle and menu */}
-            <div className="flex items-center gap-2">
-              <ToggleSwitch
-                enabled={flag.isEnabled}
-                onChange={() => onToggle(flag.name, !flag.isEnabled)}
-                disabled={isToggling}
-              />
-
-              <div className="relative">
-                <button
-                  onClick={() => setShowMenu(!showMenu)}
-                  className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                >
-                  <MoreHorizontal className="w-4 h-4" />
-                </button>
-
-                <AnimatePresence>
-                  {showMenu && (
-                    <>
-                      <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-10"
-                        onClick={() => setShowMenu(false)}
-                      />
-                      <motion.div
-                        initial={{ opacity: 0, scale: 0.95, y: -5 }}
-                        animate={{ opacity: 1, scale: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 0.95, y: -5 }}
-                        transition={{ duration: 0.15 }}
-                        className="absolute right-0 top-full mt-1 z-20 w-44 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-100 dark:border-gray-700 py-1 overflow-hidden"
-                      >
-                        <button
-                          onClick={() => {
-                            onMarkStale(flag.name);
-                            setShowMenu(false);
-                          }}
-                          className="w-full px-3 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 flex items-center gap-2 transition-colors"
-                        >
-                          <AlertTriangle className="w-4 h-4 text-amber-500" />
-                          {t('admin.featureFlags.markStale')}
-                        </button>
-                        <button
-                          onClick={() => {
-                            onArchive(flag.name);
-                            setShowMenu(false);
-                          }}
-                          className="w-full px-3 py-2 text-left text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-2 transition-colors"
-                        >
-                          <Archive className="w-4 h-4" />
-                          {t('admin.featureFlags.archive')}
-                        </button>
-                      </motion.div>
-                    </>
-                  )}
-                </AnimatePresence>
-              </div>
-            </div>
-          </div>
-
-          {/* Meta info */}
-          <div className="mt-3 flex flex-wrap items-center gap-2">
-            {/* State badge */}
-            <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium ${stateInfo.bgColor} ${stateInfo.color}`}>
-              {getStateLabel(flag.state)}
-            </span>
-
-            {/* Type badge */}
-            <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
-              {getTypeLabel(flag.type)}
-            </span>
-
-            {/* Tags */}
-            {flag.tags.slice(0, 2).map(tag => (
-              <span
-                key={tag}
-                className="inline-flex items-center px-2 py-0.5 rounded-md text-xs bg-gray-50 dark:bg-gray-800/50 text-gray-500 dark:text-gray-500"
-              >
-                #{tag}
-              </span>
-            ))}
-            {flag.tags.length > 2 && (
-              <span className="text-xs text-gray-400">{t('admin.featureFlags.moreTagsText').replace('{count}', String(flag.tags.length - 2))}</span>
-            )}
-
-            {/* Separator */}
-            <span className="text-gray-200 dark:text-gray-700">|</span>
-
-            {/* Date info */}
-            <span className="inline-flex items-center gap-1 text-xs text-gray-400">
-              <Calendar className="w-3 h-3" />
-              {formatDate(flag.created) || t('admin.featureFlags.unknown')}
-            </span>
-
-            {flag.createdBy && (
-              <span className="inline-flex items-center gap-1 text-xs text-gray-400">
-                <User className="w-3 h-3" />
-                {flag.createdBy.split('@')[0]}
-              </span>
-            )}
-
-            {flag.expiresAt && (
-              <span className="inline-flex items-center gap-1 text-xs text-orange-500">
-                <Clock className="w-3 h-3" />
-                {t('admin.featureFlags.expires')} {formatDate(flag.expiresAt)}
-              </span>
-            )}
-          </div>
-        </div>
+        {getDescription() && (
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 truncate">
+            {getDescription()}
+          </p>
+        )}
       </div>
-    </motion.div>
+
+      {/* Toggle */}
+      <Toggle
+        enabled={flag.isEnabled}
+        onChange={() => onToggle(flag.name, !flag.isEnabled)}
+        disabled={isToggling}
+      />
+    </div>
   );
 }
 
-// Category accordion component
-function CategoryAccordion({
+// ── Category group (collapsible) ────────────────────────────────
+function CategoryGroup({
   category,
   flags,
   onToggle,
-  onMarkStale,
-  onArchive,
   isToggling,
-  defaultOpen = true
+  t,
+  language,
+  defaultOpen = true,
 }: {
   category: string;
   flags: FeatureFlag[];
   onToggle: (name: string, enabled: boolean) => void;
-  onMarkStale: (name: string) => void;
-  onArchive: (name: string) => void;
   isToggling: boolean;
+  t: (key: string) => string;
+  language: string;
   defaultOpen?: boolean;
 }) {
-  const { t } = useTheme();
   const [isOpen, setIsOpen] = useState(defaultOpen);
-  const label = t(`admin.featureFlags.category.${category}`);
-  const enabledCount = flags.filter(f => f.isEnabled).length;
   const config = categoryConfig[category] || categoryConfig.General;
+  const enabledCount = flags.filter((f) => f.isEnabled).length;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 overflow-hidden shadow-sm"
-    >
+    <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800">
+      {/* Category header — clickable to collapse */}
       <button
+        type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full px-5 py-4 flex items-center justify-between hover:bg-gray-50/50 dark:hover:bg-gray-800/30 transition-colors"
+        className={cn(
+          'flex items-center gap-3 w-full px-5 py-3.5 text-left transition-colors',
+          'hover:bg-gray-50 dark:hover:bg-white/[0.02]',
+          isOpen && 'border-b border-gray-100 dark:border-gray-800',
+        )}
       >
-        <div className="flex items-center gap-3">
-          <div className={`p-2 rounded-lg bg-gradient-to-br ${config.gradient} text-white shadow-sm`}>
-            {config.icon}
-          </div>
-          <div className="text-left">
-            <h3 className="font-semibold text-gray-900 dark:text-white">{label}</h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              {flags.length} {t('admin.featureFlags.flags')} · {enabledCount} {t('admin.featureFlags.enabled')}
-            </p>
-          </div>
+        <div className={cn('p-1.5 rounded-lg', config.bg, config.color)}>
+          {config.icon}
         </div>
-
-        <div className="flex items-center gap-3">
-          {/* Quick stats */}
-          <div className="hidden sm:flex items-center gap-1.5">
-            <span className="px-2 py-1 rounded-full text-xs font-medium bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400">
-              {enabledCount} {t('admin.featureFlags.on')}
-            </span>
-            <span className="px-2 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400">
-              {flags.length - enabledCount} {t('admin.featureFlags.off')}
-            </span>
-          </div>
-
-          <motion.div
-            animate={{ rotate: isOpen ? 180 : 0 }}
-            transition={{ duration: 0.2 }}
-          >
-            <ChevronDown className="w-5 h-5 text-gray-400" />
-          </motion.div>
-        </div>
+        <span className="text-sm font-semibold text-gray-900 dark:text-white">
+          {t(`admin.featureFlags.category.${category}`)}
+        </span>
+        <span className="text-xs text-gray-400 dark:text-gray-500 ml-auto tabular-nums mr-2">
+          {enabledCount}/{flags.length}
+        </span>
+        <svg
+          className={cn('w-4 h-4 text-gray-400 transition-transform duration-200', isOpen && 'rotate-180')}
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          strokeWidth={2}
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+        </svg>
       </button>
 
-      <AnimatePresence>
+      {/* Flag rows — collapsible */}
+      <AnimatePresence initial={false}>
         {isOpen && (
           <motion.div
             initial={{ height: 0, opacity: 0 }}
@@ -446,39 +225,30 @@ function CategoryAccordion({
             transition={{ duration: 0.2 }}
             className="overflow-hidden"
           >
-            <div className="px-5 pb-4 space-y-2 border-t border-gray-100 dark:border-gray-800 pt-4">
-              {flags.length === 0 ? (
-                <div className="text-center py-8">
-                  <Flag className="w-8 h-8 text-gray-300 dark:text-gray-600 mx-auto mb-2" />
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    {t('admin.featureFlags.noFlagsInCategory')}
-                  </p>
-                </div>
-              ) : (
-                flags.map(flag => (
-                  <FeatureFlagRow
-                    key={flag.name}
-                    flag={flag}
-                    onToggle={onToggle}
-                    onMarkStale={onMarkStale}
-                    onArchive={onArchive}
-                    isToggling={isToggling}
-                  />
-                ))
-              )}
+            <div className="px-5 py-1 divide-y divide-gray-100 dark:divide-gray-800/50">
+              {flags.map((flag) => (
+                <FlagRow
+                  key={flag.name}
+                  flag={flag}
+                  onToggle={onToggle}
+                  isToggling={isToggling}
+                  t={t}
+                  language={language}
+                />
+              ))}
             </div>
           </motion.div>
         )}
       </AnimatePresence>
-    </motion.div>
+    </div>
   );
 }
 
-// Create flag modal component
+// ── Create flag modal ───────────────────────────────────────────
 function CreateFlagModal({
   isOpen,
   onClose,
-  onCreate
+  onCreate,
 }: {
   isOpen: boolean;
   onClose: () => void;
@@ -491,7 +261,7 @@ function CreateFlagModal({
     category: 'General',
     tags: [],
     type: FeatureFlagType.Permanent,
-    isEnabled: false
+    isEnabled: false,
   });
   const [tagInput, setTagInput] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -503,7 +273,6 @@ function CreateFlagModal({
       setError(t('admin.featureFlags.modal.nameRequired'));
       return;
     }
-
     if (formData.type === FeatureFlagType.Temporary && !formData.expiresAt) {
       setError(t('admin.featureFlags.modal.expirationRequired'));
       return;
@@ -511,18 +280,10 @@ function CreateFlagModal({
 
     setIsSubmitting(true);
     setError(null);
-
     try {
       await onCreate(formData);
       onClose();
-      setFormData({
-        name: '',
-        description: '',
-        category: 'General',
-        tags: [],
-        type: FeatureFlagType.Permanent,
-        isEnabled: false
-      });
+      setFormData({ name: '', description: '', category: 'General', tags: [], type: FeatureFlagType.Permanent, isEnabled: false });
     } catch (err) {
       setError(err instanceof Error ? err.message : t('admin.featureFlags.toast.createFailed'));
     } finally {
@@ -532,19 +293,13 @@ function CreateFlagModal({
 
   const addTag = () => {
     if (tagInput.trim() && !formData.tags.includes(tagInput.trim())) {
-      setFormData(prev => ({
-        ...prev,
-        tags: [...prev.tags, tagInput.trim()]
-      }));
+      setFormData((prev) => ({ ...prev, tags: [...prev.tags, tagInput.trim()] }));
       setTagInput('');
     }
   };
 
   const removeTag = (tag: string) => {
-    setFormData(prev => ({
-      ...prev,
-      tags: prev.tags.filter(t => t !== tag)
-    }));
+    setFormData((prev) => ({ ...prev, tags: prev.tags.filter((t) => t !== tag) }));
   };
 
   return (
@@ -555,77 +310,66 @@ function CreateFlagModal({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm"
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
             onClick={onClose}
           />
-
           <motion.div
             initial={{ opacity: 0, scale: 0.95, y: 10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 10 }}
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            className="relative bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden"
+            className="relative bg-white dark:bg-gray-900 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-800 w-full max-w-md overflow-hidden"
           >
             {/* Header */}
-            <div className="relative px-6 py-5 border-b border-gray-100 dark:border-gray-800">
-              <div className="absolute inset-0 bg-gradient-to-r from-orange-500/5 via-transparent to-amber-500/5" />
-              <div className="relative flex items-center justify-between">
-                <div>
-                  <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{t('admin.featureFlags.modal.title')}</h2>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">{t('admin.featureFlags.modal.subtitle')}</p>
-                </div>
-                <button
-                  onClick={onClose}
-                  className="p-2 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
+            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-gray-800">
+              <h2 className="text-base font-semibold text-gray-900 dark:text-white">
+                {t('admin.featureFlags.modal.title')}
+              </h2>
+              <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400 transition-colors">
+                <X className="w-4 h-4" />
+              </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="p-6 space-y-5">
+            <form onSubmit={handleSubmit} className="p-5 space-y-4">
               {error && (
-                <motion.div
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-900/50 rounded-xl text-red-600 dark:text-red-400 text-sm flex items-center gap-2"
-                >
-                  <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+                <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-900/50 rounded-lg text-red-600 dark:text-red-400 text-sm flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4 shrink-0" />
                   {error}
-                </motion.div>
+                </div>
               )}
 
-              {/* Flag Name */}
+              {/* Name */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   {t('admin.featureFlags.modal.name')} <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
                   value={formData.name}
-                  onChange={e => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
                   placeholder={t('admin.featureFlags.modal.namePlaceholder')}
-                  className="w-full px-4 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-800/50 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
+                  className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-momentum-orange/20 focus:border-momentum-orange transition-colors"
+                  autoFocus
                 />
               </div>
 
               {/* Description */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   {t('admin.featureFlags.modal.description')}
                 </label>
                 <textarea
                   value={formData.description || ''}
-                  onChange={e => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
                   placeholder={t('admin.featureFlags.modal.descriptionPlaceholder')}
                   rows={2}
-                  className="w-full px-4 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-800/50 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all resize-none"
+                  className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-momentum-orange/20 focus:border-momentum-orange transition-colors resize-none"
                 />
               </div>
 
               {/* Category */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   {t('admin.featureFlags.modal.category')}
                 </label>
                 <div className="grid grid-cols-4 gap-2">
@@ -633,19 +377,16 @@ function CreateFlagModal({
                     <button
                       key={key}
                       type="button"
-                      onClick={() => setFormData(prev => ({ ...prev, category: key }))}
-                      className={`
-                        p-3 rounded-xl border-2 transition-all text-center
-                        ${formData.category === key
-                          ? `border-transparent bg-gradient-to-br ${cfg.gradient} text-white shadow-md`
-                          : 'border-gray-100 dark:border-gray-800 hover:border-gray-200 dark:hover:border-gray-700 text-gray-600 dark:text-gray-400'
-                        }
-                      `}
+                      onClick={() => setFormData((prev) => ({ ...prev, category: key }))}
+                      className={cn(
+                        'flex flex-col items-center gap-1 p-2.5 rounded-lg border transition-all text-xs font-medium',
+                        formData.category === key
+                          ? 'border-momentum-orange bg-orange-50 dark:bg-orange-900/20 text-momentum-orange'
+                          : 'border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:border-gray-300 dark:hover:border-gray-600',
+                      )}
                     >
-                      <div className="flex flex-col items-center gap-1">
-                        {cfg.icon}
-                        <span className="text-xs font-medium">{t(`admin.featureFlags.categoryShort.${key}`)}</span>
-                      </div>
+                      {cfg.icon}
+                      {t(`admin.featureFlags.categoryShort.${key}`)}
                     </button>
                   ))}
                 </div>
@@ -653,22 +394,18 @@ function CreateFlagModal({
 
               {/* Tags */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   {t('admin.featureFlags.modal.tags')}
                 </label>
                 {formData.tags.length > 0 && (
-                  <div className="flex gap-2 mb-2 flex-wrap">
-                    {formData.tags.map(tag => (
+                  <div className="flex gap-1.5 mb-2 flex-wrap">
+                    {formData.tags.map((tag) => (
                       <span
                         key={tag}
-                        className="inline-flex items-center gap-1 px-2.5 py-1 bg-orange-50 dark:bg-orange-900/20 text-orange-700 dark:text-orange-300 rounded-lg text-sm"
+                        className="inline-flex items-center gap-1 px-2 py-0.5 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 rounded text-xs"
                       >
                         #{tag}
-                        <button
-                          type="button"
-                          onClick={() => removeTag(tag)}
-                          className="hover:text-orange-900 dark:hover:text-orange-100"
-                        >
+                        <button type="button" onClick={() => removeTag(tag)} className="hover:text-red-500">
                           <X className="w-3 h-3" />
                         </button>
                       </span>
@@ -679,118 +416,97 @@ function CreateFlagModal({
                   <input
                     type="text"
                     value={tagInput}
-                    onChange={e => setTagInput(e.target.value)}
-                    onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addTag())}
+                    onChange={(e) => setTagInput(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
                     placeholder={t('admin.featureFlags.modal.tagsPlaceholder')}
-                    className="flex-1 px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-800/50 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
+                    className="flex-1 px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-momentum-orange/20 focus:border-momentum-orange transition-colors"
                   />
-                  <button
-                    type="button"
-                    onClick={addTag}
-                    className="px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-                  >
+                  <Button type="button" variant="secondary" size="sm" onClick={addTag}>
                     {t('admin.featureFlags.modal.addTag')}
-                  </button>
+                  </Button>
                 </div>
               </div>
 
               {/* Type */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   {t('admin.featureFlags.modal.type')}
                 </label>
-                <div className="flex gap-3">
+                <div className="flex gap-2">
                   <button
                     type="button"
-                    onClick={() => setFormData(prev => ({ ...prev, type: FeatureFlagType.Permanent, expiresAt: undefined }))}
-                    className={`
-                      flex-1 p-3 rounded-xl border-2 transition-all flex items-center justify-center gap-2
-                      ${formData.type === FeatureFlagType.Permanent
-                        ? 'border-orange-500 bg-orange-50 dark:bg-orange-900/20 text-orange-700 dark:text-orange-300'
-                        : 'border-gray-100 dark:border-gray-800 text-gray-600 dark:text-gray-400 hover:border-gray-200 dark:hover:border-gray-700'
-                      }
-                    `}
+                    onClick={() => setFormData((prev) => ({ ...prev, type: FeatureFlagType.Permanent, expiresAt: undefined }))}
+                    className={cn(
+                      'flex-1 flex items-center justify-center gap-2 p-2.5 rounded-lg border transition-all text-sm font-medium',
+                      formData.type === FeatureFlagType.Permanent
+                        ? 'border-momentum-orange bg-orange-50 dark:bg-orange-900/20 text-momentum-orange'
+                        : 'border-gray-200 dark:border-gray-700 text-gray-500 hover:border-gray-300',
+                    )}
                   >
                     <Shield className="w-4 h-4" />
-                    <span className="font-medium">{t('admin.featureFlags.type.Permanent')}</span>
+                    {t('admin.featureFlags.type.Permanent')}
                   </button>
                   <button
                     type="button"
-                    onClick={() => setFormData(prev => ({ ...prev, type: FeatureFlagType.Temporary }))}
-                    className={`
-                      flex-1 p-3 rounded-xl border-2 transition-all flex items-center justify-center gap-2
-                      ${formData.type === FeatureFlagType.Temporary
-                        ? 'border-amber-500 bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300'
-                        : 'border-gray-100 dark:border-gray-800 text-gray-600 dark:text-gray-400 hover:border-gray-200 dark:hover:border-gray-700'
-                      }
-                    `}
+                    onClick={() => setFormData((prev) => ({ ...prev, type: FeatureFlagType.Temporary }))}
+                    className={cn(
+                      'flex-1 flex items-center justify-center gap-2 p-2.5 rounded-lg border transition-all text-sm font-medium',
+                      formData.type === FeatureFlagType.Temporary
+                        ? 'border-amber-500 bg-amber-50 dark:bg-amber-900/20 text-amber-600'
+                        : 'border-gray-200 dark:border-gray-700 text-gray-500 hover:border-gray-300',
+                    )}
                   >
                     <Clock className="w-4 h-4" />
-                    <span className="font-medium">{t('admin.featureFlags.type.Temporary')}</span>
+                    {t('admin.featureFlags.type.Temporary')}
                   </button>
                 </div>
               </div>
 
-              {/* Expiration Date */}
+              {/* Expiration */}
               <AnimatePresence>
                 {formData.type === FeatureFlagType.Temporary && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    exit={{ opacity: 0, height: 0 }}
-                  >
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                  <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       {t('admin.featureFlags.modal.expirationDate')} <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="date"
                       value={formData.expiresAt?.split('T')[0] || ''}
-                      onChange={e => setFormData(prev => ({ ...prev, expiresAt: e.target.value ? `${e.target.value}T00:00:00Z` : undefined }))}
-                      className="w-full px-4 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-800/50 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
+                      onChange={(e) =>
+                        setFormData((prev) => ({ ...prev, expiresAt: e.target.value ? `${e.target.value}T00:00:00Z` : undefined }))
+                      }
+                      className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-momentum-orange/20 focus:border-momentum-orange transition-colors"
                     />
                   </motion.div>
                 )}
               </AnimatePresence>
 
-              {/* Enable Toggle */}
-              <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800/50 rounded-xl">
+              {/* Enable toggle */}
+              <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
                 <div>
-                  <p className="font-medium text-gray-900 dark:text-white">{t('admin.featureFlags.modal.enableImmediately')}</p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">{t('admin.featureFlags.modal.enableImmediatelyDesc')}</p>
+                  <p className="text-sm font-medium text-gray-900 dark:text-white">{t('admin.featureFlags.modal.enableImmediately')}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">{t('admin.featureFlags.modal.enableImmediatelyDesc')}</p>
                 </div>
-                <ToggleSwitch
+                <Toggle
                   enabled={formData.isEnabled}
-                  onChange={() => setFormData(prev => ({ ...prev, isEnabled: !prev.isEnabled }))}
+                  onChange={() => setFormData((prev) => ({ ...prev, isEnabled: !prev.isEnabled }))}
                   disabled={false}
                 />
               </div>
 
               {/* Actions */}
-              <div className="flex justify-end gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={onClose}
-                  className="px-5 py-2.5 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors font-medium"
-                >
+              <div className="flex justify-end gap-2 pt-1">
+                <Button type="button" variant="ghost" onClick={onClose}>
                   {t('admin.featureFlags.modal.cancel')}
-                </button>
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="px-5 py-2.5 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl hover:from-orange-600 hover:to-orange-700 transition-all font-medium shadow-lg shadow-orange-500/25 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                >
+                </Button>
+                <Button type="submit" variant="brand" disabled={isSubmitting}>
                   {isSubmitting ? (
-                    <>
-                      <RefreshCw className="w-4 h-4 animate-spin" />
-                      {t('admin.featureFlags.modal.creating')}
-                    </>
+                    <RefreshCw className="w-4 h-4 animate-spin" />
                   ) : (
-                    <>
-                      <Plus className="w-4 h-4" />
-                      {t('admin.featureFlags.modal.create')}
-                    </>
+                    <Plus className="w-4 h-4" />
                   )}
-                </button>
+                  {isSubmitting ? t('admin.featureFlags.modal.creating') : t('admin.featureFlags.modal.create')}
+                </Button>
               </div>
             </form>
           </motion.div>
@@ -800,35 +516,24 @@ function CreateFlagModal({
   );
 }
 
-// Main page component
+// ── Main page ───────────────────────────────────────────────────
 export default function AdminFeatureFlagsPage() {
-  const { t } = useTheme();
-  const {
-    flags,
-    stats,
-    isLoading,
-    error,
-    refresh,
-    toggleFlag,
-    createFlag,
-    markAsStale,
-    archiveFlag
-  } = useFeatureFlagsAdmin();
+  const { t, language } = useTheme();
+  const { flags, stats, isLoading, error, refresh, toggleFlag, createFlag } = useFeatureFlagsAdmin();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [stateFilter, setStateFilter] = useState<'all' | 'active' | 'stale' | 'disabled'>('all');
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isToggling, setIsToggling] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [toast, setToast] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
-  // Auto-dismiss messages
   useEffect(() => {
-    if (message) {
-      const timer = setTimeout(() => setMessage(null), 4000);
+    if (toast) {
+      const timer = setTimeout(() => setToast(null), 3000);
       return () => clearTimeout(timer);
     }
-  }, [message]);
+  }, [toast]);
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -836,51 +541,42 @@ export default function AdminFeatureFlagsPage() {
     setIsRefreshing(false);
   };
 
-  const handleToggle = useCallback(async (name: string, enabled: boolean) => {
-    setIsToggling(true);
-    try {
-      await toggleFlag(name, enabled);
-      setMessage({ type: 'success', text: t(enabled ? 'admin.featureFlags.toast.enabled' : 'admin.featureFlags.toast.disabled').replace('{name}', name) });
-    } catch {
-      setMessage({ type: 'error', text: t('admin.featureFlags.toast.toggleFailed').replace('{name}', name) });
-    } finally {
-      setIsToggling(false);
-    }
-  }, [toggleFlag, t]);
-
-  const handleMarkStale = useCallback(async (name: string) => {
-    try {
-      await markAsStale(name);
-      setMessage({ type: 'success', text: t('admin.featureFlags.toast.markedStale').replace('{name}', name) });
-    } catch {
-      setMessage({ type: 'error', text: t('admin.featureFlags.toast.markStaleFailed').replace('{name}', name) });
-    }
-  }, [markAsStale, t]);
-
-  const handleArchive = useCallback(async (name: string) => {
-    if (!confirm(t('admin.featureFlags.archiveConfirm').replace('{name}', name))) return;
-    try {
-      await archiveFlag(name);
-      setMessage({ type: 'success', text: t('admin.featureFlags.toast.archived').replace('{name}', name) });
-    } catch {
-      setMessage({ type: 'error', text: t('admin.featureFlags.toast.archiveFailed').replace('{name}', name) });
-    }
-  }, [archiveFlag, t]);
-
-  const handleCreate = useCallback(async (data: CreateFeatureFlagRequest) => {
-    await createFlag(data);
-    setMessage({ type: 'success', text: t('admin.featureFlags.toast.created').replace('{name}', data.name) });
-  }, [createFlag, t]);
-
-  // Filter flags
-  const filteredFlags = flags.filter(flag => {
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      if (!flag.name.toLowerCase().includes(query) &&
-          !flag.description?.toLowerCase().includes(query) &&
-          !flag.tags.some(t => t.toLowerCase().includes(query))) {
-        return false;
+  const handleToggle = useCallback(
+    async (name: string, enabled: boolean) => {
+      setIsToggling(true);
+      try {
+        await toggleFlag(name, enabled);
+        setToast({
+          type: 'success',
+          text: t(enabled ? 'admin.featureFlags.toast.enabled' : 'admin.featureFlags.toast.disabled').replace('{name}', name),
+        });
+      } catch {
+        setToast({ type: 'error', text: t('admin.featureFlags.toast.toggleFailed').replace('{name}', name) });
+      } finally {
+        setIsToggling(false);
       }
+    },
+    [toggleFlag, t],
+  );
+
+  const handleCreate = useCallback(
+    async (data: CreateFeatureFlagRequest) => {
+      await createFlag(data);
+      setToast({ type: 'success', text: t('admin.featureFlags.toast.created').replace('{name}', data.name) });
+    },
+    [createFlag, t],
+  );
+
+  // Filter
+  const filteredFlags = flags.filter((flag) => {
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      if (
+        !flag.name.toLowerCase().includes(q) &&
+        !flag.description?.toLowerCase().includes(q) &&
+        !flag.tags.some((t) => t.toLowerCase().includes(q))
+      )
+        return false;
     }
     if (stateFilter === 'active' && (!flag.isEnabled || flag.state !== FeatureFlagState.Active)) return false;
     if (stateFilter === 'stale' && flag.state !== FeatureFlagState.Stale && flag.state !== FeatureFlagState.PotentiallyStale) return false;
@@ -888,183 +584,126 @@ export default function AdminFeatureFlagsPage() {
     return true;
   });
 
-  // Group flags by category
-  const groupedFlags = filteredFlags.reduce((acc, flag) => {
-    const category = flag.category || 'General';
-    if (!acc[category]) acc[category] = [];
-    acc[category].push(flag);
-    return acc;
-  }, {} as Record<string, FeatureFlag[]>);
+  // Group by category
+  const grouped = filteredFlags.reduce(
+    (acc, flag) => {
+      const cat = flag.category || 'General';
+      (acc[cat] ||= []).push(flag);
+      return acc;
+    },
+    {} as Record<string, FeatureFlag[]>,
+  );
 
-  const sortedCategories = Object.keys(groupedFlags).sort((a, b) => {
+  const sortedCategories = Object.keys(grouped).sort((a, b) => {
     const order = ['AI', 'Export', 'Premium', 'General'];
     return order.indexOf(a) - order.indexOf(b);
   });
 
+  // ── Error state ─────────────────────────────────────────────
   if (error && !flags.length) {
     return (
       <div className="flex flex-col items-center justify-center py-20">
-        <div className="w-16 h-16 rounded-2xl bg-red-100 dark:bg-red-900/30 flex items-center justify-center mb-4">
-          <AlertTriangle className="w-8 h-8 text-red-500" />
+        <div className="w-14 h-14 rounded-2xl bg-red-100 dark:bg-red-900/30 flex items-center justify-center mb-4">
+          <AlertTriangle className="w-7 h-7 text-red-500" />
         </div>
-        <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">{t('admin.featureFlags.errorTitle')}</h2>
-        <p className="text-gray-500 dark:text-gray-400 mb-6">{error.message}</p>
-        <button
-          onClick={handleRefresh}
-          className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl hover:from-orange-600 hover:to-orange-700 transition-all font-medium shadow-lg shadow-orange-500/25"
-        >
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">{t('admin.featureFlags.errorTitle')}</h2>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">{error.message}</p>
+        <Button variant="brand" onClick={handleRefresh}>
           <RefreshCw className="w-4 h-4" />
           {t('admin.featureFlags.retry')}
-        </button>
+        </Button>
       </div>
     );
   }
 
+  // ── Render ──────────────────────────────────────────────────
   return (
-    <div className="space-y-6">
+    <div className="max-w-3xl mx-auto space-y-6">
       {/* Header */}
-      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-strategy-blue text-white shadow-lg shadow-strategy-blue/25">
-              <Flag className="w-5 h-5" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t('admin.featureFlags.title')}</h1>
-              <p className="text-sm text-gray-500 dark:text-gray-400">{t('admin.featureFlags.subtitle')}</p>
-            </div>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-xl bg-strategy-blue text-white">
+            <Flag className="w-5 h-5" />
+          </div>
+          <div>
+            <h1 className="text-xl font-bold text-gray-900 dark:text-white">{t('admin.featureFlags.title')}</h1>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              {stats.enabledCount} {t('admin.featureFlags.enabled')} / {stats.totalCount} {t('admin.featureFlags.stats.total').toLowerCase()}
+            </p>
           </div>
         </div>
-
-        <div className="flex items-center gap-3">
-          <button
-            onClick={handleRefresh}
-            disabled={isRefreshing}
-            className="flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50"
-          >
-            <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-            <span className="hidden sm:inline">{t('admin.featureFlags.refresh')}</span>
-          </button>
-          <button
-            onClick={() => setShowCreateModal(true)}
-            className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl hover:from-orange-600 hover:to-orange-700 transition-all font-medium shadow-lg shadow-orange-500/25"
-          >
-            <Plus className="w-4 h-4" />
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={handleRefresh} disabled={isRefreshing}>
+            <RefreshCw className={cn('w-3.5 h-3.5', isRefreshing && 'animate-spin')} />
+          </Button>
+          <Button variant="brand" size="sm" onClick={() => setShowCreateModal(true)}>
+            <Plus className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">{t('admin.featureFlags.createFlag')}</span>
-          </button>
+          </Button>
         </div>
       </div>
 
-      {/* Toast Message */}
+      {/* Toast */}
       <AnimatePresence>
-        {message && (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className={`flex items-center gap-3 p-4 rounded-xl ${
-              message.type === 'success'
-                ? 'bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-900/50'
-                : 'bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-900/50'
-            }`}
-          >
-            {message.type === 'success' ? (
-              <Check className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-            ) : (
-              <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400" />
-            )}
-            <p className={message.type === 'success' ? 'text-emerald-800 dark:text-emerald-200' : 'text-red-800 dark:text-red-200'}>
-              {message.text}
-            </p>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Stats Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatsCard
-          title={t('admin.featureFlags.stats.total')}
-          value={stats.totalCount}
-          icon={<Flag className="w-5 h-5" />}
-          gradient="from-slate-600 to-gray-700"
-          delay={0}
-        />
-        <StatsCard
-          title={t('admin.featureFlags.stats.enabled')}
-          value={stats.enabledCount}
-          icon={<Zap className="w-5 h-5" />}
-          gradient="from-emerald-500 to-green-600"
-          delay={0.05}
-        />
-        <StatsCard
-          title={t('admin.featureFlags.stats.stale')}
-          value={stats.staleCount}
-          icon={<AlertTriangle className="w-5 h-5" />}
-          gradient="from-amber-500 to-orange-500"
-          delay={0.1}
-        />
-        <StatsCard
-          title={t('admin.featureFlags.stats.disabled')}
-          value={stats.disabledCount}
-          icon={<ToggleLeft className="w-5 h-5" />}
-          gradient="from-gray-400 to-gray-500"
-          delay={0.15}
-        />
-      </div>
-
-      {/* Stale Warning */}
-      <AnimatePresence>
-        {stats.staleCount > 0 && stateFilter !== 'stale' && (
+        {toast && (
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="flex items-center gap-4 p-4 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 border border-amber-200 dark:border-amber-800/50 rounded-xl"
+            className={cn(
+              'flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm',
+              toast.type === 'success'
+                ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
+                : 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800',
+            )}
           >
-            <div className="p-2 rounded-lg bg-amber-500 text-white">
-              <AlertTriangle className="w-4 h-4" />
-            </div>
-            <div className="flex-1">
-              <p className="text-amber-800 dark:text-amber-200 font-medium">
-                {t('admin.featureFlags.staleWarning').replace('{count}', String(stats.staleCount))}
-              </p>
-              <p className="text-sm text-amber-600 dark:text-amber-400">
-                {t('admin.featureFlags.staleWarningDesc')}
-              </p>
-            </div>
-            <button
-              onClick={() => setStateFilter('stale')}
-              className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-sm font-medium rounded-lg transition-colors"
-            >
-              {t('admin.featureFlags.review')}
-            </button>
+            {toast.type === 'success' ? <Check className="w-4 h-4" /> : <AlertTriangle className="w-4 h-4" />}
+            {toast.text}
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Search and Filter */}
-      <div className="flex flex-col sm:flex-row gap-3">
-        <div className="flex-1 relative">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+      {/* Quick stats pills */}
+      <div className="flex items-center gap-6 text-sm">
+        <div className="flex items-center gap-1.5">
+          <div className="w-2 h-2 rounded-full bg-emerald-500" />
+          <span className="text-gray-600 dark:text-gray-400">{stats.enabledCount} {t('admin.featureFlags.on')}</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <div className="w-2 h-2 rounded-full bg-gray-300 dark:bg-gray-600" />
+          <span className="text-gray-600 dark:text-gray-400">{stats.disabledCount} {t('admin.featureFlags.off')}</span>
+        </div>
+        {stats.staleCount > 0 && (
+          <div className="flex items-center gap-1.5">
+            <div className="w-2 h-2 rounded-full bg-amber-500" />
+            <span className="text-amber-600 dark:text-amber-400">{stats.staleCount} {t('admin.featureFlags.state.Stale').toLowerCase()}</span>
+          </div>
+        )}
+      </div>
+
+      {/* Search + filters */}
+      <div className="flex flex-col sm:flex-row gap-2">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input
             type="text"
             value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
+            onChange={(e) => setSearchQuery(e.target.value)}
             placeholder={t('admin.featureFlags.search')}
-            className="w-full pl-11 pr-4 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
+            className="w-full pl-9 pr-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-momentum-orange/20 focus:border-momentum-orange transition-colors"
           />
         </div>
-
-        <div className="flex gap-2">
-          {(['all', 'active', 'stale', 'disabled'] as const).map(filter => (
+        <div className="flex rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+          {(['all', 'active', 'stale', 'disabled'] as const).map((filter) => (
             <button
               key={filter}
               onClick={() => setStateFilter(filter)}
-              className={`px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${
+              className={cn(
+                'px-3 py-2 text-xs font-medium transition-colors',
                 stateFilter === filter
-                  ? 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300'
-                  : 'bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800'
-              }`}
+                  ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900'
+                  : 'bg-white dark:bg-gray-900 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800',
+              )}
             >
               {t(`admin.featureFlags.filter${filter.charAt(0).toUpperCase() + filter.slice(1)}`)}
             </button>
@@ -1072,75 +711,69 @@ export default function AdminFeatureFlagsPage() {
         </div>
       </div>
 
-      {/* Loading state */}
+      {/* Loading skeleton */}
       {isLoading && !flags.length && (
-        <div className="flex flex-col items-center justify-center py-16">
-          <div className="relative">
-            <div className="w-12 h-12 rounded-full border-4 border-gray-200 dark:border-gray-700"></div>
-            <div className="absolute top-0 left-0 w-12 h-12 rounded-full border-4 border-orange-500 border-t-transparent animate-spin"></div>
-          </div>
-          <p className="mt-4 text-gray-500 dark:text-gray-400">{t('admin.featureFlags.loading')}</p>
+        <div className="space-y-4">
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5 animate-pulse">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-lg" />
+                <div className="h-4 w-20 bg-gray-200 dark:bg-gray-700 rounded" />
+              </div>
+              <div className="space-y-3">
+                {[...Array(2)].map((_, j) => (
+                  <div key={j} className="flex items-center justify-between">
+                    <div className="space-y-1.5">
+                      <div className="h-3.5 w-32 bg-gray-200 dark:bg-gray-700 rounded" />
+                      <div className="h-3 w-48 bg-gray-100 dark:bg-gray-800 rounded" />
+                    </div>
+                    <div className="h-6 w-11 bg-gray-200 dark:bg-gray-700 rounded-full" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
         </div>
       )}
 
       {/* Empty state */}
       {!isLoading && sortedCategories.length === 0 && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="text-center py-16"
-        >
-          <div className="w-16 h-16 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center mx-auto mb-4">
-            <Flag className="w-8 h-8 text-gray-400" />
+        <div className="text-center py-16">
+          <div className="w-12 h-12 rounded-xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center mx-auto mb-3">
+            <Flag className="w-6 h-6 text-gray-400" />
           </div>
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
+          <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-1">
             {searchQuery ? t('admin.featureFlags.noFlagsFound') : t('admin.featureFlags.noFlags')}
           </h3>
-          <p className="text-gray-500 dark:text-gray-400 mb-6 max-w-sm mx-auto">
-            {searchQuery
-              ? t('admin.featureFlags.noFlagsFoundDesc')
-              : t('admin.featureFlags.noFlagsDesc')}
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+            {searchQuery ? t('admin.featureFlags.noFlagsFoundDesc') : t('admin.featureFlags.noFlagsDesc')}
           </p>
           {!searchQuery && (
-            <button
-              onClick={() => setShowCreateModal(true)}
-              className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl hover:from-orange-600 hover:to-orange-700 transition-all font-medium shadow-lg shadow-orange-500/25"
-            >
+            <Button variant="brand" size="sm" onClick={() => setShowCreateModal(true)}>
               <Plus className="w-4 h-4" />
               {t('admin.featureFlags.createFlag')}
-            </button>
+            </Button>
           )}
-        </motion.div>
+        </div>
       )}
 
-      {/* Categories */}
-      <motion.div
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
-        className="space-y-4"
-      >
-        {sortedCategories.map((category, index) => (
-          <motion.div key={category} variants={itemVariants}>
-            <CategoryAccordion
-              category={category}
-              flags={groupedFlags[category]}
-              onToggle={handleToggle}
-              onMarkStale={handleMarkStale}
-              onArchive={handleArchive}
-              isToggling={isToggling}
-              defaultOpen={index < 2}
-            />
-          </motion.div>
+      {/* Category groups */}
+      <div className="space-y-4">
+        {sortedCategories.map((category) => (
+          <CategoryGroup
+            key={category}
+            category={category}
+            flags={grouped[category]}
+            onToggle={handleToggle}
+            isToggling={isToggling}
+            t={t}
+            language={language}
+          />
         ))}
-      </motion.div>
+      </div>
 
-      {/* Create Modal */}
-      <CreateFlagModal
-        isOpen={showCreateModal}
-        onClose={() => setShowCreateModal(false)}
-        onCreate={handleCreate}
-      />
+      {/* Create modal */}
+      <CreateFlagModal isOpen={showCreateModal} onClose={() => setShowCreateModal(false)} onCreate={handleCreate} />
     </div>
   );
 }

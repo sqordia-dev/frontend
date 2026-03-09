@@ -1,13 +1,29 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { AlertCircle, Edit3 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  AlertCircle,
+  Edit3,
+  X,
+  CheckCircle2,
+  AlertTriangle,
+  XCircle,
+  FileText,
+  FileType,
+  Download,
+  BookOpen,
+  Eye,
+  Presentation,
+} from 'lucide-react';
 import { Skeleton, SkeletonText } from '../../components/ui/skeleton';
 import { Button } from '../../components/ui/button';
 import {
-  PreviewLayoutV2,
-  SectionCardV2,
+  PreviewLayout,
+  SectionCard,
   SectionEditorModal,
   ShareModal,
+  ExportSuccessModal,
+  PlanReadinessBar,
 } from '../../components/preview';
 import { ScrollReveal } from '../../components/animations';
 import { CoverPagePreview, CoverPageEditor } from '../../components/cover-page';
@@ -28,6 +44,443 @@ import SEO from '../../components/SEO';
 import { exportService, type ExportFormat } from '../../lib/export-service';
 import { translateSectionTitle } from '../../utils/section-title-translations';
 import { AIPreviewCoach } from '../../components/preview/ai-preview-coach';
+import { cn } from '../../lib/utils';
+import TemplateSelector, { FALLBACK_THEMES } from '../../components/export/TemplateSelector';
+import TemplatePreviewModal from '../../components/export/TemplatePreviewModal';
+import type { ExportTheme } from '../../types/export-theme';
+
+// ---------------------------------------------------------------------------
+// Helpers for the export pre-flight checklist
+// ---------------------------------------------------------------------------
+
+/** Count words in a plain-text / HTML string (strips tags first). */
+function countWords(text: string | null | undefined): number {
+  if (!text) return 0;
+  const plain = text.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+  if (plain.length === 0) return 0;
+  return plain.split(' ').length;
+}
+
+type SectionStatus = 'good' | 'warning' | 'empty';
+
+function getSectionStatus(wordCount: number): SectionStatus {
+  if (wordCount >= 150) return 'good';
+  if (wordCount >= 50) return 'warning';
+  return 'empty';
+}
+
+// ---------------------------------------------------------------------------
+// Pre-flight checklist modal translations (bilingual EN/FR)
+// ---------------------------------------------------------------------------
+
+const preFlightI18n = {
+  en: {
+    title: 'Export Your Business Plan',
+    wordsLabel: 'words',
+    totalSections: 'Total sections',
+    totalWords: 'Total words',
+    estimatedPages: 'Estimated pages',
+    formatLabel: 'Export format',
+    pdfTitle: 'PDF Document',
+    pdfDesc: 'Best for printing and sharing',
+    wordTitle: 'Word Document',
+    wordDesc: 'Best for editing and collaboration',
+    pptxTitle: 'PowerPoint',
+    pptxDesc: 'Slide deck for presentations',
+    exportNow: 'Export Now',
+    cancel: 'Cancel',
+    page: 'page',
+    pages: 'pages',
+    previewTemplate: 'Preview',
+  },
+  fr: {
+    title: "Exporter votre plan d\u2019affaires",
+    wordsLabel: 'mots',
+    totalSections: 'Sections totales',
+    totalWords: 'Mots totaux',
+    estimatedPages: "Pages estim\u00e9es",
+    formatLabel: "Format d\u2019exportation",
+    pdfTitle: 'Document PDF',
+    pdfDesc: "Id\u00e9al pour imprimer et partager",
+    wordTitle: 'Document Word',
+    wordDesc: "Id\u00e9al pour modifier et collaborer",
+    pptxTitle: 'PowerPoint',
+    pptxDesc: "Diaporama pour pr\u00e9sentations",
+    exportNow: 'Exporter maintenant',
+    cancel: 'Annuler',
+    page: 'page',
+    pages: 'pages',
+    previewTemplate: 'Aperçu',
+  },
+} as const;
+
+// ---------------------------------------------------------------------------
+// ExportPreFlightModal component
+// ---------------------------------------------------------------------------
+
+interface ExportPreFlightModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onExport: (format: ExportFormat, themeId?: string) => void;
+  planId: string;
+  planTitle: string;
+  companyName: string;
+  sections: PlanSection[];
+  language: 'en' | 'fr';
+}
+
+function ExportPreFlightModal({
+  isOpen,
+  onClose,
+  onExport,
+  planId,
+  planTitle,
+  companyName,
+  sections,
+  language,
+}: ExportPreFlightModalProps) {
+  const [selectedFormat, setSelectedFormat] = useState<ExportFormat>('pdf');
+  const [selectedTheme, setSelectedTheme] = useState<ExportTheme | null>(null);
+  const [showTemplatePreview, setShowTemplatePreview] = useState(false);
+  const [previewTheme, setPreviewTheme] = useState<ExportTheme | null>(null);
+  const strings = preFlightI18n[language];
+
+  const isFr = language === 'fr';
+
+  // Stats derived from sections
+  const sectionStats = useMemo(() => {
+    return sections.map((s) => {
+      const wc = countWords(s.content);
+      return { id: s.id, title: s.title, wordCount: wc, status: getSectionStatus(wc) };
+    });
+  }, [sections]);
+
+  const totalWords = useMemo(
+    () => sectionStats.reduce((sum, s) => sum + s.wordCount, 0),
+    [sectionStats],
+  );
+  const estimatedPages = Math.max(1, Math.round(totalWords / 300));
+
+  const emptySectionCount = useMemo(
+    () => sectionStats.filter((s) => s.status === 'empty').length,
+    [sectionStats],
+  );
+
+  // Escape key handler
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    if (isOpen) window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, [isOpen, onClose]);
+
+  return (
+    <>
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          key="export-preflight-backdrop"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="export-preflight-title"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) onClose();
+          }}
+        >
+          <motion.div
+            key="export-preflight-panel"
+            initial={{ opacity: 0, scale: 0.95, y: 24 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 24 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+            className="w-full max-w-4xl bg-white dark:bg-gray-800 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700 shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center">
+                  <Download
+                    className="w-5 h-5 text-orange-600 dark:text-orange-400"
+                    aria-hidden="true"
+                  />
+                </div>
+                <h2
+                  id="export-preflight-title"
+                  className="text-lg font-semibold text-gray-900 dark:text-white"
+                >
+                  {strings.title}
+                </h2>
+              </div>
+              <button
+                onClick={onClose}
+                className="p-2 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-orange-500"
+                aria-label="Close"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Scrollable body */}
+            <div className="overflow-y-auto flex-1 px-6 py-5 space-y-6">
+              {/* Plan title */}
+              <div className="flex items-center gap-3">
+                <BookOpen
+                  className="w-5 h-5 text-momentum-orange shrink-0"
+                  aria-hidden="true"
+                />
+                <p className="text-base font-semibold text-gray-900 dark:text-white truncate">
+                  {planTitle}
+                </p>
+              </div>
+
+              {/* Section checklist */}
+              <div className="rounded-xl border border-gray-200 dark:border-gray-700 divide-y divide-gray-100 dark:divide-gray-700">
+                {sectionStats.map((s, idx) => (
+                  <div key={s.id} className="flex items-center gap-3 px-4 py-3 text-sm">
+                    {/* Status icon */}
+                    <span className="shrink-0" aria-hidden="true">
+                      {s.status === 'good' && (
+                        <CheckCircle2 className="w-5 h-5 text-green-500" />
+                      )}
+                      {s.status === 'warning' && (
+                        <AlertTriangle className="w-5 h-5 text-yellow-500" />
+                      )}
+                      {s.status === 'empty' && (
+                        <XCircle className="w-5 h-5 text-red-400" />
+                      )}
+                    </span>
+
+                    {/* Section name */}
+                    <span className="flex-1 truncate text-gray-700 dark:text-gray-300">
+                      {idx + 1}. {s.title}
+                    </span>
+
+                    {/* Word count */}
+                    <span
+                      className={cn(
+                        'text-xs font-medium tabular-nums',
+                        s.status === 'good' && 'text-green-600 dark:text-green-400',
+                        s.status === 'warning' && 'text-yellow-600 dark:text-yellow-400',
+                        s.status === 'empty' && 'text-red-500 dark:text-red-400',
+                      )}
+                    >
+                      {s.wordCount} {strings.wordsLabel}
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Quality legend */}
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-gray-500 dark:text-gray-400">
+                <span className="flex items-center gap-1">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-green-500" />
+                  {isFr ? '150+ mots (bon)' : '150+ words (good)'}
+                </span>
+                <span className="flex items-center gap-1">
+                  <AlertTriangle className="w-3.5 h-3.5 text-yellow-500" />
+                  {isFr ? '50-149 mots (court)' : '50-149 words (thin)'}
+                </span>
+                <span className="flex items-center gap-1">
+                  <XCircle className="w-3.5 h-3.5 text-red-400" />
+                  {isFr ? '< 50 mots (vide)' : '< 50 words (empty)'}
+                </span>
+              </div>
+
+              {/* Summary stats */}
+              <div className="grid grid-cols-3 gap-3">
+                {[
+                  { label: strings.totalSections, value: String(sectionStats.length) },
+                  { label: strings.totalWords, value: totalWords.toLocaleString() },
+                  {
+                    label: strings.estimatedPages,
+                    value: `${estimatedPages} ${estimatedPages === 1 ? strings.page : strings.pages}`,
+                  },
+                ].map((stat) => (
+                  <div
+                    key={stat.label}
+                    className="rounded-lg bg-gray-50 dark:bg-gray-900 p-3 text-center"
+                  >
+                    <p className="text-lg font-bold text-gray-900 dark:text-white">
+                      {stat.value}
+                    </p>
+                    <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">
+                      {stat.label}
+                    </p>
+                  </div>
+                ))}
+              </div>
+
+              {/* Template selector */}
+              <TemplateSelector
+                planId={planId}
+                selectedThemeId={selectedTheme?.id ?? 'classic'}
+                onSelect={setSelectedTheme}
+                onPreview={(theme) => {
+                  setPreviewTheme(theme);
+                  setShowTemplatePreview(true);
+                }}
+                language={language}
+              />
+
+              {/* Format selector */}
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-3">
+                  {strings.formatLabel}
+                </p>
+                <div className="grid grid-cols-3 gap-3">
+                  {/* PDF option */}
+                  <button
+                    type="button"
+                    onClick={() => setSelectedFormat('pdf')}
+                    className={cn(
+                      'flex flex-col items-center gap-2 rounded-xl border-2 p-4 transition-all',
+                      selectedFormat === 'pdf'
+                        ? 'border-momentum-orange bg-orange-50 dark:bg-orange-900/20 ring-1 ring-momentum-orange/30'
+                        : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600',
+                    )}
+                  >
+                    <FileText
+                      className={cn(
+                        'w-8 h-8',
+                        selectedFormat === 'pdf'
+                          ? 'text-red-500'
+                          : 'text-gray-400 dark:text-gray-500',
+                      )}
+                    />
+                    <span className="text-sm font-semibold text-gray-900 dark:text-white">
+                      {strings.pdfTitle}
+                    </span>
+                    <span className="text-[11px] text-gray-500 dark:text-gray-400 text-center leading-tight">
+                      {strings.pdfDesc}
+                    </span>
+                  </button>
+
+                  {/* Word option */}
+                  <button
+                    type="button"
+                    onClick={() => setSelectedFormat('word')}
+                    className={cn(
+                      'flex flex-col items-center gap-2 rounded-xl border-2 p-4 transition-all',
+                      selectedFormat === 'word'
+                        ? 'border-momentum-orange bg-orange-50 dark:bg-orange-900/20 ring-1 ring-momentum-orange/30'
+                        : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600',
+                    )}
+                  >
+                    <FileType
+                      className={cn(
+                        'w-8 h-8',
+                        selectedFormat === 'word'
+                          ? 'text-blue-500'
+                          : 'text-gray-400 dark:text-gray-500',
+                      )}
+                    />
+                    <span className="text-sm font-semibold text-gray-900 dark:text-white">
+                      {strings.wordTitle}
+                    </span>
+                    <span className="text-[11px] text-gray-500 dark:text-gray-400 text-center leading-tight">
+                      {strings.wordDesc}
+                    </span>
+                  </button>
+
+                  {/* PowerPoint option — coming soon */}
+                  <div
+                    className="relative flex flex-col items-center gap-2 rounded-xl border-2 p-4 border-gray-200 dark:border-gray-700 opacity-50 cursor-not-allowed"
+                  >
+                    <span className="absolute -top-2 -right-2 bg-gray-500 text-white text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-full leading-none tracking-wide">
+                      {language === 'fr' ? 'Bientôt' : 'Soon'}
+                    </span>
+                    <Presentation className="w-8 h-8 text-gray-400 dark:text-gray-500" />
+                    <span className="text-sm font-semibold text-gray-400 dark:text-gray-500">
+                      {strings.pptxTitle}
+                    </span>
+                    <span className="text-[11px] text-gray-400 dark:text-gray-500 text-center leading-tight">
+                      {strings.pptxDesc}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            {/* Footer */}
+            <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 shrink-0">
+              {emptySectionCount > 0 && (
+                <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 mb-4">
+                  <div className="flex items-start gap-2">
+                    <AlertTriangle className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
+                        {isFr
+                          ? `${emptySectionCount} section${emptySectionCount > 1 ? 's' : ''} sans contenu`
+                          : `${emptySectionCount} empty section${emptySectionCount > 1 ? 's' : ''}`}
+                      </p>
+                      <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
+                        {isFr
+                          ? 'Votre plan export\u00e9 contiendra des sections vides. Envisagez d\'ajouter du contenu.'
+                          : 'Your exported plan will contain empty sections. Consider adding content first.'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={onClose}
+                  className="flex-1 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-gray-400"
+                >
+                  {strings.cancel}
+                </button>
+                <button
+                  onClick={() => onExport(selectedFormat, selectedTheme?.id)}
+                  className={cn(
+                    'flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold rounded-lg transition-all',
+                    'bg-momentum-orange text-white',
+                    'hover:bg-[#E56000]',
+                    'focus:outline-none focus:ring-2 focus:ring-momentum-orange/50 focus:ring-offset-2',
+                    'shadow-sm hover:shadow-md',
+                  )}
+                >
+                  <Download size={16} />
+                  {emptySectionCount > 0
+                    ? (isFr ? 'Exporter quand m\u00eame' : 'Export Anyway')
+                    : strings.exportNow}
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+
+    {/* Full-page template preview */}
+    {previewTheme && (
+      <TemplatePreviewModal
+        isOpen={showTemplatePreview}
+        onClose={() => setShowTemplatePreview(false)}
+        onExport={() => {
+          setSelectedTheme(previewTheme);
+          setShowTemplatePreview(false);
+          onExport(selectedFormat, previewTheme.id);
+        }}
+        theme={previewTheme}
+        sections={sections}
+        planTitle={planTitle}
+        companyName={companyName}
+        language={language}
+        allThemes={FALLBACK_THEMES}
+        onThemeChange={setPreviewTheme}
+      />
+    )}
+    </>
+  );
+}
 
 /**
  * Business Plan Preview Page (Redesigned)
@@ -55,6 +508,13 @@ export default function BusinessPlanPreviewPage() {
   const [isExporting, setIsExporting] = useState(false);
   const [exportingFormat, setExportingFormat] = useState<ExportFormat | null>(null);
 
+  // Export pre-flight checklist modal state
+  const [showExportPreFlight, setShowExportPreFlight] = useState(false);
+
+  // Export success celebration state
+  const [showExportSuccess, setShowExportSuccess] = useState(false);
+  const [exportedFormat, setExportedFormat] = useState<ExportFormat>('pdf');
+
   // Share modal state
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [shareUrl, setShareUrl] = useState<string | null>(null);
@@ -70,6 +530,10 @@ export default function BusinessPlanPreviewPage() {
   const [isTOCActive, setIsTOCActive] = useState(false);
   const [tocSettings, setTocSettings] = useState<TOCSettings | null>(null);
   const [isTOCStyleSelectorOpen, setIsTOCStyleSelectorOpen] = useState(false);
+
+  // Undo state for section edits
+  const [sectionHistory, setSectionHistory] = useState<Map<string, string>>(new Map());
+  const [lastEditedSectionId, setLastEditedSectionId] = useState<string | null>(null);
 
   // Section refs for scrolling and intersection observer
   const sectionRefs = useRef<Map<string, HTMLElement>>(new Map());
@@ -127,6 +591,10 @@ export default function BusinessPlanPreviewPage() {
       } catch (err) {
         console.error('Failed to load preview:', err);
         setError('Failed to load business plan. Please try again.');
+        toast.error(
+          language === 'fr' ? 'Erreur de chargement' : 'Loading Error',
+          language === 'fr' ? 'Impossible de charger le plan d\'affaires. Veuillez réessayer.' : 'Failed to load business plan. Please try again.'
+        );
       } finally {
         setIsLoading(false);
       }
@@ -189,6 +657,36 @@ export default function BusinessPlanPreviewPage() {
     return sectionsForDisplay.find(s => s.id === activeSectionId) || null;
   }, [activeSectionId, sectionsForDisplay]);
 
+  // Undo a section edit – restores the previous content from history
+  const handleUndoSectionEdit = useCallback(() => {
+    if (!lastEditedSectionId || !sectionHistory.has(lastEditedSectionId)) return;
+    const previousContent = sectionHistory.get(lastEditedSectionId)!;
+    // Update the section back to previous content
+    setPreview(prev => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        sections: prev.sections.map(s =>
+          s.id === lastEditedSectionId ? { ...s, content: previousContent } : s
+        ),
+      };
+    });
+    // Also save to backend
+    const section = preview?.sections.find(s => s.id === lastEditedSectionId);
+    if (planId && section) {
+      const sectionKey = section.name || section.id;
+      previewService.updateSection(planId, sectionKey, previousContent).catch(console.error);
+    }
+    // Clear undo state
+    setSectionHistory(prev => {
+      const next = new Map(prev);
+      next.delete(lastEditedSectionId);
+      return next;
+    });
+    setLastEditedSectionId(null);
+    toast.success(language === 'fr' ? 'Modification annul\u00e9e' : 'Change undone');
+  }, [lastEditedSectionId, sectionHistory, planId, preview?.sections, language, toast]);
+
   // Handle section click - scroll to section
   const handleSectionClick = useCallback((sectionId: string) => {
     setActiveSectionId(sectionId);
@@ -235,35 +733,73 @@ export default function BusinessPlanPreviewPage() {
     setTocSettings(settings);
   }, []);
 
+  // Close all modals to prevent stacking
+  const closeAllModals = useCallback(() => {
+    setIsEditorOpen(false);
+    setEditingSection(null);
+    setIsShareModalOpen(false);
+    setShowExportPreFlight(false);
+    setShowExportSuccess(false);
+    setIsCoverPageEditorOpen(false);
+    setIsTOCStyleSelectorOpen(false);
+  }, []);
+
   // Handle section edit
   const handleEditSection = useCallback((section: PlanSection) => {
+    closeAllModals();
     setEditingSection(section);
     setIsEditorOpen(true);
-  }, []);
+  }, [closeAllModals]);
 
   // Handle save section (from modal editor)
   const handleSaveSection = useCallback(
     async (content: string) => {
       if (!planId || !editingSection) return;
 
-      // Use section name for API (backend expects name, not generated id)
-      const sectionKey = editingSection.name || editingSection.id;
-      await previewService.updateSection(planId, sectionKey, content);
+      try {
+        // Store previous content for undo
+        const currentSection = sectionsForDisplay.find(s => s.id === editingSection.id);
+        const prevContent = currentSection?.content;
+        if (currentSection && prevContent) {
+          setSectionHistory(prev => {
+            const next = new Map(prev);
+            next.set(currentSection.id, prevContent);
+            return next;
+          });
+          setLastEditedSectionId(currentSection.id);
+        }
 
-      // Update local state
-      setPreview((prev) => {
-        if (!prev) return prev;
-        return {
-          ...prev,
-          sections: prev.sections.map((s) =>
-            s.id === editingSection.id ? { ...s, content } : s
-          ),
-        };
-      });
+        // Use section name for API (backend expects name, not generated id)
+        const sectionKey = editingSection.name || editingSection.id;
+        await previewService.updateSection(planId, sectionKey, content);
 
-      toast.success('Section saved', 'Your changes have been saved successfully.');
+        // Update local state
+        setPreview((prev) => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            sections: prev.sections.map((s) =>
+              s.id === editingSection.id ? { ...s, content } : s
+            ),
+          };
+        });
+
+        toast.addToast({
+          type: 'success',
+          title: language === 'fr' ? 'Section sauvegard\u00e9e' : 'Section saved',
+          message: language === 'fr' ? 'Vos modifications ont \u00e9t\u00e9 enregistr\u00e9es.' : 'Your changes have been saved successfully.',
+          duration: 8000,
+          action: {
+            label: language === 'fr' ? 'Annuler' : 'Undo',
+            onClick: handleUndoSectionEdit,
+          },
+        });
+      } catch (err) {
+        console.error('Failed to save section:', err);
+        toast.error('Failed to save section', 'Please try again.');
+      }
     },
-    [planId, editingSection, toast]
+    [planId, editingSection, sectionsForDisplay, language, toast, handleUndoSectionEdit]
   );
 
   // Handle inline save section (direct editing on page)
@@ -345,6 +881,20 @@ export default function BusinessPlanPreviewPage() {
     async (sectionId: string) => {
       if (!planId) return;
 
+      // Store previous content for undo before regenerating
+      const currentSection = preview?.sections.find(
+        (s) => s.id === sectionId || s.name === sectionId
+      );
+      const prevContent = currentSection?.content;
+      if (currentSection && prevContent) {
+        setSectionHistory(prev => {
+          const next = new Map(prev);
+          next.set(currentSection.id, prevContent);
+          return next;
+        });
+        setLastEditedSectionId(currentSection.id);
+      }
+
       setRegeneratingSectionId(sectionId);
 
       try {
@@ -364,10 +914,16 @@ export default function BusinessPlanPreviewPage() {
           };
         });
 
-        toast.success(
-          'Section regenerated',
-          'The section has been regenerated with AI.'
-        );
+        toast.addToast({
+          type: 'success',
+          title: language === 'fr' ? 'Section reg\u00e9n\u00e9r\u00e9e' : 'Section regenerated',
+          message: language === 'fr' ? 'La section a \u00e9t\u00e9 reg\u00e9n\u00e9r\u00e9e avec l\'IA.' : 'The section has been regenerated with AI.',
+          duration: 8000,
+          action: {
+            label: language === 'fr' ? 'Annuler' : 'Undo',
+            onClick: handleUndoSectionEdit,
+          },
+        });
       } catch (err) {
         console.error('Failed to regenerate section:', err);
         toast.error(
@@ -378,7 +934,7 @@ export default function BusinessPlanPreviewPage() {
         setRegeneratingSectionId(null);
       }
     },
-    [planId, toast]
+    [planId, preview?.sections, language, toast, handleUndoSectionEdit]
   );
 
   // Handle generate (for empty sections)
@@ -392,24 +948,26 @@ export default function BusinessPlanPreviewPage() {
 
   // Handle export using client-side generation
   const handleExport = useCallback(
-    async (format: ExportFormat = 'pdf') => {
+    async (format: ExportFormat = 'pdf', theme?: ExportTheme) => {
       if (!planId || !preview || !coverPageSettings) return;
 
       setIsExporting(true);
       setExportingFormat(format);
 
       try {
-        // Use client-side export service (sections with titles in selected language)
         await exportService.export(format, {
           coverSettings: coverPageSettings,
           sections: sectionsForDisplay,
           companyName: coverPageSettings.companyName || preview.title,
+          planTitle: coverPageSettings.documentTitle || preview.title,
+          language,
+          exportTheme: theme,
+          planId,
         });
 
-        toast.success(
-          'Export complete',
-          `Your business plan has been exported as ${format.toUpperCase()}.`
-        );
+        // Show celebration modal instead of just a toast
+        setExportedFormat(format);
+        setShowExportSuccess(true);
       } catch (err) {
         console.error('Export failed:', err);
         toast.error(
@@ -421,13 +979,39 @@ export default function BusinessPlanPreviewPage() {
         setExportingFormat(null);
       }
     },
-    [planId, preview, coverPageSettings, sectionsForDisplay, toast]
+    [planId, preview, coverPageSettings, sectionsForDisplay, language, toast]
+  );
+
+  // Show export pre-flight checklist modal instead of exporting immediately
+  const handleExportPreFlight = useCallback(
+    (_format?: ExportFormat) => {
+      closeAllModals();
+      // Open the pre-flight modal; user will pick format inside the modal
+      setShowExportPreFlight(true);
+    },
+    [closeAllModals],
+  );
+
+  // Called from the pre-flight modal when user clicks "Export Now"
+  // Uses client-side rendering to ensure the export matches the template preview exactly.
+  const handleConfirmExport = useCallback(
+    async (format: ExportFormat, themeId?: string) => {
+      setShowExportPreFlight(false);
+
+      const resolvedTheme = themeId
+        ? FALLBACK_THEMES.find((t) => t.id === themeId)
+        : undefined;
+
+      handleExport(format, resolvedTheme);
+    },
+    [handleExport],
   );
 
   // Handle share
   const handleOpenShareModal = useCallback(async () => {
     if (!planId) return;
 
+    closeAllModals();
     setIsShareModalOpen(true);
     setIsCreatingShare(true);
     setShareError(null);
@@ -438,13 +1022,16 @@ export default function BusinessPlanPreviewPage() {
       setShareUrl(result.shareUrl);
     } catch (err) {
       console.error('Failed to create share link:', err);
-      setShareError(
-        err instanceof Error ? err.message : 'Failed to create share link'
+      const shareErrMsg = err instanceof Error ? err.message : 'Failed to create share link';
+      setShareError(shareErrMsg);
+      toast.error(
+        language === 'fr' ? 'Erreur de partage' : 'Share Error',
+        shareErrMsg
       );
     } finally {
       setIsCreatingShare(false);
     }
-  }, [planId]);
+  }, [planId, closeAllModals]);
 
   // Loading state
   if (isLoading) {
@@ -542,13 +1129,13 @@ export default function BusinessPlanPreviewPage() {
         nofollow={true}
       />
 
-      <PreviewLayoutV2
+      <PreviewLayout
         planTitle={preview.title}
         planStatus={preview.status || 'Draft'}
         sections={sectionsForDisplay}
         activeSectionId={activeSectionId}
         onSectionClick={handleSectionClick}
-        onExportClick={(format) => handleExport(format || 'pdf')}
+        onExportClick={handleExportPreFlight}
         onShareClick={handleOpenShareModal}
         isCoverPageActive={isCoverPageActive}
         onCoverPageClick={handleCoverPageClick}
@@ -557,6 +1144,27 @@ export default function BusinessPlanPreviewPage() {
         isExporting={isExporting}
         exportingFormat={exportingFormat}
       >
+        {/* Back to Interview Link */}
+        <div className="flex items-center gap-3 mb-4">
+          <Button
+            variant="outline"
+            size="sm"
+            asChild
+            className="text-muted-foreground hover:text-foreground"
+          >
+            <a href={`/interview/${planId}`}>
+              <Edit3 size={14} className="mr-1.5" />
+              {t('preview.backToInterview')}
+            </a>
+          </Button>
+        </div>
+
+        {/* Plan Readiness Score Bar */}
+        <PlanReadinessBar
+          sections={sectionsForDisplay}
+          coverPageSettings={coverPageSettings}
+        />
+
         {/* Cover Page Section */}
         {coverPageSettings && (
           <ScrollReveal direction="none" delay={0}>
@@ -569,7 +1177,7 @@ export default function BusinessPlanPreviewPage() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setIsCoverPageEditorOpen(true)}
+                  onClick={() => { closeAllModals(); setIsCoverPageEditorOpen(true); }}
                   className="absolute top-4 right-4 bg-white/90 dark:bg-secondary/90 hover:bg-white dark:hover:bg-secondary shadow-sm"
                 >
                   <Edit3 size={14} />
@@ -593,7 +1201,7 @@ export default function BusinessPlanPreviewPage() {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setIsTOCStyleSelectorOpen(true)}
+                onClick={() => { closeAllModals(); setIsTOCStyleSelectorOpen(true); }}
                 className="absolute top-4 right-4 bg-white/90 dark:bg-secondary/90 hover:bg-white dark:hover:bg-secondary shadow-sm"
               >
                 <Edit3 size={14} />
@@ -608,7 +1216,7 @@ export default function BusinessPlanPreviewPage() {
 
         {/* Business Plan Sections - Minimal Notion-style */}
         {sectionsForDisplay.map((section, index) => (
-          <SectionCardV2
+          <SectionCard
             key={section.id}
             section={section}
             sectionNumber={index + 1}
@@ -624,7 +1232,7 @@ export default function BusinessPlanPreviewPage() {
             } as React.RefObject<HTMLElement>}
           />
         ))}
-      </PreviewLayoutV2>
+      </PreviewLayout>
 
       {/* Editor Modal */}
       <SectionEditorModal
@@ -645,6 +1253,41 @@ export default function BusinessPlanPreviewPage() {
         shareUrl={shareUrl}
         isLoading={isCreatingShare}
         error={shareError}
+      />
+
+      {/* Export Pre-Flight Checklist Modal */}
+      <ExportPreFlightModal
+        isOpen={showExportPreFlight}
+        onClose={() => setShowExportPreFlight(false)}
+        onExport={handleConfirmExport}
+        planId={planId!}
+        planTitle={preview.title}
+        companyName={coverPageSettings?.companyName || preview.title}
+        sections={sectionsForDisplay}
+        language={language}
+      />
+
+      {/* Export Success Celebration Modal */}
+      <ExportSuccessModal
+        isOpen={showExportSuccess}
+        exportedFormat={exportedFormat}
+        onClose={() => setShowExportSuccess(false)}
+        onShare={() => {
+          setShowExportSuccess(false);
+          handleOpenShareModal();
+        }}
+        onGoToFinancials={() => {
+          setShowExportSuccess(false);
+          navigate(`/business-plan/${planId}/financials`);
+        }}
+        onDownloadAgain={() => {
+          setShowExportSuccess(false);
+          handleExport(exportedFormat);
+        }}
+        onGoToDashboard={() => {
+          setShowExportSuccess(false);
+          navigate('/dashboard');
+        }}
       />
 
       {/* Cover Page Editor Modal */}

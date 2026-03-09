@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { OnboardingWizard } from '../../components/onboarding';
+import OnboardingWizard from '../../components/onboarding/OnboardingWizard';
 import { useOnboarding } from '../../hooks/useOnboarding';
+import { useTheme } from '../../contexts/ThemeContext';
 import SEO from '../../components/SEO';
 import { getCanonicalUrl } from '../../utils/seo';
+import { LoadingSpinner } from '../../components/ui/loading-spinner';
 
 /**
  * Onboarding page
@@ -13,6 +15,7 @@ import { getCanonicalUrl } from '../../utils/seo';
 export default function OnboardingPage() {
   const navigate = useNavigate();
   const { progress, isLoading, isComplete } = useOnboarding();
+  const { language } = useTheme();
   const [userName, setUserName] = useState<string>('');
 
   // Fetch user name from localStorage or API
@@ -38,22 +41,19 @@ export default function OnboardingPage() {
   // Show loading state
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-neutral-50 dark:bg-gray-900">
+      <>
         <SEO
           title="Loading... | Sqordia"
           description="Setting up your Sqordia experience"
           url={getCanonicalUrl('/onboarding')}
           noindex={true}
         />
-        <div className="flex flex-col items-center gap-4">
-          <div
-            className="w-12 h-12 border-4 border-t-transparent rounded-full animate-spin"
-            style={{ borderColor: '#FF6B00', borderTopColor: 'transparent' }}
-            aria-label="Loading"
-          />
-          <p className="text-gray-600 dark:text-gray-400">Loading...</p>
-        </div>
-      </div>
+        <LoadingSpinner
+          size="lg"
+          text={language === 'fr' ? 'Chargement...' : 'Loading...'}
+          fullPage
+        />
+      </>
     );
   }
 

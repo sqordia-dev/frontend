@@ -20,16 +20,15 @@ const buttonVariants = cva(
           "hover:bg-accent hover:text-accent-foreground",
         link:
           "text-primary underline-offset-4 hover:underline",
-        // Sqordia brand variants - Enhanced with modern effects
+        // Sqordia brand variants — solid orange, no gradients
         brand:
-          "bg-momentum-orange text-white shadow-md shadow-momentum-orange/25 hover:bg-[#E56000] hover:shadow-lg hover:shadow-momentum-orange/30 hover:-translate-y-0.5 active:translate-y-0",
+          "bg-momentum-orange text-white shadow-md shadow-momentum-orange/20 hover:bg-[#E56000] hover:shadow-lg hover:shadow-momentum-orange/25 hover:-translate-y-0.5 active:translate-y-0",
         "brand-outline":
-          "border-2 border-momentum-orange text-momentum-orange bg-transparent hover:bg-momentum-orange hover:text-white transition-all duration-300",
+          "border-2 border-momentum-orange text-momentum-orange bg-transparent hover:bg-momentum-orange hover:text-white",
         "brand-ghost":
           "text-momentum-orange hover:bg-momentum-orange/10",
-        // Premium gradient variant (theme orange)
-        gradient:
-          "bg-gradient-to-r from-[#FF6B00] to-[#E55F00] text-white shadow-lg shadow-[#FF6B00]/25 hover:from-[#E55F00] hover:to-[#CC4A00] hover:shadow-xl hover:shadow-[#FF6B00]/30 hover:-translate-y-0.5 active:translate-y-0",
+        "brand-soft":
+          "bg-momentum-orange/10 text-momentum-orange hover:bg-momentum-orange/20",
         // Subtle variant for secondary actions
         subtle:
           "bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground",

@@ -73,7 +73,7 @@ export function CmsImageBlock({ value, onChange, blockKey: _blockKey }: CmsImage
         />
         {isUploading ? (
           <div className="flex flex-col items-center">
-            <div className="w-8 h-8 border-2 border-[#FF6B00] border-t-transparent rounded-full animate-spin mb-2" />
+            <div className="w-8 h-8 border-2 border-momentum-orange border-t-transparent rounded-full animate-spin mb-2" />
             <span className="text-sm text-slate-500">Uploading...</span>
           </div>
         ) : (

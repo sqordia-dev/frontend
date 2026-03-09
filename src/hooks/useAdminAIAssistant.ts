@@ -11,11 +11,13 @@ export function useAdminAIAssistant() {
   });
 
   const streamingContentRef = useRef('');
+  const doneRef = useRef(false);
   const { startStream, stopStream } = useSSEStream();
 
   const sendMessage = useCallback(async (userMessage: string) => {
     const userMsg: AdminAIMessage = { role: 'user', content: userMessage };
     streamingContentRef.current = '';
+    doneRef.current = false;
 
     setState(prev => ({
       ...prev,
@@ -31,6 +33,9 @@ export function useAdminAIAssistant() {
       url: '/api/v1/admin/ai-assistant/stream',
       body: { messages: allMessages },
       onChunk: (event) => {
+        // Ignore chunks after done
+        if (doneRef.current) return;
+
         switch (event.type) {
           case 'token':
             streamingContentRef.current += event.content || '';
@@ -53,21 +58,31 @@ export function useAdminAIAssistant() {
             }));
             break;
           case 'error':
+            doneRef.current = true;
             setState(prev => ({ ...prev, error: event.error || 'Unknown error', isStreaming: false }));
+            stopStream();
             break;
           case 'done':
+            doneRef.current = true;
             setState(prev => ({ ...prev, isStreaming: false, activeToolCalls: [] }));
+            stopStream();
             break;
         }
       },
       onDone: () => {
-        setState(prev => ({ ...prev, isStreaming: false, activeToolCalls: [] }));
+        if (!doneRef.current) {
+          doneRef.current = true;
+          setState(prev => ({ ...prev, isStreaming: false, activeToolCalls: [] }));
+        }
       },
       onError: (error) => {
-        setState(prev => ({ ...prev, error, isStreaming: false }));
+        if (!doneRef.current) {
+          doneRef.current = true;
+          setState(prev => ({ ...prev, error, isStreaming: false }));
+        }
       },
     });
-  }, [state.messages, startStream]);
+  }, [state.messages, startStream, stopStream]);
 
   const clearConversation = useCallback(() => {
     stopStream();

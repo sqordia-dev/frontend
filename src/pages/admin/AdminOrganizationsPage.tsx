@@ -2,10 +2,13 @@ import { useEffect, useState } from 'react';
 import { adminService } from '../../lib/admin-service';
 import { Search, Building2, Users, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useToast } from '../../contexts/ToastContext';
 import { getUserFriendlyError } from '../../utils/error-messages';
+import { Button } from '../../components/ui/button';
 
 export default function AdminOrganizationsPage() {
   const { t } = useTheme();
+  const toast = useToast();
   const [organizations, setOrganizations] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -34,7 +37,7 @@ export default function AdminOrganizationsPage() {
       await adminService.updateOrganizationStatus(organizationId, isActive, 'Status updated by admin');
       await loadOrganizations();
     } catch (err: any) {
-      alert(getUserFriendlyError(err, 'save'));
+      toast.error('Status Update Error', getUserFriendlyError(err, 'save'));
     }
   };
 
@@ -44,8 +47,52 @@ export default function AdminOrganizationsPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FF6B00]"></div>
+      <div className="space-y-4 sm:space-y-6 animate-pulse">
+        {/* Header skeleton */}
+        <div>
+          <div className="h-8 w-48 bg-gray-200 dark:bg-gray-700 rounded" />
+          <div className="mt-2 h-4 w-72 bg-gray-200 dark:bg-gray-700 rounded" />
+        </div>
+        {/* Card skeleton */}
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+          <div className="p-3 sm:p-4 border-b border-gray-200 dark:border-gray-700">
+            <div className="h-10 w-full bg-gray-200 dark:bg-gray-700 rounded-lg" />
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 p-3 sm:p-6">
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 sm:p-6 space-y-4">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gray-200 dark:bg-gray-700 rounded-lg" />
+                    <div className="space-y-2">
+                      <div className="h-5 w-28 bg-gray-200 dark:bg-gray-700 rounded" />
+                      <div className="h-3 w-20 bg-gray-200 dark:bg-gray-700 rounded" />
+                    </div>
+                  </div>
+                  <div className="w-5 h-5 bg-gray-200 dark:bg-gray-700 rounded-full" />
+                </div>
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <div className="h-3 w-16 bg-gray-200 dark:bg-gray-700 rounded" />
+                    <div className="h-3 w-8 bg-gray-200 dark:bg-gray-700 rounded" />
+                  </div>
+                  <div className="flex justify-between">
+                    <div className="h-3 w-12 bg-gray-200 dark:bg-gray-700 rounded" />
+                    <div className="h-3 w-8 bg-gray-200 dark:bg-gray-700 rounded" />
+                  </div>
+                  <div className="flex justify-between">
+                    <div className="h-3 w-16 bg-gray-200 dark:bg-gray-700 rounded" />
+                    <div className="h-3 w-20 bg-gray-200 dark:bg-gray-700 rounded" />
+                  </div>
+                </div>
+                <div className="flex gap-2 pt-2">
+                  <div className="flex-1 h-9 bg-gray-200 dark:bg-gray-700 rounded-lg" />
+                  <div className="flex-1 h-9 bg-gray-200 dark:bg-gray-700 rounded-lg" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     );
   }
@@ -134,23 +181,27 @@ export default function AdminOrganizationsPage() {
 
                 <div className="flex flex-col sm:flex-row gap-2">
                   {org.isActive ? (
-                    <button
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      className="flex-1"
                       onClick={() => handleStatusChange(org.id, 'Inactive')}
-                      className="flex-1 px-3 py-2.5 sm:py-2 text-sm border border-red-300 dark:border-red-700 text-red-600 dark:text-red-400 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 min-h-[44px] sm:min-h-0"
                     >
                       {t('admin.organizations.deactivate')}
-                    </button>
+                    </Button>
                   ) : (
-                    <button
+                    <Button
+                      variant="brand-outline"
+                      size="sm"
+                      className="flex-1"
                       onClick={() => handleStatusChange(org.id, 'Active')}
-                      className="flex-1 px-3 py-2.5 sm:py-2 text-sm border rounded-lg transition-colors border-[#FF6B00] text-[#FF6B00] hover:bg-[#FF6B00]/[0.08] min-h-[44px] sm:min-h-0"
                     >
                       {t('admin.organizations.activate')}
-                    </button>
+                    </Button>
                   )}
-                  <button className="flex-1 px-3 py-2.5 sm:py-2 text-sm text-white rounded-lg transition-colors bg-[#FF6B00] hover:bg-[#E55F00] min-h-[44px] sm:min-h-0">
+                  <Button variant="brand" size="sm" className="flex-1">
                     {t('admin.organizations.viewDetails')}
-                  </button>
+                  </Button>
                 </div>
               </div>
             ))

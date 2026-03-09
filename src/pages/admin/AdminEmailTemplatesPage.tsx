@@ -337,8 +337,31 @@ export default function AdminEmailTemplatesPage() {
 
         {/* Template list */}
         {loading ? (
-          <div className="flex items-center justify-center py-16">
-            <SqordiaLoader message="Loading templates..." size="md" />
+          <div className="grid gap-3 animate-pulse">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="rounded-xl border border-border bg-card p-4 pl-5 flex items-center gap-4">
+                <div className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-lg flex-shrink-0" />
+                <div className="flex-1 min-w-0 space-y-2">
+                  <div className="flex items-center gap-2">
+                    <div className="h-4 w-36 bg-gray-200 dark:bg-gray-700 rounded" />
+                    <div className="h-5 w-16 bg-gray-200 dark:bg-gray-700 rounded-full" />
+                    <div className="h-5 w-14 bg-gray-200 dark:bg-gray-700 rounded-full" />
+                  </div>
+                  <div className="h-3 w-56 bg-gray-200 dark:bg-gray-700 rounded" />
+                  <div className="flex items-center gap-3">
+                    <div className="h-3 w-14 bg-gray-200 dark:bg-gray-700 rounded" />
+                    <div className="h-3 w-10 bg-gray-200 dark:bg-gray-700 rounded" />
+                    <div className="h-3 w-20 bg-gray-200 dark:bg-gray-700 rounded" />
+                  </div>
+                </div>
+                <div className="flex items-center gap-1.5 flex-shrink-0">
+                  <div className="w-10 h-5 bg-gray-200 dark:bg-gray-700 rounded-full" />
+                  <div className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded" />
+                  <div className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded" />
+                  <div className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded" />
+                </div>
+              </div>
+            ))}
           </div>
         ) : filtered.length === 0 ? (
           <motion.div
@@ -357,7 +380,7 @@ export default function AdminEmailTemplatesPage() {
             </p>
             {!searchTerm && selectedCategory === 'all' && (
               <Button
-                variant="gradient"
+                variant="brand"
                 size="default"
                 className="mt-5"
                 onClick={handleCreateStarterPack}
@@ -834,7 +857,7 @@ function GenerateDialog({ open, saving, onGenerate, onClose }: {
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>Cancel</Button>
           <Button
-            variant="gradient"
+            variant="brand"
             onClick={() => onGenerate(purpose, variables)}
             disabled={saving || !purpose.trim()}
           >

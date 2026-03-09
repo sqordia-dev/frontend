@@ -81,7 +81,9 @@ export const FEATURE_FLAG_CATEGORIES = {
     flags: [
       { name: 'ExportToPDF', description: 'Enable PDF export functionality' },
       { name: 'ExportToWord', description: 'Enable Word document export' },
-      { name: 'ExportToExcel', description: 'Enable Excel spreadsheet export' }
+      { name: 'ExportToExcel', description: 'Enable Excel spreadsheet export' },
+      { name: 'ProfessionalExportThemes', description: 'Enable professional export themes (10 curated themes)' },
+      { name: 'SlideDeckExport', description: 'Enable PowerPoint slide deck generation with AI summaries' }
     ]
   },
   Premium: {

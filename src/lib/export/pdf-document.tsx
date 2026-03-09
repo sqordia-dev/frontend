@@ -1,6 +1,7 @@
 import { Document } from '@react-pdf/renderer';
 import { PlanSection } from '../../types/preview';
 import { CoverPageSettings } from '../../types/cover-page';
+import type { ExportTheme } from '../../types/export-theme';
 import { CoverPagePDF, TableOfContentsPagePDF, SectionPagePDF } from './pdf-components';
 
 export interface BusinessPlanPDFProps {
@@ -10,6 +11,8 @@ export interface BusinessPlanPDFProps {
   sections: PlanSection[];
   /** Company name (for headers/footers) */
   companyName: string;
+  /** Selected visual theme */
+  exportTheme?: ExportTheme;
 }
 
 /**
@@ -20,6 +23,7 @@ export function BusinessPlanPDF({
   coverSettings,
   sections,
   companyName,
+  exportTheme,
 }: BusinessPlanPDFProps) {
   const logoUrl = coverSettings.logoUrl;
 
@@ -33,7 +37,7 @@ export function BusinessPlanPDF({
       producer="Sqordia"
     >
       {/* Cover Page */}
-      <CoverPagePDF settings={coverSettings} />
+      <CoverPagePDF settings={coverSettings} exportTheme={exportTheme} />
 
       {/* Table of Contents */}
       <TableOfContentsPagePDF
@@ -41,6 +45,7 @@ export function BusinessPlanPDF({
         companyName={companyName}
         logoUrl={logoUrl}
         startPage={3}
+        exportTheme={exportTheme}
       />
 
       {/* Section Pages */}
@@ -51,6 +56,7 @@ export function BusinessPlanPDF({
           sectionNumber={index + 1}
           companyName={companyName}
           logoUrl={logoUrl}
+          exportTheme={exportTheme}
         />
       ))}
     </Document>

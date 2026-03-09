@@ -14,6 +14,7 @@ import { getUserFriendlyError } from '../../utils/error-messages';
 import { cn } from '../../lib/utils';
 import { useIsMobile } from '../../hooks';
 import { SqordiaLoader } from '../../components/ui/SqordiaLoader';
+import { Button } from '../../components/ui/button';
 
 const STATUS_OPTIONS = ['All', 'Active', 'Inactive', 'Suspended', 'Banned'] as const;
 const USER_TYPE_OPTIONS = ['All', 'Entrepreneur', 'Consultant', 'OBNL'] as const;
@@ -369,9 +370,9 @@ export default function AdminUsersPage() {
               </div>
               <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
             </div>
-            <button onClick={() => setError(null)} className="p-1 text-red-400 hover:text-red-600 dark:hover:text-red-300 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors">
-              <X className="w-4 h-4" />
-            </button>
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setError(null)}>
+              <X className="w-4 h-4 text-red-400" />
+            </Button>
           </motion.div>
         )}
       </AnimatePresence>
@@ -454,23 +455,25 @@ export default function AdminUsersPage() {
               </button>
 
               <div className="flex items-center gap-2">
-                <button
+                <Button
+                  variant="outline"
+                  size="sm"
                   onClick={handleExport}
                   disabled={exporting}
-                  className="flex items-center gap-2 px-3 py-2.5 text-sm font-medium text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50"
                 >
                   {exporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
                   <span className="hidden md:inline">{language === 'fr' ? 'Exporter' : 'Export'}</span>
-                </button>
+                </Button>
 
-                <button
+                <Button
+                  variant="outline"
+                  size="icon"
                   onClick={handleRefresh}
                   disabled={isRefreshing}
-                  className="p-2.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 border border-gray-200 dark:border-gray-700 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50"
                   title={language === 'fr' ? 'Actualiser' : 'Refresh'}
                 >
                   <RefreshCw className={cn('w-4 h-4', isRefreshing && 'animate-spin')} />
-                </button>
+                </Button>
 
                 {/* View Toggle - hidden on mobile since we auto-switch */}
                 <div className="hidden md:flex items-center border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
@@ -549,8 +552,32 @@ export default function AdminUsersPage() {
 
         {/* Content */}
         {loading ? (
-          <div className="flex items-center justify-center py-20">
-            <SqordiaLoader size="md" message={language === 'fr' ? 'Chargement...' : 'Loading users...'} />
+          <div className="animate-pulse">
+            {/* Table header skeleton */}
+            <div className="px-4 py-3 bg-gray-50 dark:bg-gray-800/50 border-b border-gray-100 dark:border-gray-800">
+              <div className="flex gap-6">
+                {[...Array(6)].map((_, i) => (
+                  <div key={i} className="h-3 w-16 bg-gray-200 dark:bg-gray-700 rounded" />
+                ))}
+              </div>
+            </div>
+            {/* Table rows skeleton */}
+            <div className="divide-y divide-gray-100 dark:divide-gray-800">
+              {[...Array(8)].map((_, i) => (
+                <div key={i} className="px-4 py-4 flex items-center gap-4">
+                  <div className="w-4 h-4 bg-gray-200 dark:bg-gray-700 rounded" />
+                  <div className="w-9 h-9 bg-gray-200 dark:bg-gray-700 rounded-full flex-shrink-0" />
+                  <div className="flex-1 space-y-2">
+                    <div className="h-4 w-36 bg-gray-200 dark:bg-gray-700 rounded" />
+                    <div className="h-3 w-48 bg-gray-200 dark:bg-gray-700 rounded" />
+                  </div>
+                  <div className="hidden sm:block h-5 w-16 bg-gray-200 dark:bg-gray-700 rounded-full" />
+                  <div className="hidden md:block h-4 w-20 bg-gray-200 dark:bg-gray-700 rounded" />
+                  <div className="hidden lg:block h-4 w-24 bg-gray-200 dark:bg-gray-700 rounded" />
+                  <div className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-lg" />
+                </div>
+              ))}
+            </div>
           </div>
         ) : viewMode === 'list' ? (
           /* TABLE VIEW - Polished Design */
@@ -714,20 +741,22 @@ export default function AdminUsersPage() {
                         <div className="flex items-center justify-end gap-1">
                           {/* Quick action buttons - visible on hover */}
                           <div className="hidden group-hover:flex items-center gap-1 mr-1">
-                            <button
+                            <Button
+                              variant="ghost"
+                              size="icon"
                               onClick={() => navigate(`/admin/users/${user.id}`)}
-                              className="p-2 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all"
                               title={language === 'fr' ? 'Voir' : 'View'}
                             >
                               <Eye className="w-4 h-4" />
-                            </button>
-                            <button
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
                               onClick={() => openRoleModal(user)}
-                              className="p-2 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all"
                               title={language === 'fr' ? 'Rôles' : 'Roles'}
                             >
                               <Shield className="w-4 h-4" />
-                            </button>
+                            </Button>
                           </div>
 
                           {/* More actions dropdown */}
@@ -1009,13 +1038,14 @@ export default function AdminUsersPage() {
                 </select>
               </div>
               <div className="flex items-center gap-1 order-1 sm:order-2">
-                <button
+                <Button
+                  variant="outline"
+                  size="icon"
                   onClick={() => setPage(Math.max(1, page - 1))}
                   disabled={page <= 1}
-                  className="p-2 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                 >
                   <ChevronLeft className="w-4 h-4" />
-                </button>
+                </Button>
                 {/* Show simplified pagination on mobile */}
                 <span className="sm:hidden px-3 text-sm text-gray-600 dark:text-gray-400 tabular-nums">
                   {page} / {totalPages}
@@ -1041,13 +1071,14 @@ export default function AdminUsersPage() {
                     )
                   )}
                 </div>
-                <button
+                <Button
+                  variant="outline"
+                  size="icon"
                   onClick={() => setPage(Math.min(totalPages, page + 1))}
                   disabled={page >= totalPages}
-                  className="p-2 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                 >
                   <ChevronRight className="w-4 h-4" />
-                </button>
+                </Button>
               </div>
             </div>
           </div>
@@ -1165,13 +1196,13 @@ export default function AdminUsersPage() {
                 {language === 'fr' ? "Marquer l'email comme vérifié" : 'Mark email as verified'}
               </label>
               <div className="flex justify-end gap-3 pt-4 border-t border-gray-100 dark:border-gray-800">
-                <button type="button" onClick={() => setShowCreateModal(false)} className="px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-600 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                <Button type="button" variant="outline" onClick={() => setShowCreateModal(false)}>
                   {language === 'fr' ? 'Annuler' : 'Cancel'}
-                </button>
-                <button type="submit" disabled={creating} className="px-5 py-2.5 text-sm font-medium text-white bg-momentum-orange hover:bg-orange-600 rounded-xl transition-colors disabled:opacity-50 flex items-center gap-2 shadow-sm shadow-orange-500/20">
+                </Button>
+                <Button type="submit" variant="brand" disabled={creating}>
                   {creating && <Loader2 className="w-4 h-4 animate-spin" />}
                   {language === 'fr' ? 'Créer' : 'Create User'}
-                </button>
+                </Button>
               </div>
             </form>
           </Modal>
@@ -1218,9 +1249,9 @@ export default function AdminUsersPage() {
                                 {role.description && <p className="text-xs text-gray-500 dark:text-gray-400">{role.description}</p>}
                               </div>
                             </div>
-                            <button onClick={() => handleRemoveRole(role.id)} className="text-xs font-medium text-red-500 hover:text-red-700 dark:hover:text-red-400 transition-colors">
+                            <Button variant="destructive" size="sm" className="bg-transparent shadow-none text-red-500 hover:text-red-700 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20" onClick={() => handleRemoveRole(role.id)}>
                               {language === 'fr' ? 'Retirer' : 'Remove'}
-                            </button>
+                            </Button>
                           </div>
                         ))}
                       </div>
@@ -1242,9 +1273,9 @@ export default function AdminUsersPage() {
                               <span className="text-sm font-medium text-gray-900 dark:text-white">{role.name}</span>
                               {role.description && <p className="text-xs text-gray-500 dark:text-gray-400">{role.description}</p>}
                             </div>
-                            <button onClick={() => handleAssignRole(role.id)} className="px-3 py-1.5 text-xs font-medium text-white bg-momentum-orange hover:bg-orange-600 rounded-lg transition-colors">
+                            <Button variant="brand" size="sm" onClick={() => handleAssignRole(role.id)}>
                               {language === 'fr' ? 'Assigner' : 'Assign'}
-                            </button>
+                            </Button>
                           </div>
                         ))}
                       </div>
@@ -1316,12 +1347,14 @@ function Modal({ children, onClose }: { children: React.ReactNode; onClose: () =
         <div className="sm:hidden flex justify-center pt-3">
           <div className="w-10 h-1 bg-gray-300 dark:bg-gray-600 rounded-full" />
         </div>
-        <button
+        <Button
+          variant="ghost"
+          size="icon"
+          className="absolute top-4 right-4 z-10"
           onClick={onClose}
-          className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors z-10"
         >
           <X className="w-5 h-5" />
-        </button>
+        </Button>
         <div className="overflow-y-auto max-h-[calc(90vh-1rem)]">
           {children}
         </div>

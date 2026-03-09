@@ -1,5 +1,6 @@
 import { apiClient } from './api-client';
 import { Organization, CreateOrganizationRequest, ApiResponse } from './types';
+import type { UpdateOrganizationProfileRequest, OrganizationProfile } from '../types/organization-profile';
 
 export const organizationService = {
   async getOrganizations(): Promise<Organization[]> {
@@ -89,7 +90,7 @@ export const organizationService = {
   },
 
   async getOrganizationMembers(organizationId: string): Promise<any[]> {
-    const response = await apiClient.get(`/api/v1/organizations/${organizationId}/members`);
+    const response = await apiClient.get<any[]>(`/api/v1/organizations/${organizationId}/members`);
     return response.data;
   },
 
@@ -119,5 +120,28 @@ export const organizationService = {
   async updateOrganizationSettings(organizationId: string, settings: any): Promise<any> {
     const response = await apiClient.put(`/api/v1/organizations/${organizationId}/settings`, settings);
     return response.data;
+  },
+
+  async getOrganizationProfile(organizationId: string): Promise<OrganizationProfile> {
+    const response = await apiClient.get<OrganizationProfile>(`/api/v1/organizations/${organizationId}`);
+    return response.data;
+  },
+
+  async updateOrganizationProfile(organizationId: string, data: UpdateOrganizationProfileRequest): Promise<OrganizationProfile> {
+    const response = await apiClient.put<OrganizationProfile>(`/api/v1/organizations/${organizationId}`, data);
+    return response.data;
+  },
+
+  async getMyOrganizationProfile(organizationId?: string): Promise<OrganizationProfile | null> {
+    try {
+      if (organizationId) {
+        return await organizationService.getOrganizationProfile(organizationId);
+      }
+      const orgs = await organizationService.getOrganizations();
+      if (orgs.length === 0) return null;
+      return await organizationService.getOrganizationProfile(orgs[0].id);
+    } catch {
+      return null;
+    }
   }
 };

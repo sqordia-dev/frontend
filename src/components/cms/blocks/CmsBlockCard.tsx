@@ -181,7 +181,7 @@ export function CmsBlockCard({
           {canUseAi && (
             <button
               onClick={() => setShowAiPanel(true)}
-              className="flex items-center gap-1 px-2 py-1 text-xs font-medium text-purple-600 bg-purple-50 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-purple-100"
+              className="flex items-center gap-1 px-2 py-1 text-xs font-medium text-purple-600 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors"
               title="Generate with AI"
             >
               <Sparkles className="w-3.5 h-3.5" />

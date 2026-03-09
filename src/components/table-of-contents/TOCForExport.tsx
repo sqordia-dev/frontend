@@ -3,6 +3,7 @@ import { PlanSection } from '../../types/preview';
 import { groupSectionsByCategory, getCategoryIcon } from './utils';
 import { TOCStyle, getPresetConfig } from '../../types/toc-settings';
 import { useTheme } from '../../contexts/ThemeContext';
+import { sanitizeHtml } from '../../utils/sanitize';
 
 interface TOCForExportProps {
   /** List of sections to display */
@@ -170,7 +171,7 @@ export function TOCForExport({
             <div className="space-y-2 pl-4">
               {categorySections.map((section) => (
                 <div key={section.id} className="flex items-end">
-                  <span dangerouslySetInnerHTML={{ __html: getCategoryIcon(section.title) }} className="mr-2" />
+                  <span dangerouslySetInnerHTML={{ __html: sanitizeHtml(getCategoryIcon(section.title)) }} className="mr-2" />
                   <span style={{ color: preset.textColor }}>{section.title}</span>
                   <span className="flex-1" />
                   {preset.showPageNumbers && (

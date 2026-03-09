@@ -70,7 +70,7 @@ export default function LanguageDropdown({
   // Simple toggle variant - EN | FR buttons (matches CMS questionnaire design)
   if (variant === 'toggle') {
     return (
-      <div className={cn('flex items-center bg-muted rounded-lg p-0.5', className)}>
+      <div className={cn('inline-flex items-center bg-muted rounded-lg p-0.5', className)}>
         {LANGUAGES.map((lang) => (
           <button
             key={lang.code}

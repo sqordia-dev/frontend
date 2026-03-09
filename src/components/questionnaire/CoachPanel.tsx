@@ -58,7 +58,7 @@ export default function CoachPanel({ isOpen, onClose, expertAdvice, language }: 
             {/* Header */}
             <div className={`flex items-center justify-between px-4 py-3 border-b ${theme === 'dark' ? 'border-slate-700' : 'border-slate-100'}`}>
               <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center">
+                <div className="w-7 h-7 rounded-full bg-momentum-orange flex items-center justify-center">
                   <Sparkles size={14} className="text-white" />
                 </div>
                 <span className={`font-semibold text-sm ${text}`}>{t.title}</span>

@@ -10,7 +10,7 @@ const MICROSOFT_TENANT = import.meta.env.VITE_MICROSOFT_TENANT || 'common';
 export const authService = {
   async login(credentials: LoginRequest): Promise<LoginResponse> {
     try {
-      const response = await apiClient.post('/api/v1/auth/login', credentials);
+      const response = await apiClient.post<any>('/api/v1/auth/login', credentials);
       const data = response.data;
 
       // Handle wrapped response format (isSuccess/value)
@@ -62,7 +62,7 @@ export const authService = {
 
   async register(userData: RegisterRequest): Promise<User> {
     try {
-      const response = await apiClient.post('/api/v1/auth/register', userData);
+      const response = await apiClient.post<any>('/api/v1/auth/register', userData);
       const data = response.data;
 
       // Handle wrapped response format (isSuccess/value)
@@ -110,7 +110,7 @@ export const authService = {
 
   async getCurrentUser(): Promise<User> {
     try {
-      const response = await apiClient.get('/api/v1/auth/me');
+      const response = await apiClient.get<any>('/api/v1/auth/me');
       const data = response.data;
 
       // Handle wrapped response format (isSuccess/value)
@@ -134,7 +134,7 @@ export const authService = {
 
   async googleAuth(tokens: GoogleAuthRequest): Promise<LoginResponse> {
     try {
-      const response = await apiClient.post('/api/v1/auth/google', tokens);
+      const response = await apiClient.post<any>('/api/v1/auth/google', tokens);
       const data = response.data;
 
       // Handle wrapped response format (isSuccess/value) - AuthResponse with Token/RefreshToken
@@ -338,7 +338,7 @@ export const authService = {
    */
   async microsoftAuth(request: MicrosoftAuthRequest): Promise<LoginResponse> {
     try {
-      const response = await apiClient.post('/api/v1/auth/microsoft', request);
+      const response = await apiClient.post<any>('/api/v1/auth/microsoft', request);
       const data = response.data;
 
       // Handle wrapped response format
@@ -437,7 +437,7 @@ export const authService = {
 
   async forgotPassword(email: string): Promise<void> {
     try {
-      const response = await apiClient.post('/api/v1/auth/forgot-password', { email });
+      const response = await apiClient.post<any>('/api/v1/auth/forgot-password', { email });
       const data = response.data;
       if (!data.isSuccess && data.errorMessage) {
         throw new Error(data.errorMessage);
@@ -452,7 +452,7 @@ export const authService = {
 
   async resetPassword(token: string, newPassword: string): Promise<void> {
     try {
-      const response = await apiClient.post('/api/v1/auth/reset-password', { token, newPassword });
+      const response = await apiClient.post<any>('/api/v1/auth/reset-password', { token, newPassword });
       const data = response.data;
       if (!data.isSuccess && data.errorMessage) {
         throw new Error(data.errorMessage);
@@ -467,7 +467,7 @@ export const authService = {
 
   async sendVerificationEmail(): Promise<void> {
     try {
-      const response = await apiClient.post('/api/v1/auth/send-verification-email');
+      const response = await apiClient.post<any>('/api/v1/auth/send-verification-email');
       const data = response.data;
       if (!data.isSuccess && data.errorMessage) {
         throw new Error(data.errorMessage);
@@ -482,7 +482,7 @@ export const authService = {
 
   async verifyEmail(token: string): Promise<void> {
     try {
-      const response = await apiClient.post('/api/v1/auth/verify-email', { token });
+      const response = await apiClient.post<any>('/api/v1/auth/verify-email', { token });
       const data = response.data;
       if (!data.isSuccess && data.errorMessage) {
         throw new Error(data.errorMessage);
@@ -497,7 +497,7 @@ export const authService = {
 
   async setup2FA(): Promise<{ qrCodeUrl: string; manualEntryKey: string }> {
     try {
-      const response = await apiClient.post('/api/v1/2fa/setup');
+      const response = await apiClient.post<any>('/api/v1/2fa/setup');
       const data = response.data;
       if (data.isSuccess && data.value) {
         return data.value;
@@ -513,7 +513,7 @@ export const authService = {
 
   async enable2FA(code: string): Promise<{ backupCodes: string[] }> {
     try {
-      const response = await apiClient.post('/api/v1/2fa/enable', { code });
+      const response = await apiClient.post<any>('/api/v1/2fa/enable', { code });
       const data = response.data;
       if (data.isSuccess && data.value) {
         return data.value;
@@ -529,7 +529,7 @@ export const authService = {
 
   async verify2FA(code: string): Promise<void> {
     try {
-      const response = await apiClient.post('/api/v1/2fa/verify', { code });
+      const response = await apiClient.post<any>('/api/v1/2fa/verify', { code });
       const data = response.data;
       if (!data.isSuccess && data.errorMessage) {
         throw new Error(data.errorMessage);
@@ -544,7 +544,7 @@ export const authService = {
 
   async disable2FA(code: string): Promise<void> {
     try {
-      const response = await apiClient.post('/api/v1/2fa/disable', { code });
+      const response = await apiClient.post<any>('/api/v1/2fa/disable', { code });
       const data = response.data;
       if (!data.isSuccess && data.errorMessage) {
         throw new Error(data.errorMessage);
@@ -559,7 +559,7 @@ export const authService = {
 
   async get2FAStatus(): Promise<{ isEnabled: boolean; hasBackupCodes: boolean }> {
     try {
-      const response = await apiClient.get('/api/v1/2fa/status');
+      const response = await apiClient.get<any>('/api/v1/2fa/status');
       const data = response.data;
       if (data.isSuccess && data.value) {
         return data.value;
@@ -575,7 +575,7 @@ export const authService = {
 
   async regenerateBackupCodes(): Promise<{ backupCodes: string[] }> {
     try {
-      const response = await apiClient.post('/api/v1/2fa/backup-codes/regenerate');
+      const response = await apiClient.post<any>('/api/v1/2fa/backup-codes/regenerate');
       const data = response.data;
       if (data.isSuccess && data.value) {
         return data.value;

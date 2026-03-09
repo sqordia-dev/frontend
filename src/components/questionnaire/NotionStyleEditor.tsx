@@ -47,6 +47,7 @@ interface NotionStyleEditorProps {
   onAIAction?: (action: AIActionType) => void;
   isAIProcessing?: boolean;
   questionId: string;
+  onFocus?: () => void;
 }
 
 // Translations
@@ -179,11 +180,13 @@ export default function NotionStyleEditor({
   minLength = 10,
   onAIAction,
   isAIProcessing = false,
+  onFocus: onFocusProp,
 }: NotionStyleEditorProps) {
   const { theme, language } = useTheme();
   const [isFocused, setIsFocused] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [showAIMenu, setShowAIMenu] = useState(false);
+  const [localProcessing, setLocalProcessing] = useState(false);
   const aiMenuRef = useRef<HTMLDivElement>(null);
 
   const t = TRANSLATIONS[language as keyof typeof TRANSLATIONS] || TRANSLATIONS.en;
@@ -199,8 +202,16 @@ export default function NotionStyleEditor({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // Reset local processing when external processing finishes
+  useEffect(() => {
+    if (!isAIProcessing) {
+      setLocalProcessing(false);
+    }
+  }, [isAIProcessing]);
+
   const handleAIAction = (action: AIActionType) => {
     setShowAIMenu(false);
+    setLocalProcessing(true);
     onAIAction?.(action);
   };
 
@@ -219,7 +230,10 @@ export default function NotionStyleEditor({
     onUpdate: ({ editor }) => {
       onChange(editor.getHTML());
     },
-    onFocus: () => setIsFocused(true),
+    onFocus: () => {
+      setIsFocused(true);
+      onFocusProp?.();
+    },
     onBlur: () => setIsFocused(false),
     editorProps: {
       attributes: {
@@ -446,7 +460,7 @@ export default function NotionStyleEditor({
                       disabled:opacity-50 disabled:cursor-not-allowed
                     `}
                   >
-                    {isAIProcessing ? (
+                    {localProcessing ? (
                       <Loader2 size={14} className="animate-spin" />
                     ) : (
                       <Sparkles size={14} />
@@ -468,7 +482,7 @@ export default function NotionStyleEditor({
                         disabled:opacity-50 disabled:cursor-not-allowed
                       `}
                     >
-                      {isAIProcessing ? (
+                      {localProcessing ? (
                         <Loader2 size={14} className="animate-spin" />
                       ) : (
                         <Sparkles size={14} />

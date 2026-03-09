@@ -3,6 +3,7 @@ import { Bot, X, Send, Trash2, Loader2, Maximize2, Minimize2, Brain, Database, S
 import { marked } from 'marked';
 import { useAdminAIAssistant } from '../../hooks/useAdminAIAssistant';
 import { useTheme } from '../../contexts/ThemeContext';
+import { sanitizeHtml } from '../../utils/sanitize';
 
 // Configure marked for GFM tables
 marked.setOptions({ gfm: true, breaks: true });
@@ -106,7 +107,7 @@ function AssistantBubble({
       <div className="w-full rounded-lg px-3 py-2 text-sm bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200 overflow-hidden">
         <div
           className="ai-chat-content prose prose-sm dark:prose-invert max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0"
-          dangerouslySetInnerHTML={{ __html: html }}
+          dangerouslySetInnerHTML={{ __html: sanitizeHtml(html) }}
         />
         {isStreaming && isLast && (
           <span className="inline-block animate-pulse text-momentum-orange ml-0.5">&#9646;</span>
@@ -177,7 +178,7 @@ export function AdminAIAssistant() {
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-6 right-6 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-momentum-orange text-white shadow-lg transition-transform hover:scale-110 hover:bg-[#e55f00] hover:shadow-xl"
+          className="fixed bottom-6 right-6 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-strategy-blue text-momentum-orange shadow-lg transition-transform hover:scale-110 hover:bg-strategy-blue/90 hover:shadow-xl"
           aria-label={t('admin.ai.open')}
         >
           <Bot className="h-6 w-6" />
@@ -193,9 +194,9 @@ export function AdminAIAssistant() {
       {isOpen && (
         <div className={panelClasses} style={panelStyle}>
           {/* Header */}
-          <div className={`flex items-center justify-between border-b border-orange-600 bg-momentum-orange px-4 py-3 ${isFullScreen ? 'rounded-t-2xl' : 'rounded-t-xl'}`}>
+          <div className={`flex items-center justify-between border-b border-strategy-blue/80 bg-strategy-blue px-4 py-3 ${isFullScreen ? 'rounded-t-2xl' : 'rounded-t-xl'}`}>
             <div className="flex items-center gap-2 text-white">
-              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-white/15">
+              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-white/15 text-momentum-orange">
                 <Bot className="h-4 w-4" />
               </div>
               <span className="font-semibold">{t('admin.ai.title')}</span>
@@ -221,7 +222,7 @@ export function AdminAIAssistant() {
           <div className={`flex-1 overflow-y-auto px-4 py-3 space-y-3 ${isFullScreen ? 'px-8 py-6 space-y-4' : ''}`}>
             {messages.length === 0 && (
               <div className="flex flex-col items-center justify-center h-full text-center">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-momentum-orange text-white mb-3">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-strategy-blue text-momentum-orange mb-3">
                   <Bot className="h-6 w-6" />
                 </div>
                 <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">{t('admin.ai.emptyState')}</p>

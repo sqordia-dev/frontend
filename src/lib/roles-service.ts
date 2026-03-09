@@ -3,22 +3,22 @@ import { ApiResponse } from './types';
 
 export const rolesService = {
   async getRoles(): Promise<any[]> {
-    const response = await apiClient.get('/api/v1/roles');
+    const response = await apiClient.get<any[]>('/api/v1/roles');
     return response.data;
   },
 
   async getRole(id: string): Promise<any> {
-    const response = await apiClient.get(`/api/v1/roles/${id}`);
+    const response = await apiClient.get<any>(`/api/v1/roles/${id}`);
     return response.data;
   },
 
   async createRole(data: any): Promise<any> {
-    const response = await apiClient.post('/api/v1/roles', data);
+    const response = await apiClient.post<any>('/api/v1/roles', data);
     return response.data;
   },
 
   async updateRole(id: string, data: any): Promise<any> {
-    const response = await apiClient.put(`/api/v1/roles/${id}`, data);
+    const response = await apiClient.put<any>(`/api/v1/roles/${id}`, data);
     return response.data;
   },
 
@@ -27,7 +27,7 @@ export const rolesService = {
   },
 
   async getPermissions(): Promise<any[]> {
-    const response = await apiClient.get('/api/v1/roles/permissions');
+    const response = await apiClient.get<any[]>('/api/v1/roles/permissions');
     return response.data;
   },
 
@@ -36,7 +36,7 @@ export const rolesService = {
   },
 
   async getUserRoles(userId: string): Promise<any[]> {
-    const response = await apiClient.get(`/api/v1/roles/users/${userId}`);
+    const response = await apiClient.get<any[]>(`/api/v1/roles/users/${userId}`);
     return response.data;
   },
 

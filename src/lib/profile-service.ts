@@ -48,8 +48,8 @@ export const profileService = {
       formData.append('file', file);
       
       // Don't set Content-Type header - axios will set it automatically with boundary for FormData
-      const response = await apiClient.post('/api/v1/profile/upload-picture', formData);
-      
+      const response = await apiClient.post<any>('/api/v1/profile/upload-picture', formData);
+
       const data = response.data;
       
       // Handle different response formats
@@ -100,7 +100,7 @@ export const profileService = {
 
   async changePassword(currentPassword: string, newPassword: string): Promise<void> {
     try {
-      const response = await apiClient.post('/api/v1/profile/change-password', {
+      const response = await apiClient.post<any>('/api/v1/profile/change-password', {
         currentPassword,
         newPassword
       });

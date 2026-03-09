@@ -3,12 +3,12 @@ import { ApiResponse } from './types';
 
 export const securityService = {
   async getLoginHistory(): Promise<any[]> {
-    const response = await apiClient.get('/api/v1/security/login-history');
+    const response = await apiClient.get<any[]>('/api/v1/security/login-history');
     return response.data;
   },
 
   async getSessions(): Promise<any[]> {
-    const response = await apiClient.get('/api/v1/security/sessions');
+    const response = await apiClient.get<any[]>('/api/v1/security/sessions');
     return response.data;
   },
 

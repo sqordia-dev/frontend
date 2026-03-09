@@ -82,7 +82,7 @@ export default function GenerationStatus({
                 ? 'bg-red-500'
                 : isComplete
                 ? 'bg-green-500'
-                : 'bg-gradient-to-r from-orange-400 to-orange-600'
+                : 'bg-momentum-orange'
             }`}
             initial={{ width: 0 }}
             animate={{ width: `${progress}%` }}

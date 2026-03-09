@@ -19,8 +19,12 @@ export interface PlanCardProps {
   status?: string;
   businessType?: string;
   createdAt?: string;
+  updatedAt?: string;
+  locale?: string;
   isComplete?: boolean;
   nextQuestionId?: string;
+  questionnaireProgress?: number; // 0-100 percentage
+  exportCount?: number;
   onDelete?: (id: string) => void;
   onDuplicate?: (id: string) => void;
   isDeleting?: boolean;
@@ -32,6 +36,7 @@ export interface PlanCardProps {
     noDescription?: string;
     delete?: string;
     duplicate?: string;
+    progress?: string;
     status?: {
       draft?: string;
       completed?: string;
@@ -117,6 +122,28 @@ const getStatusLabel = (
   }
 };
 
+const getRelativeTime = (dateStr: string, locale: string = 'en') => {
+  const date = new Date(dateStr);
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
+
+  if (locale.startsWith('fr')) {
+    if (diffMins < 1) return 'À l\'instant';
+    if (diffMins < 60) return `Il y a ${diffMins} min`;
+    if (diffHours < 24) return `Il y a ${diffHours}h`;
+    if (diffDays < 7) return `Il y a ${diffDays}j`;
+    return date.toLocaleDateString('fr-CA', { month: 'short', day: 'numeric' });
+  }
+  if (diffMins < 1) return 'Just now';
+  if (diffMins < 60) return `${diffMins}m ago`;
+  if (diffHours < 24) return `${diffHours}h ago`;
+  if (diffDays < 7) return `${diffDays}d ago`;
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+};
+
 export const PlanCard = React.memo(function PlanCard({
   id,
   title,
@@ -124,8 +151,12 @@ export const PlanCard = React.memo(function PlanCard({
   status,
   businessType,
   createdAt,
+  updatedAt,
+  locale,
   isComplete,
   nextQuestionId,
+  questionnaireProgress,
+  exportCount,
   onDelete,
   onDuplicate,
   isDeleting,
@@ -155,15 +186,13 @@ export const PlanCard = React.memo(function PlanCard({
 
   // Determine the link destination
   const linkTo = isDraft
-    ? `/questionnaire/${id}${nextQuestionId ? `#question-${nextQuestionId}` : ""}`
+    ? `/interview/${id}${nextQuestionId ? `#question-${nextQuestionId}` : ""}`
     : `/business-plan/${id}/preview`;
 
-  // Action button text
+  // Action button text - clear labels for each state
   const actionText = isDraft
-    ? translations?.resume || "Resume"
-    : isGenerated
-    ? translations?.viewPlan || "View Plan"
-    : translations?.view || "View";
+    ? translations?.resume || "Continue Interview"
+    : translations?.viewPlan || "View Plan";
 
   return (
     <div
@@ -253,6 +282,14 @@ export const PlanCard = React.memo(function PlanCard({
                   {getStatusLabel(status, translations)}
                 </Badge>
 
+                {/* Export Count */}
+                {exportCount != null && exportCount > 0 && (
+                  <Badge variant="outline" className="gap-1 text-xs font-normal">
+                    <Download className="h-3 w-3" />
+                    {exportCount}x
+                  </Badge>
+                )}
+
                 {/* Business Type */}
                 {businessType && (
                   <Badge variant="outline" className="text-xs font-normal">
@@ -265,15 +302,42 @@ export const PlanCard = React.memo(function PlanCard({
                   <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                     <Calendar className="h-3 w-3" />
                     <span>
-                      {new Date(createdAt).toLocaleDateString("en-US", {
-                        month: "short",
-                        day: "numeric",
-                        year: "numeric",
-                      })}
+                      {new Date(createdAt).toLocaleDateString(
+                        locale?.startsWith('fr') ? 'fr-CA' : 'en-US',
+                        {
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                        }
+                      )}
                     </span>
                   </div>
                 )}
+
+                {/* Last Edited */}
+                {updatedAt && updatedAt !== createdAt && (
+                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <Clock className="h-3 w-3" />
+                    <span>{getRelativeTime(updatedAt, locale)}</span>
+                  </div>
+                )}
               </div>
+
+              {/* Questionnaire Progress */}
+              {isDraft && questionnaireProgress !== undefined && questionnaireProgress < 100 && (
+                <div className="mt-3 space-y-1">
+                  <div className="flex items-center justify-between text-xs text-muted-foreground">
+                    <span>{translations?.progress || 'Interview progress'}</span>
+                    <span>{questionnaireProgress}%</span>
+                  </div>
+                  <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-momentum-orange rounded-full transition-all duration-500"
+                      style={{ width: `${questionnaireProgress}%` }}
+                    />
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 

@@ -1,40 +1,71 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Link } from 'react-router-dom';
 import Lottie from 'lottie-react';
-import { Check, Circle, Loader2, AlertCircle, X } from 'lucide-react';
+import { Check, Circle, Loader2, AlertCircle, X, User, TrendingUp, CheckCircle2, Eye } from 'lucide-react';
 import { GenerationStatusDto, SectionStatusDto } from '../../types/generation';
 import { useCmsContent } from '../../hooks/useCmsContent';
 import { useTheme } from '../../contexts/ThemeContext';
+import { businessPlanService } from '../../lib/business-plan-service';
 
 const LOTTIE_ANIMATION_URL = '/assets/business-plan-with-executives-lightbulb-and-briefcase.json';
 
-// Tips to display during generation - English
-const GENERATION_TIPS_EN = [
-  'The best business plans are clear and concise - typically 15-25 pages.',
-  'Investors spend an average of 3 minutes reviewing a business plan.',
-  'A strong executive summary can make or break your pitch.',
-  'Include specific metrics and milestones to show progress potential.',
-  'Your financial projections should be realistic and well-researched.',
-  'Highlight what makes your team uniquely qualified to execute.',
-  'Address potential risks and your strategies for mitigation.',
-  'Focus on the problem you solve and why customers will pay for it.',
-  'A clear market analysis demonstrates you understand your industry.',
-  'Keep your target audience in mind when crafting your message.',
-];
+// Contextual tips by persona and language
+const CONTEXTUAL_TIPS: Record<string, Record<string, string[]>> = {
+  en: {
+    Entrepreneur: [
+      'Tip: Investors spend an average of 3 minutes on a business plan. Make your executive summary count!',
+      'Tip: Include specific market size data — TAM, SAM, SOM analysis strengthens your plan.',
+      'Tip: Show traction metrics if you have them. Even early metrics demonstrate momentum.',
+      'Tip: Your financial projections should cover 3-5 years with monthly detail for year 1.',
+      'Tip: Address your competitive advantage clearly — what makes you different?',
+    ],
+    OBNL: [
+      'Tip: Clearly articulate your social impact metrics and measurement methodology.',
+      'Tip: Grant reviewers look for sustainability — show how you\'ll fund operations long-term.',
+      'Tip: Include a theory of change to strengthen your mission statement.',
+      'Tip: Highlight partnerships and community engagement in your plan.',
+      'Tip: Budget transparency builds trust with funders and stakeholders.',
+    ],
+    Consultant: [
+      'Tip: Focus on scalable service delivery models in your plan.',
+      'Tip: Include case studies or success stories to demonstrate expertise.',
+      'Tip: Detail your client acquisition strategy and pipeline.',
+      'Tip: Show how your methodology differentiates from competitors.',
+      'Tip: Include team expertise and credentials prominently.',
+    ],
+  },
+  fr: {
+    Entrepreneur: [
+      'Conseil : Les investisseurs passent en moyenne 3 minutes sur un plan. Soignez votre résumé exécutif !',
+      'Conseil : Incluez des données précises sur la taille du marché — l\'analyse TAM, SAM, SOM renforce votre plan.',
+      'Conseil : Montrez vos indicateurs de traction. Même les premiers résultats démontrent l\'élan.',
+      'Conseil : Vos projections financières devraient couvrir 3 à 5 ans avec un détail mensuel pour l\'an 1.',
+      'Conseil : Décrivez clairement votre avantage concurrentiel — qu\'est-ce qui vous distingue ?',
+    ],
+    OBNL: [
+      'Conseil : Articulez clairement vos indicateurs d\'impact social et votre méthodologie de mesure.',
+      'Conseil : Les évaluateurs de subventions recherchent la durabilité — montrez votre financement à long terme.',
+      'Conseil : Incluez une théorie du changement pour renforcer votre énoncé de mission.',
+      'Conseil : Mettez en valeur vos partenariats et votre engagement communautaire.',
+      'Conseil : La transparence budgétaire renforce la confiance des bailleurs de fonds.',
+    ],
+    Consultant: [
+      'Conseil : Concentrez-vous sur des modèles de prestation de services évolutifs.',
+      'Conseil : Incluez des études de cas pour démontrer votre expertise.',
+      'Conseil : Détaillez votre stratégie d\'acquisition de clients.',
+      'Conseil : Montrez comment votre méthodologie se différencie de la concurrence.',
+      'Conseil : Mettez en avant l\'expertise et les qualifications de votre équipe.',
+    ],
+  },
+};
 
-// Tips to display during generation - French
-const GENERATION_TIPS_FR = [
-  'Les meilleurs plans d\'affaires sont clairs et concis - généralement 15 à 25 pages.',
-  'Les investisseurs passent en moyenne 3 minutes à examiner un plan d\'affaires.',
-  'Un résumé exécutif solide peut faire ou défaire votre présentation.',
-  'Incluez des métriques et jalons spécifiques pour montrer le potentiel de croissance.',
-  'Vos projections financières doivent être réalistes et bien documentées.',
-  'Mettez en valeur ce qui rend votre équipe particulièrement qualifiée.',
-  'Abordez les risques potentiels et vos stratégies d\'atténuation.',
-  'Concentrez-vous sur le problème que vous résolvez et pourquoi les clients paieront.',
-  'Une analyse de marché claire démontre que vous comprenez votre industrie.',
-  'Gardez votre public cible à l\'esprit lors de la rédaction de votre message.',
-];
+/** Content preview for a completed section */
+interface SectionPreview {
+  id: string;
+  name: string;
+  content: string;
+}
 
 interface GenerationProgressProps {
   /** Current generation status */
@@ -49,6 +80,8 @@ interface GenerationProgressProps {
   onRetry?: () => void;
   /** Plan title for display */
   planTitle?: string;
+  /** Business plan ID for fetching section content */
+  planId?: string;
 }
 
 /**
@@ -62,15 +95,22 @@ export default function GenerationProgress({
   onCancel,
   onRetry,
   planTitle,
+  planId,
 }: GenerationProgressProps) {
   const [currentTipIndex, setCurrentTipIndex] = useState(0);
   const [lottieData, setLottieData] = useState<object | null>(null);
+  const [sectionPreviews, setSectionPreviews] = useState<SectionPreview[]>([]);
+  const [generationStartTime] = useState<number>(Date.now());
+  const [estimatedTimeRemaining, setEstimatedTimeRemaining] = useState<string | null>(null);
+  const fetchedSectionsRef = useRef<Set<string>>(new Set());
   const { getContent: cms } = useCmsContent('generation');
-  const { language: themeLanguage } = useTheme();
+  const { language: themeLanguage, t } = useTheme();
   const language = themeLanguage || 'fr';
 
-  // Select tips based on language
-  const tips = language === 'fr' ? GENERATION_TIPS_FR : GENERATION_TIPS_EN;
+  // Select tips based on language and persona
+  const storedPersona = localStorage.getItem('userPersona') || 'Entrepreneur';
+  const langTips = CONTEXTUAL_TIPS[language] || CONTEXTUAL_TIPS['en'];
+  const tips = langTips[storedPersona] || langTips['Entrepreneur'];
 
   // Load Lottie animation data
   useEffect(() => {
@@ -79,6 +119,26 @@ export default function GenerationProgress({
       .then((data) => setLottieData(data))
       .catch(() => setLottieData(null));
   }, []);
+
+  // Request notification permission on mount
+  useEffect(() => {
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
+  }, []);
+
+  // Notify when generation completes
+  useEffect(() => {
+    const currentStatus = status?.status as string;
+    if (currentStatus === 'completed' || currentStatus === 'generated') {
+      if ('Notification' in window && Notification.permission === 'granted' && document.hidden) {
+        new Notification('Sqordia', {
+          body: t('generation.notificationReady'),
+          icon: '/favicon.ico',
+        });
+      }
+    }
+  }, [status?.status, language]);
 
   // Rotate tips every 8 seconds
   useEffect(() => {
@@ -89,6 +149,86 @@ export default function GenerationProgress({
     return () => clearInterval(interval);
   }, [tips.length]);
 
+  // Strip HTML tags for plain text preview
+  const stripHtml = useCallback((html: string): string => {
+    if (!html) return '';
+    try {
+      if (typeof document !== 'undefined') {
+        const tmp = document.createElement('DIV');
+        tmp.innerHTML = html;
+        return tmp.textContent || tmp.innerText || '';
+      }
+    } catch {
+      // fallback
+    }
+    return html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+  }, []);
+
+  // Fetch section content when sections complete
+  useEffect(() => {
+    if (!planId || !status?.sections) return;
+
+    const completedSections = status.sections.filter(
+      (s) => s.status === 'completed' && !fetchedSectionsRef.current.has(s.id)
+    );
+
+    completedSections.forEach(async (section) => {
+      // Mark as fetched immediately to avoid duplicate requests
+      fetchedSectionsRef.current.add(section.id);
+
+      try {
+        const sectionData = await businessPlanService.getSection(planId, section.name);
+        const rawContent = sectionData?.content || sectionData?.value?.content || '';
+        const plainText = stripHtml(rawContent).trim();
+
+        if (plainText.length > 0) {
+          const truncated = plainText.length > 150
+            ? plainText.substring(0, 150) + '...'
+            : plainText;
+
+          setSectionPreviews((prev) => [
+            ...prev,
+            { id: section.id, name: section.name, content: truncated },
+          ]);
+        }
+      } catch (err) {
+        // Silently fail — preview is a nice-to-have
+        console.warn(`Failed to fetch section preview for ${section.name}:`, err);
+      }
+    });
+  }, [planId, status?.sections, stripHtml]);
+
+  // Calculate estimated time remaining
+  useEffect(() => {
+    if (!status || status.totalSections === 0) {
+      setEstimatedTimeRemaining(null);
+      return;
+    }
+
+    const completedCount = status.completedSections?.length ?? 0;
+    const remainingCount = status.totalSections - completedCount;
+
+    if (completedCount === 0 || remainingCount <= 0) {
+      setEstimatedTimeRemaining(null);
+      return;
+    }
+
+    const elapsedMs = Date.now() - generationStartTime;
+    const msPerSection = elapsedMs / completedCount;
+    const remainingMs = msPerSection * remainingCount;
+    const remainingMinutes = Math.ceil(remainingMs / 60000);
+
+    if (remainingMinutes <= 0) {
+      setEstimatedTimeRemaining(null);
+    } else if (remainingMinutes === 1) {
+      setEstimatedTimeRemaining(t('generation.timeOneMinute'));
+    } else {
+      setEstimatedTimeRemaining(
+        t('generation.timeMinutes').replace('{minutes}', String(remainingMinutes))
+      );
+    }
+  }, [status, generationStartTime, language]);
+
   // Get current section name for display
   const currentSectionName = status?.currentSection
     ? formatSectionName(status.currentSection, language)
@@ -96,11 +236,11 @@ export default function GenerationProgress({
 
   return (
     <div
-      className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-gray-50 to-orange-50 dark:from-gray-900 dark:to-gray-800 px-4 py-8"
+      className="min-h-screen flex flex-col items-center bg-gray-50 dark:bg-gray-900 px-4 py-8 overflow-y-auto"
       role="main"
-      aria-label="Business plan generation progress"
+      aria-label={t('generation.progressAriaLabel')}
     >
-      <div className="w-full max-w-lg">
+      <div className="w-full max-w-lg mt-auto mb-auto">
         {/* Lottie animation while progress is moving */}
         <motion.div
           className="flex justify-center mb-8"
@@ -131,7 +271,7 @@ export default function GenerationProgress({
 
         {/* Heading */}
         <h1 className="text-2xl md:text-3xl font-bold text-center text-gray-900 dark:text-white mb-2">
-          {cms('generation.creatingYourPlan', language === 'fr' ? 'Création de votre plan d\'affaires' : 'Creating Your Business Plan')}
+          {cms('generation.creatingYourPlan', 'generation.creatingYourPlan')}
         </h1>
         {planTitle && (
           <p className="text-center text-gray-600 dark:text-gray-400 mb-6">
@@ -147,18 +287,31 @@ export default function GenerationProgress({
             aria-valuenow={progress}
             aria-valuemin={0}
             aria-valuemax={100}
-            aria-label={language === 'fr' ? `Progression: ${progress}%` : `Generation progress: ${progress}%`}
+            aria-label={t('generation.progressLabel').replace('{percent}', String(progress))}
           >
             <motion.div
-              className="h-full bg-gradient-to-r from-orange-400 to-orange-600 rounded-full"
+              className="h-full bg-momentum-orange rounded-full"
               initial={{ width: 0 }}
               animate={{ width: `${progress}%` }}
               transition={{ duration: 0.5, ease: 'easeOut' }}
             />
           </div>
           <p className="text-center text-sm text-gray-600 dark:text-gray-400 mt-2">
-            {progress}% {cms('generation.complete', language === 'fr' ? 'complété' : 'complete')}
+            {progress}% {cms('generation.complete', 'generation.complete')}
           </p>
+          {/* Estimated Time Remaining */}
+          <AnimatePresence>
+            {estimatedTimeRemaining && !error && (
+              <motion.p
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="text-center text-xs text-gray-500 dark:text-gray-400 mt-1"
+              >
+                {estimatedTimeRemaining}
+              </motion.p>
+            )}
+          </AnimatePresence>
         </div>
 
         {/* Current Section */}
@@ -170,19 +323,66 @@ export default function GenerationProgress({
             exit={{ opacity: 0, y: -10 }}
             className="text-center text-orange-600 dark:text-orange-400 font-medium mb-6"
           >
-            {cms('generation.generating', language === 'fr' ? 'Génération:' : 'Generating:')} {currentSectionName}
+            {cms('generation.generating', 'generation.generatingLabel')} {currentSectionName}
           </motion.p>
+        )}
+
+        {/* View Live Preview Link */}
+        {status?.status === 'generating' && planId && (
+          <div className="text-center mt-4 mb-6">
+            <Link
+              to={`/business-plan/${planId}/preview`}
+              className="inline-flex items-center gap-2 text-sm text-momentum-orange hover:underline"
+            >
+              <Eye className="h-4 w-4" />
+              {t('generation.viewPreview')}
+            </Link>
+          </div>
         )}
 
         {/* Section Checklist */}
         {status?.sections && status.sections.length > 0 && (
           <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm mb-6">
-            <h2 className="sr-only">{language === 'fr' ? 'Progression des sections' : 'Section Progress'}</h2>
-            <ul className="space-y-2" aria-label={language === 'fr' ? 'État de complétion des sections' : 'Section completion status'}>
+            <h2 className="sr-only">{t('generation.sectionProgressTitle')}</h2>
+            <ul className="space-y-2" aria-label={t('generation.sectionCompletionAriaLabel')}>
               {status.sections.map((section) => (
                 <SectionItem key={section.id} section={section} language={language} />
               ))}
             </ul>
+          </div>
+        )}
+
+        {/* Section Preview Cards */}
+        {sectionPreviews.length > 0 && !error && (
+          <div className="mb-6">
+            <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+              {t('generation.sectionPreviews')}
+            </h2>
+            <div className="space-y-3">
+              <AnimatePresence>
+                {sectionPreviews.map((preview) => (
+                  <motion.div
+                    key={preview.id}
+                    initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    transition={{ duration: 0.4, ease: 'easeOut' }}
+                    className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm border border-green-100 dark:border-green-900/30"
+                  >
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-green-500 flex-shrink-0" aria-hidden="true">
+                        <CheckCircle2 size={18} />
+                      </span>
+                      <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
+                        {formatSectionName(preview.name, language)}
+                      </h3>
+                    </div>
+                    <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed pl-[26px]">
+                      {preview.content}
+                    </p>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            </div>
           </div>
         )}
 
@@ -203,7 +403,7 @@ export default function GenerationProgress({
                 />
                 <div className="flex-1">
                   <p className="font-semibold text-red-800 dark:text-red-200">
-                    {cms('generation.failed', language === 'fr' ? 'Échec de la génération' : 'Generation Failed')}
+                    {cms('generation.failed', 'generation.failed')}
                   </p>
                   <p className="text-sm text-red-700 dark:text-red-300 mt-1">
                     {error}
@@ -213,7 +413,7 @@ export default function GenerationProgress({
                       onClick={onRetry}
                       className="mt-3 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
                     >
-                      {cms('generation.retry', language === 'fr' ? 'Réessayer' : 'Retry Generation')}
+                      {cms('generation.retry', 'generation.retry')}
                     </button>
                   )}
                 </div>
@@ -226,7 +426,7 @@ export default function GenerationProgress({
         {!error && (
           <div className="bg-orange-50 dark:bg-orange-900/20 rounded-xl p-4 mb-6">
             <p className="text-xs font-semibold text-orange-600 dark:text-orange-400 uppercase tracking-wide mb-2">
-              {cms('generation.tip', language === 'fr' ? 'Conseil' : 'Tip')}
+              {cms('generation.tip', 'generation.tip')}
             </p>
             <AnimatePresence mode="wait">
               <motion.p
@@ -243,6 +443,49 @@ export default function GenerationProgress({
           </div>
         )}
 
+        {/* While You Wait - Quick Action Cards */}
+        {!error && status?.status === 'generating' && planId && (
+          <div className="mb-6">
+            <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">
+              {t('generation.whileYouWait')}
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <Link
+                to="/profile"
+                className="flex items-center gap-3 p-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-orange-300 dark:hover:border-orange-600 hover:shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"
+              >
+                <div className="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0">
+                  <User size={16} className="text-blue-500" aria-hidden="true" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                    {t('generation.completeProfile')}
+                  </p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                    {t('generation.addDetails')}
+                  </p>
+                </div>
+              </Link>
+              <Link
+                to={`/business-plan/${planId}/financials`}
+                className="flex items-center gap-3 p-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-orange-300 dark:hover:border-orange-600 hover:shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"
+              >
+                <div className="w-8 h-8 rounded-lg bg-green-50 dark:bg-green-900/30 flex items-center justify-center flex-shrink-0">
+                  <TrendingUp size={16} className="text-green-500" aria-hidden="true" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                    {t('generation.financialTools')}
+                  </p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                    {t('generation.projectionsAnalysis')}
+                  </p>
+                </div>
+              </Link>
+            </div>
+          </div>
+        )}
+
         {/* Cancel Button */}
         {onCancel && !error && status?.status === 'generating' && (
           <div className="flex justify-center">
@@ -251,7 +494,7 @@ export default function GenerationProgress({
               className="flex items-center gap-2 px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 rounded-lg"
             >
               <X size={18} aria-hidden="true" />
-              {cms('generation.cancel', language === 'fr' ? 'Annuler la génération' : 'Cancel Generation')}
+              {cms('generation.cancel', 'generation.cancelGeneration')}
             </button>
           </div>
         )}

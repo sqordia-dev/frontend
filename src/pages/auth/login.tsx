@@ -1,6 +1,6 @@
 import { useState, FormEvent } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
-import { AlertCircle, CheckCircle } from 'lucide-react';
+import { AlertCircle, CheckCircle, Info } from 'lucide-react';
 import { authService } from '../../lib/auth-service';
 import { signInWithGoogle } from '../../lib/google-auth';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -15,6 +15,7 @@ import {
   Divider,
 } from '../../components/auth';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -31,6 +32,7 @@ interface LocationState {
 export default function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { language } = useTheme();
   const { getContent: cms } = useCmsContent('auth');
 
   // Check for success message from registration
@@ -45,6 +47,7 @@ export default function LoginPage() {
   const [errors, setErrors] = useState<ValidationError[]>([]);
   const [serverError, setServerError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [emailHint, setEmailHint] = useState<string | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
@@ -58,12 +61,23 @@ export default function LoginPage() {
     if (serverError) setServerError('');
   };
 
+  const handleEmailBlur = () => {
+    const email = formData.email.toLowerCase();
+    if (email.includes('@gmail.com') || email.includes('@googlemail.com')) {
+      setEmailHint(language === 'fr' ? 'Vous pouvez aussi vous connecter avec Google' : 'You can also sign in with Google');
+    } else if (email.includes('@outlook.com') || email.includes('@hotmail.com') || email.includes('@live.com')) {
+      setEmailHint(language === 'fr' ? 'Vous pouvez aussi vous connecter avec Microsoft' : 'You can also sign in with Microsoft');
+    } else {
+      setEmailHint(null);
+    }
+  };
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setServerError('');
 
     // Validate form
-    const validationErrors = validateLoginForm(formData);
+    const validationErrors = validateLoginForm(formData, language);
     if (validationErrors.length > 0) {
       setErrors(validationErrors);
       return;
@@ -88,7 +102,7 @@ export default function LoginPage() {
         navigate('/dashboard');
       }
     } catch (err: any) {
-      setServerError(getUserFriendlyError(err, 'login'));
+      setServerError(getUserFriendlyError(err, 'login', language));
     } finally {
       setLoading(false);
     }
@@ -114,7 +128,7 @@ export default function LoginPage() {
         navigate('/dashboard');
       }
     } catch (err: any) {
-      setServerError(getUserFriendlyError(err, 'login'));
+      setServerError(getUserFriendlyError(err, 'login', language));
     }
   };
 
@@ -132,7 +146,7 @@ export default function LoginPage() {
         navigate('/dashboard');
       }
     } catch (err: any) {
-      setServerError(getUserFriendlyError(err, 'login'));
+      setServerError(getUserFriendlyError(err, 'login', language));
     }
   };
 
@@ -199,6 +213,7 @@ export default function LoginPage() {
             type="email"
             value={formData.email}
             onChange={handleChange}
+            onBlur={handleEmailBlur}
             required
             autoComplete="email"
             className={`h-12 ${getFieldError(errors, 'email') ? 'border-red-300 focus-visible:ring-red-500 dark:border-red-500' : ''}`}
@@ -209,6 +224,12 @@ export default function LoginPage() {
           {getFieldError(errors, 'email') && (
             <p id="email-error" className="mt-1.5 text-xs text-red-600 dark:text-red-400" role="alert">
               {getFieldError(errors, 'email')}
+            </p>
+          )}
+          {emailHint && (
+            <p className="mt-1.5 text-xs text-blue-600 dark:text-blue-400 flex items-center gap-1">
+              <Info className="w-3 h-3" />
+              {emailHint}
             </p>
           )}
         </div>
@@ -228,15 +249,15 @@ export default function LoginPage() {
 
         {/* Remember Me / Forgot Password */}
         <div className="flex items-center justify-between text-sm">
-          <label className="flex cursor-pointer items-center">
-            <input
-              type="checkbox"
+          <label className="flex cursor-pointer items-center gap-2.5">
+            <Checkbox
               name="rememberMe"
               checked={formData.rememberMe}
-              onChange={handleChange}
-              className="h-4 w-4 rounded border-gray-300 text-momentum-orange focus:ring-2 focus:ring-momentum-orange focus:ring-offset-0"
+              onCheckedChange={(checked) =>
+                setFormData(prev => ({ ...prev, rememberMe: checked }))
+              }
             />
-            <span className="ml-2.5 text-muted-foreground">
+            <span className="text-muted-foreground">
               {cms('auth.login.remember', 'login.remember')}
             </span>
           </label>

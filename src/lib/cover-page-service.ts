@@ -1,5 +1,5 @@
 import { apiClient } from './api-client';
-import { CoverPageSettings, UpdateCoverPageRequest, DEFAULT_COVER_PAGE } from '../types/cover-page';
+import { CoverPageSettings, UpdateCoverPageRequest, DEFAULT_COVER_PAGE, type BackgroundType } from '../types/cover-page';
 
 /**
  * Extended style settings that are serialized to JSON
@@ -149,7 +149,7 @@ function normalizeCoverPageResponse(data: any): CoverPageSettings {
     createdAt: data.createdAt || data.CreatedAt,
     updatedAt: data.updatedAt || data.UpdatedAt,
     // Merge extended settings with defaults
-    backgroundType: extendedSettings.backgroundType || DEFAULT_COVER_PAGE.backgroundType || 'solid',
+    backgroundType: (extendedSettings.backgroundType || DEFAULT_COVER_PAGE.backgroundType || 'solid') as BackgroundType,
     backgroundColor: extendedSettings.backgroundColor || DEFAULT_COVER_PAGE.backgroundColor || '#FFFFFF',
     gradientStartColor: extendedSettings.gradientStartColor || DEFAULT_COVER_PAGE.gradientStartColor || '#1A2B47',
     gradientEndColor: extendedSettings.gradientEndColor || DEFAULT_COVER_PAGE.gradientEndColor || '#2563EB',

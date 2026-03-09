@@ -1,10 +1,14 @@
 import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Loader2, AlertCircle } from 'lucide-react';
+import { AlertCircle, CheckCircle2 } from 'lucide-react';
 import { GenerationProgress } from '../../components/generation';
 import { useGenerationStatus } from '../../hooks/useGenerationStatus';
 import { businessPlanService } from '../../lib/business-plan-service';
+import { useTheme } from '../../contexts/ThemeContext';
+import { useToast } from '../../contexts/ToastContext';
 import SEO from '../../components/SEO';
+import { LoadingSpinner } from '../../components/ui/loading-spinner';
+import { Button } from '@/components/ui/button';
 
 /**
  * GenerationPage Component
@@ -14,10 +18,13 @@ import SEO from '../../components/SEO';
 export default function GenerationPage() {
   const { planId } = useParams<{ planId: string }>();
   const navigate = useNavigate();
+  const { t } = useTheme();
+  const toast = useToast();
 
   const [planTitle, setPlanTitle] = useState<string>('');
   const [isInitializing, setIsInitializing] = useState(true);
   const [initError, setInitError] = useState<string | null>(null);
+  const [alreadyGenerated, setAlreadyGenerated] = useState(false);
   const hasStartedRef = useRef(false);
 
   // Use generation status hook
@@ -42,7 +49,7 @@ export default function GenerationPage() {
   useEffect(() => {
     const initializeGeneration = async () => {
       if (!planId) {
-        setInitError('No plan ID provided');
+        setInitError(t('generation.noPlanId'));
         setIsInitializing(false);
         return;
       }
@@ -53,10 +60,12 @@ export default function GenerationPage() {
         setPlanTitle(plan.title || 'Business Plan');
 
         // Check if already generated - handle multiple status naming conventions
-        const planStatus = (plan.status || plan.Status || '').toLowerCase();
+        const planStatus = (plan.status || (plan as any).Status || '').toLowerCase();
         if (planStatus === 'generated' || planStatus === 'completed') {
-          // Already generated, redirect to preview
-          navigate(`/business-plan/${planId}/preview`);
+          // Already generated, show friendly message then redirect
+          setAlreadyGenerated(true);
+          setTimeout(() => navigate(`/business-plan/${planId}/preview`), 2000);
+          setIsInitializing(false);
           return;
         }
 
@@ -64,8 +73,10 @@ export default function GenerationPage() {
         const existingStatus = await businessPlanService.getGenerationStatus(planId);
         const generationStatus = (existingStatus?.status || existingStatus?.generationStatus || '').toLowerCase();
         if (generationStatus === 'completed' || generationStatus === 'generated') {
-          // Already complete, redirect to preview
-          navigate(`/business-plan/${planId}/preview`);
+          // Already complete, show friendly message then redirect
+          setAlreadyGenerated(true);
+          setTimeout(() => navigate(`/business-plan/${planId}/preview`), 2000);
+          setIsInitializing(false);
           return;
         }
 
@@ -78,8 +89,13 @@ export default function GenerationPage() {
         }
       } catch (err) {
         console.error('Failed to initialize generation:', err);
-        setInitError('Failed to load business plan. Please try again.');
+        hasStartedRef.current = false;
+        setInitError(t('generation.failedToLoad'));
         setIsInitializing(false);
+        toast.error(
+          t('generation.errorTitle') || 'Generation Error',
+          t('generation.failedToLoad') || 'Failed to initialize business plan generation.'
+        );
       }
     };
 
@@ -94,8 +110,26 @@ export default function GenerationPage() {
 
   // Handle retry
   const handleRetry = async () => {
+    hasStartedRef.current = false;
     await retryGeneration();
   };
+
+  // Already generated - friendly redirect
+  if (alreadyGenerated) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+        <div className="text-center">
+          <CheckCircle2 size={48} className="mx-auto mb-4 text-emerald-500" />
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+            {t('generation.planReady')}
+          </h2>
+          <p className="text-gray-600 dark:text-gray-400">
+            {t('generation.redirectingToPreview')}
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   // Initial loading state
   if (isInitializing) {
@@ -107,18 +141,11 @@ export default function GenerationPage() {
           noindex={true}
           nofollow={true}
         />
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-orange-50 dark:from-gray-900 dark:to-gray-800">
-          <div className="text-center">
-            <Loader2
-              size={48}
-              className="animate-spin mx-auto mb-4 text-orange-500"
-              aria-hidden="true"
-            />
-            <p className="text-gray-600 dark:text-gray-400">
-              Preparing your business plan...
-            </p>
-          </div>
-        </div>
+        <LoadingSpinner
+          size="lg"
+          text={t('generation.preparingPlan')}
+          fullPage
+        />
       </>
     );
   }
@@ -133,7 +160,7 @@ export default function GenerationPage() {
           noindex={true}
           nofollow={true}
         />
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-orange-50 dark:from-gray-900 dark:to-gray-800 px-4">
+        <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
           <div className="text-center max-w-md">
             <AlertCircle
               size={48}
@@ -145,15 +172,15 @@ export default function GenerationPage() {
             </h1>
             <p className="text-gray-600 dark:text-gray-400 mb-6">
               {initError
-                ? 'Please check the URL and try again.'
-                : 'No plan ID was provided in the URL.'}
+                ? t('generation.checkUrl')
+                : t('generation.invalidPlanId')}
             </p>
-            <button
+            <Button
               onClick={() => navigate('/dashboard')}
-              className="px-6 py-3 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"
+              className="px-6 py-3 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-semibold"
             >
-              Back to Dashboard
-            </button>
+              {t('generation.backToDashboard')}
+            </Button>
           </div>
         </div>
       </>
@@ -175,6 +202,7 @@ export default function GenerationPage() {
         onCancel={handleCancel}
         onRetry={handleRetry}
         planTitle={planTitle}
+        planId={planId}
       />
     </>
   );

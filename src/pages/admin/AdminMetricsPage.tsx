@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo, useCallback } from 'react';
+import { sanitizeHtml } from '../../utils/sanitize';
 import { motion } from 'framer-motion';
 import {
   Users,
@@ -632,8 +633,8 @@ export default function AdminMetricsPage() {
                 <div className="bg-muted/30 rounded-lg p-4 space-y-2">
                   {takeaways.map((text, i) => (
                     <p key={i} className="text-sm text-foreground leading-relaxed" dangerouslySetInnerHTML={{
-                      __html: text
-                        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                      __html: sanitizeHtml(text
+                        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>'))
                     }} />
                   ))}
                 </div>

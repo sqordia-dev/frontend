@@ -5,6 +5,7 @@ import {
   OnboardingCompleteRequest,
   OnboardingCompleteResponse,
 } from '../types/onboarding';
+import type { OnboardingProfileCompleteRequest, OnboardingProfileCompleteResponse } from '../types/organization-profile';
 
 /**
  * Service for managing onboarding flow
@@ -113,6 +114,33 @@ export const onboardingService = {
         error.message ||
         'Failed to complete onboarding';
 
+      throw new Error(errorMessage);
+    }
+  },
+
+  /**
+   * Complete onboarding profile — saves org profile data and creates plan in one call
+   */
+  async completeOnboardingProfile(request: OnboardingProfileCompleteRequest): Promise<OnboardingProfileCompleteResponse> {
+    try {
+      // Store persona locally
+      localStorage.setItem('userPersona', request.persona);
+
+      const response = await apiClient.post<OnboardingProfileCompleteResponse>('/api/v1/onboarding/v2/complete', request);
+      const data = (response.data as any).value || response.data;
+
+      // Also set persona on user endpoint for consistency
+      const personaCapitalized = request.persona.charAt(0).toUpperCase() + request.persona.slice(1);
+      await apiClient.post('/api/v1/user/persona', { persona: personaCapitalized }).catch(() => {});
+
+      return data;
+    } catch (error: any) {
+      console.error('Failed to complete onboarding:', error);
+      const errorMessage =
+        error.response?.data?.errorMessage ||
+        error.response?.data?.message ||
+        error.message ||
+        'Failed to complete onboarding';
       throw new Error(errorMessage);
     }
   },

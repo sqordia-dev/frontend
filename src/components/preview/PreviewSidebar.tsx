@@ -1,10 +1,9 @@
-import { useState, useRef, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Download,
   Share2,
   FileText,
-  FileType,
   Building2,
   BarChart3,
   Package,
@@ -20,7 +19,6 @@ import {
   LogOut,
   BookOpen,
   List,
-  ChevronUp,
   Loader2,
   Edit3,
   Check,
@@ -29,7 +27,7 @@ import {
 import { PlanSection } from '../../types/preview';
 import { useTheme } from '../../contexts/ThemeContext';
 
-export type ExportFormat = 'pdf' | 'word';
+export type ExportFormat = 'pdf' | 'word' | 'powerpoint';
 
 interface PreviewSidebarProps {
   /** Plan name/title */
@@ -185,24 +183,6 @@ export default function PreviewSidebar({
   onEditPlanTitle,
 }: PreviewSidebarProps) {
   const { t } = useTheme();
-  const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
-  const exportMenuRef = useRef<HTMLDivElement>(null);
-
-  // Close export menu when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (exportMenuRef.current && !exportMenuRef.current.contains(event.target as Node)) {
-        setIsExportMenuOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  const handleExport = (format: ExportFormat) => {
-    setIsExportMenuOpen(false);
-    onExportClick(format);
-  };
 
   // Calculate completion statistics
   const { completedCount, completionPercentage } = useMemo(() => {
@@ -341,77 +321,21 @@ export default function PreviewSidebar({
 
       {/* Action Buttons */}
       <div className="p-4 border-t border-white/10 space-y-2">
-        {/* Export Button with Dropdown */}
-        <div ref={exportMenuRef} className="relative">
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={() => setIsExportMenuOpen(!isExportMenuOpen)}
-            disabled={isExporting}
-            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-[#FF6B00] hover:bg-orange-600 text-white font-medium rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 focus:ring-offset-[#1A2B47]"
-            aria-haspopup="true"
-            aria-expanded={isExportMenuOpen}
-          >
-            {isExporting ? (
-              <Loader2 size={18} className="animate-spin" aria-hidden="true" />
-            ) : (
-              <Download size={18} aria-hidden="true" />
-            )}
-            {isExporting ? 'Exporting...' : 'Export'}
-            <ChevronUp
-              size={16}
-              className={`ml-auto transition-transform duration-200 ${isExportMenuOpen ? '' : 'rotate-180'}`}
-              aria-hidden="true"
-            />
-          </motion.button>
-
-          {/* Export Dropdown Menu */}
-          <AnimatePresence>
-            {isExportMenuOpen && (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 10 }}
-                transition={{ duration: 0.15 }}
-                className="absolute bottom-full left-0 right-0 mb-2 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-50 overflow-hidden"
-                role="menu"
-              >
-                <button
-                  onClick={() => handleExport('pdf')}
-                  disabled={isExporting}
-                  className="w-full flex items-center gap-3 px-4 py-3 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 transition-colors duration-200"
-                  role="menuitem"
-                >
-                  {exportingFormat === 'pdf' ? (
-                    <Loader2 size={18} className="animate-spin text-red-500" />
-                  ) : (
-                    <FileText size={18} className="text-red-500" aria-hidden="true" />
-                  )}
-                  <div>
-                    <p className="font-medium">Export as PDF</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">Professional format</p>
-                  </div>
-                </button>
-                <button
-                  onClick={() => handleExport('word')}
-                  disabled={isExporting}
-                  className="w-full flex items-center gap-3 px-4 py-3 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 transition-colors duration-200"
-                  role="menuitem"
-                >
-                  {exportingFormat === 'word' ? (
-                    <Loader2 size={18} className="animate-spin text-blue-500" />
-                  ) : (
-                    <FileType size={18} className="text-blue-500" aria-hidden="true" />
-                  )}
-                  <div>
-                    <p className="font-medium">Export as Word</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">Editable .docx format</p>
-                  </div>
-                </button>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
+        {/* Export Button — opens pre-flight modal */}
+        <motion.button
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          onClick={() => onExportClick()}
+          disabled={isExporting}
+          className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-[#FF6B00] hover:bg-orange-600 text-white font-medium rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 focus:ring-offset-[#1A2B47]"
+        >
+          {isExporting ? (
+            <Loader2 size={18} className="animate-spin" aria-hidden="true" />
+          ) : (
+            <Download size={18} aria-hidden="true" />
+          )}
+          {isExporting ? 'Exporting...' : 'Export'}
+        </motion.button>
 
         {/* Share Button */}
         <motion.button

@@ -74,6 +74,7 @@ export function useSSEStream() {
           const data = trimmed.slice(6);
           if (data === '[DONE]') {
             onDone?.();
+            reader.cancel();
             return;
           }
 
@@ -86,6 +87,7 @@ export function useSSEStream() {
         }
       }
 
+      // Stream ended naturally (no [DONE] received) — only call onDone if not already called
       onDone?.();
     } catch (err) {
       if (err instanceof DOMException && err.name === 'AbortError') return;
