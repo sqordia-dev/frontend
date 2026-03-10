@@ -168,9 +168,9 @@ export function AdminAIAssistant() {
   // Panel size classes
   const panelClasses = isFullScreen
     ? 'fixed inset-4 z-50 flex flex-col rounded-2xl border border-gray-200 bg-white shadow-2xl dark:border-gray-700 dark:bg-gray-800'
-    : 'fixed bottom-6 right-6 z-50 flex w-[420px] flex-col rounded-xl border border-gray-200 bg-white shadow-2xl dark:border-gray-700 dark:bg-gray-800';
+    : 'fixed bottom-20 right-4 md:bottom-6 md:right-6 z-50 flex w-[calc(100vw-2rem)] md:w-[420px] max-h-[calc(100vh-6rem)] md:max-h-[580px] flex-col rounded-xl border border-gray-200 bg-white shadow-2xl dark:border-gray-700 dark:bg-gray-800';
 
-  const panelStyle = isFullScreen ? undefined : { height: '580px' };
+  const panelStyle = isFullScreen ? undefined : { height: 'min(580px, calc(100vh - 6rem))' };
 
   return (
     <>
@@ -178,7 +178,7 @@ export function AdminAIAssistant() {
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-6 right-6 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-strategy-blue text-momentum-orange shadow-lg transition-transform hover:scale-110 hover:bg-strategy-blue/90 hover:shadow-xl"
+          className="fixed bottom-20 right-4 md:bottom-6 md:right-6 z-40 flex h-12 w-12 items-center justify-center rounded-full bg-strategy-blue text-momentum-orange shadow-lg transition-transform hover:scale-110 hover:bg-strategy-blue/90 hover:shadow-xl"
           aria-label={t('admin.ai.open')}
         >
           <Bot className="h-6 w-6" />
