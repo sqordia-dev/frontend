@@ -4,6 +4,7 @@ import { Brain, X } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import StepIndicator from './StepIndicator';
+import LanguageDropdown from '../layout/LanguageDropdown';
 import CompanyPersonaStep from './steps/CompanyPersonaStep';
 import BusinessContextStep from './steps/BusinessContextStep';
 import GoalsObjectivesStep from './steps/GoalsObjectivesStep';
@@ -29,7 +30,7 @@ export interface StepProps {
   data: OnboardingData;
   onNext: (stepData: Partial<OnboardingData>) => void;
   onBack: () => void;
-  onComplete: () => void;
+  onComplete: (options?: { createBusinessPlan?: boolean }) => Promise<void>;
   isFirstStep: boolean;
   isLastStep: boolean;
 }
@@ -90,10 +91,15 @@ export default function OnboardingWizard({
     }
   }, [currentStep]);
 
-  const handleComplete = useCallback(async () => {
+  const handleComplete = useCallback(async (options?: { createBusinessPlan?: boolean }) => {
+    const createPlan = options?.createBusinessPlan ?? true;
+
     if (!data.persona || !data.companyName) {
-      showError('Missing required data', 'Please provide a company name and select a persona.');
-      return;
+      showError(
+        t('onboarding.error.missingData.title'),
+        t('onboarding.error.missingData.message'),
+      );
+      throw new Error('Missing required data');
     }
 
     setIsCompleting(true);
@@ -109,24 +115,24 @@ export default function OnboardingWizard({
         fundingStatus: data.fundingStatus,
         targetMarket: data.targetMarket,
         goalsJson: data.goals ? JSON.stringify(data.goals) : undefined,
-        createBusinessPlan: true,
+        createBusinessPlan: createPlan,
       };
 
       const result = await onboardingService.completeOnboardingProfile(request);
 
-      showSuccess('Success!', 'Your business plan has been created.');
-
-      if (result.businessPlanId) {
+      if (createPlan && result.businessPlanId) {
+        showSuccess(t('onboarding.success.title'), t('onboarding.success.planCreated'));
         navigate(`/interview/${result.businessPlanId}`);
       } else {
         navigate('/dashboard');
       }
     } catch (err: any) {
       console.error('Failed to complete onboarding:', err);
-      showError('Failed to create plan', getUserFriendlyError(err, 'save'));
+      showError(t('onboarding.error.createPlan'), getUserFriendlyError(err, 'save', language));
       setIsCompleting(false);
+      throw err;
     }
-  }, [data, navigate, showError, showSuccess]);
+  }, [data, navigate, showError, showSuccess, t, language]);
 
   const variants = {
     enter: (dir: number) => ({ x: dir > 0 ? 100 : -100, opacity: 0 }),
@@ -165,7 +171,8 @@ export default function OnboardingWizard({
               </p>
             </div>
           )}
-          <div className="w-[100px] flex justify-end">
+          <div className="flex items-center gap-2">
+            <LanguageDropdown variant="toggle" />
             <button
               onClick={() => navigate('/dashboard')}
               className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
@@ -202,8 +209,8 @@ export default function OnboardingWizard({
       <footer className="py-4 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto text-center text-sm text-gray-500 dark:text-gray-400">
           <p>
-            Need help?{' '}
-            <a href="mailto:support@sqordia.com" className="text-orange-600 hover:text-orange-700 underline">Contact support</a>
+            {t('onboarding.needHelp')}{' '}
+            <a href="mailto:support@sqordia.com" className="text-orange-600 hover:text-orange-700 underline">{t('onboarding.contactSupport')}</a>
           </p>
         </div>
       </footer>
@@ -212,7 +219,7 @@ export default function OnboardingWizard({
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" role="status" aria-label="Creating your business plan">
           <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 flex flex-col items-center gap-4 shadow-xl">
             <div className="w-12 h-12 border-4 border-orange-500 border-t-transparent rounded-full animate-spin" />
-            <p className="text-lg font-medium text-gray-900 dark:text-white">Creating your business plan...</p>
+            <p className="text-lg font-medium text-gray-900 dark:text-white">{t('onboarding.creatingPlan')}</p>
           </div>
         </div>
       )}

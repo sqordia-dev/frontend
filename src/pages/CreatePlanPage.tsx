@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import {
   ArrowLeft,
   ArrowRight,
   AlertCircle,
+  RefreshCw,
   Sparkles,
   FileText,
   Lightbulb,
@@ -35,30 +36,40 @@ export default function CreatePlanPage() {
   const [organizationId, setOrganizationId] = useState<string | null>(null);
   const [isLoadingOrg, setIsLoadingOrg] = useState(true);
 
-  useEffect(() => {
-    fetchDefaultOrganization();
-  }, []);
-
-  const fetchDefaultOrganization = async () => {
+  const fetchDefaultOrganization = useCallback(async () => {
+    setIsLoadingOrg(true);
+    setError(null);
     try {
       const orgs = await organizationService.getOrganizations();
       if (orgs.length > 0) {
         setOrganizationId(orgs[0].id);
       } else {
         // Create a default organization if none exists
+        const userPersona = localStorage.getItem('userPersona');
+        const orgType = userPersona === 'obnl' ? 'OBNL' : 'Startup';
         const newOrg = await organizationService.createOrganization({
           name: 'My Organization',
-          organizationType: 'Startup',
+          organizationType: orgType,
         });
-        setOrganizationId(newOrg.id);
+        // Handle both wrapped and unwrapped response
+        const orgData = (newOrg as any)?.value || newOrg;
+        if (orgData?.id) {
+          setOrganizationId(orgData.id);
+        } else {
+          throw new Error('Organization created but no ID returned');
+        }
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to fetch organizations:', err);
       setError(t('createPlan.failedToLoadOrg'));
     } finally {
       setIsLoadingOrg(false);
     }
-  };
+  }, [t]);
+
+  useEffect(() => {
+    fetchDefaultOrganization();
+  }, [fetchDefaultOrganization]);
 
   const handleCreateProject = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -179,7 +190,19 @@ export default function CreatePlanPage() {
                 {error && (
                   <div className="flex items-start gap-3 p-4 rounded-xl bg-destructive/10 border border-destructive/20 animate-in fade-in slide-in-from-top-2 duration-300">
                     <AlertCircle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
-                    <p className="text-sm text-destructive font-medium">{error}</p>
+                    <div className="flex-1">
+                      <p className="text-sm text-destructive font-medium">{error}</p>
+                      {!organizationId && !isLoadingOrg && (
+                        <button
+                          type="button"
+                          onClick={fetchDefaultOrganization}
+                          className="mt-2 inline-flex items-center gap-1.5 text-xs font-medium text-destructive hover:text-destructive/80 underline underline-offset-2"
+                        >
+                          <RefreshCw className="h-3 w-3" />
+                          {t('createPlan.retry') || 'Retry'}
+                        </button>
+                      )}
+                    </div>
                   </div>
                 )}
 

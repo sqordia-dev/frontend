@@ -12,7 +12,7 @@ export default function FeatureTourStep({ data, onNext, onComplete }: StepProps)
     setIsCompleting(true);
     try {
       if (onComplete) {
-        await onComplete();
+        await onComplete({ createBusinessPlan: true });
       } else {
         onNext({});
       }
@@ -25,7 +25,7 @@ export default function FeatureTourStep({ data, onNext, onComplete }: StepProps)
     setIsSkipping(true);
     try {
       if (onComplete) {
-        await onComplete();
+        await onComplete({ createBusinessPlan: false });
       } else {
         onNext({});
       }

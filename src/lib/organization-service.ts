@@ -6,12 +6,19 @@ export const organizationService = {
   async getOrganizations(): Promise<Organization[]> {
     try {
       const response = await apiClient.get<Organization[]>('/api/v1/organizations');
-      return response.data;
-    } catch (error: any) {
-      if (error.response?.data?.errorMessage) {
-        throw new Error(error.response.data.errorMessage);
+      // Handle both wrapped ({ value: [...] }) and unwrapped ([...]) response formats
+      const data = response.data;
+      if (data && !Array.isArray(data) && (data as any).value) {
+        return (data as any).value;
       }
-      throw new Error(error.message || 'Failed to get organizations.');
+      return Array.isArray(data) ? data : [];
+    } catch (error: any) {
+      const msg = error.response?.data?.message
+        || error.response?.data?.errorMessage
+        || error.userMessage
+        || error.message
+        || 'Failed to get organizations.';
+      throw new Error(msg);
     }
   },
 
@@ -20,10 +27,11 @@ export const organizationService = {
       const response = await apiClient.get<Organization>(`/api/v1/organizations/${organizationId}`);
       return response.data;
     } catch (error: any) {
-      if (error.response?.data?.errorMessage) {
-        throw new Error(error.response.data.errorMessage);
-      }
-      throw new Error(error.message || 'Failed to get organization.');
+      const msg = error.response?.data?.message
+        || error.response?.data?.errorMessage
+        || error.message
+        || 'Failed to get organization.';
+      throw new Error(msg);
     }
   },
 
@@ -55,15 +63,12 @@ export const organizationService = {
         }
       }
 
-      if (error.response?.data?.errorMessage) {
-        throw new Error(error.response.data.errorMessage);
-      }
-
-      if (error.response?.data?.title) {
-        throw new Error(error.response.data.title);
-      }
-
-      throw new Error(error.message || 'Failed to create organization.');
+      const msg = error.response?.data?.message
+        || error.response?.data?.errorMessage
+        || error.response?.data?.title
+        || error.message
+        || 'Failed to create organization.';
+      throw new Error(msg);
     }
   },
 

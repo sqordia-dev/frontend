@@ -4,6 +4,7 @@ import { Brain } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
 import AnimatedBackground from './AnimatedBackground';
 import IllustrationPanel from './IllustrationPanel';
+import LanguageDropdown from '../layout/LanguageDropdown';
 
 interface AuthLayoutProps {
   children: ReactNode;
@@ -36,8 +37,8 @@ export default function AuthLayout({
         <AnimatedBackground />
 
         <div className="relative z-10 w-full max-w-md text-foreground">
-          {/* Logo */}
-          <div className="mb-8 text-center">
+          {/* Logo + Language */}
+          <div className="mb-8 flex items-center justify-between">
             <Link to="/" className="inline-flex items-center gap-3 group">
               <div className="rounded-xl p-3 transition-transform group-hover:scale-105 bg-strategy-blue">
                 <Brain className="h-7 w-7 text-white" aria-hidden="true" />
@@ -46,6 +47,7 @@ export default function AuthLayout({
                 Sqordia
               </span>
             </Link>
+            <LanguageDropdown variant="toggle" />
           </div>
 
           {/* Content card */}
@@ -68,8 +70,8 @@ export default function AuthLayout({
       {/* LEFT Panel - Form */}
       <div className="flex flex-1 flex-col items-center justify-center overflow-y-auto bg-background text-foreground px-4 py-12 sm:px-6 lg:px-12">
         <div className="w-full max-w-[480px]">
-          {/* Mobile Logo (shown when illustration panel is hidden) */}
-          <div className="mb-8 text-center lg:hidden">
+          {/* Mobile Logo + Language (shown when illustration panel is hidden) */}
+          <div className="mb-8 flex items-center justify-between lg:hidden">
             <Link to="/" className="group inline-flex items-center gap-3">
               <div className="rounded-xl p-3 transition-transform group-hover:scale-105 bg-strategy-blue">
                 <Brain className="h-6 w-6 text-white" aria-hidden="true" />
@@ -78,6 +80,11 @@ export default function AuthLayout({
                 Sqordia
               </span>
             </Link>
+            <LanguageDropdown variant="toggle" />
+          </div>
+          {/* Desktop Language switcher (when illustration panel is visible) */}
+          <div className="mb-4 hidden lg:flex lg:justify-end">
+            <LanguageDropdown variant="toggle" />
           </div>
 
           {children}
