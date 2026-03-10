@@ -12,6 +12,7 @@ import {
 import { authService } from '../lib/auth-service';
 import { User as UserType } from '../lib/types';
 import { useTheme } from '../contexts/ThemeContext';
+import { NotificationProvider } from '../contexts/NotificationContext';
 import { SkipLink } from '@/components/ui/skip-link';
 import {
   Breadcrumb,
@@ -27,6 +28,7 @@ import AppSidebar, {
   type SidebarNavGroup,
 } from '@/components/ui/AppSidebar';
 import { MobileBottomNav } from '@/components/layout/MobileBottomNav';
+import NotificationBell from '@/components/notifications/NotificationBell';
 
 // Route -> breadcrumb label mapping
 const ROUTE_LABELS: Record<string, string> = {
@@ -35,6 +37,7 @@ const ROUTE_LABELS: Record<string, string> = {
   '/profile': 'nav.settings',
   '/subscription': 'nav.subscription',
   '/invoices': 'nav.invoices',
+  '/notifications': 'nav.notifications',
 };
 
 function DashboardBreadcrumb({ pathname, t }: { pathname: string; t: (key: string) => string }) {
@@ -42,7 +45,7 @@ function DashboardBreadcrumb({ pathname, t }: { pathname: string; t: (key: strin
   if (!labelKey || pathname === '/dashboard') return null;
 
   return (
-    <Breadcrumb className="mb-4">
+    <Breadcrumb>
       <BreadcrumbList>
         <BreadcrumbItem>
           <BreadcrumbLink asChild>
@@ -144,56 +147,65 @@ export default function DashboardLayout() {
   const sidebarWidth = sidebarCollapsed ? SIDEBAR_WIDTH_COLLAPSED : SIDEBAR_WIDTH_EXPANDED;
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
-      <SkipLink targetId="main-content" />
+    <NotificationProvider>
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+        <SkipLink targetId="main-content" />
 
-      {/* Desktop Sidebar - reuses the same component as /admin */}
-      <div className="hidden md:block">
-        <AppSidebar
-          brand={{
-            name: 'Sqordia',
-            icon: Brain,
-            href: '/dashboard',
-            iconClassName: 'bg-strategy-blue text-white',
-          }}
-          navigation={navigation}
-          showLanguageSelector={true}
-          showThemeToggle={true}
-          showLogout={true}
+        {/* Desktop Sidebar - reuses the same component as /admin */}
+        <div className="hidden md:block">
+          <AppSidebar
+            brand={{
+              name: 'Sqordia',
+              icon: Brain,
+              href: '/dashboard',
+              iconClassName: 'bg-strategy-blue text-white',
+            }}
+            navigation={navigation}
+            showLanguageSelector={true}
+            showThemeToggle={true}
+            showLogout={true}
+            onLogout={handleLogout}
+            storageKey="dashboard-sidebar-collapsed"
+          />
+        </div>
+
+        {/* Main content area */}
+        <main
+          id="main-content"
+          className="transition-all duration-300 ease-in-out min-h-screen pb-24 md:pb-0 md:ml-[var(--sidebar-width)]"
+          style={{ '--sidebar-width': `${sidebarWidth}px` } as React.CSSProperties}
+          tabIndex={-1}
+        >
+          {/* Top bar */}
+          <div className="sticky top-0 z-30 flex items-center justify-between h-14 px-4 sm:px-6 lg:px-8 bg-gray-50/80 dark:bg-gray-950/80 backdrop-blur-sm border-b border-gray-200/60 dark:border-gray-800/60">
+            <DashboardBreadcrumb pathname={location.pathname} t={t} />
+            <NotificationBell />
+          </div>
+
+          <div className="p-4 sm:p-6 lg:p-8">
+            <Outlet />
+          </div>
+        </main>
+
+        {/* Mobile Bottom Navigation */}
+        <MobileBottomNav
+          mainNavItems={mobileMainNav}
+          moreMenuItems={mobileMoreNav}
+          user={user ? {
+            firstName: user.firstName,
+            lastName: user.lastName,
+            email: user.email,
+            profilePictureUrl: user.profilePictureUrl,
+            roles: (user as any)?.roles,
+          } : undefined}
           onLogout={handleLogout}
-          storageKey="dashboard-sidebar-collapsed"
+          t={t}
+          theme={theme}
+          onThemeToggle={toggleTheme}
+          language={language}
+          onLanguageChange={setLanguage}
         />
       </div>
-
-      {/* Main content area */}
-      <main
-        id="main-content"
-        className="transition-all duration-300 ease-in-out min-h-screen p-4 sm:p-6 lg:p-8 pb-24 md:pb-8 md:ml-[var(--sidebar-width)]"
-        style={{ '--sidebar-width': `${sidebarWidth}px` } as React.CSSProperties}
-        tabIndex={-1}
-      >
-        <DashboardBreadcrumb pathname={location.pathname} t={t} />
-        <Outlet />
-      </main>
-
-      {/* Mobile Bottom Navigation */}
-      <MobileBottomNav
-        mainNavItems={mobileMainNav}
-        moreMenuItems={mobileMoreNav}
-        user={user ? {
-          firstName: user.firstName,
-          lastName: user.lastName,
-          email: user.email,
-          profilePictureUrl: user.profilePictureUrl,
-          roles: (user as any)?.roles,
-        } : undefined}
-        onLogout={handleLogout}
-        t={t}
-        theme={theme}
-        onThemeToggle={toggleTheme}
-        language={language}
-        onLanguageChange={setLanguage}
-      />
-    </div>
+    </NotificationProvider>
   );
 }

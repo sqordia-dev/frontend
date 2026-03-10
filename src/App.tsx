@@ -51,6 +51,7 @@ const SecurityPage = lazy(() => import('./pages/SecurityPage'));
 const CompliancePage = lazy(() => import('./pages/CompliancePage'));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 const BugReportPage = lazy(() => import('./pages/BugReportPage'));
+const NotificationsPage = lazy(() => import('./pages/NotificationsPage'));
 
 // Financial Projections (Previsio) pages
 const FinancialProjectionsPage = lazy(() => import('./pages/financial/FinancialProjectionsPage'));
@@ -286,6 +287,18 @@ function App() {
               <Route path="project-cost" element={<ProjectCostSection />} />
               <Route path="financing" element={<FinancingSection />} />
               <Route path="reports" element={<ReportsSection />} />
+            </Route>
+
+            {/* Notifications */}
+            <Route
+              path="/notifications"
+              element={
+                <ProtectedRoute>
+                  <DashboardLayout />
+                </ProtectedRoute>
+              }
+            >
+              <Route index element={<NotificationsPage />} />
             </Route>
 
             {/* Subscription management */}
