@@ -689,51 +689,6 @@ export default function DashboardPage() {
           {recentPlans.length === 0 ? (
             /* Empty State - No plans yet */
             <div className="space-y-8">
-              <Card className="relative overflow-hidden border border-dashed border-muted-foreground/25 dark:border-muted-foreground/15 shadow-none">
-                <CardContent className="relative flex flex-col items-center justify-center py-16 px-6 sm:px-10 text-center">
-                  {/* Decorative background glow */}
-                  <div className="absolute inset-0 bg-gradient-to-b from-momentum-orange/5 via-transparent to-strategy-blue/5 dark:from-momentum-orange/[0.03] dark:to-strategy-blue/[0.03]" />
-
-                  {/* Icon cluster */}
-                  <div className="relative mb-6">
-                    <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-muted/60 dark:bg-muted/30">
-                      <FileText className="h-10 w-10 text-muted-foreground/50 dark:text-muted-foreground/40" />
-                    </div>
-                    <div className="absolute -top-2 -right-2 flex h-8 w-8 items-center justify-center rounded-full bg-momentum-orange/10 dark:bg-momentum-orange/20">
-                      <Sparkles className="h-4 w-4 text-momentum-orange" />
-                    </div>
-                  </div>
-
-                  {/* Heading */}
-                  <h3 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground font-heading mb-2">
-                    {language === 'fr'
-                      ? 'Créez votre premier plan d\u2019affaires'
-                      : 'Create your first business plan'}
-                  </h3>
-
-                  {/* Subtitle */}
-                  <p className="text-sm sm:text-base text-muted-foreground max-w-md mb-8 leading-relaxed">
-                    {language === 'fr'
-                      ? 'Laissez notre assistant IA vous guider étape par étape pour bâtir un plan d\u2019affaires professionnel, prêt pour les investisseurs.'
-                      : 'Let our AI assistant guide you step by step to build a professional, investor-ready business plan.'}
-                  </p>
-
-                  {/* CTA */}
-                  <Button
-                    asChild
-                    size="lg"
-                    variant="brand"
-                    className="text-base px-8 py-6 h-auto"
-                  >
-                    <Link to="/create-plan">
-                      <PlusCircle className="mr-2 h-5 w-5" />
-                      {t('dashboard.gettingStarted.cta')}
-                    </Link>
-                  </Button>
-                </CardContent>
-              </Card>
-
-              {/* Getting Started Checklist */}
               <GettingStartedChecklist
                 userName={user?.firstName}
                 stepStatuses={['pending', 'pending', 'pending']}

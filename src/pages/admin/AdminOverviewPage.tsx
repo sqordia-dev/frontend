@@ -159,38 +159,9 @@ export default function AdminOverviewPage() {
   const [activityFilter, setActivityFilter] = useState<'all' | 'users' | 'plans' | 'system'>('all');
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [comingSoonToast, setComingSoonToast] = useState(false);
-  const [aiInsights, setAiInsights] = useState<any[]>([]);
-  const [insightsLoading, setInsightsLoading] = useState(false);
-  const [insightsExpanded, setInsightsExpanded] = useState<Record<string, boolean>>({});
-
   useEffect(() => {
     loadOverview();
-    loadAiInsights();
   }, []);
-
-  const loadAiInsights = async () => {
-    try {
-      setInsightsLoading(true);
-      const data = await adminService.getAiInsights();
-      setAiInsights(Array.isArray(data) ? data : []);
-    } catch {
-      // AI insights are non-critical, silently fail
-    } finally {
-      setInsightsLoading(false);
-    }
-  };
-
-  const handleRunBatch = async () => {
-    try {
-      setInsightsLoading(true);
-      await adminService.runBatchAnalysis();
-      await loadAiInsights();
-    } catch {
-      // silently fail
-    } finally {
-      setInsightsLoading(false);
-    }
-  };
 
   const loadOverview = async () => {
     try {
@@ -860,98 +831,6 @@ export default function AdminOverviewPage() {
         </motion.div>
       </div>
 
-      {/* AI Insights Section */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.5 }}
-        className="bg-card rounded-xl border border-border/50 p-6"
-      >
-        <div className="flex items-center justify-between mb-5">
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-purple-500/10">
-              <Sparkles className="w-5 h-5 text-purple-500" />
-            </div>
-            <div>
-              <h2 className="text-lg font-semibold text-foreground">
-                {language === 'fr' ? 'Perspectives IA' : 'AI Insights'}
-              </h2>
-              <p className="text-sm text-muted-foreground mt-0.5">
-                {language === 'fr' ? 'Analyse automatique de la plateforme' : 'Automated platform analysis'}
-              </p>
-            </div>
-          </div>
-          <button
-            onClick={handleRunBatch}
-            disabled={insightsLoading}
-            className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-purple-600 hover:text-purple-700 bg-purple-50 dark:bg-purple-900/20 hover:bg-purple-100 dark:hover:bg-purple-900/30 rounded-lg transition-colors disabled:opacity-50"
-          >
-            <RefreshCw className={cn("w-4 h-4", insightsLoading && "animate-spin")} />
-            {language === 'fr' ? 'Actualiser' : 'Refresh'}
-          </button>
-        </div>
-
-        {insightsLoading && aiInsights.length === 0 ? (
-          <div className="flex items-center justify-center py-8">
-            <div className="flex items-center gap-3 text-muted-foreground">
-              <RefreshCw className="w-4 h-4 animate-spin" />
-              <span className="text-sm">{language === 'fr' ? 'Chargement...' : 'Loading insights...'}</span>
-            </div>
-          </div>
-        ) : aiInsights.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-8 text-center">
-            <Sparkles className="w-8 h-8 text-muted-foreground/40 mb-2" />
-            <p className="text-sm text-muted-foreground">
-              {language === 'fr'
-                ? 'Aucune perspective disponible. Cliquez sur Actualiser pour générer.'
-                : 'No insights available. Click Refresh to generate.'}
-            </p>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {aiInsights.map((insight: any, index: number) => (
-              <div
-                key={insight.id || index}
-                className="rounded-xl border border-border/50 overflow-hidden"
-              >
-                <button
-                  onClick={() => setInsightsExpanded(prev => ({ ...prev, [index]: !prev[index] }))}
-                  className="w-full flex items-center justify-between p-4 text-left hover:bg-muted/30 transition-colors"
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="text-sm font-medium text-foreground">
-                      {insight.insightType || insight.title || `Insight ${index + 1}`}
-                    </span>
-                    {insight.period && (
-                      <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
-                        {insight.period}
-                      </span>
-                    )}
-                  </div>
-                  <ChevronRight className={cn(
-                    "w-4 h-4 text-muted-foreground transition-transform",
-                    insightsExpanded[index] && "rotate-90"
-                  )} />
-                </button>
-                {insightsExpanded[index] && (
-                  <div className="px-4 pb-4 border-t border-border/50">
-                    <div className="prose prose-sm dark:prose-invert max-w-none mt-3">
-                      <div className="whitespace-pre-wrap text-sm text-muted-foreground">
-                        {insight.content || insight.summary}
-                      </div>
-                    </div>
-                    {insight.modelUsed && (
-                      <p className="text-xs text-muted-foreground mt-3">
-                        Model: {insight.modelUsed} | Tokens: {insight.tokensUsed || 'N/A'}
-                      </p>
-                    )}
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
-      </motion.div>
     </div>
   );
 }
