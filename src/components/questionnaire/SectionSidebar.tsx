@@ -1,5 +1,5 @@
 // frontend/src/components/questionnaire/SectionSidebar.tsx
-import { CheckCircle2, Clock, ChevronDown } from 'lucide-react';
+import { CheckCircle2, ChevronDown } from 'lucide-react';
 import { useState } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
 
@@ -15,20 +15,14 @@ interface SectionInfo {
 interface SectionSidebarProps {
   sections: SectionInfo[];
   currentIndex: number;
-  globalPercent: number;
-  estimatedMinutes: number;
   onSectionClick: (index: number) => void;
 }
 
 const T = {
   en: {
-    progress: 'Progress',
-    remaining: 'min remaining',
     selectSection: 'Select section',
   },
   fr: {
-    progress: 'Progression',
-    remaining: 'min restantes',
     selectSection: 'Choisir la section',
   },
 };
@@ -36,8 +30,6 @@ const T = {
 export default function SectionSidebar({
   sections,
   currentIndex,
-  globalPercent,
-  estimatedMinutes,
   onSectionClick,
 }: SectionSidebarProps) {
   const { theme, language } = useTheme();
@@ -113,26 +105,6 @@ export default function SectionSidebar({
       <aside className={`hidden lg:block w-[220px] flex-shrink-0 sticky top-[61px] self-start max-h-[calc(100vh-61px)] overflow-y-auto`}>
         <div className={`${bg} rounded-2xl border ${border} p-3 mt-6`}>
           {sectionList}
-
-          {/* Progress footer */}
-          <div className={`mt-4 pt-3 border-t ${border}`}>
-            <div className="flex items-center justify-between mb-2">
-              <span className={`text-xs font-medium ${muted}`}>{t.progress}</span>
-              <span className={`text-xs font-bold ${text}`}>{globalPercent}%</span>
-            </div>
-            <div className="h-1.5 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden">
-              <div
-                className="h-full bg-momentum-orange rounded-full transition-all duration-700 ease-out"
-                style={{ width: `${globalPercent}%` }}
-              />
-            </div>
-            {estimatedMinutes > 0 && (
-              <div className={`flex items-center gap-1 mt-2 ${muted}`}>
-                <Clock size={11} />
-                <span className="text-[11px]">~{estimatedMinutes} {t.remaining}</span>
-              </div>
-            )}
-          </div>
         </div>
       </aside>
 

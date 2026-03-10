@@ -18,7 +18,7 @@ export const authService = {
         localStorage.setItem('accessToken', data.value.accessToken);
         localStorage.setItem('refreshToken', data.value.refreshToken);
         localStorage.removeItem('demoMode');
-        await activityLogger.logLogin().catch(console.error);
+        activityLogger.logLogin().catch(console.error); // fire-and-forget
         return data.value;
       }
 
@@ -30,7 +30,7 @@ export const authService = {
         localStorage.setItem('accessToken', accessToken);
         localStorage.setItem('refreshToken', refreshToken);
         localStorage.removeItem('demoMode');
-        await activityLogger.logLogin().catch(console.error);
+        activityLogger.logLogin().catch(console.error); // fire-and-forget
 
         return {
           accessToken,
@@ -151,7 +151,7 @@ export const authService = {
         localStorage.setItem('accessToken', accessToken);
         localStorage.setItem('refreshToken', refreshToken);
         localStorage.removeItem('demoMode');
-        await activityLogger.logLogin().catch(console.error);
+        activityLogger.logLogin().catch(console.error); // fire-and-forget
 
         return {
           accessToken,
@@ -173,7 +173,7 @@ export const authService = {
         localStorage.setItem('accessToken', accessToken);
         localStorage.setItem('refreshToken', refreshToken);
         localStorage.removeItem('demoMode');
-        await activityLogger.logLogin().catch(console.error);
+        activityLogger.logLogin().catch(console.error); // fire-and-forget
 
         return {
           accessToken,
@@ -354,7 +354,7 @@ export const authService = {
         localStorage.setItem('accessToken', accessToken);
         localStorage.setItem('refreshToken', refreshToken);
         localStorage.removeItem('demoMode');
-        await activityLogger.logLogin().catch(console.error);
+        activityLogger.logLogin().catch(console.error); // fire-and-forget
 
         return {
           accessToken,
@@ -376,7 +376,7 @@ export const authService = {
         localStorage.setItem('accessToken', accessToken);
         localStorage.setItem('refreshToken', refreshToken);
         localStorage.removeItem('demoMode');
-        await activityLogger.logLogin().catch(console.error);
+        activityLogger.logLogin().catch(console.error); // fire-and-forget
 
         return {
           accessToken,

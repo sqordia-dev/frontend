@@ -21,7 +21,6 @@ const VerifyEmailPage = lazy(() => import('./pages/auth/verify-email'));
 const MicrosoftCallbackPage = lazy(() => import('./pages/auth/microsoft-callback'));
 
 // Core app pages
-const PersonaSelectionPage = lazy(() => import('./pages/PersonaSelectionPage'));
 const OnboardingPage = lazy(() => import('./pages/onboarding'));
 const DashboardPage = lazy(() => import('./pages/DashboardPage'));
 const ProfilePage = lazy(() => import('./pages/ProfilePage'));

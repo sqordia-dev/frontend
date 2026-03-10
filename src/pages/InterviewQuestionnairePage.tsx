@@ -1193,8 +1193,6 @@ function InterviewQuestionnaireContent() {
           <SectionSidebar
             sections={sidebarSections}
             currentIndex={currentSectionIndex}
-            globalPercent={globalPercent}
-            estimatedMinutes={estimatedMinutes}
             onSectionClick={(idx) => {
               setSectionDirection(idx > currentSectionIndex ? 1 : -1);
               flushAllSectionAnswers();
