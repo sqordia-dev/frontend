@@ -66,7 +66,7 @@ export default function BottomTabBar({
   return (
     <nav
       className={cn(
-        'fixed bottom-0 left-0 right-0 bg-[#1A2B47] z-40',
+        'fixed bottom-0 left-0 right-0 bg-[#1C1D1A] z-40',
         'border-t border-white/10',
         className
       )}

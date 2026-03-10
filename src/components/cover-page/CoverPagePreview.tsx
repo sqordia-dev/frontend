@@ -12,7 +12,7 @@ interface CoverPagePreviewProps {
  * Helper function to generate gradient CSS
  */
 function getGradientCSS(settings: Partial<CoverPageSettings>): string {
-  const start = settings.gradientStartColor || '#1A2B47';
+  const start = settings.gradientStartColor || '#1C1D1A';
   const end = settings.gradientEndColor || '#2563EB';
   const direction = settings.gradientDirection || 'diagonal-down';
 

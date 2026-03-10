@@ -78,9 +78,9 @@ export default function RichTextEditor({
     <div className="space-y-4">
       {/* Instructions Section */}
       {instructions && showInstructions && (
-        <div className="border-2 rounded-xl p-4 border-[#1A2B47] bg-[#F4F7FA] dark:bg-gray-800">
+        <div className="border-2 rounded-xl p-4 border-[#1C1D1A] bg-[#F4F7FA] dark:bg-gray-800">
           <div className="flex items-start justify-between mb-3">
-            <h4 className="text-sm font-bold text-[#1A2B47] dark:text-white">{t('richTextEditor.instructions')}</h4>
+            <h4 className="text-sm font-bold text-[#1C1D1A] dark:text-white">{t('richTextEditor.instructions')}</h4>
             <button
               onClick={() => setShowInstructions(false)}
               className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 p-1 rounded transition-colors"
@@ -90,7 +90,7 @@ export default function RichTextEditor({
               </svg>
             </button>
           </div>
-          <div className="text-sm leading-relaxed whitespace-pre-wrap text-[#1A2B47] dark:text-gray-300">
+          <div className="text-sm leading-relaxed whitespace-pre-wrap text-[#1C1D1A] dark:text-gray-300">
             {instructions}
           </div>
         </div>
@@ -105,7 +105,7 @@ export default function RichTextEditor({
                 <Sparkles size={20} className="text-white" />
               </div>
               <div>
-                <h4 className="font-bold text-sm text-[#1A2B47]">{t('richTextEditor.aiAssistant')}</h4>
+                <h4 className="font-bold text-sm text-[#1C1D1A]">{t('richTextEditor.aiAssistant')}</h4>
                 <p className="text-xs text-gray-600 dark:text-gray-400">{t('richTextEditor.aiAssistantDesc')}</p>
               </div>
             </div>
@@ -247,7 +247,7 @@ export default function RichTextEditor({
             text-align: left;
           }
           .rich-text-editor .ql-editor table th {
-            background-color: #1A2B47;
+            background-color: #1C1D1A;
             color: white;
             font-weight: 600;
           }
@@ -272,7 +272,7 @@ export default function RichTextEditor({
 
       {/* Status Bar */}
       <div className="flex items-center justify-between text-sm px-2">
-        <div className="flex items-center gap-4 dark:text-gray-400" style={{ color: '#1A2B47' }}>
+        <div className="flex items-center gap-4 dark:text-gray-400" style={{ color: '#1C1D1A' }}>
           <span className="font-medium">{currentWordCount} {currentWordCount === 1 ? t('richTextEditor.word') : t('richTextEditor.words')}</span>
           {lastSaved && (
             <>

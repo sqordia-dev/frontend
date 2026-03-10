@@ -240,7 +240,7 @@ export const DEFAULT_COVER_PAGE: Partial<CoverPageSettings> = {
   // Background
   backgroundType: 'solid',
   backgroundColor: '#FFFFFF',
-  gradientStartColor: '#1A2B47',
+  gradientStartColor: '#1C1D1A',
   gradientEndColor: '#2563EB',
   gradientDirection: 'diagonal-down',
   backgroundImagePosition: 'cover',
@@ -256,7 +256,7 @@ export const DEFAULT_COVER_PAGE: Partial<CoverPageSettings> = {
   companyName: '',
   documentTitle: 'Business Plan',
   fontFamily: 'Plus Jakarta Sans',
-  titleColor: '#1A2B47',
+  titleColor: '#1C1D1A',
   titleSize: 48,
   subtitleColor: '#FF6B00',
   subtitleSize: 32,
@@ -295,7 +295,7 @@ export const LAYOUT_PRESETS: Record<LayoutStyle, Partial<CoverPageSettings>> = {
   modern: {
     backgroundType: 'solid',
     backgroundColor: '#FFFFFF',
-    titleColor: '#1A2B47',
+    titleColor: '#1C1D1A',
     subtitleColor: '#FF6B00',
     textAlignment: 'left',
     showAccentLine: true,
@@ -309,7 +309,7 @@ export const LAYOUT_PRESETS: Record<LayoutStyle, Partial<CoverPageSettings>> = {
     backgroundType: 'solid',
     backgroundColor: '#FFFFFF',
     titleColor: '#1F2937',
-    subtitleColor: '#1A2B47',
+    subtitleColor: '#1C1D1A',
     textAlignment: 'center',
     showAccentLine: false,
     showBorder: true,
@@ -330,7 +330,7 @@ export const LAYOUT_PRESETS: Record<LayoutStyle, Partial<CoverPageSettings>> = {
   },
   bold: {
     backgroundType: 'gradient',
-    gradientStartColor: '#1A2B47',
+    gradientStartColor: '#1C1D1A',
     gradientEndColor: '#3B82F6',
     gradientDirection: 'diagonal-down',
     titleColor: '#FFFFFF',
@@ -357,7 +357,7 @@ export const LAYOUT_PRESETS: Record<LayoutStyle, Partial<CoverPageSettings>> = {
   },
   elegant: {
     backgroundType: 'solid',
-    backgroundColor: '#1A2B47',
+    backgroundColor: '#1C1D1A',
     titleColor: '#FFFFFF',
     subtitleColor: '#D4AF37',
     textAlignment: 'center',

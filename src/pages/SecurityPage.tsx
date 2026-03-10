@@ -6,7 +6,7 @@ import { getCanonicalUrl } from '../utils/seo';
 
 export default function SecurityPage() {
   const { t, language } = useTheme();
-  const strategyBlue = '#1A2B47';
+  const strategyBlue = '#1C1D1A';
   const momentumOrange = '#FF6B00';
 
   return (

@@ -5,7 +5,7 @@ import SEO from '../components/SEO';
 
 export default function NotFoundPage() {
   const { language } = useTheme();
-  const strategyBlue = '#1A2B47';
+  const strategyBlue = '#1C1D1A';
   const momentumOrange = '#FF6B00';
 
   const content = {

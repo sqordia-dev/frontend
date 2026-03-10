@@ -25,7 +25,7 @@ interface ColorPickerProps {
 const DEFAULT_PRESETS = [
   '#FF6B00', // momentum-orange
   '#2563EB', // blue
-  '#1A2B47', // navy
+  '#1C1D1A', // navy
   '#10B981', // emerald
   '#8B5CF6', // purple
   '#EC4899', // pink

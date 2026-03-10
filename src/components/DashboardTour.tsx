@@ -37,7 +37,7 @@ export default function DashboardTour({ onStartTour }: DashboardTourProps = {}) 
   const prevElementRef = useRef<HTMLElement | null>(null);
 
   const BRAND_ORANGE = '#FF6B00';
-  const BRAND_BLUE = '#1A2B47';
+  const BRAND_BLUE = '#1C1D1A';
 
   const steps: TourStep[] = [
     {

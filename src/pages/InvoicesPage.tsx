@@ -92,7 +92,7 @@ export default function InvoicesPage() {
   const t = translations[language as keyof typeof translations] || translations.en;
 
   // Brand colors
-  const strategyBlue = '#1A2B47';
+  const strategyBlue = '#1C1D1A';
   const momentumOrange = '#FF6B00';
   const momentumOrangeHover = '#E55F00';
   const lightAIGrey = '#F4F7FA';

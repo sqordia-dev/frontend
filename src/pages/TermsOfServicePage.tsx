@@ -8,7 +8,7 @@ import { getCanonicalUrl } from '../utils/seo';
 export default function TermsOfServicePage() {
   const { language } = useTheme();
   const { getContent: cms } = useCmsContent('legal');
-  const strategyBlue = '#1A2B47';
+  const strategyBlue = '#1C1D1A';
   const momentumOrange = '#FF6B00';
 
   return (

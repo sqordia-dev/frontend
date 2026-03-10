@@ -69,44 +69,49 @@
   }
 
   .dark {
-    /* Base colors - Dark mode (dark navy theme) */
-    --background: 213 52% 12%;
-    --foreground: 0 0% 100%;
+    /* ── Forge Theme ──
+       Dark olive/military aesthetic. Earthy, grounded, uncommon.
+       Orange accents pop hard against the olive undertones.
+    */
 
-    /* Card colors */
-    --card: 213 52% 15%;
-    --card-foreground: 0 0% 100%;
+    /* Base colors — deep olive black */
+    --background: 80 10% 4%;
+    --foreground: 60 8% 90%;
 
-    /* Popover colors */
-    --popover: 213 52% 15%;
-    --popover-foreground: 0 0% 100%;
+    /* Card colors — olive surface */
+    --card: 80 7% 11%;
+    --card-foreground: 60 8% 90%;
 
-    /* Primary - Orange accent on dark */
+    /* Popover — same as card */
+    --popover: 80 7% 11%;
+    --popover-foreground: 60 8% 90%;
+
+    /* Primary — brand orange (pops against olive) */
     --primary: 24 100% 50%;
     --primary-foreground: 0 0% 100%;
 
-    /* Secondary */
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    /* Secondary — olive mid-dark */
+    --secondary: 80 5% 14%;
+    --secondary-foreground: 60 8% 90%;
 
-    /* Muted */
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 12% 85%;
+    /* Muted — olive surface with olive-400 text */
+    --muted: 80 5% 14%;
+    --muted-foreground: 60 4.5% 58%;
 
-    /* Accent */
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    /* Accent — olive mid-dark */
+    --accent: 80 5% 14%;
+    --accent-foreground: 60 8% 90%;
 
-    /* Destructive */
+    /* Destructive — warm red for contrast */
     --destructive: 0 84% 60%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive-foreground: 60 8% 90%;
 
-    /* Border, Input, Ring */
-    --border: 213 40% 22%;
-    --input: 213 40% 22%;
+    /* Border — olive subtle edge */
+    --border: 80 5% 18%;
+    --input: 80 7% 11%;
     --ring: 24 100% 50%;
 
-    /* Semantic status colors - Dark mode */
+    /* Semantic status colors */
     --success: 142 71% 45%;
     --success-foreground: 0 0% 100%;
     --warning: 38 92% 50%;
@@ -117,6 +122,11 @@
     /* RGB values for shadows/glows */
     --primary-rgb: 255, 107, 0;
     --orange-rgb: 255, 107, 0;
+
+    /* Glass morphism tokens — olive-tinted */
+    --glass-border: rgba(154, 154, 144, 0.08);
+    --glass-border-hover: rgba(154, 154, 144, 0.14);
+    --glass-highlight: rgba(154, 154, 144, 0.04);
   }
 }
 
@@ -169,7 +179,7 @@
 }
 
 .dark .ai-chat-content table {
-  border-color: #374151;
+  border-color: #262622;
 }
 
 /* Fade hint on right edge when table overflows */
@@ -181,7 +191,7 @@
   border-radius: 2px;
 }
 .dark .ai-chat-content table::-webkit-scrollbar-thumb {
-  background: #4b5563;
+  background: #3C3C36;
 }
 
 .ai-chat-content thead {
@@ -208,9 +218,9 @@
 }
 
 .dark .ai-chat-content thead th {
-  background: linear-gradient(to bottom, #1f2937, #1a2332);
-  color: #f3f4f6;
-  border-bottom-color: #374151;
+  background: linear-gradient(to bottom, #131410, #161714);
+  color: #F8F8F6;
+  border-bottom-color: #262622;
 }
 
 .ai-chat-content tbody td {
@@ -221,7 +231,7 @@
 }
 
 .dark .ai-chat-content tbody td {
-  border-bottom-color: #2d3748;
+  border-bottom-color: #262622;
 }
 
 .ai-chat-content tbody tr:last-child td {
@@ -265,7 +275,7 @@
 .dark .ai-chat-content h2,
 .dark .ai-chat-content h3,
 .dark .ai-chat-content h4 {
-  color: #f3f4f6;
+  color: #F8F8F6;
 }
 
 .ai-chat-content h1 { font-size: 1.125rem; }
@@ -290,8 +300,8 @@
 
 /* ── Code blocks ── */
 .ai-chat-content pre {
-  background: #1a2b47;
-  color: #e2e8f0;
+  background: #161714;
+  color: #CCCCC4;
   padding: 0.75rem 1rem;
   border-radius: 0.5rem;
   overflow-x: auto;
@@ -314,8 +324,8 @@
 }
 
 .dark .ai-chat-content :not(pre) > code {
-  background: rgba(255, 107, 0, 0.15);
-  color: #ff8533;
+  background: rgba(255, 107, 0, 0.12);
+  color: #ff9d4d;
 }
 
 /* ── Blockquotes / key takeaways ── */
@@ -340,7 +350,7 @@
 }
 
 .dark .ai-chat-content hr {
-  border-top-color: #374151;
+  border-top-color: #262622;
 }
 
 /* ── Bold / Strong for metric labels ── */
@@ -350,7 +360,7 @@
 }
 
 .dark .ai-chat-content strong {
-  color: #f9fafb;
+  color: #F8F8F6;
 }
 
 /* ── Paragraphs spacing ── */
@@ -377,7 +387,7 @@
 }
 
 .dark .ai-chat-content::-webkit-scrollbar-thumb {
-  background: #4b5563;
+  background: #3C3C36;
 }
 
 @keyframes fadeInUp {
@@ -586,7 +596,7 @@
 }
 
 .dark .plan-sidebar:hover::-webkit-scrollbar-thumb {
-  background-color: rgba(107, 114, 128, 0.5);
+  background-color: rgba(63, 63, 70, 0.7);
 }
 
 /* =============================================================
@@ -602,7 +612,7 @@
 }
 
 .dark .prose-warm {
-  color: #E5E7EB; /* gray-200 */
+  color: #CCCCC4; /* zinc-300 */
 }
 
 /* Headings */
@@ -656,7 +666,7 @@
 .dark .prose-warm-content h2,
 .dark .prose-warm-content h3,
 .dark .prose-warm-content h4 {
-  color: #F9FAFB;
+  color: #F8F8F6;
 }
 
 /* Paragraphs */
@@ -703,7 +713,7 @@
 
 .dark .prose-warm strong,
 .dark .prose-warm-content strong {
-  color: #F9FAFB;
+  color: #F8F8F6;
 }
 
 .prose-warm em,
@@ -736,7 +746,7 @@
 
 .dark .prose-warm blockquote,
 .dark .prose-warm-content blockquote {
-  color: #9CA3AF;
+  color: #9A9A90;
 }
 
 /* Code */
@@ -751,7 +761,7 @@
 
 .dark .prose-warm code,
 .dark .prose-warm-content code {
-  background-color: #374151;
+  background-color: #262622;
 }
 
 /* Horizontal rule */
@@ -765,7 +775,7 @@
 
 .dark .prose-warm hr,
 .dark .prose-warm-content hr {
-  background: linear-gradient(to right, transparent, #374151, transparent);
+  background: linear-gradient(to right, transparent, #262622, transparent);
 }
 
 /* Professional Business Plan Table Styles */
@@ -842,42 +852,42 @@
   text-align: right;
 }
 
-/* Dark mode adjustments */
+/* Dark mode adjustments — Obsidian */
 .dark .business-plan-table {
-  border-color: #374151;
+  border-color: #262622;
 }
 
 .dark .business-plan-table thead {
-  background-color: #1f2937;
+  background-color: #161714;
 }
 
 .dark .business-plan-table th {
-  border-bottom-color: #4b5563;
+  border-bottom-color: #3C3C36;
 }
 
 .dark .business-plan-table td {
-  border-bottom-color: #374151;
+  border-bottom-color: #262622;
 }
 
 .dark .business-plan-table tbody tr:nth-child(even) {
-  background-color: #1f2937;
+  background-color: rgba(255, 255, 255, 0.02);
 }
 
 .dark .business-plan-table tbody tr:hover {
-  background-color: #374151;
+  background-color: rgba(255, 107, 0, 0.04);
 }
 
 .dark .business-plan-table tfoot tr,
 .dark .business-plan-table tbody tr.table-footer {
-  background-color: #374151 !important;
+  background-color: #161714 !important;
 }
 
 .dark .business-plan-table tbody tr.additional-info {
-  background-color: #1f2937;
+  background-color: rgba(255, 255, 255, 0.02);
 }
 
 .dark .business-plan-table tbody tr.additional-info td {
-  color: #9ca3af;
+  color: #9A9A90;
 }
 
 /* Simple two-column table (like funding requirements) */
@@ -911,15 +921,15 @@
 }
 
 .dark .plan-section-footer {
-  border-top-color: #374151;
+  border-top-color: #262622;
 }
 
 .dark .plan-section-footer .company-name {
-  color: #9ca3af;
+  color: #9A9A90;
 }
 
 .dark .plan-section-footer .company-name strong {
-  color: #f3f4f6;
+  color: #F8F8F6;
 }
 
 /* Rich text content table styles */
@@ -961,28 +971,28 @@
 }
 
 .dark .rich-text-content table {
-  border-color: #374151;
+  border-color: #262622;
 }
 
 .dark .rich-text-content table thead {
-  background-color: #1f2937;
+  background-color: #161714;
 }
 
 .dark .rich-text-content table th {
-  border-bottom-color: #4b5563;
-  color: white;
+  border-bottom-color: #3C3C36;
+  color: #F8F8F6;
 }
 
 .dark .rich-text-content table td {
-  border-bottom-color: #374151;
+  border-bottom-color: #262622;
 }
 
 .dark .rich-text-content table tbody tr:nth-child(even) {
-  background-color: #1f2937;
+  background-color: rgba(255, 255, 255, 0.02);
 }
 
 .dark .rich-text-content table tbody tr:hover {
-  background-color: #374151;
+  background-color: rgba(255, 107, 0, 0.04);
 }
 
 @layer base {
@@ -1051,11 +1061,11 @@
     outline-offset: 2px;
   }
 
-  /* Dark mode checkbox styling */
+  /* Dark mode checkbox styling — Obsidian */
   .dark input[type="checkbox"] {
     accent-color: #FF6B00 !important;
-    border-color: #4B5563;
-    background-color: #1F2937;
+    border-color: #3C3C36;
+    background-color: #262622;
   }
 
   .dark input[type="checkbox"]:checked {
@@ -1170,7 +1180,7 @@
 }
 
 .dark .prose-editor {
-  color: #f3f4f6;
+  color: #CCCCC4;
 }
 
 /* Placeholder styling */
@@ -1183,7 +1193,7 @@
 }
 
 .dark .prose-editor p.is-editor-empty:first-child::before {
-  color: #6b7280;
+  color: #52524A;
 }
 
 /* Paragraph spacing */
@@ -1199,11 +1209,11 @@
   line-height: 1.25;
   margin-top: 1.5rem;
   margin-bottom: 1rem;
-  color: #111827;
+  color: #161714;
 }
 
 .dark .prose-editor h1 {
-  color: #f9fafb;
+  color: #F8F8F6;
 }
 
 .prose-editor h2 {
@@ -1216,7 +1226,7 @@
 }
 
 .dark .prose-editor h2 {
-  color: #f3f4f6;
+  color: #F8F8F6;
 }
 
 .prose-editor h3 {
@@ -1229,7 +1239,7 @@
 }
 
 .dark .prose-editor h3 {
-  color: #e5e7eb;
+  color: #CCCCC4;
 }
 
 /* Bold, italic, underline */
@@ -1308,8 +1318,8 @@
 }
 
 .dark .prose-editor blockquote {
-  border-left-color: #4b5563;
-  color: #9ca3af;
+  border-left-color: #3C3C36;
+  color: #9A9A90;
 }
 
 /* Horizontal rule */
@@ -1321,7 +1331,7 @@
 }
 
 .dark .prose-editor hr {
-  border-top-color: #4b5563;
+  border-top-color: #262622;
 }
 
 /* Link styling */
@@ -1336,11 +1346,11 @@
 }
 
 .dark .prose-editor a {
-  color: #60a5fa;
+  color: #fb923c;
 }
 
 .dark .prose-editor a:hover {
-  color: #93c5fd;
+  color: #fdba74;
 }
 
 /* Code and preformatted text (if added later) */
@@ -1353,11 +1363,11 @@
 }
 
 .dark .prose-editor code {
-  background-color: #374151;
+  background-color: #262622;
 }
 
 .prose-editor pre {
-  background-color: #1f2937;
+  background-color: #161714;
   color: #f3f4f6;
   padding: 1rem;
   border-radius: 0.5rem;
@@ -1384,7 +1394,7 @@
 }
 
 .dark .prose-editor ::selection {
-  background-color: #78350f;
+  background-color: rgba(255, 107, 0, 0.3);
 }
 
 /* =============================================================
@@ -1409,11 +1419,11 @@
 }
 
 .dark .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #4b5563;
+  background: #3C3C36;
 }
 
 .dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #6b7280;
+  background: #52524A;
 }
 
 /* Firefox scrollbar */
@@ -1423,7 +1433,7 @@
 }
 
 .dark .custom-scrollbar {
-  scrollbar-color: #4b5563 transparent;
+  scrollbar-color: #3C3C36 transparent;
 }
 
 /* =============================================================
@@ -1650,7 +1660,7 @@
   }
 
   .dark .img-lazy {
-    background: linear-gradient(90deg, #374151 25%, #4b5563 50%, #374151 75%);
+    background: linear-gradient(90deg, #161714 25%, #262622 50%, #161714 75%);
     background-size: 200% 100%;
   }
 }
@@ -1682,6 +1692,79 @@
   .mt-safe {
     margin-top: env(safe-area-inset-top, 0);
   }
+}
+
+/* =============================================================
+   Forge Dark Theme — Glass Morphism & Ambient Effects
+   Dark olive surfaces with orange accents
+   ============================================================= */
+
+/* Glass card surface — olive translucency */
+.dark .glass-surface {
+  background: rgba(22, 23, 20, 0.75);
+  border: 1px solid var(--glass-border, rgba(154, 154, 144, 0.08));
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.dark .glass-surface:hover {
+  border-color: var(--glass-border-hover, rgba(154, 154, 144, 0.14));
+}
+
+/* Subtle top-edge highlight for elevated cards */
+.dark .glass-highlight {
+  position: relative;
+}
+
+.dark .glass-highlight::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(148, 163, 184, 0.08) 30%,
+    rgba(148, 163, 184, 0.14) 50%,
+    rgba(148, 163, 184, 0.08) 70%,
+    transparent
+  );
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+/* Ambient orange glow for primary actions */
+.dark .glow-ambient {
+  box-shadow:
+    0 0 0 1px rgba(255, 107, 0, 0.12),
+    0 4px 24px -4px rgba(255, 107, 0, 0.18);
+}
+
+/* Teal accent glow — secondary action highlight */
+.dark .glow-teal {
+  box-shadow:
+    0 0 0 1px rgba(20, 184, 166, 0.1),
+    0 4px 20px -4px rgba(20, 184, 166, 0.15);
+}
+
+/* Subtle noise texture overlay for depth */
+.dark .noise-overlay::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0.02;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+/* Dark mode body — forge ambient gradient */
+.dark body {
+  background-image:
+    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(255, 107, 0, 0.025), transparent),
+    radial-gradient(ellipse 50% 40% at 80% 100%, rgba(80, 100, 40, 0.02), transparent);
 }
 
 /* =============================================================

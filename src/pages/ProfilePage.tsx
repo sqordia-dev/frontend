@@ -722,64 +722,7 @@ export default function ProfilePage() {
                   </div>
                 </div>
 
-                <div className="h-px bg-gradient-to-r from-transparent via-gray-200 dark:via-gray-700 to-transparent" />
-
-                {/* Profile Type */}
-                <div className="space-y-4">
-                  <label className="block text-label-md text-gray-700 dark:text-gray-300">
-                    {cms('profile.profile_type_label', '') || 'Profile Type'}
-                  </label>
-                  {userPersona ? (
-                    <div className="flex items-center justify-between p-4 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700">
-                      <div className="flex items-center gap-4">
-                        <div
-                          className={`
-                            w-12 h-12 rounded-xl flex items-center justify-center shadow-sm
-                            ${userPersona === 'Entrepreneur' ? 'bg-gradient-to-br from-momentum-orange to-orange-600' :
-                              userPersona === 'Consultant' ? 'bg-gradient-to-br from-strategy-blue to-blue-800' :
-                              'bg-gradient-to-br from-emerald-500 to-emerald-600'}
-                          `}
-                        >
-                          {userPersona === 'Entrepreneur' && <Rocket size={22} className="text-white" />}
-                          {userPersona === 'Consultant' && <Briefcase size={22} className="text-white" />}
-                          {userPersona === 'OBNL' && <Heart size={22} className="text-white" />}
-                        </div>
-                        <div>
-                          <p className="text-heading-sm text-strategy-blue dark:text-white">
-                            {userPersona === 'Entrepreneur' && (cms('profile.entrepreneur_label', '') || 'Entrepreneur')}
-                            {userPersona === 'Consultant' && (cms('profile.consultant_label', '') || 'Consultant')}
-                            {userPersona === 'OBNL' && (cms('profile.obnl_label', '') || 'Non-Profit')}
-                          </p>
-                          <p className="text-body-sm text-gray-500 dark:text-gray-400">
-                            {userPersona === 'Entrepreneur' && (cms('profile.entrepreneur_desc', '') || 'Building your own business')}
-                            {userPersona === 'Consultant' && (cms('profile.consultant_desc', '') || 'Managing multiple clients')}
-                            {userPersona === 'OBNL' && (cms('profile.obnl_desc', '') || 'Non-profit organization planning')}
-                          </p>
-                        </div>
-                      </div>
-                      <Link
-                        to="/persona-selection"
-                        className="flex items-center gap-1.5 px-4 py-2 text-label-md text-momentum-orange hover:text-[#E55F00] transition-colors"
-                      >
-                        {cms('profile.change', '') || 'Change'}
-                        <ExternalLink size={14} />
-                      </Link>
-                    </div>
-                  ) : (
-                    <div className="flex items-center justify-between p-4 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-dashed border-gray-300 dark:border-gray-600">
-                      <p className="text-body-sm text-gray-500 dark:text-gray-400">
-                        {cms('profile.no_profile_type', '') || 'No profile type selected'}
-                      </p>
-                      <Link
-                        to="/persona-selection"
-                        className="flex items-center gap-1.5 px-4 py-2 text-label-md text-momentum-orange hover:text-[#E55F00] transition-colors"
-                      >
-                        {cms('profile.select_profile_type', '') || 'Select type'}
-                        <ExternalLink size={14} />
-                      </Link>
-                    </div>
-                  )}
-                </div>
+                {/* Profile Type — hidden, persona is set during onboarding */}
 
                 {/* Save Button */}
                 <div className="flex justify-end pt-4">

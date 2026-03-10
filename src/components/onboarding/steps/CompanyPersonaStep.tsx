@@ -20,7 +20,7 @@ const industryTranslationKeys: Record<Industry, string> = {
 
 const allPersonaOptions = [
   { id: 'entrepreneur' as const, titleKey: 'onboarding.step1.persona.entrepreneur', descKey: 'onboarding.step1.persona.entrepreneur.desc', icon: Rocket, color: '#FF6B00', bgLight: 'bg-orange-50', bgDark: 'dark:bg-orange-900/20' },
-  { id: 'consultant' as const, titleKey: 'onboarding.step1.persona.consultant', descKey: 'onboarding.step1.persona.consultant.desc', icon: Briefcase, color: '#1A2B47', bgLight: 'bg-slate-50', bgDark: 'dark:bg-slate-800/50', comingSoon: true },
+  { id: 'consultant' as const, titleKey: 'onboarding.step1.persona.consultant', descKey: 'onboarding.step1.persona.consultant.desc', icon: Briefcase, color: '#1C1D1A', bgLight: 'bg-slate-50', bgDark: 'dark:bg-slate-800/50', comingSoon: true },
   { id: 'obnl' as const, titleKey: 'onboarding.step1.persona.obnl', descKey: 'onboarding.step1.persona.obnl.desc', icon: Heart, color: '#10B981', bgLight: 'bg-emerald-50', bgDark: 'dark:bg-emerald-900/20', comingSoon: true },
 ];
 

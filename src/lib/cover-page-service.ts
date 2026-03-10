@@ -151,7 +151,7 @@ function normalizeCoverPageResponse(data: any): CoverPageSettings {
     // Merge extended settings with defaults
     backgroundType: (extendedSettings.backgroundType || DEFAULT_COVER_PAGE.backgroundType || 'solid') as BackgroundType,
     backgroundColor: extendedSettings.backgroundColor || DEFAULT_COVER_PAGE.backgroundColor || '#FFFFFF',
-    gradientStartColor: extendedSettings.gradientStartColor || DEFAULT_COVER_PAGE.gradientStartColor || '#1A2B47',
+    gradientStartColor: extendedSettings.gradientStartColor || DEFAULT_COVER_PAGE.gradientStartColor || '#1C1D1A',
     gradientEndColor: extendedSettings.gradientEndColor || DEFAULT_COVER_PAGE.gradientEndColor || '#2563EB',
     gradientDirection: extendedSettings.gradientDirection as any || DEFAULT_COVER_PAGE.gradientDirection || 'diagonal-down',
     backgroundImageUrl: extendedSettings.backgroundImageUrl,
@@ -163,7 +163,7 @@ function normalizeCoverPageResponse(data: any): CoverPageSettings {
     showLogo: extendedSettings.showLogo ?? DEFAULT_COVER_PAGE.showLogo ?? true,
     tagline: extendedSettings.tagline,
     fontFamily: extendedSettings.fontFamily || DEFAULT_COVER_PAGE.fontFamily || 'Plus Jakarta Sans',
-    titleColor: extendedSettings.titleColor || DEFAULT_COVER_PAGE.titleColor || '#1A2B47',
+    titleColor: extendedSettings.titleColor || DEFAULT_COVER_PAGE.titleColor || '#1C1D1A',
     titleSize: extendedSettings.titleSize ?? DEFAULT_COVER_PAGE.titleSize ?? 48,
     subtitleColor: extendedSettings.subtitleColor || DEFAULT_COVER_PAGE.subtitleColor || '#FF6B00',
     subtitleSize: extendedSettings.subtitleSize ?? DEFAULT_COVER_PAGE.subtitleSize ?? 32,

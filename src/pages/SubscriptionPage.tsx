@@ -73,7 +73,7 @@ export default function SubscriptionPage() {
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
 
   // Theme colors
-  const strategyBlue = '#1A2B47';
+  const strategyBlue = '#1C1D1A';
   const momentumOrange = '#FF6B00';
   const momentumOrangeHover = '#E55F00';
   const lightAIGrey = '#F4F7FA';

@@ -81,9 +81,9 @@ export default function Header() {
 
   const getTextColor = () => {
     if (isScrolled || !isLandingPage) {
-      return isDark ? '#F3F4F6' : '#1A2B47';
+      return isDark ? '#F3F4F6' : '#1C1D1A';
     }
-    return isDark ? '#FFFFFF' : '#1A2B47';
+    return isDark ? '#FFFFFF' : '#1C1D1A';
   };
 
   const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
@@ -282,7 +282,7 @@ export default function Header() {
                 onClick={(e) => handleNavClick(e, item.href)}
                 className="px-4 py-4 rounded-xl transition-all duration-300 font-medium min-h-[44px] flex items-center focus:outline-none focus:ring-2 focus:ring-[#FF6B00]"
                 style={{
-                  color: isDark ? '#F3F4F6' : '#1A2B47',
+                  color: isDark ? '#F3F4F6' : '#1C1D1A',
                 }}
               >
                 {item.label}
@@ -295,7 +295,7 @@ export default function Header() {
                 Language
               </span>
               <LanguageDropdown
-                textColor={isDark ? '#F3F4F6' : '#1A2B47'}
+                textColor={isDark ? '#F3F4F6' : '#1C1D1A'}
                 isDark={isDark}
                 variant="default"
                 onSelect={() => setIsMenuOpen(false)}
@@ -307,7 +307,7 @@ export default function Header() {
                 to="/login"
                 className="block w-full px-4 py-3.5 text-center rounded-xl transition-all duration-300 font-medium border"
                 style={{
-                  color: isDark ? '#F3F4F6' : '#1A2B47',
+                  color: isDark ? '#F3F4F6' : '#1C1D1A',
                   borderColor: isDark ? 'rgba(75, 85, 99, 0.3)' : 'rgba(229, 231, 235, 0.8)',
                 }}
                 onClick={() => setIsMenuOpen(false)}

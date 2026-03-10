@@ -78,7 +78,7 @@ export function CoverPageEditor({
     // Background
     backgroundType: 'solid',
     backgroundColor: '#FFFFFF',
-    gradientStartColor: '#1A2B47',
+    gradientStartColor: '#1C1D1A',
     gradientEndColor: '#2563EB',
     gradientDirection: 'diagonal-down',
     backgroundOverlayColor: '#000000',
@@ -89,7 +89,7 @@ export function CoverPageEditor({
     logoSize: 'medium',
     // Typography
     fontFamily: 'Plus Jakarta Sans',
-    titleColor: '#1A2B47',
+    titleColor: '#1C1D1A',
     titleSize: 48,
     subtitleColor: '#FF6B00',
     subtitleSize: 32,
@@ -356,7 +356,7 @@ export function CoverPageEditor({
                             <div className="grid grid-cols-2 gap-4">
                               <ColorPicker
                                 label="Start Color"
-                                value={formData.gradientStartColor || '#1A2B47'}
+                                value={formData.gradientStartColor || '#1C1D1A'}
                                 onChange={(c) => handleChange('gradientStartColor', c)}
                               />
                               <ColorPicker
@@ -511,7 +511,7 @@ export function CoverPageEditor({
                           <div className="grid grid-cols-2 gap-4">
                             <ColorPicker
                               label="Title Color"
-                              value={formData.titleColor || '#1A2B47'}
+                              value={formData.titleColor || '#1C1D1A'}
                               onChange={(c) => handleChange('titleColor', c)}
                             />
                             <ColorPicker

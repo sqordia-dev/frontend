@@ -73,7 +73,7 @@ export default function NavigationRail({ user, className }: NavigationRailProps)
     <TooltipProvider delayDuration={100}>
       <nav
         className={cn(
-          'fixed left-0 top-0 h-screen w-14 bg-[#1A2B47] flex flex-col z-40',
+          'fixed left-0 top-0 h-screen w-14 bg-[#1C1D1A] flex flex-col z-40',
           'border-r border-white/5',
           className
         )}

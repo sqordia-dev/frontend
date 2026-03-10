@@ -14,7 +14,7 @@ const BAR_COLORS = [
   '#CC5500',
   '#994010',
   '#663020',
-  '#1A2B47', // strategy-blue
+  '#1C1D1A', // strategy-blue
 ];
 
 const SIZES = {

@@ -154,7 +154,7 @@ const navItemVariants = {
  * PreviewSidebar - Dark navy sidebar for business plan preview
  *
  * Features:
- * - Dark navy background (#1A2B47 "Strategy Blue")
+ * - Dark navy background (#1C1D1A "Strategy Blue")
  * - Full-height, fixed position on desktop (w-72)
  * - Business plan title with optional edit icon
  * - Vertical section list with Lucide icons
@@ -327,7 +327,7 @@ export default function PreviewSidebar({
           whileTap={{ scale: 0.98 }}
           onClick={() => onExportClick()}
           disabled={isExporting}
-          className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-[#FF6B00] hover:bg-orange-600 text-white font-medium rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 focus:ring-offset-[#1A2B47]"
+          className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-[#FF6B00] hover:bg-orange-600 text-white font-medium rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 focus:ring-offset-[#1C1D1A]"
         >
           {isExporting ? (
             <Loader2 size={18} className="animate-spin" aria-hidden="true" />
@@ -342,7 +342,7 @@ export default function PreviewSidebar({
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
           onClick={onShareClick}
-          className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white font-medium rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2 focus:ring-offset-[#1A2B47]"
+          className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white font-medium rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2 focus:ring-offset-[#1C1D1A]"
         >
           <Share2 size={18} aria-hidden="true" />
           Share
@@ -376,7 +376,7 @@ function SidebarNavItem({
     <motion.button
       whileHover={{ backgroundColor: isActive ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.05)' }}
       onClick={onClick}
-      className={`w-full flex items-center gap-3 px-3 py-2.5 text-sm rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2 focus:ring-offset-[#1A2B47] relative ${
+      className={`w-full flex items-center gap-3 px-3 py-2.5 text-sm rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2 focus:ring-offset-[#1C1D1A] relative ${
         isActive
           ? 'bg-white/10 text-white font-medium'
           : 'text-gray-400 hover:text-white'
@@ -450,7 +450,7 @@ function SectionNavItem({
         backgroundColor: isActive ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.05)',
       }}
       onClick={onClick}
-      className={`w-full flex items-center gap-3 px-3 py-2.5 text-sm rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2 focus:ring-offset-[#1A2B47] relative ${
+      className={`w-full flex items-center gap-3 px-3 py-2.5 text-sm rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2 focus:ring-offset-[#1C1D1A] relative ${
         isActive
           ? 'bg-white/10 text-white font-medium'
           : 'text-gray-400 hover:text-white'

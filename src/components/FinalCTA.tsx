@@ -33,12 +33,12 @@ export default function FinalCTA() {
   ];
 
   return (
-    <section ref={sectionRef} className="relative py-40 overflow-hidden bg-[#1A2B47]">
+    <section ref={sectionRef} className="relative py-40 overflow-hidden bg-[#1C1D1A]">
       {/* Background decorative elements - animated gradient */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 right-10 w-96 h-96 rounded-full mix-blend-multiply filter blur-3xl opacity-40 animate-blob bg-[#1A2B47]/50"></div>
-        <div className="absolute top-40 left-10 w-96 h-96 rounded-full mix-blend-multiply filter blur-3xl opacity-40 animate-blob animation-delay-2000 bg-[#1A2B47]/50"></div>
-        <div className="absolute -bottom-8 left-1/2 w-96 h-96 rounded-full mix-blend-multiply filter blur-3xl opacity-40 animate-blob animation-delay-4000 bg-[#1A2B47]/50"></div>
+        <div className="absolute top-20 right-10 w-96 h-96 rounded-full mix-blend-multiply filter blur-3xl opacity-40 animate-blob bg-[#1C1D1A]/50"></div>
+        <div className="absolute top-40 left-10 w-96 h-96 rounded-full mix-blend-multiply filter blur-3xl opacity-40 animate-blob animation-delay-2000 bg-[#1C1D1A]/50"></div>
+        <div className="absolute -bottom-8 left-1/2 w-96 h-96 rounded-full mix-blend-multiply filter blur-3xl opacity-40 animate-blob animation-delay-4000 bg-[#1C1D1A]/50"></div>
       </div>
 
       <div className="container mx-auto px-6 relative z-10">

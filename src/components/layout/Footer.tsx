@@ -103,7 +103,7 @@ export default function Footer() {
   return (
     <footer
       className="relative overflow-hidden"
-      style={{ backgroundColor: isDark ? '#0F172A' : '#1A2B47' }}
+      style={{ backgroundColor: isDark ? '#0B0C0A' : '#1A2B47' }}
       role="contentinfo"
     >
       {/* Background decoration */}

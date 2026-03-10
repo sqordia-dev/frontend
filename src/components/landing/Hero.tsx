@@ -45,7 +45,7 @@ export default function Hero() {
       className={cn(
         'relative pt-28 pb-16 md:pt-36 md:pb-24 lg:pt-44 lg:pb-32 overflow-hidden min-h-[90vh] flex items-center',
         isDark
-          ? 'bg-gradient-to-b from-strategy-blue to-[#0F172A]'
+          ? 'bg-gradient-to-b from-[#1C1D1A] to-[#0B0C0A]'
           : 'bg-gradient-to-b from-light-ai-grey to-white',
       )}
       aria-labelledby="hero-heading"

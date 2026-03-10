@@ -6,7 +6,7 @@
  *
  * Sqordia Design System:
  *  - momentum-orange (#FF6B00) for mid-range scores
- *  - strategy-blue (#1A2B47) for ring track in dark mode
+ *  - strategy-blue (#1C1D1A) for ring track in dark mode
  *  - 8px grid spacing
  *  - Framer Motion entrance animation
  */
