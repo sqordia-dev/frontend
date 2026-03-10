@@ -23,6 +23,7 @@ export interface SidebarNavItem {
   icon: LucideIcon;
   badge?: string | number;
   shortcut?: string;
+  accent?: boolean;
 }
 
 export interface SidebarNavGroup {
@@ -271,7 +272,9 @@ export default function AppSidebar({
                         isCollapsed ? "justify-center px-2" : "px-3",
                         isActive
                           ? "bg-momentum-orange text-white shadow-sm shadow-orange-500/20"
-                          : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white"
+                          : item.accent
+                            ? "text-momentum-orange hover:bg-momentum-orange/10"
+                            : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white"
                       )}
                       title={isCollapsed ? item.name : undefined}
                     >

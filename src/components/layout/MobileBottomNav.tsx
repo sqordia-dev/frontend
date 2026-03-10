@@ -201,7 +201,7 @@ export function MobileBottomNav({
                         className="h-12 w-12 rounded-xl object-cover ring-2 ring-background"
                       />
                     ) : (
-                      <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-strategy-blue/20 to-strategy-blue/5 text-strategy-blue">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-strategy-blue/20 to-strategy-blue/5 text-strategy-blue dark:text-white">
                         <User className="h-6 w-6" />
                       </div>
                     )}
