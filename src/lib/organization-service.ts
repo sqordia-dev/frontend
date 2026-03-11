@@ -148,5 +148,33 @@ export const organizationService = {
     } catch {
       return null;
     }
+  },
+
+  // ── Invitation Management ──────────────────────────────────────────────
+
+  async inviteMemberByEmail(organizationId: string, email: string, role: string): Promise<any> {
+    const response = await apiClient.post(`/api/v1/organizations/${organizationId}/invitations`, { email, role });
+    const data = response.data as any;
+    if (data?.isSuccess && data.value) return data.value;
+    return data;
+  },
+
+  async getPendingInvitations(organizationId: string): Promise<any[]> {
+    const response = await apiClient.get(`/api/v1/organizations/${organizationId}/invitations`);
+    const data = response.data as any;
+    if (data?.isSuccess && data.value) return data.value;
+    if (Array.isArray(data)) return data;
+    return [];
+  },
+
+  async cancelInvitation(organizationId: string, invitationId: string): Promise<void> {
+    await apiClient.delete(`/api/v1/organizations/${organizationId}/invitations/${invitationId}`);
+  },
+
+  async acceptInvitation(token: string): Promise<any> {
+    const response = await apiClient.post(`/api/v1/organizations/invitations/${token}/accept`);
+    const data = response.data as any;
+    if (data?.isSuccess && data.value) return data.value;
+    return data;
   }
 };

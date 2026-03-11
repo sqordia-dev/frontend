@@ -276,7 +276,7 @@ export default function DashboardPage() {
           const progressData = progress?.value || progress;
           return {
             planId: plan.id,
-            isComplete: progressData?.isComplete || progressData?.status === 'Completed' || plan.status === 'Completed',
+            isComplete: progressData?.isComplete || progressData?.status === 'Completed' || plan.status === 'Completed' || plan.status === 'Generated',
             nextQuestionId: progressData?.unansweredQuestionIds?.[0],
             completionPercentage: progressData?.completionPercentage ?? undefined,
           };
@@ -409,7 +409,8 @@ export default function DashboardPage() {
     const drafts = plans
       .filter(p => {
         const status = p.status?.toLowerCase();
-        return status === 'draft' || (planProgress[p.id] && !planProgress[p.id].isComplete);
+        // Only show banner for plans still in draft — not generated/completed/exported
+        return status === 'draft';
       })
       .sort((a, b) => {
         const dateA = new Date(a.updatedAt || a.createdAt || 0).getTime();

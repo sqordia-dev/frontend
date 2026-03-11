@@ -1,9 +1,10 @@
 import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { AlertCircle, CheckCircle2 } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Lock } from 'lucide-react';
 import { GenerationProgress } from '../../components/generation';
 import { useGenerationStatus } from '../../hooks/useGenerationStatus';
 import { businessPlanService } from '../../lib/business-plan-service';
+import { planFeaturesService, PlanFeatures } from '../../lib/plan-features-service';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useToast } from '../../contexts/ToastContext';
 import SEO from '../../components/SEO';
@@ -25,6 +26,7 @@ export default function GenerationPage() {
   const [isInitializing, setIsInitializing] = useState(true);
   const [initError, setInitError] = useState<string | null>(null);
   const [alreadyGenerated, setAlreadyGenerated] = useState(false);
+  const [usageDenied, setUsageDenied] = useState<{ reason: string; prompt: string } | null>(null);
   const hasStartedRef = useRef(false);
 
   // Use generation status hook
@@ -80,6 +82,26 @@ export default function GenerationPage() {
           return;
         }
 
+        // Pre-flight: check usage limit before starting generation
+        const orgId = (plan as any).organizationId;
+        if (orgId) {
+          try {
+            const usageCheck = await planFeaturesService.checkFeature(
+              orgId, PlanFeatures.MaxAiGenerationsMonthly
+            );
+            if (!usageCheck.allowed) {
+              setUsageDenied({
+                reason: usageCheck.denialReason || t('generation.limitReached') || 'Generation limit reached.',
+                prompt: usageCheck.upgradePrompt || t('generation.upgradePlan') || 'Upgrade your plan for more generations.',
+              });
+              setIsInitializing(false);
+              return;
+            }
+          } catch {
+            // If check fails, proceed anyway — backend will enforce
+          }
+        }
+
         setIsInitializing(false);
 
         // Start generation if not already started
@@ -126,6 +148,40 @@ export default function GenerationPage() {
           <p className="text-gray-600 dark:text-gray-400">
             {t('generation.redirectingToPreview')}
           </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Usage limit denied — show upgrade prompt
+  if (usageDenied) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
+        <div className="text-center max-w-md">
+          <div className="mx-auto mb-4 w-16 h-16 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+            <Lock size={32} className="text-slate-400" />
+          </div>
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+            {usageDenied.reason}
+          </h2>
+          <p className="text-gray-600 dark:text-gray-400 mb-6">
+            {usageDenied.prompt}
+          </p>
+          <div className="flex gap-3 justify-center">
+            <Button
+              onClick={() => navigate('/dashboard')}
+              variant="outline"
+              className="px-6 py-3 rounded-xl"
+            >
+              {t('generation.backToDashboard')}
+            </Button>
+            <Button
+              onClick={() => navigate('/subscription-plans')}
+              className="px-6 py-3 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-semibold"
+            >
+              {t('subscription.upgradePlan') || 'Upgrade Plan'}
+            </Button>
+          </div>
         </div>
       </div>
     );

@@ -8,6 +8,7 @@ import { LoginPage } from '../page-objects/auth/login.page';
 import { DashboardPage } from '../page-objects/dashboard/dashboard.page';
 import { CmsEditorPage } from '../page-objects/admin/cms-editor.page';
 import { CreatePlanPage, QuestionnairePage, BusinessPlanPreviewPage, GenerationPage } from '../page-objects/business-plan';
+import { SubscriptionPlansPage } from '../page-objects/subscription/subscription-plans.page';
 
 /**
  * Custom test fixtures for Sqordia E2E tests
@@ -26,6 +27,7 @@ export type TestFixtures = {
   questionnairePage: QuestionnairePage;
   previewPage: BusinessPlanPreviewPage;
   generationPage: GenerationPage;
+  subscriptionPlansPage: SubscriptionPlansPage;
 
   // Pre-authenticated pages
   authenticatedPage: Page;
@@ -95,6 +97,12 @@ export const test = base.extend<TestFixtures>({
   generationPage: [async ({ page }, use) => {
     const generationPage = new GenerationPage(page);
     await use(generationPage);
+  }, { scope: 'test' }],
+
+  // Subscription plans page object fixture
+  subscriptionPlansPage: [async ({ page }, use) => {
+    const subscriptionPlansPage = new SubscriptionPlansPage(page);
+    await use(subscriptionPlansPage);
   }, { scope: 'test' }],
 
   // Authenticated page fixture (regular user)

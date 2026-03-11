@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { User, Mail, Building2, Phone, MapPin, Save, ArrowLeft, Shield, Lock, Key, AlertCircle, Upload, Image as ImageIcon, X, Rocket, Briefcase, Heart, ExternalLink, Download, Trash2, FileText, CheckCircle, Clock, Monitor, Smartphone, Globe, Eye, EyeOff } from 'lucide-react';
+import TwoFactorSettings from '../components/security/TwoFactorSettings';
 import { authService } from '../lib/auth-service';
 import { profileService, ProfileValidationError } from '../lib/profile-service';
 import { securityService } from '../lib/security-service';
@@ -73,7 +74,6 @@ export default function ProfilePage() {
   });
 
   const [sessions, setSessions] = useState<any[]>([]);
-  const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
   const [userPersona, setUserPersona] = useState<PersonaType | null>(null);
 
   useEffect(() => {
@@ -81,9 +81,7 @@ export default function ProfilePage() {
   }, []);
 
   useEffect(() => {
-    if (activeTab === 'security') {
-      load2FAStatus();
-    } else if (activeTab === 'sessions') {
+    if (activeTab === 'sessions') {
       loadSessions();
     } else if (activeTab === 'privacy') {
       loadConsents();
@@ -114,16 +112,6 @@ export default function ProfilePage() {
       setError(err.message);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const load2FAStatus = async () => {
-    try {
-      const status = await authService.get2FAStatus();
-      setTwoFactorEnabled(status.isEnabled);
-    } catch (err: any) {
-      console.error('Failed to load 2FA status:', err);
-      toast.error('Security Error', 'Failed to load two-factor authentication status.');
     }
   };
 
@@ -165,7 +153,6 @@ export default function ProfilePage() {
       await profileService.updateProfile({
         firstName: profile.firstName,
         lastName: profile.lastName,
-        phoneNumber: profile.phoneNumber,
         profilePictureUrl: fileUrl
       });
 
@@ -850,28 +837,7 @@ export default function ProfilePage() {
                 <div className="h-px bg-gradient-to-r from-transparent via-gray-200 dark:via-gray-700 to-transparent" />
 
                 {/* Two-Factor Authentication */}
-                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 p-4 sm:p-5 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700">
-                  <div className="flex items-start gap-3 sm:gap-4">
-                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${twoFactorEnabled ? 'bg-emerald-100 dark:bg-emerald-900/30' : 'bg-gray-200 dark:bg-gray-700'}`}>
-                      <Shield className={`w-5 h-5 ${twoFactorEnabled ? 'text-emerald-600 dark:text-emerald-400' : 'text-gray-500 dark:text-gray-400'}`} />
-                    </div>
-                    <div className="min-w-0">
-                      <h4 className="text-heading-sm text-strategy-blue dark:text-white">
-                        {cms('profile.two_factor_heading', '') || 'Two-Factor Authentication'}
-                      </h4>
-                      <p className="text-body-sm text-gray-500 dark:text-gray-400 mt-1">
-                        {cms('profile.two_factor_description', '') || 'Add an extra layer of security to your account'}
-                      </p>
-                      <span className={`inline-flex items-center gap-1.5 mt-2 text-label-sm ${twoFactorEnabled ? 'text-emerald-600 dark:text-emerald-400' : 'text-gray-500 dark:text-gray-400'}`}>
-                        <span className={`w-2 h-2 rounded-full ${twoFactorEnabled ? 'bg-emerald-500' : 'bg-gray-400'}`} />
-                        {twoFactorEnabled ? (cms('profile.enabled', '') || 'Enabled') : (cms('profile.disabled', '') || 'Disabled')}
-                      </span>
-                    </div>
-                  </div>
-                  <button className="w-full sm:w-auto px-4 py-2.5 text-label-md rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors min-h-[44px]">
-                    {twoFactorEnabled ? 'Disable' : 'Enable'}
-                  </button>
-                </div>
+                <TwoFactorSettings />
               </div>
             )}
 

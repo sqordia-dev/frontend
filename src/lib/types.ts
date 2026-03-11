@@ -44,6 +44,9 @@ export interface LoginResponse {
   refreshToken: string;
   expiresAt: string;
   user: User;
+  // 2FA challenge fields — set when credentials are valid but TOTP code is required
+  requiresTwoFactor?: boolean;
+  twoFactorToken?: string;
 }
 
 export interface GoogleAuthRequest {

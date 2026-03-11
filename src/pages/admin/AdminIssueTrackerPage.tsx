@@ -782,6 +782,7 @@ function IssueDetailSlideOver({
 
   // Edit form state
   const [editTitle, setEditTitle] = useState('');
+  const [editBody, setEditBody] = useState('');
   const [editPriority, setEditPriority] = useState<string>('');
   const [editCategory, setEditCategory] = useState<string>('');
 
@@ -791,6 +792,7 @@ function IssueDetailSlideOver({
   useEffect(() => {
     if (issue) {
       setEditTitle(issue.title);
+      setEditBody(issue.body);
       // Extract priority and category from labels
       const priorityLabel = issue.labels.find(l =>
         ['low', 'medium', 'high', 'critical'].includes(l.name.toLowerCase())
@@ -825,12 +827,16 @@ function IssueDetailSlideOver({
     try {
       const updates: {
         title?: string;
+        body?: string;
         priority?: string;
         category?: string;
       } = {};
 
       if (editTitle !== issue.title) {
         updates.title = editTitle;
+      }
+      if (editBody !== issue.body) {
+        updates.body = editBody;
       }
       if (editPriority) {
         updates.priority = editPriority.toLowerCase();
@@ -1086,7 +1092,26 @@ function IssueDetailSlideOver({
                 {/* Content */}
                 <div className="flex-1 overflow-y-auto">
                   <div className="px-6 py-5 space-y-6">
-                    {bodySections.map((section, idx) => (
+                    {isEditMode ? (
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2 flex items-center gap-2">
+                          <FileText className="w-4 h-4 text-blue-500" />
+                          {language === 'fr' ? 'Contenu (Markdown)' : 'Content (Markdown)'}
+                        </label>
+                        <textarea
+                          value={editBody}
+                          onChange={(e) => setEditBody(e.target.value)}
+                          rows={18}
+                          className="w-full px-4 py-3 text-sm font-mono bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-momentum-orange/50 resize-y leading-relaxed"
+                          placeholder={language === 'fr' ? 'Contenu de l\'issue en Markdown...' : 'Issue content in Markdown...'}
+                        />
+                        <p className="mt-1.5 text-xs text-gray-400">
+                          {language === 'fr'
+                            ? 'Utilisez la syntaxe Markdown. Les en-t\u00eates ## cr\u00e9ent des sections.'
+                            : 'Use Markdown syntax. ## headers create sections.'}
+                        </p>
+                      </div>
+                    ) : bodySections.map((section, idx) => (
                       <div key={idx}>
                         <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
                           {section.title === 'Description' && <FileText className="w-4 h-4 text-blue-500" />}
@@ -1247,6 +1272,7 @@ function IssueDetailSlideOver({
                           onClick={() => {
                             setIsEditMode(false);
                             setEditTitle(issue.title);
+                            setEditBody(issue.body);
                           }}
                           disabled={updating}
                           className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"

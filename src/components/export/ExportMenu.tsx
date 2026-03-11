@@ -1,5 +1,8 @@
-import { Download, FileText, FileType, Loader2 } from 'lucide-react';
+import { Download, FileText, FileType, Loader2, Lock, Presentation } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useCurrentOrganizationId } from '../../hooks/useCurrentOrganizationId';
+import { usePlanFeatures } from '../../hooks/usePlanFeatures';
+import { PlanFeatures } from '../../lib/plan-features-service';
 import { Button } from '../ui/button';
 import {
   DropdownMenu,
@@ -11,21 +14,19 @@ import {
 export type ExportFormat = 'pdf' | 'word' | 'powerpoint';
 
 interface ExportMenuProps {
-  /** Callback when export is requested */
   onExport: (format: ExportFormat) => Promise<void>;
-  /** Whether export is currently in progress */
   isExporting?: boolean;
-  /** Current export format being processed */
   exportingFormat?: ExportFormat | null;
-  /** Optional className */
   className?: string;
-  /** Button variant */
   variant?: 'primary' | 'secondary';
 }
 
-/**
- * ExportMenu - Dropdown menu for export options using Radix UI
- */
+const FORMAT_FEATURE_MAP: Record<ExportFormat, string> = {
+  pdf: PlanFeatures.ExportPdf,
+  word: PlanFeatures.ExportWord,
+  powerpoint: PlanFeatures.ExportPowerpoint,
+};
+
 export function ExportMenu({
   onExport,
   isExporting = false,
@@ -33,10 +34,47 @@ export function ExportMenu({
   className = '',
   variant = 'primary',
 }: ExportMenuProps) {
-  const { t } = useTheme();
+  const { t, language } = useTheme();
+  const orgId = useCurrentOrganizationId();
+  const { isEnabled, isLoading: featuresLoading } = usePlanFeatures(orgId);
 
   const handleExport = async (format: ExportFormat) => {
     await onExport(format);
+  };
+
+  const upgradeLabel = language === 'fr' ? 'Passez au niveau supérieur' : 'Upgrade to unlock';
+
+  const renderItem = (
+    format: ExportFormat,
+    icon: React.ReactNode,
+    label: string,
+    description: string,
+  ) => {
+    const featureKey = FORMAT_FEATURE_MAP[format];
+    const locked = !featuresLoading && orgId && !isEnabled(featureKey);
+
+    return (
+      <DropdownMenuItem
+        key={format}
+        onClick={() => !locked && handleExport(format)}
+        disabled={isExporting || !!locked}
+        className={`flex items-center gap-3 py-3 cursor-pointer ${locked ? 'opacity-60' : ''}`}
+      >
+        {exportingFormat === format ? (
+          <Loader2 size={18} className="animate-spin text-slate-400" />
+        ) : locked ? (
+          <Lock size={18} className="text-slate-400" />
+        ) : (
+          icon
+        )}
+        <div className="flex-1">
+          <p className="font-medium">{label}</p>
+          <p className="text-xs text-muted-foreground">
+            {locked ? upgradeLabel : description}
+          </p>
+        </div>
+      </DropdownMenuItem>
+    );
   };
 
   return (
@@ -63,43 +101,24 @@ export function ExportMenu({
       </DropdownMenuTrigger>
 
       <DropdownMenuContent align="end" className="w-56">
-        {/* PDF Option */}
-        <DropdownMenuItem
-          onClick={() => handleExport('pdf')}
-          disabled={isExporting}
-          className="flex items-center gap-3 py-3 cursor-pointer"
-        >
-          {exportingFormat === 'pdf' ? (
-            <Loader2 size={18} className="animate-spin text-red-500" />
-          ) : (
-            <FileText size={18} className="text-red-500" aria-hidden="true" />
-          )}
-          <div>
-            <p className="font-medium">{t('export.exportAsPdf')}</p>
-            <p className="text-xs text-muted-foreground">
-              {t('export.pdfDescription')}
-            </p>
-          </div>
-        </DropdownMenuItem>
-
-        {/* Word Option */}
-        <DropdownMenuItem
-          onClick={() => handleExport('word')}
-          disabled={isExporting}
-          className="flex items-center gap-3 py-3 cursor-pointer"
-        >
-          {exportingFormat === 'word' ? (
-            <Loader2 size={18} className="animate-spin text-blue-500" />
-          ) : (
-            <FileType size={18} className="text-blue-500" aria-hidden="true" />
-          )}
-          <div>
-            <p className="font-medium">{t('export.exportAsWord')}</p>
-            <p className="text-xs text-muted-foreground">
-              {t('export.wordDescription')}
-            </p>
-          </div>
-        </DropdownMenuItem>
+        {renderItem(
+          'pdf',
+          <FileText size={18} className="text-red-500" />,
+          t('export.exportAsPdf'),
+          t('export.pdfDescription'),
+        )}
+        {renderItem(
+          'word',
+          <FileType size={18} className="text-blue-500" />,
+          t('export.exportAsWord'),
+          t('export.wordDescription'),
+        )}
+        {renderItem(
+          'powerpoint',
+          <Presentation size={18} className="text-orange-500" />,
+          t('export.exportAsPowerpoint') || 'Export as PowerPoint',
+          t('export.powerpointDescription') || 'Presentation slides',
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );

@@ -14,6 +14,7 @@ import {
   SocialLoginButtons,
   Divider,
 } from '../../components/auth';
+import TwoFactorVerifyForm from '../../components/auth/TwoFactorVerifyForm';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
@@ -48,6 +49,12 @@ export default function LoginPage() {
   const [serverError, setServerError] = useState('');
   const [loading, setLoading] = useState(false);
   const [emailHint, setEmailHint] = useState<string | null>(null);
+
+  // 2FA state
+  const [showTwoFactor, setShowTwoFactor] = useState(false);
+  const [twoFactorToken, setTwoFactorToken] = useState('');
+  const [twoFactorError, setTwoFactorError] = useState('');
+  const [twoFactorLoading, setTwoFactorLoading] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
@@ -91,6 +98,14 @@ export default function LoginPage() {
         password: formData.password,
       });
 
+      // Check if 2FA is required
+      if (response.requiresTwoFactor && response.twoFactorToken) {
+        setTwoFactorToken(response.twoFactorToken);
+        setShowTwoFactor(true);
+        setLoading(false);
+        return;
+      }
+
       // Check if user has completed onboarding - redirect to onboarding if not
       if (!response.user?.onboardingCompleted) {
         navigate('/onboarding');
@@ -106,6 +121,33 @@ export default function LoginPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleTwoFactorVerify = async (code: string) => {
+    setTwoFactorError('');
+    setTwoFactorLoading(true);
+    try {
+      const response = await authService.verifyTwoFactorLogin(twoFactorToken, code);
+
+      if (!response.user?.onboardingCompleted) {
+        navigate('/onboarding');
+      } else {
+        if (response.user?.persona) {
+          localStorage.setItem('userPersona', response.user.persona);
+        }
+        navigate('/dashboard');
+      }
+    } catch (err: any) {
+      setTwoFactorError(getUserFriendlyError(err, 'login', language));
+    } finally {
+      setTwoFactorLoading(false);
+    }
+  };
+
+  const handleTwoFactorCancel = () => {
+    setShowTwoFactor(false);
+    setTwoFactorToken('');
+    setTwoFactorError('');
   };
 
   const handleGoogleSignIn = async () => {
@@ -164,6 +206,19 @@ export default function LoginPage() {
         url={getCanonicalUrl('/login')}
       />
 
+      {/* 2FA Verification Form */}
+      {showTwoFactor ? (
+        <div className="animate-fade-in-up">
+          <TwoFactorVerifyForm
+            onVerify={handleTwoFactorVerify}
+            onCancel={handleTwoFactorCancel}
+            error={twoFactorError}
+            loading={twoFactorLoading}
+            language={language}
+          />
+        </div>
+      ) : (
+      <>
       {/* Title */}
       <div className="mb-8 animate-fade-in-up">
         <h1 className="mb-2 text-3xl font-bold font-heading text-foreground">
@@ -318,6 +373,8 @@ export default function LoginPage() {
           {cms('auth.login.back_to_home', 'login.back')}
         </Link>
       </p>
+      </>
+      )}
     </AuthLayout>
   );
 }

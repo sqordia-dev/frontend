@@ -158,7 +158,6 @@ export default function AdminOverviewPage() {
   const [error, setError] = useState<string | null>(null);
   const [activityFilter, setActivityFilter] = useState<'all' | 'users' | 'plans' | 'system'>('all');
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [comingSoonToast, setComingSoonToast] = useState(false);
   useEffect(() => {
     loadOverview();
   }, []);
@@ -247,7 +246,6 @@ export default function AdminOverviewPage() {
         shortcut: '⌘P',
         href: '/admin/business-plans',
         subtitle: overview?.businessPlansCreatedThisWeek ? `+${overview.businessPlansCreatedThisWeek} this week` : undefined,
-        comingSoon: true,
       },
       {
         name: t('admin.overview.activeSessions'),
@@ -401,25 +399,6 @@ export default function AdminOverviewPage() {
         description={language === 'fr' ? 'Vue d\'ensemble de la plateforme Sqordia' : 'Sqordia platform overview'}
         noindex={true}
       />
-      {/* Coming Soon Toast */}
-      <AnimatePresence>
-        {comingSoonToast && (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="fixed top-20 left-1/2 -translate-x-1/2 z-50 px-4 py-3 bg-purple-50 dark:bg-purple-900/90 border border-purple-200 dark:border-purple-800 rounded-xl shadow-lg flex items-center gap-3"
-          >
-            <Sparkles className="w-5 h-5 text-purple-500" />
-            <span className="text-sm text-purple-700 dark:text-purple-200">
-              {language === 'fr'
-                ? 'Page de gestion des plans d\'affaires bientôt disponible!'
-                : 'Business Plans management page coming soon!'}
-            </span>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
       {/* Welcome Header */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
@@ -491,26 +470,15 @@ export default function AdminOverviewPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.05 }}
               onClick={() => {
-                if (stat.comingSoon) {
-                  setComingSoonToast(true);
-                  setTimeout(() => setComingSoonToast(false), 3000);
-                } else {
-                  navigate(stat.href);
-                }
+                navigate(stat.href);
               }}
               className="group relative bg-card hover:bg-muted/50 rounded-xl border border-border/50 hover:border-border p-5 text-left transition-all duration-200 hover:shadow-lg hover:shadow-black/5"
             >
               {/* Keyboard shortcut hint or Coming Soon badge */}
               <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                {(stat as any).comingSoon ? (
-                  <span className="px-2 py-1 text-[10px] font-medium bg-purple-100 dark:bg-purple-900/50 text-purple-600 dark:text-purple-300 rounded-full">
-                    {language === 'fr' ? 'Bientôt' : 'Soon'}
-                  </span>
-                ) : (
-                  <kbd className="px-1.5 py-0.5 text-[10px] font-mono bg-muted rounded border border-border/50 text-muted-foreground">
-                    {stat.shortcut}
-                  </kbd>
-                )}
+                <kbd className="px-1.5 py-0.5 text-[10px] font-mono bg-muted rounded border border-border/50 text-muted-foreground">
+                  {stat.shortcut}
+                </kbd>
               </div>
 
               <div className="flex items-start justify-between mb-3">

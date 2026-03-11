@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
-import { X, Download, Calendar, CreditCard, AlertCircle, ExternalLink, ArrowLeft, Sparkles, Zap, Shield, Crown, XCircle, CheckCircle2, Clock, TrendingUp } from 'lucide-react';
+import { X, Download, Calendar, CreditCard, AlertCircle, ExternalLink, ArrowLeft, Sparkles, Zap, Shield, Crown, XCircle, CheckCircle2, Clock, TrendingUp, ArrowUpRight, ArrowDownRight } from 'lucide-react';
 import { apiClient } from '../lib/api-client';
-import { subscriptionService } from '../lib/subscription-service';
+import { subscriptionService, type PlanChangePreview } from '../lib/subscription-service';
 import { useTheme } from '../contexts/ThemeContext';
 import SEO from '../components/SEO';
 import { getCanonicalUrl } from '../utils/seo';
 import { getUserFriendlyError } from '../utils/error-messages';
 import { useToast } from '../contexts/ToastContext';
+import UsageDashboard from '../components/UsageDashboard';
 
 interface Subscription {
   id: string;
@@ -71,6 +72,10 @@ export default function SubscriptionPage() {
   const [loadingPlans, setLoadingPlans] = useState(false);
   const [changingPlanId, setChangingPlanId] = useState<string | null>(null);
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
+  const [prorationPreview, setProrationPreview] = useState<PlanChangePreview | null>(null);
+  const [showProrationConfirm, setShowProrationConfirm] = useState(false);
+  const [loadingPreview, setLoadingPreview] = useState(false);
+  const [pendingPlanId, setPendingPlanId] = useState<string | null>(null);
 
   // Theme colors
   const strategyBlue = '#1C1D1A';
@@ -340,57 +345,64 @@ export default function SubscriptionPage() {
       }
 
       const isActiveSubscription = subscription.status === 'Active' && subscription.isActive;
+      const isYearly = billingCycle === 'yearly';
 
+      // Free plan: direct switch (no proration needed)
       if (newPlan.planType === 'Free') {
-        if (isActiveSubscription) {
+        try {
+          await subscriptionService.changePlan(newPlanId, isYearly);
+          toast.success(
+            t('subscription.planChanged') || 'Plan Changed',
+            `Successfully changed to ${newPlan.name}!`
+          );
+          setShowChangePlanModal(false);
+          await loadSubscription();
+          return;
+        } catch (changeErr: any) {
+          // Fallback to subscribe for edge cases
           try {
-            await subscriptionService.changePlan(newPlanId, billingCycle === 'yearly');
+            await subscriptionService.subscribe(newPlanId, subscription.organizationId, isYearly);
             toast.success(
-              t('subscription.planChanged') || 'Plan Changed',
-              `Successfully changed to ${newPlan.name}!`
+              t('subscription.subscribed') || 'Subscribed',
+              `Successfully subscribed to ${newPlan.name}!`
             );
             setShowChangePlanModal(false);
             await loadSubscription();
             return;
-          } catch (changeErr: any) {
-            throw changeErr;
-          }
-        } else {
-          try {
-            await subscriptionService.changePlan(newPlanId, billingCycle === 'yearly');
-            toast.success(
-              t('subscription.planChanged') || 'Plan Changed',
-              `Successfully changed to ${newPlan.name}!`
-            );
-            setShowChangePlanModal(false);
-            await loadSubscription();
-            return;
-          } catch (changeErr: any) {
-            try {
-              await subscriptionService.subscribe(newPlanId, subscription.organizationId, billingCycle === 'yearly');
-              toast.success(
-                t('subscription.subscribed') || 'Subscribed',
-                `Successfully subscribed to ${newPlan.name}!`
-              );
-              setShowChangePlanModal(false);
-              await loadSubscription();
+          } catch (subscribeErr: any) {
+            if (subscribeErr.message?.includes('already has an active subscription') ||
+                subscribeErr.message?.includes('Organization already has')) {
+              setError('You already have an active subscription. Please use the change plan option instead.');
               return;
-            } catch (subscribeErr: any) {
-              if (subscribeErr.message?.includes('already has an active subscription') || 
-                  subscribeErr.message?.includes('Organization already has')) {
-                setError('You already have an active subscription. Please use the change plan option instead.');
-                return;
-              }
-              throw subscribeErr;
             }
+            throw subscribeErr;
           }
         }
       }
 
+      // Active paid subscription switching to another paid plan: show proration preview
+      if (isActiveSubscription && subscription.plan.planType !== 'Free') {
+        try {
+          setLoadingPreview(true);
+          setPendingPlanId(newPlanId);
+          const preview = await subscriptionService.previewPlanChange(newPlanId, isYearly);
+          setProrationPreview(preview);
+          setPendingPlanId(newPlanId);
+          setShowProrationConfirm(true);
+          return;
+        } catch (previewErr: any) {
+          console.error('Failed to load proration preview:', previewErr);
+          // If preview fails, fall through to direct checkout
+        } finally {
+          setLoadingPreview(false);
+        }
+      }
+
+      // No active paid subscription or preview failed: go to Stripe checkout
       const checkoutUrl = await subscriptionService.createCheckoutSession(
         newPlanId,
         subscription.organizationId,
-        billingCycle === 'yearly'
+        isYearly
       );
 
       window.location.href = checkoutUrl;
@@ -407,6 +419,42 @@ export default function SubscriptionPage() {
     } finally {
       setChangingPlanId(null);
     }
+  };
+
+  const handleConfirmPlanChange = async () => {
+    if (!pendingPlanId || !subscription) return;
+
+    try {
+      setChangingPlanId(pendingPlanId);
+      setError(null);
+
+      await subscriptionService.changePlan(pendingPlanId, billingCycle === 'yearly');
+
+      const newPlan = plans.find(p => p.id === pendingPlanId);
+      toast.success(
+        t('subscription.planChanged') || 'Plan Changed',
+        `Successfully changed to ${newPlan?.name || 'new plan'}!`
+      );
+      setShowProrationConfirm(false);
+      setProrationPreview(null);
+      setPendingPlanId(null);
+      setShowChangePlanModal(false);
+      await loadSubscription();
+    } catch (err: any) {
+      console.error('Failed to change plan:', err);
+      toast.error(
+        t('subscription.changePlanError') || 'Plan Change Error',
+        getUserFriendlyError(err, 'subscription')
+      );
+    } finally {
+      setChangingPlanId(null);
+    }
+  };
+
+  const handleCancelProration = () => {
+    setShowProrationConfirm(false);
+    setProrationPreview(null);
+    setPendingPlanId(null);
   };
 
   const getPrice = (plan: SubscriptionPlan) => {
@@ -663,6 +711,9 @@ export default function SubscriptionPage() {
               </div>
             )}
 
+            {/* Usage Dashboard */}
+            <UsageDashboard organizationId={subscription.organizationId} />
+
             {/* Details Grid */}
             <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border-2 p-6" style={{ borderColor: theme === 'dark' ? '#374151' : strategyBlue }}>
               <h3 className="text-xl font-bold mb-6" style={{ color: theme === 'dark' ? '#FFFFFF' : strategyBlue }}>
@@ -767,6 +818,148 @@ export default function SubscriptionPage() {
           </div>
         </div>
       </div>
+
+      {/* Proration Preview Dialog */}
+      {showProrationConfirm && prorationPreview && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
+          <div
+            className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-lg w-full"
+            style={{
+              boxShadow: theme === 'dark'
+                ? '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
+                : '0 25px 50px -12px rgba(26, 43, 71, 0.25)'
+            }}
+          >
+            {/* Header */}
+            <div
+              className="px-6 py-5 rounded-t-2xl"
+              style={{
+                background: theme === 'dark'
+                  ? 'linear-gradient(135deg, #1F2937 0%, #111827 100%)'
+                  : `linear-gradient(135deg, ${strategyBlue} 0%, #0F1A2B 100%)`
+              }}
+            >
+              <div className="flex items-center gap-3">
+                {prorationPreview.isUpgrade ? (
+                  <ArrowUpRight className="w-6 h-6 text-green-400" />
+                ) : (
+                  <ArrowDownRight className="w-6 h-6 text-yellow-400" />
+                )}
+                <div>
+                  <h3 className="text-xl font-bold text-white">
+                    {prorationPreview.isUpgrade ? 'Upgrade' : 'Downgrade'} Plan
+                  </h3>
+                  <p className="text-white/70 text-sm">
+                    {prorationPreview.currentPlanName} → {prorationPreview.newPlanName}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-6 space-y-5">
+              {/* Proration Summary */}
+              <div className="rounded-xl border-2 p-4 space-y-3" style={{ borderColor: theme === 'dark' ? '#374151' : lightAIGrey, backgroundColor: theme === 'dark' ? '#1F2937' : lightAIGrey }}>
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-gray-600 dark:text-gray-400">Remaining days in period</span>
+                  <span className="font-semibold" style={{ color: theme === 'dark' ? '#FFFFFF' : strategyBlue }}>
+                    {prorationPreview.remainingDays} of {prorationPreview.totalDays} days
+                  </span>
+                </div>
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-gray-600 dark:text-gray-400">Credit for unused time</span>
+                  <span className="font-semibold text-green-600 dark:text-green-400">
+                    -{formatPrice(prorationPreview.creditAmount, prorationPreview.currency)}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-gray-600 dark:text-gray-400">Charge for new plan</span>
+                  <span className="font-semibold" style={{ color: theme === 'dark' ? '#FFFFFF' : strategyBlue }}>
+                    {formatPrice(prorationPreview.chargeAmount, prorationPreview.currency)}
+                  </span>
+                </div>
+                <div className="border-t pt-3" style={{ borderColor: theme === 'dark' ? '#4B5563' : '#D1D5DB' }}>
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-gray-600 dark:text-gray-400">Subtotal</span>
+                    <span className="font-semibold" style={{ color: theme === 'dark' ? '#FFFFFF' : strategyBlue }}>
+                      {formatPrice(prorationPreview.netAmount, prorationPreview.currency)}
+                    </span>
+                  </div>
+                  {prorationPreview.taxAmount > 0 && (
+                    <div className="flex justify-between items-center text-sm mt-1">
+                      <span className="text-gray-600 dark:text-gray-400">Tax (HST 13%)</span>
+                      <span className="font-semibold" style={{ color: theme === 'dark' ? '#FFFFFF' : strategyBlue }}>
+                        {formatPrice(prorationPreview.taxAmount, prorationPreview.currency)}
+                      </span>
+                    </div>
+                  )}
+                </div>
+                <div className="border-t pt-3" style={{ borderColor: theme === 'dark' ? '#4B5563' : '#D1D5DB' }}>
+                  <div className="flex justify-between items-center">
+                    <span className="font-bold text-lg" style={{ color: theme === 'dark' ? '#FFFFFF' : strategyBlue }}>
+                      {prorationPreview.netAmount >= 0 ? 'Amount due today' : 'Credit to your account'}
+                    </span>
+                    <span className="font-bold text-xl" style={{ color: momentumOrange }}>
+                      {formatPrice(Math.abs(prorationPreview.totalWithTax), prorationPreview.currency)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* New recurring amount */}
+              <div className="flex items-center gap-3 p-3 rounded-xl" style={{ backgroundColor: theme === 'dark' ? '#1F2937' : '#EFF6FF' }}>
+                <Calendar className="w-5 h-5 flex-shrink-0" style={{ color: momentumOrange }} />
+                <div className="text-sm">
+                  <span className="text-gray-600 dark:text-gray-400">New recurring charge: </span>
+                  <span className="font-bold" style={{ color: theme === 'dark' ? '#FFFFFF' : strategyBlue }}>
+                    {formatPrice(prorationPreview.newRecurringAmount, prorationPreview.currency)}/{prorationPreview.isYearly ? 'year' : 'month'}
+                  </span>
+                  <span className="text-gray-500 dark:text-gray-400"> starting {formatDate(prorationPreview.newPeriodEnd)}</span>
+                </div>
+              </div>
+
+              {/* Effective date */}
+              <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
+                Changes take effect immediately. Your billing period ends {formatDate(prorationPreview.currentPeriodEnd)}.
+              </p>
+
+              {/* Actions */}
+              <div className="flex gap-3">
+                <button
+                  onClick={handleCancelProration}
+                  className="flex-1 px-4 py-3 rounded-xl font-semibold transition-all border-2"
+                  style={{
+                    borderColor: theme === 'dark' ? '#4B5563' : '#D1D5DB',
+                    color: theme === 'dark' ? '#D1D5DB' : '#6B7280',
+                    backgroundColor: 'transparent'
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleConfirmPlanChange}
+                  disabled={!!changingPlanId}
+                  className="flex-1 px-4 py-3 rounded-xl font-semibold text-white transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  style={{ backgroundColor: momentumOrange }}
+                  onMouseEnter={(e) => !changingPlanId && (e.currentTarget.style.backgroundColor = momentumOrangeHover)}
+                  onMouseLeave={(e) => !changingPlanId && (e.currentTarget.style.backgroundColor = momentumOrange)}
+                >
+                  {changingPlanId ? (
+                    <>
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      Processing...
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle2 className="w-5 h-5" />
+                      Confirm {prorationPreview.isUpgrade ? 'Upgrade' : 'Downgrade'}
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Change Plan Modal */}
       {showChangePlanModal && (
@@ -986,7 +1179,7 @@ export default function SubscriptionPage() {
                               e.stopPropagation();
                               handleChangePlan(plan.id);
                             }}
-                            disabled={(isCurrentPlan && isCurrentBilling) || !!changingPlanId}
+                            disabled={(isCurrentPlan && isCurrentBilling) || !!changingPlanId || loadingPreview}
                             className="w-full py-3.5 rounded-xl font-semibold transition-all disabled:cursor-not-allowed flex items-center justify-center gap-2"
                             style={{
                               backgroundColor: isCurrentPlan && isCurrentBilling
@@ -1010,10 +1203,10 @@ export default function SubscriptionPage() {
                               }
                             }}
                           >
-                            {changingPlanId === plan.id ? (
+                            {(changingPlanId === plan.id || (loadingPreview && pendingPlanId === plan.id)) ? (
                               <>
                                 <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                                Processing...
+                                {loadingPreview ? 'Loading preview...' : 'Processing...'}
                               </>
                             ) : isCurrentPlan && isCurrentBilling ? (
                               <>

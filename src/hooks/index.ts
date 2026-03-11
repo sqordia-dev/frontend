@@ -11,4 +11,6 @@ export { useOnboarding } from './useOnboarding';
 export { useReadingProgress } from './useReadingProgress';
 export { useScrollSpy } from './useScrollSpy';
 export { useFeatureFlag, useFeatureFlags, useFeatureFlagsAdmin } from './useFeatureFlag';
+export { usePlanFeatures } from './usePlanFeatures';
+export { useSubscriptionIntelligence } from './useSubscriptionIntelligence';
 export { useMediaQuery, useIsMobile, useIsDesktop, useIsTouchDevice } from './useMediaQuery';

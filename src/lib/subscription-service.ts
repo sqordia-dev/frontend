@@ -8,6 +8,27 @@ export interface BillingPortalResponse {
   portalUrl: string;
 }
 
+export interface PlanChangePreview {
+  currentPlanName: string;
+  newPlanName: string;
+  currentPlanType: string;
+  newPlanType: string;
+  isUpgrade: boolean;
+  remainingDays: number;
+  totalDays: number;
+  currentPeriodEnd: string;
+  creditAmount: number;
+  chargeAmount: number;
+  netAmount: number;
+  newRecurringAmount: number;
+  currency: string;
+  isYearly: boolean;
+  effectiveDate: string;
+  newPeriodEnd: string;
+  taxAmount: number;
+  totalWithTax: number;
+}
+
 class SubscriptionService {
   /**
    * Create a Stripe checkout session for a subscription
@@ -109,7 +130,31 @@ class SubscriptionService {
   }
 
   /**
-   * Change subscription plan
+   * Preview plan change proration before confirming
+   */
+  async previewPlanChange(newPlanId: string, isYearly: boolean): Promise<PlanChangePreview> {
+    try {
+      const response = await apiClient.post<any>('/api/v1/subscriptions/change-plan/preview', {
+        newPlanId,
+        isYearly,
+      });
+
+      if (response.data?.isSuccess && response.data.value) {
+        return response.data.value;
+      }
+      return response.data;
+    } catch (error: any) {
+      const errorMessage =
+        error.response?.data?.message ||
+        error.response?.data?.errorMessage ||
+        error.message ||
+        'Failed to preview plan change';
+      throw new Error(errorMessage);
+    }
+  }
+
+  /**
+   * Change subscription plan immediately with proration
    */
   async changePlan(newPlanId: string, isYearly: boolean): Promise<any> {
     try {

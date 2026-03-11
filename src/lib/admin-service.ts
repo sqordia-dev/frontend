@@ -217,8 +217,32 @@ export const adminService = {
     }
   },
 
-  async regenerateBusinessPlan(businessPlanId: string): Promise<void> {
-    await apiClient.post(`/api/v1/admin/business-plans/${businessPlanId}/regenerate`);
+  async getBusinessPlansPaginated(params?: Record<string, string>): Promise<{ items: any[]; totalCount: number; totalPages: number }> {
+    const queryString = params ? `?${new URLSearchParams(params).toString()}` : '';
+    const response = await apiClient.get<any>(`/api/v1/admin/business-plans${queryString}`);
+    const data = extractApiData<any>(response.data);
+
+    if (data?.items || data?.Items) {
+      return {
+        items: data.items || data.Items || [],
+        totalCount: data.totalCount ?? data.TotalCount ?? 0,
+        totalPages: data.totalPages ?? data.TotalPages ?? 1,
+      };
+    }
+
+    if (Array.isArray(data)) {
+      return { items: data, totalCount: data.length, totalPages: 1 };
+    }
+
+    return { items: [], totalCount: 0, totalPages: 1 };
+  },
+
+  async regenerateBusinessPlan(businessPlanId: string, sections?: string[]): Promise<void> {
+    await apiClient.post(`/api/v1/admin/business-plans/${businessPlanId}/regenerate`, { sections });
+  },
+
+  async deleteBusinessPlan(businessPlanId: string): Promise<void> {
+    await apiClient.delete(`/api/v1/admin/business-plans/${businessPlanId}`);
   },
 
   async getActivityLogs(filters?: any): Promise<any> {

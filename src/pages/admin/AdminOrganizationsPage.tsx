@@ -65,6 +65,7 @@ export default function AdminOrganizationsPage() {
   const [statusReason, setStatusReason] = useState('');
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  const [dropdownPos, setDropdownPos] = useState<{ top: number; left: number } | null>(null);
 
   // Create modal
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -366,37 +367,22 @@ export default function AdminOrganizationsPage() {
                         {formatDate(org.createdAt)}
                       </td>
                       <td className="px-4 py-3 text-right">
-                        <div className="relative inline-block" onClick={(e) => e.stopPropagation()}>
+                        <div className="inline-block" onClick={(e) => e.stopPropagation()}>
                           <button
-                            onClick={() => setActiveDropdown(activeDropdown === org.id ? null : org.id)}
+                            onClick={(e) => {
+                              if (activeDropdown === org.id) {
+                                setActiveDropdown(null);
+                                setDropdownPos(null);
+                              } else {
+                                const rect = e.currentTarget.getBoundingClientRect();
+                                setDropdownPos({ top: rect.bottom + 4, left: rect.right - 192 });
+                                setActiveDropdown(org.id);
+                              }
+                            }}
                             className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                           >
                             <MoreVertical className="w-4 h-4 text-gray-500" />
                           </button>
-                          {activeDropdown === org.id && (
-                            <div className="absolute right-0 mt-1 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-10 py-1">
-                              <button
-                                onClick={() => { navigate(`/admin/organizations/${org.id}`); setActiveDropdown(null); }}
-                                className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
-                              >
-                                <Eye className="w-4 h-4" /> {language === 'fr' ? 'Voir détails' : 'View Details'}
-                              </button>
-                              <button
-                                onClick={() => { navigate(`/admin/organizations/${org.id}?tab=members`); setActiveDropdown(null); }}
-                                className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
-                              >
-                                <UserPlus className="w-4 h-4" /> {language === 'fr' ? 'Gérer les membres' : 'Manage Members'}
-                              </button>
-                              <hr className="my-1 border-gray-200 dark:border-gray-700" />
-                              <button
-                                onClick={() => { setStatusModalOrg(org); setActiveDropdown(null); }}
-                                className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
-                              >
-                                {org.isActive ? <XCircle className="w-4 h-4 text-red-500" /> : <CheckCircle2 className="w-4 h-4 text-emerald-500" />}
-                                {org.isActive ? (language === 'fr' ? 'Désactiver' : 'Deactivate') : (language === 'fr' ? 'Activer' : 'Activate')}
-                              </button>
-                            </div>
-                          )}
                         </div>
                       </td>
                     </tr>
@@ -681,9 +667,41 @@ export default function AdminOrganizationsPage() {
       )}
 
       {/* Close dropdown on outside click */}
-      {activeDropdown && (
-        <div className="fixed inset-0 z-[5]" onClick={() => setActiveDropdown(null)} />
-      )}
+      {/* Fixed-position dropdown menu (rendered outside table overflow) */}
+      {activeDropdown && dropdownPos && (() => {
+        const org = organizations.find(o => o.id === activeDropdown);
+        if (!org) return null;
+        return (
+          <>
+            <div className="fixed inset-0 z-40" onClick={() => { setActiveDropdown(null); setDropdownPos(null); }} />
+            <div
+              className="fixed w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50 py-1"
+              style={{ top: dropdownPos.top, left: dropdownPos.left }}
+            >
+              <button
+                onClick={() => { navigate(`/admin/organizations/${org.id}`); setActiveDropdown(null); setDropdownPos(null); }}
+                className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+              >
+                <Eye className="w-4 h-4" /> {language === 'fr' ? 'Voir détails' : 'View Details'}
+              </button>
+              <button
+                onClick={() => { navigate(`/admin/organizations/${org.id}?tab=members`); setActiveDropdown(null); setDropdownPos(null); }}
+                className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+              >
+                <UserPlus className="w-4 h-4" /> {language === 'fr' ? 'Gérer les membres' : 'Manage Members'}
+              </button>
+              <hr className="my-1 border-gray-200 dark:border-gray-700" />
+              <button
+                onClick={() => { setStatusModalOrg(org); setActiveDropdown(null); setDropdownPos(null); }}
+                className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+              >
+                {org.isActive ? <XCircle className="w-4 h-4 text-red-500" /> : <CheckCircle2 className="w-4 h-4 text-emerald-500" />}
+                {org.isActive ? (language === 'fr' ? 'Désactiver' : 'Deactivate') : (language === 'fr' ? 'Activer' : 'Activate')}
+              </button>
+            </div>
+          </>
+        );
+      })()}
     </div>
   );
 }

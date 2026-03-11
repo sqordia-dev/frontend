@@ -15,11 +15,37 @@ export const authService = {
 
       // Handle wrapped response format (isSuccess/value)
       if (data.isSuccess && data.value) {
-        localStorage.setItem('accessToken', data.value.accessToken);
-        localStorage.setItem('refreshToken', data.value.refreshToken);
+        const value = data.value;
+
+        // Check if 2FA is required
+        if (value.requiresTwoFactor) {
+          return {
+            requiresTwoFactor: true,
+            twoFactorToken: value.twoFactorToken,
+            accessToken: '',
+            refreshToken: '',
+            expiresAt: '',
+            user: null as any,
+          };
+        }
+
+        localStorage.setItem('accessToken', value.accessToken || value.token);
+        localStorage.setItem('refreshToken', value.refreshToken);
         localStorage.removeItem('demoMode');
         activityLogger.logLogin().catch(console.error); // fire-and-forget
-        return data.value;
+        return value;
+      }
+
+      // Handle direct 2FA challenge response
+      if (data.requiresTwoFactor) {
+        return {
+          requiresTwoFactor: true,
+          twoFactorToken: data.twoFactorToken,
+          accessToken: '',
+          refreshToken: '',
+          expiresAt: '',
+          user: null as any,
+        };
       }
 
       // Handle direct response format (token/refreshToken at root level)
@@ -40,7 +66,7 @@ export const authService = {
         };
       }
 
-      throw new Error(data.errorMessage || 'Login failed');
+      throw new Error(data.errorMessage || data.message || 'Login failed');
     } catch (error: any) {
       console.error('Login error:', error);
 
@@ -48,6 +74,9 @@ export const authService = {
         throw new Error('The server is taking too long to respond. It may be starting up. Please wait a moment and try again.');
       }
 
+      if (error.response?.data?.message) {
+        throw new Error(error.response.data.message);
+      }
       if (error.response?.data?.errorMessage) {
         throw new Error(error.response.data.errorMessage);
       }
@@ -57,6 +86,63 @@ export const authService = {
       }
 
       throw new Error(error.message || 'Login failed. Please check your credentials.');
+    }
+  },
+
+  async verifyTwoFactorLogin(twoFactorToken: string, code: string): Promise<LoginResponse> {
+    try {
+      const response = await apiClient.post<any>('/api/v1/auth/login/verify-2fa', {
+        twoFactorToken,
+        code,
+      });
+      const data = response.data;
+
+      // Handle wrapped response format
+      if (data.isSuccess && data.value) {
+        const value = data.value;
+        const accessToken = value.accessToken || value.token;
+        const refreshToken = value.refreshToken;
+
+        localStorage.setItem('accessToken', accessToken);
+        localStorage.setItem('refreshToken', refreshToken);
+        localStorage.removeItem('demoMode');
+        activityLogger.logLogin().catch(console.error);
+
+        return {
+          accessToken,
+          refreshToken,
+          expiresAt: value.expiresAt,
+          user: value.user,
+        };
+      }
+
+      // Handle direct response format
+      if (data.token || data.accessToken) {
+        const accessToken = data.token || data.accessToken;
+        const refreshToken = data.refreshToken;
+
+        localStorage.setItem('accessToken', accessToken);
+        localStorage.setItem('refreshToken', refreshToken);
+        localStorage.removeItem('demoMode');
+        activityLogger.logLogin().catch(console.error);
+
+        return {
+          accessToken,
+          refreshToken,
+          expiresAt: data.expiresAt,
+          user: data.user,
+        };
+      }
+
+      throw new Error(data.errorMessage || data.message || '2FA verification failed');
+    } catch (error: any) {
+      if (error.response?.data?.message) {
+        throw new Error(error.response.data.message);
+      }
+      if (error.response?.data?.errorMessage) {
+        throw new Error(error.response.data.errorMessage);
+      }
+      throw new Error(error.message || '2FA verification failed. Please try again.');
     }
   },
 
@@ -499,11 +585,19 @@ export const authService = {
     try {
       const response = await apiClient.post<any>('/api/v1/2fa/setup');
       const data = response.data;
+      // Handle wrapped response format
       if (data.isSuccess && data.value) {
         return data.value;
       }
-      throw new Error(data.errorMessage || 'Failed to setup 2FA');
+      // Handle direct response format
+      if (data.qrCodeUrl) {
+        return data;
+      }
+      throw new Error(data.errorMessage || data.message || 'Failed to setup 2FA');
     } catch (error: any) {
+      if (error.response?.data?.message) {
+        throw new Error(error.response.data.message);
+      }
       if (error.response?.data?.errorMessage) {
         throw new Error(error.response.data.errorMessage);
       }
@@ -513,13 +607,21 @@ export const authService = {
 
   async enable2FA(code: string): Promise<{ backupCodes: string[] }> {
     try {
-      const response = await apiClient.post<any>('/api/v1/2fa/enable', { code });
+      const response = await apiClient.post<any>('/api/v1/2fa/enable', { verificationCode: code });
       const data = response.data;
+      // Handle wrapped response format
       if (data.isSuccess && data.value) {
         return data.value;
       }
-      throw new Error(data.errorMessage || 'Failed to enable 2FA');
+      // Handle direct response format
+      if (data.backupCodes) {
+        return data;
+      }
+      throw new Error(data.errorMessage || data.message || 'Failed to enable 2FA');
     } catch (error: any) {
+      if (error.response?.data?.message) {
+        throw new Error(error.response.data.message);
+      }
       if (error.response?.data?.errorMessage) {
         throw new Error(error.response.data.errorMessage);
       }
@@ -531,10 +633,14 @@ export const authService = {
     try {
       const response = await apiClient.post<any>('/api/v1/2fa/verify', { code });
       const data = response.data;
-      if (!data.isSuccess && data.errorMessage) {
-        throw new Error(data.errorMessage);
+      if (data.isSuccess === false && (data.errorMessage || data.message)) {
+        throw new Error(data.errorMessage || data.message);
       }
+      // 200 OK = success (direct format returns empty body or success indicator)
     } catch (error: any) {
+      if (error.response?.data?.message) {
+        throw new Error(error.response.data.message);
+      }
       if (error.response?.data?.errorMessage) {
         throw new Error(error.response.data.errorMessage);
       }
@@ -546,10 +652,14 @@ export const authService = {
     try {
       const response = await apiClient.post<any>('/api/v1/2fa/disable', { code });
       const data = response.data;
-      if (!data.isSuccess && data.errorMessage) {
-        throw new Error(data.errorMessage);
+      if (data.isSuccess === false && (data.errorMessage || data.message)) {
+        throw new Error(data.errorMessage || data.message);
       }
+      // 200 OK = success
     } catch (error: any) {
+      if (error.response?.data?.message) {
+        throw new Error(error.response.data.message);
+      }
       if (error.response?.data?.errorMessage) {
         throw new Error(error.response.data.errorMessage);
       }
@@ -557,15 +667,23 @@ export const authService = {
     }
   },
 
-  async get2FAStatus(): Promise<{ isEnabled: boolean; hasBackupCodes: boolean }> {
+  async get2FAStatus(): Promise<{ isEnabled: boolean; remainingBackupCodes: number }> {
     try {
       const response = await apiClient.get<any>('/api/v1/2fa/status');
       const data = response.data;
+      // Handle wrapped response format
       if (data.isSuccess && data.value) {
         return data.value;
       }
-      throw new Error(data.errorMessage || 'Failed to get 2FA status');
+      // Handle direct response format
+      if (data.isEnabled !== undefined) {
+        return data;
+      }
+      throw new Error(data.errorMessage || data.message || 'Failed to get 2FA status');
     } catch (error: any) {
+      if (error.response?.data?.message) {
+        throw new Error(error.response.data.message);
+      }
       if (error.response?.data?.errorMessage) {
         throw new Error(error.response.data.errorMessage);
       }
@@ -577,11 +695,19 @@ export const authService = {
     try {
       const response = await apiClient.post<any>('/api/v1/2fa/backup-codes/regenerate');
       const data = response.data;
+      // Handle wrapped response format
       if (data.isSuccess && data.value) {
         return data.value;
       }
-      throw new Error(data.errorMessage || 'Failed to regenerate backup codes');
+      // Handle direct response format
+      if (data.backupCodes) {
+        return data;
+      }
+      throw new Error(data.errorMessage || data.message || 'Failed to regenerate backup codes');
     } catch (error: any) {
+      if (error.response?.data?.message) {
+        throw new Error(error.response.data.message);
+      }
       if (error.response?.data?.errorMessage) {
         throw new Error(error.response.data.errorMessage);
       }
