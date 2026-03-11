@@ -447,7 +447,7 @@ export default function AdminUserDetailPage() {
 
         <div className="p-5">
           {activeTab === 'overview' && <OverviewTab user={user} userRoles={userRoles} roles={roles} showAddRole={showAddRole} setShowAddRole={setShowAddRole} onAssignRole={handleAssignRole} onRemoveRole={handleRemoveRole} onCopyId={copyId} copied={copied} />}
-          {activeTab === 'organizations' && <OrganizationsTab organizations={user.organizations || []} />}
+          {activeTab === 'organizations' && <OrganizationsTab organizations={user.organizations || []} navigate={navigate} />}
           {activeTab === 'sessions' && <SessionsTab sessions={sessions} loading={loadingSessions} activeSessions={activeSessions} onTerminate={handleTerminateSession} onTerminateAll={handleTerminateAll} onRefresh={loadSessions} />}
           {activeTab === 'history' && <HistoryTab history={loginHistory} loading={loadingHistory} onRefresh={loadHistory} />}
         </div>
@@ -711,7 +711,7 @@ function OverviewTab({ user, userRoles, roles, showAddRole, setShowAddRole, onAs
 }
 
 /* --- ORGANIZATIONS TAB --- */
-function OrganizationsTab({ organizations }: { organizations: any[] }) {
+function OrganizationsTab({ organizations, navigate }: { organizations: any[]; navigate: (path: string) => void }) {
   if (organizations.length === 0) {
     return (
       <div className="text-center py-16">
@@ -733,13 +733,13 @@ function OrganizationsTab({ organizations }: { organizations: any[] }) {
         </thead>
         <tbody className="divide-y divide-gray-50 dark:divide-gray-800">
           {organizations.map((org: any) => (
-            <tr key={org.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+            <tr key={org.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors cursor-pointer" onClick={() => navigate(`/admin/organizations/${org.id}`)}>
               <td className="py-3 px-3">
                 <div className="flex items-center gap-2.5">
                   <div className="w-8 h-8 rounded-lg bg-[#FF6B00]/[0.08] flex items-center justify-center flex-shrink-0">
                     <Building2 className="w-4 h-4 text-[#FF6B00]" />
                   </div>
-                  <span className="text-sm font-medium text-gray-900 dark:text-white">{org.name}</span>
+                  <span className="text-sm font-medium text-gray-900 dark:text-white hover:text-[#FF6B00] transition-colors">{org.name}</span>
                 </div>
               </td>
               <td className="py-3 px-3">

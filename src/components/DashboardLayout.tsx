@@ -8,8 +8,10 @@ import {
   Settings,
   Receipt,
   Brain,
+  Users,
 } from 'lucide-react';
 import { authService } from '../lib/auth-service';
+import { organizationService } from '../lib/organization-service';
 import { User as UserType } from '../lib/types';
 import { useTheme } from '../contexts/ThemeContext';
 import { NotificationProvider } from '../contexts/NotificationContext';
@@ -40,8 +42,16 @@ const ROUTE_LABELS: Record<string, string> = {
   '/notifications': 'nav.notifications',
 };
 
+// Match dynamic org manage route
+function getRouteLabel(pathname: string): string | null {
+  const key = ROUTE_LABELS[pathname];
+  if (key) return key;
+  if (/^\/organization\/[^/]+\/manage$/.test(pathname)) return 'nav.team';
+  return null;
+}
+
 function DashboardBreadcrumb({ pathname, t }: { pathname: string; t: (key: string) => string }) {
-  const labelKey = ROUTE_LABELS[pathname];
+  const labelKey = getRouteLabel(pathname);
   if (!labelKey || pathname === '/dashboard') return null;
 
   return (
@@ -66,6 +76,7 @@ export default function DashboardLayout() {
   const navigate = useNavigate();
   const { theme, toggleTheme, language, setLanguage, t } = useTheme();
   const [user, setUser] = useState<UserType | null>(null);
+  const [userOrgId, setUserOrgId] = useState<string | null>(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
     const saved = localStorage.getItem('dashboard-sidebar-collapsed');
     return saved === 'true';
@@ -102,6 +113,13 @@ export default function DashboardLayout() {
       if (!userPersona && location.pathname !== '/persona-selection') {
         navigate('/persona-selection');
       }
+      // Load user's primary organization for Team nav link
+      try {
+        const orgs = await organizationService.getOrganizations();
+        if (orgs.length > 0) setUserOrgId(orgs[0].id);
+      } catch {
+        // Non-critical
+      }
     } catch (error) {
       console.error('Failed to load user:', error);
     }
@@ -119,6 +137,7 @@ export default function DashboardLayout() {
       items: [
         { name: t('nav.dashboard'), href: '/dashboard', icon: LayoutDashboard },
         { name: t('nav.createPlan'), href: '/create-plan', icon: Plus, accent: true },
+        ...(userOrgId ? [{ name: language === 'fr' ? 'Équipe' : 'Team', href: `/organization/${userOrgId}/manage`, icon: Users }] : []),
         { name: t('nav.subscription'), href: '/subscription', icon: CreditCard },
         { name: t('nav.invoices'), href: '/invoices', icon: Receipt },
         { name: t('nav.settings'), href: '/profile', icon: Settings },

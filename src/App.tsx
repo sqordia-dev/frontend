@@ -12,6 +12,7 @@ import LandingPage from './pages/LandingPageNew';
 import LoginPage from './pages/auth/login';
 import SignupPage from './pages/auth/signup';
 import ProtectedRoute from './components/ProtectedRoute';
+import AdminRoute from './components/AdminRoute';
 
 // Lazy-loaded pages - split into separate chunks
 // Auth pages (non-critical)
@@ -35,6 +36,9 @@ const BusinessPlanPreviewPage = lazy(() => import('./pages/business-plan/Busines
 const TemplateDetailPage = lazy(() => import('./pages/TemplateDetailPage'));
 const ExamplePlansPage = lazy(() => import('./pages/ExamplePlansPage'));
 const ExamplePlanDetailPage = lazy(() => import('./pages/ExamplePlanDetailPage'));
+
+// Organization management (for org owners/admins)
+const OrganizationManagePage = lazy(() => import('./pages/OrganizationManagePage'));
 
 // Subscription and Billing
 const SubscriptionPlansPage = lazy(() => import('./pages/SubscriptionPlansPage'));
@@ -74,6 +78,7 @@ const AdminOverviewPage = lazy(() => import('./pages/admin/AdminOverviewPage'));
 const AdminUsersPage = lazy(() => import('./pages/admin/AdminUsersPage'));
 const AdminUserDetailPage = lazy(() => import('./pages/admin/AdminUserDetailPage'));
 const AdminOrganizationsPage = lazy(() => import('./pages/admin/AdminOrganizationsPage'));
+const AdminOrganizationDetailPage = lazy(() => import('./pages/admin/AdminOrganizationDetailPage'));
 const AdminAIPromptsPage = lazy(() => import('./pages/admin/AdminAIPromptsPage'));
 const AdminActivityLogsPage = lazy(() => import('./pages/admin/AdminActivityLogsPage'));
 const AdminSystemHealthPage = lazy(() => import('./pages/admin/AdminSystemHealthPage'));
@@ -233,6 +238,18 @@ function App() {
               <Route index element={<CreatePlanPage />} />
             </Route>
 
+            {/* Organization management */}
+            <Route
+              path="/organization/:organizationId/manage"
+              element={
+                <ProtectedRoute>
+                  <DashboardLayout />
+                </ProtectedRoute>
+              }
+            >
+              <Route index element={<OrganizationManagePage />} />
+            </Route>
+
             {/* Interview - full screen */}
             <Route
               path="/interview/:planId"
@@ -338,25 +355,25 @@ function App() {
             <Route
               path="/admin/cms"
               element={
-                <ProtectedRoute>
+                <AdminRoute>
                   <CmsEditorPage />
-                </ProtectedRoute>
+                </AdminRoute>
               }
             />
             <Route
               path="/admin/cms/questionnaire"
               element={
-                <ProtectedRoute>
+                <AdminRoute>
                   <CmsQuestionnairePage />
-                </ProtectedRoute>
+                </AdminRoute>
               }
             />
             <Route
               path="/admin/cms/questionnaire-preview"
               element={
-                <ProtectedRoute>
+                <AdminRoute>
                   <AdminQuestionnairePreviewPage />
-                </ProtectedRoute>
+                </AdminRoute>
               }
             />
 
@@ -364,15 +381,16 @@ function App() {
             <Route
               path="/admin"
               element={
-                <ProtectedRoute>
+                <AdminRoute>
                   <AdminLayout />
-                </ProtectedRoute>
+                </AdminRoute>
               }
             >
               <Route index element={<AdminOverviewPage />} />
               <Route path="users" element={<AdminUsersPage />} />
               <Route path="users/:userId" element={<AdminUserDetailPage />} />
               <Route path="organizations" element={<AdminOrganizationsPage />} />
+              <Route path="organizations/:organizationId" element={<AdminOrganizationDetailPage />} />
               <Route path="templates" element={<AdminTemplatesPage />} />
               <Route path="prompts-studio" element={<AdminAIPromptsPage />} />
               <Route path="ai-prompts" element={<AdminAIPromptsPage />} />

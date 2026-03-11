@@ -528,4 +528,89 @@ export const adminService = {
     const response = await apiClient.post<any>('/api/v1/admin/analytics/run-batch');
     return extractApiData<any>(response.data);
   },
+
+  // ======== Organization Detail (Admin) ========
+
+  async getOrganizationDetail(organizationId: string): Promise<any> {
+    const response = await apiClient.get<any>(`/api/v1/admin/organizations/${organizationId}`);
+    return extractApiData<any>(response.data);
+  },
+
+  async getOrganizationsPaginated(params?: Record<string, string>): Promise<{ items: any[]; totalCount: number; totalPages: number }> {
+    const queryString = params ? `?${new URLSearchParams(params).toString()}` : '';
+    const response = await apiClient.get<any>(`/api/v1/admin/organizations${queryString}`);
+    const data = extractApiData<any>(response.data);
+
+    if (data?.items || data?.Items) {
+      return {
+        items: data.items || data.Items || [],
+        totalCount: data.totalCount ?? data.TotalCount ?? 0,
+        totalPages: data.totalPages ?? data.TotalPages ?? 1,
+      };
+    }
+
+    if (Array.isArray(data)) {
+      return { items: data, totalCount: data.length, totalPages: 1 };
+    }
+
+    return { items: [], totalCount: 0, totalPages: 1 };
+  },
+
+  async createOrganization(data: {
+    name: string;
+    description?: string;
+    organizationType?: string;
+    website?: string;
+    ownerUserId?: string;
+    maxMembers?: number;
+    allowMemberInvites?: boolean;
+    requireEmailVerification?: boolean;
+  }): Promise<string> {
+    try {
+      const response = await apiClient.post<any>('/api/v1/admin/organizations', data);
+      return extractApiData<string>(response.data);
+    } catch (error: any) {
+      if (error.response?.data?.error) throw new Error(error.response.data.error);
+      if (error.response?.data?.message) throw new Error(error.response.data.message);
+      throw error;
+    }
+  },
+
+  async updateOrganization(organizationId: string, data: {
+    name?: string;
+    description?: string;
+    organizationType?: string;
+    website?: string;
+    maxMembers?: number;
+    allowMemberInvites?: boolean;
+    requireEmailVerification?: boolean;
+  }): Promise<void> {
+    try {
+      await apiClient.put(`/api/v1/admin/organizations/${organizationId}`, data);
+    } catch (error: any) {
+      if (error.response?.data?.error) throw new Error(error.response.data.error);
+      if (error.response?.data?.message) throw new Error(error.response.data.message);
+      throw error;
+    }
+  },
+
+  async deleteOrganization(organizationId: string): Promise<void> {
+    try {
+      await apiClient.delete(`/api/v1/admin/organizations/${organizationId}`);
+    } catch (error: any) {
+      if (error.response?.data?.error) throw new Error(error.response.data.error);
+      if (error.response?.data?.message) throw new Error(error.response.data.message);
+      throw error;
+    }
+  },
+
+  async inviteMemberByEmail(organizationId: string, email: string, role: string): Promise<void> {
+    try {
+      await apiClient.post(`/api/v1/organizations/${organizationId}/invitations`, { email, role });
+    } catch (error: any) {
+      if (error.response?.data?.error) throw new Error(error.response.data.error);
+      if (error.response?.data?.message) throw new Error(error.response.data.message);
+      throw error;
+    }
+  },
 };
