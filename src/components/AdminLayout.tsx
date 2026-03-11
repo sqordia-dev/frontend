@@ -3,6 +3,8 @@ import { useState, useEffect } from 'react';
 import {
   LayoutDashboard,
   Users,
+  Building2,
+  FileText,
   Palette,
   ListTodo,
   Brain,
@@ -11,6 +13,7 @@ import {
   Mail,
   BarChart3,
   ClipboardList,
+  TrendingUp,
 } from 'lucide-react';
 import { AdminAIAssistant } from './admin/AdminAIAssistant';
 import { authService } from '../lib/auth-service';
@@ -32,6 +35,9 @@ const PAGE_TITLES: Record<string, { en: string; fr: string }> = {
   '/admin/ai-studio/analytics': { en: 'AI Studio - Analytics', fr: 'AI Studio - Analytics' },
   '/admin/ai-studio/ab-testing': { en: 'AI Studio - A/B Testing', fr: 'AI Studio - Tests A/B' },
   '/admin/ai-studio/questions': { en: 'AI Studio - Questions', fr: 'AI Studio - Questions' },
+  '/admin/ai-studio/ml-monitoring': { en: 'AI Studio - ML Monitoring', fr: 'AI Studio - Suivi ML' },
+  '/admin/ai-studio/telemetry': { en: 'AI Studio - Telemetry', fr: 'AI Studio - Télémétrie' },
+  '/admin/subscription-intelligence': { en: 'Subscription Intelligence', fr: 'Intelligence abonnement' },
   '/admin/feature-flags': { en: 'Feature Flags', fr: 'Indicateurs de fonctionnalités' },
   '/admin/bug-report': { en: 'Issue Tracker', fr: 'Suivi des problèmes' },
   '/admin/business-plans': { en: 'Business Plans', fr: "Plans d'affaires" },
@@ -96,6 +102,16 @@ export default function AdminLayout() {
           shortcut: '⌘2',
         },
         {
+          name: language === 'fr' ? 'Organisations' : 'Organizations',
+          href: '/admin/organizations',
+          icon: Building2,
+        },
+        {
+          name: language === 'fr' ? "Plans d'affaires" : 'Business Plans',
+          href: '/admin/business-plans',
+          icon: FileText,
+        },
+        {
           name: language === 'fr' ? 'Contenu' : 'Content',
           href: '/admin/content',
           icon: Palette,
@@ -112,6 +128,11 @@ export default function AdminLayout() {
           href: '/admin/ai-studio',
           icon: Sparkles,
           shortcut: '⌘5',
+        },
+        {
+          name: language === 'fr' ? 'Intelligence abo.' : 'Sub. Intelligence',
+          href: '/admin/subscription-intelligence',
+          icon: TrendingUp,
         },
         {
           name: t('admin.nav.featureFlags'),

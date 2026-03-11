@@ -25,10 +25,10 @@ import { useTheme } from '../../../contexts/ThemeContext';
 import {
   aiConfigService,
   AIConfiguration,
-  AVAILABLE_MODELS,
   ProviderTestResponse,
   SectionOverride,
 } from '../../../lib/ai-config-service';
+import { modelRegistryService, ModelRegistryConfig, KnownModel } from '../../../lib/model-registry-service';
 import { cn } from '../../../lib/utils';
 
 // Section types for override configuration
@@ -101,6 +101,11 @@ export function AIStudioConfigPage() {
   const [sectionOverrides, setSectionOverrides] = useState<Record<string, SectionOverride>>({});
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
 
+  // Dynamic model registry
+  const [registryConfig, setRegistryConfig] = useState<ModelRegistryConfig | null>(null);
+  const [availableModels, setAvailableModels] = useState<Record<string, KnownModel[]>>({});
+  const [refreshingRegistry, setRefreshingRegistry] = useState(false);
+
   const t = {
     title: language === 'fr' ? 'Configuration IA' : 'AI Configuration',
     subtitle: language === 'fr'
@@ -141,15 +146,24 @@ export function AIStudioConfigPage() {
       setLoading(true);
       setError(null);
 
-      const [configData, overridesData] = await Promise.all([
+      const [configData, overridesData, registry] = await Promise.all([
         aiConfigService.getConfiguration(),
         aiConfigService.getSectionOverrides().catch(() => ({})),
+        modelRegistryService.getConfig().catch(() => null),
       ]);
 
       setConfig(configData);
       setSelectedActiveProvider(configData.activeProvider);
       setSelectedFallbacks(configData.fallbackProviders);
       setSectionOverrides(overridesData);
+
+      if (registry) {
+        setRegistryConfig(registry);
+        // Load available models from registry
+        if (registry.knownModels) {
+          setAvailableModels(registry.knownModels);
+        }
+      }
 
       // Initialize edited models with current values
       const models: Record<string, string> = {};
@@ -162,6 +176,37 @@ export function AIStudioConfigPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleRefreshRegistry = async () => {
+    try {
+      setRefreshingRegistry(true);
+      await modelRegistryService.refreshCache();
+      const registry = await modelRegistryService.getConfig();
+      setRegistryConfig(registry);
+      if (registry.knownModels) {
+        setAvailableModels(registry.knownModels);
+      }
+    } catch (err: any) {
+      setError(err.message || 'Failed to refresh model registry');
+    } finally {
+      setRefreshingRegistry(false);
+    }
+  };
+
+  /** Get model list for a provider — prefer dynamic registry, fall back to static */
+  const getModelsForProvider = (provider: string): string[] => {
+    const registryModels = availableModels[provider];
+    if (registryModels && registryModels.length > 0) {
+      return registryModels.map(m => m.id || m.name);
+    }
+    // Fallback to static list
+    const STATIC_MODELS: Record<string, string[]> = {
+      OpenAI: ['gpt-4.1', 'gpt-4.1-mini', 'o3', 'o4-mini', 'gpt-4o', 'gpt-4o-mini'],
+      Claude: ['claude-sonnet-4-6', 'claude-opus-4-6', 'claude-haiku-4-5'],
+      Gemini: ['gemini-2.5-flash', 'gemini-2.5-pro', 'gemini-2.0-flash'],
+    };
+    return STATIC_MODELS[provider] || [];
   };
 
   const handleSave = async () => {
@@ -314,6 +359,15 @@ export function AIStudioConfigPage() {
           </div>
 
           <div className="flex items-center gap-3">
+            <button
+              onClick={handleRefreshRegistry}
+              disabled={refreshingRegistry}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/10 text-sm font-medium text-slate-300 transition-colors disabled:opacity-50"
+              title={language === 'fr' ? 'Actualiser le registre de modèles' : 'Refresh model registry'}
+            >
+              <RefreshCw className={cn('w-4 h-4', refreshingRegistry && 'animate-spin')} />
+              {language === 'fr' ? 'Registre' : 'Registry'}
+            </button>
             <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-500/10 border border-slate-500/20">
               <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
               <span className="text-sm font-medium text-slate-400">
@@ -550,7 +604,7 @@ export function AIStudioConfigPage() {
                       onChange={(e) => setEditedModels({ ...editedModels, [providerName]: e.target.value })}
                       className="w-full px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                     >
-                      {AVAILABLE_MODELS[providerName]?.map((model) => (
+                      {getModelsForProvider(providerName).map((model) => (
                         <option key={model} value={model}>
                           {model}
                         </option>

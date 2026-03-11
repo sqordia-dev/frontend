@@ -18,6 +18,7 @@ import {
   Target,
   Loader2,
   Settings2,
+  Gauge,
 } from 'lucide-react';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { promptRegistryService } from '../../../lib/prompt-registry-service';
@@ -172,6 +173,18 @@ export function AIStudioDashboard() {
         ? 'Configurez les fournisseurs IA (OpenAI, Claude, Gemini) et les remplacements par section'
         : 'Configure AI providers (OpenAI, Claude, Gemini) and section-specific overrides',
     },
+    mlMonitoring: {
+      title: language === 'fr' ? 'Suivi ML' : 'ML Monitoring',
+      desc: language === 'fr'
+        ? 'Surveillez la qualité IA, entraînez les modèles ML et testez les prédictions'
+        : 'Monitor AI quality drift, train ML models, and test quality predictions',
+    },
+    telemetry: {
+      title: language === 'fr' ? 'Télémétrie IA' : 'AI Telemetry',
+      desc: language === 'fr'
+        ? 'Analysez les appels IA, latences, tokens et coûts par fournisseur et section'
+        : 'Analyze AI calls, latency, tokens, and costs by provider and section',
+    },
     stats: {
       totalPrompts: language === 'fr' ? 'Total Prompts' : 'Total Prompts',
       activePrompts: language === 'fr' ? 'Actifs' : 'Active',
@@ -301,7 +314,7 @@ export function AIStudioDashboard() {
             <Sparkles className="w-5 h-5 text-orange-500" />
             {t.features}
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             <FeatureCard
               title={t.prompts.title}
               description={t.prompts.desc}
@@ -338,6 +351,20 @@ export function AIStudioDashboard() {
               icon={Settings2}
               href="/admin/ai-studio/config"
               gradient="bg-gradient-to-br from-slate-500 to-gray-600"
+            />
+            <FeatureCard
+              title={t.mlMonitoring.title}
+              description={t.mlMonitoring.desc}
+              icon={Gauge}
+              href="/admin/ai-studio/ml-monitoring"
+              gradient="bg-gradient-to-br from-cyan-500 to-blue-600"
+            />
+            <FeatureCard
+              title={t.telemetry.title}
+              description={t.telemetry.desc}
+              icon={Activity}
+              href="/admin/ai-studio/telemetry"
+              gradient="bg-gradient-to-br from-violet-500 to-purple-600"
             />
           </div>
         </div>

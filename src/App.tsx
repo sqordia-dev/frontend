@@ -79,6 +79,7 @@ const AdminUsersPage = lazy(() => import('./pages/admin/AdminUsersPage'));
 const AdminUserDetailPage = lazy(() => import('./pages/admin/AdminUserDetailPage'));
 const AdminOrganizationsPage = lazy(() => import('./pages/admin/AdminOrganizationsPage'));
 const AdminOrganizationDetailPage = lazy(() => import('./pages/admin/AdminOrganizationDetailPage'));
+const AdminBusinessPlansPage = lazy(() => import('./pages/admin/AdminBusinessPlansPage'));
 const AdminAIPromptsPage = lazy(() => import('./pages/admin/AdminAIPromptsPage'));
 const AdminActivityLogsPage = lazy(() => import('./pages/admin/AdminActivityLogsPage'));
 const AdminSystemHealthPage = lazy(() => import('./pages/admin/AdminSystemHealthPage'));
@@ -93,6 +94,9 @@ const AIStudioAnalyticsPage = lazy(() => import('./pages/admin/ai-studio/AIStudi
 const AIStudioABTestingPage = lazy(() => import('./pages/admin/ai-studio/AIStudioABTestingPage'));
 const AIStudioQuestionsPage = lazy(() => import('./pages/admin/ai-studio/AIStudioQuestionsPage'));
 const AIStudioConfigPage = lazy(() => import('./pages/admin/ai-studio/AIStudioConfigPage'));
+const AIStudioMLMonitoringPage = lazy(() => import('./pages/admin/ai-studio/AIStudioMLMonitoringPage'));
+const AIStudioTelemetryPage = lazy(() => import('./pages/admin/ai-studio/AIStudioTelemetryPage'));
+const AdminSubscriptionIntelligencePage = lazy(() => import('./pages/admin/AdminSubscriptionIntelligencePage'));
 const AdminMetricsPage = lazy(() => import('./pages/admin/AdminMetricsPage'));
 const AdminIssueTrackerPage = lazy(() => import('./pages/admin/AdminIssueTrackerPage'));
 const AdminFeatureFlagsPage = lazy(() => import('./pages/admin/AdminFeatureFlagsPage'));
@@ -391,6 +395,7 @@ function App() {
               <Route path="users/:userId" element={<AdminUserDetailPage />} />
               <Route path="organizations" element={<AdminOrganizationsPage />} />
               <Route path="organizations/:organizationId" element={<AdminOrganizationDetailPage />} />
+              <Route path="business-plans" element={<AdminBusinessPlansPage />} />
               <Route path="templates" element={<AdminTemplatesPage />} />
               <Route path="prompts-studio" element={<AdminAIPromptsPage />} />
               <Route path="ai-prompts" element={<AdminAIPromptsPage />} />
@@ -406,6 +411,9 @@ function App() {
               <Route path="ai-studio/ab-testing" element={<AIStudioABTestingPage />} />
               <Route path="ai-studio/questions" element={<AIStudioQuestionsPage />} />
               <Route path="ai-studio/config" element={<AIStudioConfigPage />} />
+              <Route path="ai-studio/ml-monitoring" element={<AIStudioMLMonitoringPage />} />
+              <Route path="ai-studio/telemetry" element={<AIStudioTelemetryPage />} />
+              <Route path="subscription-intelligence" element={<AdminSubscriptionIntelligencePage />} />
               <Route path="feature-flags" element={<AdminFeatureFlagsPage />} />
               <Route path="bug-report" element={<AdminIssueTrackerPage />} />
               <Route path="email-templates" element={<AdminEmailTemplatesPage />} />
