@@ -31,3 +31,44 @@ export function unwrap<T>(data: unknown): T {
   }
   return data as T;
 }
+
+/**
+ * Group notifications into date buckets (today, yesterday, this week, this month, older).
+ */
+export function groupNotificationsByDate<T extends { createdAt: string }>(
+  notifications: T[],
+  _lang: string,
+  options?: { includeMonth?: boolean },
+): { label: string; labelFr: string; notifications: T[] }[] {
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const yesterday = new Date(today.getTime() - 86400000);
+  const weekAgo = new Date(today.getTime() - 7 * 86400000);
+  const monthAgo = new Date(today.getTime() - 30 * 86400000);
+  const includeMonth = options?.includeMonth ?? false;
+
+  const groups: Record<string, { label: string; labelFr: string; notifications: T[] }> = {};
+
+  for (const n of notifications) {
+    const date = new Date(n.createdAt);
+    let key: string, label: string, labelFr: string;
+
+    if (date >= today) {
+      key = 'today'; label = 'Today'; labelFr = "Aujourd'hui";
+    } else if (date >= yesterday) {
+      key = 'yesterday'; label = 'Yesterday'; labelFr = 'Hier';
+    } else if (date >= weekAgo) {
+      key = 'this-week'; label = 'This week'; labelFr = 'Cette semaine';
+    } else if (includeMonth && date >= monthAgo) {
+      key = 'this-month'; label = 'This month'; labelFr = 'Ce mois';
+    } else {
+      key = 'older'; label = 'Older'; labelFr = 'Plus ancien';
+    }
+
+    if (!groups[key]) groups[key] = { label, labelFr, notifications: [] };
+    groups[key].notifications.push(n);
+  }
+
+  const order = ['today', 'yesterday', 'this-week', ...(includeMonth ? ['this-month'] : []), 'older'];
+  return order.filter(k => groups[k]).map(k => groups[k]);
+}
