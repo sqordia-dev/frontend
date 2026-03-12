@@ -291,7 +291,7 @@ export default function Hero() {
                 </div>
                 {/* Screenshot */}
                 <img
-                  src="/images/screenshots/dashboard.png"
+                  src={isDark ? '/images/screenshots/dashboard-full-dark.png' : '/images/screenshots/dashboard-full.png'}
                   alt={t('landing.hero.screenshot.alt')}
                   className="w-full h-auto block"
                   width={1440}

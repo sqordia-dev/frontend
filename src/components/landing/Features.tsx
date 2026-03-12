@@ -14,6 +14,7 @@ interface Feature {
   accentColor: string;
   imageAltKey: string;
   screenshot: string;
+  screenshotDark: string;
 }
 
 const features: Feature[] = [
@@ -30,6 +31,7 @@ const features: Feature[] = [
     accentColor: '#FF6B00',
     imageAltKey: 'landing.features.step1.imageAlt',
     screenshot: '/images/screenshots/interview-section.png',
+    screenshotDark: '/images/screenshots/interview-section-dark.png',
   },
   {
     titleKey: 'landing.features.step2.title',
@@ -44,6 +46,7 @@ const features: Feature[] = [
     accentColor: '#14B8A6',
     imageAltKey: 'landing.features.step2.imageAlt',
     screenshot: '/images/screenshots/preview.png',
+    screenshotDark: '/images/screenshots/preview-dark.png',
   },
   {
     titleKey: 'landing.features.step3.title',
@@ -58,6 +61,7 @@ const features: Feature[] = [
     accentColor: '#F59E0B',
     imageAltKey: 'landing.features.step3.imageAlt',
     screenshot: '/images/screenshots/preview-section.png',
+    screenshotDark: '/images/screenshots/preview-section-dark.png',
   },
 ];
 
@@ -192,7 +196,7 @@ export default function Features() {
                       )}
                     >
                       <img
-                        src={feature.screenshot}
+                        src={isDark ? feature.screenshotDark : feature.screenshot}
                         alt={t(feature.imageAltKey)}
                         className="w-full h-auto block"
                         loading="lazy"

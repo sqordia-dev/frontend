@@ -16,6 +16,7 @@ interface Persona {
   taglineKey: string;
   benefitKeys: string[];
   screenshot: string;
+  screenshotDark: string;
   ctaKey: string;
   ctaLink: string;
 }
@@ -33,6 +34,7 @@ const personas: Persona[] = [
       'landing.personas.entrepreneur.benefit4',
     ],
     screenshot: '/images/screenshots/questionnaire.png',
+    screenshotDark: '/images/screenshots/questionnaire-dark.png',
     ctaKey: 'landing.personas.entrepreneur.cta',
     ctaLink: '/signup?persona=entrepreneur',
   },
@@ -48,6 +50,7 @@ const personas: Persona[] = [
       'landing.personas.consultant.benefit4',
     ],
     screenshot: '/images/screenshots/interview-section.png',
+    screenshotDark: '/images/screenshots/interview-section-dark.png',
     ctaKey: 'landing.personas.consultant.cta',
     ctaLink: '/signup?persona=consultant',
   },
@@ -63,6 +66,7 @@ const personas: Persona[] = [
       'landing.personas.obnl.benefit4',
     ],
     screenshot: '/images/screenshots/preview.png',
+    screenshotDark: '/images/screenshots/preview-dark.png',
     ctaKey: 'landing.personas.obnl.cta',
     ctaLink: '/signup?persona=obnl',
   },
@@ -238,7 +242,7 @@ export default function Personas() {
               )}
             >
               <img
-                src={activePersona.screenshot}
+                src={isDark ? activePersona.screenshotDark : activePersona.screenshot}
                 alt={t(`landing.personas.${activeTab}.screenshotAlt`)}
                 className="w-full h-auto block"
                 loading="lazy"

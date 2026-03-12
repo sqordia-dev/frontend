@@ -31,3 +31,6 @@ playwright/.cache/
 screenshots/
 playwright-report/
 .auth/
+
+# Local Netlify folder
+.netlify
