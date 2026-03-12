@@ -60,29 +60,31 @@ export function StepTitleEditor({ step, language, isEditMode, onSave }: StepTitl
     }
   };
 
+  const inputClass = cn(
+    'w-full px-3 py-2 text-sm border border-border rounded-lg bg-background text-foreground',
+    'focus:ring-2 focus:ring-[#FF6B00]/20 focus:border-[#FF6B00]/40 outline-none transition-all',
+    'placeholder:text-muted-foreground/50',
+  );
+
   if (!isEditing) {
     return (
-      <div className="flex items-center gap-4 flex-1">
-        <div className="w-10 h-10 rounded-full bg-[#FF6B00] text-white flex items-center justify-center font-bold flex-shrink-0">
-          {step.stepNumber}
-        </div>
+      <div className="flex items-center gap-2 flex-1 min-w-0">
         <div className="text-left flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <h3 className="font-semibold text-slate-900 truncate">{displayTitle}</h3>
+            <h3 className="text-sm font-semibold text-foreground truncate">{displayTitle}</h3>
             {isEditMode && (
               <button
                 onClick={handleStartEdit}
-                className="p-1 text-slate-400 hover:text-[#FF6B00] hover:bg-orange-50 rounded transition-colors opacity-0 group-hover:opacity-100"
+                className="p-1 text-muted-foreground/40 hover:text-[#FF6B00] hover:bg-[#FF6B00]/5 rounded transition-colors opacity-0 group-hover:opacity-100"
                 title="Edit step title"
               >
-                <Edit2 size={14} />
+                <Edit2 size={12} />
               </button>
             )}
           </div>
           {displayDescription && (
-            <p className="text-xs text-slate-500 truncate">{displayDescription}</p>
+            <p className="text-[11px] text-muted-foreground/60 truncate mt-0.5">{displayDescription}</p>
           )}
-          <p className="text-sm text-slate-500">{step.questionCount} questions</p>
         </div>
       </div>
     );
@@ -90,99 +92,88 @@ export function StepTitleEditor({ step, language, isEditMode, onSave }: StepTitl
 
   return (
     <div
-      className="flex-1 bg-white rounded-lg border border-slate-200 p-4 shadow-sm"
+      className="flex-1 bg-card rounded-xl border border-border p-4 shadow-sm"
       onClick={(e) => e.stopPropagation()}
     >
-      <div className="grid grid-cols-2 gap-4">
-        {/* French Title */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
-          <label className="block text-xs font-medium text-slate-600 mb-1">
+          <label className="block text-[11px] font-medium text-muted-foreground mb-1.5">
             Title (French) <span className="text-red-500">*</span>
           </label>
           <input
             type="text"
             value={formData.titleFR}
             onChange={(e) => setFormData({ ...formData, titleFR: e.target.value })}
-            className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#FF6B00] focus:border-transparent"
+            className={inputClass}
             placeholder="e.g. Vision & Mission"
           />
         </div>
 
-        {/* English Title */}
         <div>
-          <label className="block text-xs font-medium text-slate-600 mb-1">
+          <label className="block text-[11px] font-medium text-muted-foreground mb-1.5">
             Title (English)
           </label>
           <input
             type="text"
             value={formData.titleEN}
             onChange={(e) => setFormData({ ...formData, titleEN: e.target.value })}
-            className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#FF6B00] focus:border-transparent"
+            className={inputClass}
             placeholder="e.g. Vision & Mission"
           />
         </div>
 
-        {/* French Description */}
         <div>
-          <label className="block text-xs font-medium text-slate-600 mb-1">
+          <label className="block text-[11px] font-medium text-muted-foreground mb-1.5">
             Description (French)
           </label>
           <input
             type="text"
             value={formData.descriptionFR}
             onChange={(e) => setFormData({ ...formData, descriptionFR: e.target.value })}
-            className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#FF6B00] focus:border-transparent"
+            className={inputClass}
             placeholder="Step description..."
           />
         </div>
 
-        {/* English Description */}
         <div>
-          <label className="block text-xs font-medium text-slate-600 mb-1">
+          <label className="block text-[11px] font-medium text-muted-foreground mb-1.5">
             Description (English)
           </label>
           <input
             type="text"
             value={formData.descriptionEN}
             onChange={(e) => setFormData({ ...formData, descriptionEN: e.target.value })}
-            className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#FF6B00] focus:border-transparent"
+            className={inputClass}
             placeholder="Step description..."
           />
         </div>
+      </div>
 
-        {/* Actions */}
-        <div className="flex items-end justify-end gap-2">
-          <button
-            onClick={handleCancel}
-            disabled={isSaving}
-            className="px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg transition-colors flex items-center gap-1.5"
-          >
-            <X size={14} />
-            Cancel
-          </button>
-          <button
-            onClick={handleSave}
-            disabled={isSaving || !formData.titleFR}
-            className={cn(
-              'px-3 py-2 text-sm font-semibold text-white rounded-lg transition-colors flex items-center gap-1.5',
-              isSaving || !formData.titleFR
-                ? 'bg-slate-300 cursor-not-allowed'
-                : 'bg-[#FF6B00] hover:bg-orange-600'
-            )}
-          >
-            {isSaving ? (
-              <>
-                <Loader2 size={14} className="animate-spin" />
-                Saving...
-              </>
-            ) : (
-              <>
-                <Save size={14} />
-                Save
-              </>
-            )}
-          </button>
-        </div>
+      <div className="flex items-center justify-end gap-2 mt-3 pt-3 border-t border-border/50">
+        <button
+          onClick={handleCancel}
+          disabled={isSaving}
+          className="px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors flex items-center gap-1.5"
+        >
+          <X size={12} />
+          Cancel
+        </button>
+        <button
+          onClick={handleSave}
+          disabled={isSaving || !formData.titleFR}
+          className={cn(
+            'px-3 py-1.5 text-xs font-semibold text-white rounded-lg transition-colors flex items-center gap-1.5',
+            isSaving || !formData.titleFR
+              ? 'bg-muted text-muted-foreground cursor-not-allowed'
+              : 'bg-[#FF6B00] hover:bg-orange-600 shadow-sm'
+          )}
+        >
+          {isSaving ? (
+            <><Loader2 size={12} className="animate-spin" /> Saving...</>
+          ) : (
+            <><Save size={12} /> Save</>
+          )}
+        </button>
       </div>
     </div>
   );

@@ -3,9 +3,11 @@ import { useLocation } from 'react-router-dom';
 import { Header, Footer } from '../components/layout';
 import {
   Hero,
-  LogoCloud,
-  ValueProps,
+  StatsBar,
+  Personas,
   Features,
+  Comparison,
+  Pricing,
   Testimonials,
   FinalCTA,
   FAQ,
@@ -63,7 +65,7 @@ export default function LandingPageNew() {
       offers: {
         '@type': 'Offer',
         price: '0',
-        priceCurrency: 'USD',
+        priceCurrency: 'CAD',
       },
       aggregateRating: {
         '@type': 'AggregateRating',
@@ -168,20 +170,38 @@ export default function LandingPageNew() {
         {/* Hero Section */}
         <Hero />
 
-        {/* Logo Cloud - Social Proof */}
-        <LogoCloud />
+        {/* Stats Bar — animated counters */}
+        <StatsBar />
 
-        {/* Value Propositions */}
-        <ValueProps />
+        <div className="h-px bg-gradient-to-r from-transparent via-momentum-orange/20 to-transparent" />
+
+        {/* Personas — 3-tab section */}
+        <Personas />
+
+        <div className="h-px bg-gradient-to-r from-transparent via-momentum-orange/20 to-transparent" />
 
         {/* Features - How It Works */}
         <Features />
+
+        <div className="h-px bg-gradient-to-r from-transparent via-momentum-orange/20 to-transparent" />
+
+        {/* Comparison — Sqordia vs alternatives */}
+        <Comparison />
+
+        <div className="h-px bg-gradient-to-r from-transparent via-momentum-orange/20 to-transparent" />
+
+        {/* Pricing — 4 tiers */}
+        <Pricing />
+
+        <div className="h-px bg-gradient-to-r from-transparent via-momentum-orange/20 to-transparent" />
 
         {/* Testimonials */}
         <Testimonials />
 
         {/* Final CTA */}
         <FinalCTA />
+
+        <div className="h-px bg-gradient-to-r from-transparent via-momentum-orange/20 to-transparent" />
 
         {/* FAQ */}
         <FAQ />

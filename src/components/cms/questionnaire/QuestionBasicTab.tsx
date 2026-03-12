@@ -104,7 +104,7 @@ export function QuestionBasicTab({ question, isEditMode, onChange }: QuestionBas
       </div>
 
       {/* Type / Step / Persona / Order */}
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
           <label className={labelClass}>Question Type</label>
           <select

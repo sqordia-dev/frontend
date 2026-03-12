@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
-import { Menu, X, Brain, Sun, Moon } from 'lucide-react';
+import { Menu, X, Brain, Sun, Moon, ChevronDown } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
 import { usePublishedContent } from '@/hooks/usePublishedContent';
-import LanguageDropdown, { THEME_ORANGE } from './LanguageDropdown';
+import { cn } from '@/lib/utils';
+import LanguageDropdown from './LanguageDropdown';
 
 interface NavItem {
   label: string;
@@ -11,150 +12,165 @@ interface NavItem {
   isExternal?: boolean;
 }
 
+interface NavGroup {
+  label: string;
+  items: NavItem[];
+}
+
+type NavEntry = NavItem | NavGroup;
+
+function isNavGroup(entry: NavEntry): entry is NavGroup {
+  return 'items' in entry;
+}
+
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const headerRef = useRef<HTMLElement>(null);
+  const dropdownTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { theme, toggleTheme, t, language } = useTheme();
   const { getBlockContent } = usePublishedContent();
   const location = useLocation();
 
-  // CMS-driven logo URL (if set, renders img instead of Brain icon)
   const cmsLogoUrl = getBlockContent('global.branding.logo_url');
 
-  const navItems: NavItem[] = [
-    { label: t('nav.features'), href: '#features' },
-    { label: t('nav.howItWorks'), href: '#value-props' },
+  const navEntries: NavEntry[] = [
+    {
+      label: t('nav.product'),
+      items: [
+        { label: t('nav.features'), href: '#features' },
+        { label: t('nav.howItWorks'), href: '#personas' },
+        { label: t('nav.comparison'), href: '#comparison' },
+      ],
+    },
+    { label: t('nav.pricing'), href: '#pricing' },
+    {
+      label: t('nav.resources'),
+      items: [
+        { label: t('nav.faq'), href: '#faq' },
+        { label: t('nav.blog'), href: '/blog' },
+        { label: t('nav.help'), href: '/help' },
+      ],
+    },
     { label: t('nav.testimonials'), href: '#testimonials' },
-    { label: t('nav.faq'), href: '#faq' },
   ];
 
-  // Determine if we're on the landing page (including /fr)
   const isLandingPage = location.pathname === '/' || location.pathname === '/fr';
 
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20);
     };
-
     window.addEventListener('scroll', handleScroll);
     handleScroll();
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Close mobile menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (isMenuOpen && headerRef.current && !headerRef.current.contains(event.target as Node)) {
         setIsMenuOpen(false);
       }
     };
-
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isMenuOpen]);
 
-  // Close mobile menu on route change
   useEffect(() => {
     setIsMenuOpen(false);
+    setOpenDropdown(null);
   }, [location.pathname]);
 
   const isDark = theme === 'dark';
-
-  // Dynamic styling based on scroll and theme
-  const getHeaderStyles = () => {
-    if (isScrolled || !isLandingPage) {
-      return {
-        backgroundColor: isDark ? 'rgba(17, 24, 39, 0.95)' : 'rgba(255, 255, 255, 0.95)',
-        backdropFilter: 'blur(20px)',
-        borderBottom: `1px solid ${isDark ? 'rgba(75, 85, 99, 0.2)' : 'rgba(229, 231, 235, 0.5)'}`,
-        boxShadow: isDark ? '0 4px 20px rgba(0, 0, 0, 0.3)' : '0 4px 20px rgba(0, 0, 0, 0.08)',
-      };
-    }
-    return {
-      backgroundColor: 'transparent',
-      backdropFilter: 'none',
-      borderBottom: 'none',
-      boxShadow: 'none',
-    };
-  };
-
-  const getTextColor = () => {
-    if (isScrolled || !isLandingPage) {
-      return isDark ? '#F3F4F6' : '#1C1D1A';
-    }
-    return isDark ? '#FFFFFF' : '#1C1D1A';
-  };
+  const isFloating = isScrolled || !isLandingPage;
 
   const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     if (href.startsWith('#')) {
       e.preventDefault();
-
-      // If not on landing page, navigate to landing page with hash (preserve locale)
       if (!isLandingPage) {
         const base = language === 'fr' ? '/fr' : '/';
         window.location.href = `${base}${href}`;
         return;
       }
-
-      // Smooth scroll to section
       const element = document.querySelector(href);
       if (element) {
         const headerHeight = headerRef.current?.offsetHeight || 80;
         const elementPosition = element.getBoundingClientRect().top + window.scrollY;
         const offsetPosition = elementPosition - headerHeight - 20;
-
         window.scrollTo({
           top: Math.max(0, offsetPosition),
           behavior: 'smooth',
         });
       }
       setIsMenuOpen(false);
+      setOpenDropdown(null);
     }
   };
 
-  const headerStyles = getHeaderStyles();
-  const textColor = getTextColor();
+  const handleDropdownEnter = (label: string) => {
+    if (dropdownTimeoutRef.current) clearTimeout(dropdownTimeoutRef.current);
+    setOpenDropdown(label);
+  };
+
+  const handleDropdownLeave = () => {
+    dropdownTimeoutRef.current = setTimeout(() => setOpenDropdown(null), 150);
+  };
+
+  const textColor = isDark ? '#F3F4F6' : '#1C1D1A';
 
   return (
-    <header
-      ref={headerRef}
-      className="fixed top-0 w-full z-50 transition-all duration-500 ease-out"
-      style={headerStyles}
-    >
-      <nav className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20">
+    <header ref={headerRef} className="fixed top-0 left-0 right-0 z-50">
+      {/* Floating glass pill nav */}
+      <nav
+        className={cn(
+          'transition-all duration-500 ease-out',
+          isFloating
+            ? cn(
+                'mx-3 sm:mx-4 lg:mx-auto mt-3 max-w-[1100px] rounded-2xl backdrop-blur-xl border',
+                isDark
+                  ? 'bg-[#161714]/80 border-white/[0.06] shadow-[0_8px_30px_rgba(0,0,0,0.25)]'
+                  : 'bg-white/80 border-gray-200/40 shadow-[0_8px_30px_rgba(0,0,0,0.06)]',
+              )
+            : '',
+        )}
+      >
+        <div
+          className={cn(
+            'flex items-center justify-between transition-all duration-500',
+            isFloating ? 'h-14 px-4 sm:px-5' : 'h-20 container mx-auto px-4 sm:px-6 lg:px-8',
+          )}
+        >
           {/* Logo */}
           <Link
             to={language === 'fr' ? '/fr' : '/'}
-            className="flex items-center gap-3 group"
+            className="flex items-center gap-2.5 group"
             aria-label="Sqordia - Home"
           >
             {cmsLogoUrl ? (
               <img
                 src={cmsLogoUrl}
                 alt="Sqordia"
-                className="w-11 h-11 rounded-xl object-contain transition-all duration-300 group-hover:scale-110"
+                className={cn(
+                  'rounded-xl object-contain transition-all duration-300 group-hover:scale-105',
+                  isFloating ? 'w-8 h-8' : 'w-10 h-10',
+                )}
               />
             ) : (
               <div
-                className="relative p-2.5 rounded-xl transition-all duration-300 shadow-lg group-hover:scale-110"
-                style={{
-                  backgroundColor: isScrolled ? THEME_ORANGE : (isDark ? '#FFFFFF' : THEME_ORANGE),
-                }}
+                className={cn(
+                  'rounded-xl bg-momentum-orange flex items-center justify-center transition-all duration-300 group-hover:scale-105 shadow-sm',
+                  isFloating ? 'w-8 h-8' : 'w-10 h-10',
+                )}
               >
-                <Brain
-                  className="transition-colors duration-300"
-                  size={26}
-                  style={{
-                    color: isScrolled ? '#FFFFFF' : (isDark ? THEME_ORANGE : '#FFFFFF'),
-                  }}
-                  aria-hidden="true"
-                />
+                <Brain className="text-white" size={isFloating ? 18 : 22} aria-hidden="true" />
               </div>
             )}
             <span
-              className="text-2xl font-bold font-heading transition-all duration-300 tracking-tight"
+              className={cn(
+                'font-bold font-heading tracking-tight transition-all duration-300',
+                isFloating ? 'text-xl' : 'text-2xl',
+              )}
               style={{ color: textColor }}
             >
               Sqordia
@@ -162,165 +178,248 @@ export default function Header() {
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center space-x-1">
-            {navItems.map((item) => (
-              <a
-                key={item.href}
-                href={item.href}
-                onClick={(e) => handleNavClick(e, item.href)}
-                className="px-4 py-2.5 rounded-lg transition-all duration-300 font-medium text-sm hover:bg-white/10 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-[#FF6B00] focus:ring-offset-2 focus:ring-offset-transparent"
-                style={{ color: textColor }}
-              >
-                {item.label}
-              </a>
-            ))}
+          <div className="hidden lg:flex items-center gap-0.5">
+            {navEntries.map((entry) =>
+              isNavGroup(entry) ? (
+                <div
+                  key={entry.label}
+                  className="relative"
+                  onMouseEnter={() => handleDropdownEnter(entry.label)}
+                  onMouseLeave={handleDropdownLeave}
+                  onFocus={() => handleDropdownEnter(entry.label)}
+                  onBlur={(e) => {
+                    if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+                      handleDropdownLeave();
+                    }
+                  }}
+                >
+                  <button
+                    className={cn(
+                      'flex items-center gap-1 px-3.5 py-2 rounded-lg transition-all duration-200 font-medium text-sm',
+                      'hover:bg-black/[0.04] dark:hover:bg-white/[0.06]',
+                      'focus:outline-none focus:ring-2 focus:ring-momentum-orange/40',
+                    )}
+                    style={{ color: textColor }}
+                    aria-expanded={openDropdown === entry.label}
+                    aria-haspopup="true"
+                    onClick={() => setOpenDropdown(openDropdown === entry.label ? null : entry.label)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Escape') {
+                        setOpenDropdown(null);
+                        e.currentTarget.focus();
+                      }
+                    }}
+                  >
+                    {entry.label}
+                    <ChevronDown
+                      size={14}
+                      className={cn(
+                        'transition-transform duration-200 opacity-50',
+                        openDropdown === entry.label && 'rotate-180',
+                      )}
+                    />
+                  </button>
+
+                  {/* Dropdown */}
+                  {openDropdown === entry.label && (
+                    <div
+                      className={cn(
+                        'absolute top-full left-0 mt-2 py-2 min-w-[200px] rounded-xl backdrop-blur-xl border shadow-lg animate-slide-down',
+                        isDark
+                          ? 'bg-[#1C1D1A]/90 border-white/[0.08]'
+                          : 'bg-white/90 border-gray-200/50',
+                      )}
+                    >
+                      {entry.items.map((item) => (
+                        <a
+                          key={item.href}
+                          href={item.href}
+                          onClick={(e) => handleNavClick(e, item.href)}
+                          className={cn(
+                            'block px-4 py-2.5 text-sm font-medium transition-colors duration-150',
+                            isDark
+                              ? 'text-gray-300 hover:text-white hover:bg-white/[0.06]'
+                              : 'text-gray-600 hover:text-gray-900 hover:bg-black/[0.04]',
+                          )}
+                        >
+                          {item.label}
+                        </a>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <a
+                  key={entry.href}
+                  href={entry.href}
+                  onClick={(e) => handleNavClick(e, entry.href)}
+                  className={cn(
+                    'px-3.5 py-2 rounded-lg transition-all duration-200 font-medium text-sm',
+                    'hover:bg-black/[0.04] dark:hover:bg-white/[0.06]',
+                    'focus:outline-none focus:ring-2 focus:ring-momentum-orange/40',
+                  )}
+                  style={{ color: textColor }}
+                >
+                  {entry.label}
+                </a>
+              ),
+            )}
           </div>
 
           {/* Desktop Actions */}
-          <div className="hidden lg:flex items-center gap-3">
-            {/* Language dropdown: flag + EN/FR + chevron */}
-            <LanguageDropdown
-              textColor={textColor}
-              isDark={isDark}
-              variant="default"
-            />
-            {/* Theme Toggle */}
+          <div className="hidden lg:flex items-center gap-2">
+            <LanguageDropdown variant="toggle" />
             <button
               onClick={toggleTheme}
-              className="p-2.5 rounded-lg transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-[#FF6B00] focus:ring-offset-2"
+              className={cn(
+                'p-2 rounded-lg transition-all duration-200',
+                'hover:bg-black/[0.04] dark:hover:bg-white/[0.06]',
+                'focus:outline-none focus:ring-2 focus:ring-momentum-orange/40',
+              )}
               style={{ color: textColor }}
               aria-label={isDark ? t('nav.switchToLight') : t('nav.switchToDark')}
             >
-              {isDark ? (
-                <Sun size={20} aria-hidden="true" />
-              ) : (
-                <Moon size={20} aria-hidden="true" />
-              )}
+              {isDark ? <Sun size={18} aria-hidden="true" /> : <Moon size={18} aria-hidden="true" />}
             </button>
-
-            {/* Login Link */}
             <Link
               to="/login"
-              className="px-5 py-2.5 rounded-lg transition-all duration-300 font-medium text-sm focus:outline-none focus:ring-2 focus:ring-[#FF6B00] focus:ring-offset-2"
+              className={cn(
+                'px-4 py-2 rounded-lg transition-all duration-200 font-medium text-sm',
+                'hover:bg-black/[0.04] dark:hover:bg-white/[0.06]',
+                'focus:outline-none focus:ring-2 focus:ring-momentum-orange/40',
+              )}
               style={{ color: textColor }}
             >
               {t('nav.login')}
             </Link>
-
-            {/* Get Started CTA */}
             <Link
               to="/register"
-              className="px-6 py-2.5 rounded-xl font-semibold text-sm transition-all duration-300 text-white focus:outline-none focus:ring-4 focus:ring-[#FF6B00]/50 focus:ring-offset-2"
-              style={{
-                backgroundColor: THEME_ORANGE,
-                boxShadow: '0 4px 14px rgba(255, 107, 0, 0.3)',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = '#E55F00';
-                e.currentTarget.style.transform = 'translateY(-2px)';
-                e.currentTarget.style.boxShadow = '0 6px 20px rgba(255, 107, 0, 0.4)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = THEME_ORANGE;
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = '0 4px 14px rgba(255, 107, 0, 0.3)';
-              }}
+              className="px-5 py-2 rounded-xl font-semibold text-sm text-white bg-momentum-orange hover:bg-[#E55F00] transition-all duration-200 shadow-[0_2px_8px_rgba(255,107,0,0.3)] hover:shadow-[0_4px_16px_rgba(255,107,0,0.4)] hover:-translate-y-px focus:outline-none focus:ring-2 focus:ring-momentum-orange/50"
             >
               {t('nav.getstarted')}
             </Link>
           </div>
 
-          {/* Mobile Menu Button */}
-          <div className="flex lg:hidden items-center gap-2">
-            <LanguageDropdown
-              textColor={textColor}
-              isDark={isDark}
-              variant="compact"
-              onSelect={() => setIsMenuOpen(false)}
-            />
+          {/* Mobile Controls */}
+          <div className="flex lg:hidden items-center gap-1.5">
+            <LanguageDropdown variant="toggle" onSelect={() => setIsMenuOpen(false)} />
             <button
               onClick={toggleTheme}
-              className="p-2.5 rounded-lg transition-all duration-300 min-h-[44px] min-w-[44px] flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-[#FF6B00]"
+              className="p-2 rounded-lg min-h-[44px] min-w-[44px] flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-momentum-orange/40"
               style={{ color: textColor }}
               aria-label={isDark ? t('nav.switchToLight') : t('nav.switchToDark')}
             >
-              {isDark ? <Sun size={20} aria-hidden="true" /> : <Moon size={20} aria-hidden="true" />}
+              {isDark ? <Sun size={18} aria-hidden="true" /> : <Moon size={18} aria-hidden="true" />}
             </button>
-
             <button
-              className="p-2.5 rounded-lg transition-all duration-300 min-h-[44px] min-w-[44px] flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-[#FF6B00]"
+              className="p-2 rounded-lg min-h-[44px] min-w-[44px] flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-momentum-orange/40"
               style={{ color: textColor }}
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               aria-label={isMenuOpen ? t('nav.closeMenu') : t('nav.openMenu')}
               aria-expanded={isMenuOpen}
             >
-              {isMenuOpen ? (
-                <X size={24} aria-hidden="true" />
-              ) : (
-                <Menu size={24} aria-hidden="true" />
-              )}
+              {isMenuOpen ? <X size={22} aria-hidden="true" /> : <Menu size={22} aria-hidden="true" />}
             </button>
           </div>
         </div>
       </nav>
 
-      {/* Mobile Menu */}
+      {/* Mobile Menu — glass card */}
       {isMenuOpen && (
         <div
-          className="lg:hidden animate-slide-down border-t"
-          style={{
-            backgroundColor: isDark ? 'rgba(17, 24, 39, 0.98)' : 'rgba(255, 255, 255, 0.98)',
-            backdropFilter: 'blur(20px)',
-            borderColor: isDark ? 'rgba(75, 85, 99, 0.3)' : 'rgba(229, 231, 235, 0.5)',
-          }}
+          className={cn(
+            'lg:hidden mt-2 mx-3 sm:mx-4 rounded-2xl backdrop-blur-xl border animate-slide-down',
+            isDark
+              ? 'bg-[#161714]/95 border-white/[0.06] shadow-[0_8px_30px_rgba(0,0,0,0.3)]'
+              : 'bg-white/95 border-gray-200/40 shadow-[0_8px_30px_rgba(0,0,0,0.08)]',
+          )}
         >
-          <div className="container mx-auto px-6 py-6 flex flex-col space-y-1">
-            {navItems.map((item) => (
-              <a
-                key={item.href}
-                href={item.href}
-                onClick={(e) => handleNavClick(e, item.href)}
-                className="px-4 py-4 rounded-xl transition-all duration-300 font-medium min-h-[44px] flex items-center focus:outline-none focus:ring-2 focus:ring-[#FF6B00]"
-                style={{
-                  color: isDark ? '#F3F4F6' : '#1C1D1A',
-                }}
-              >
-                {item.label}
-              </a>
-            ))}
+          <div className="p-4 flex flex-col gap-1">
+            {navEntries.map((entry) =>
+              isNavGroup(entry) ? (
+                <div key={entry.label}>
+                  <button
+                    onClick={() => setOpenDropdown(openDropdown === entry.label ? null : entry.label)}
+                    className={cn(
+                      'w-full flex items-center justify-between px-3 py-3 rounded-xl transition-all duration-200 font-medium min-h-[44px]',
+                      'hover:bg-black/[0.04] dark:hover:bg-white/[0.06]',
+                      'focus:outline-none focus:ring-2 focus:ring-momentum-orange/40',
+                    )}
+                    style={{ color: isDark ? '#F3F4F6' : '#1C1D1A' }}
+                  >
+                    {entry.label}
+                    <ChevronDown
+                      size={16}
+                      className={cn(
+                        'transition-transform duration-200 opacity-50',
+                        openDropdown === entry.label && 'rotate-180',
+                      )}
+                    />
+                  </button>
+                  {openDropdown === entry.label && (
+                    <div className="pl-3 space-y-0.5">
+                      {entry.items.map((item) => (
+                        <a
+                          key={item.href}
+                          href={item.href}
+                          onClick={(e) => handleNavClick(e, item.href)}
+                          className={cn(
+                            'block px-3 py-2.5 rounded-lg transition-all duration-200 text-sm font-medium',
+                            isDark
+                              ? 'text-gray-400 hover:text-white hover:bg-white/[0.06]'
+                              : 'text-gray-500 hover:text-gray-900 hover:bg-black/[0.04]',
+                          )}
+                        >
+                          {item.label}
+                        </a>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <a
+                  key={entry.href}
+                  href={entry.href}
+                  onClick={(e) => handleNavClick(e, entry.href)}
+                  className={cn(
+                    'px-3 py-3 rounded-xl transition-all duration-200 font-medium min-h-[44px] flex items-center',
+                    'hover:bg-black/[0.04] dark:hover:bg-white/[0.06]',
+                    'focus:outline-none focus:ring-2 focus:ring-momentum-orange/40',
+                  )}
+                  style={{ color: isDark ? '#F3F4F6' : '#1C1D1A' }}
+                >
+                  {entry.label}
+                </a>
+              ),
+            )}
 
-            {/* Mobile Language - same dropdown design */}
-            <div className="pt-4 mt-2 border-t" style={{ borderColor: isDark ? 'rgba(75, 85, 99, 0.3)' : 'rgba(229, 231, 235, 0.5)' }}>
-              <span className="text-sm font-medium block mb-2" style={{ color: isDark ? '#9CA3AF' : '#6B7280' }}>
-                Language
+            {/* Mobile Language */}
+            <div className={cn('pt-3 mt-2 border-t', isDark ? 'border-white/[0.06]' : 'border-gray-200/50')}>
+              <span className={cn('text-xs font-medium block mb-2 px-3', isDark ? 'text-gray-500' : 'text-gray-400')}>
+                {t('nav.language')}
               </span>
-              <LanguageDropdown
-                textColor={isDark ? '#F3F4F6' : '#1C1D1A'}
-                isDark={isDark}
-                variant="default"
-                onSelect={() => setIsMenuOpen(false)}
-              />
+              <div className="px-3">
+                <LanguageDropdown variant="toggle" onSelect={() => setIsMenuOpen(false)} />
+              </div>
             </div>
+
             {/* Mobile Actions */}
-            <div className="pt-4 mt-2 space-y-2 border-t" style={{ borderColor: isDark ? 'rgba(75, 85, 99, 0.3)' : 'rgba(229, 231, 235, 0.5)' }}>
+            <div className={cn('pt-3 mt-2 space-y-2 border-t', isDark ? 'border-white/[0.06]' : 'border-gray-200/50')}>
               <Link
                 to="/login"
-                className="block w-full px-4 py-3.5 text-center rounded-xl transition-all duration-300 font-medium border"
-                style={{
-                  color: isDark ? '#F3F4F6' : '#1C1D1A',
-                  borderColor: isDark ? 'rgba(75, 85, 99, 0.3)' : 'rgba(229, 231, 235, 0.8)',
-                }}
+                className={cn(
+                  'block w-full px-4 py-3 text-center rounded-xl font-medium border transition-all duration-200',
+                  isDark
+                    ? 'text-white border-white/[0.1] hover:bg-white/[0.06]'
+                    : 'text-gray-800 border-gray-200 hover:bg-gray-50',
+                )}
                 onClick={() => setIsMenuOpen(false)}
               >
                 {t('nav.login')}
               </Link>
               <Link
                 to="/register"
-                className="block w-full px-6 py-3.5 text-center rounded-xl font-semibold transition-all duration-300 text-white"
-                style={{
-                  backgroundColor: THEME_ORANGE,
-                  boxShadow: '0 4px 14px rgba(255, 107, 0, 0.3)',
-                }}
+                className="block w-full px-4 py-3 text-center rounded-xl font-semibold text-white bg-momentum-orange hover:bg-[#E55F00] transition-all duration-200 shadow-[0_2px_8px_rgba(255,107,0,0.3)]"
                 onClick={() => setIsMenuOpen(false)}
               >
                 {t('nav.getstarted')}
@@ -332,24 +431,14 @@ export default function Header() {
 
       <style>{`
         @keyframes slide-down {
-          from {
-            opacity: 0;
-            transform: translateY(-10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
+          from { opacity: 0; transform: translateY(-8px); }
+          to { opacity: 1; transform: translateY(0); }
         }
-
         .animate-slide-down {
-          animation: slide-down 0.3s ease-out;
+          animation: slide-down 0.25s ease-out;
         }
-
         @media (prefers-reduced-motion: reduce) {
-          .animate-slide-down {
-            animation: none !important;
-          }
+          .animate-slide-down { animation: none !important; }
         }
       `}</style>
     </header>

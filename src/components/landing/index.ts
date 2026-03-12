@@ -5,3 +5,7 @@ export { default as Testimonials } from './Testimonials';
 export { default as LogoCloud } from './LogoCloud';
 export { default as FinalCTA } from './FinalCTA';
 export { default as FAQ } from './FAQ';
+export { default as StatsBar } from './StatsBar';
+export { default as Personas } from './Personas';
+export { default as Comparison } from './Comparison';
+export { default as Pricing } from './Pricing';

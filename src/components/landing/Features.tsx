@@ -14,8 +14,6 @@ interface Feature {
   accentColor: string;
   imageAltKey: string;
   screenshot: string;
-  /** Optional light/dark video paths — when present, renders <video> instead of <img> */
-  video?: { light: string; dark: string };
 }
 
 const features: Feature[] = [
@@ -31,11 +29,7 @@ const features: Feature[] = [
     ],
     accentColor: '#FF6B00',
     imageAltKey: 'landing.features.step1.imageAlt',
-    screenshot: '/images/screenshots/questionnaire.png',
-    video: {
-      light: '/images/screenshots/questionnaire-light.webm',
-      dark: '/images/screenshots/questionnaire-dark.webm',
-    },
+    screenshot: '/images/screenshots/interview-section.png',
   },
   {
     titleKey: 'landing.features.step2.title',
@@ -50,10 +44,6 @@ const features: Feature[] = [
     accentColor: '#14B8A6',
     imageAltKey: 'landing.features.step2.imageAlt',
     screenshot: '/images/screenshots/preview.png',
-    video: {
-      light: '/images/screenshots/preview-light.webm',
-      dark: '/images/screenshots/preview-dark.webm',
-    },
   },
   {
     titleKey: 'landing.features.step3.title',
@@ -67,11 +57,7 @@ const features: Feature[] = [
     ],
     accentColor: '#F59E0B',
     imageAltKey: 'landing.features.step3.imageAlt',
-    screenshot: '/images/screenshots/dashboard.png',
-    video: {
-      light: '/images/screenshots/dashboard-light.webm',
-      dark: '/images/screenshots/dashboard-dark.webm',
-    },
+    screenshot: '/images/screenshots/preview-section.png',
   },
 ];
 
@@ -83,12 +69,22 @@ export default function Features() {
   return (
     <section
       id="features"
-      className="py-section-lg bg-gray-50 dark:bg-slate-900"
+      className={cn(
+        'relative py-12 sm:py-16 md:py-24 lg:py-32',
+        isDark ? 'bg-[#161714]' : 'bg-gray-50',
+      )}
       aria-labelledby="features-heading"
     >
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Noise texture */}
+      <div
+        className="absolute inset-0 pointer-events-none opacity-[0.02]"
+        style={{ backgroundImage: "url('/noise.svg')", backgroundRepeat: 'repeat' }}
+        aria-hidden="true"
+      />
+
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Header */}
-        <div className="text-center max-w-3xl mx-auto mb-16 md:mb-24">
+        <div className="text-center max-w-3xl mx-auto mb-8 sm:mb-12 md:mb-16 lg:mb-24">
           <ScrollReveal>
             <p className="text-label-sm uppercase tracking-widest text-momentum-orange mb-4">
               {t('landing.features.badge')}
@@ -97,32 +93,42 @@ export default function Features() {
           <ScrollReveal delay={0.1}>
             <h2
               id="features-heading"
-              className="text-display-md sm:text-display-lg font-heading mb-6 text-strategy-blue dark:text-white"
+              className={cn(
+                'text-2xl sm:text-3xl md:text-display-md lg:text-display-lg font-heading mb-4 sm:mb-6',
+                isDark ? 'text-white' : 'text-strategy-blue',
+              )}
             >
               {t('landing.features.title')}{' '}
-              <span className="text-momentum-orange">
+              <span className="bg-gradient-to-r from-momentum-orange to-amber-500 bg-clip-text text-transparent">
                 {t('landing.features.title.highlight')}
               </span>
             </h2>
           </ScrollReveal>
           <ScrollReveal delay={0.15}>
-            <p className="text-body-lg text-gray-500 dark:text-gray-400">
+            <p className={cn('text-body-lg', isDark ? 'text-gray-400' : 'text-gray-500')}>
               {t('landing.features.subtitle')}
             </p>
           </ScrollReveal>
         </div>
 
         {/* Features */}
-        <div className="space-y-24 md:space-y-32">
+        <div className="space-y-12 sm:space-y-16 md:space-y-24 lg:space-y-32">
           {features.map((feature, index) => {
             const isReversed = index % 2 === 1;
 
             return (
               <ScrollReveal key={index} delay={index * 0.1}>
-                <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+                <div className="grid lg:grid-cols-2 gap-8 sm:gap-12 lg:gap-16 items-center">
                   {/* Content card */}
                   <div className={cn(isReversed && 'lg:order-2')}>
-                    <Card className="overflow-hidden rounded-2xl border border-border shadow-card flex flex-row bg-white dark:bg-gray-800">
+                    <Card
+                      className={cn(
+                        'overflow-hidden rounded-2xl border flex flex-row backdrop-blur-sm transition-all duration-300 hover:-translate-y-1',
+                        isDark
+                          ? 'bg-white/[0.03] border-white/[0.08] shadow-[0_4px_24px_rgba(0,0,0,0.3)] hover:bg-white/[0.05] hover:border-white/[0.12]'
+                          : 'bg-white/80 border-gray-200/60 shadow-[0_4px_24px_rgba(0,0,0,0.06)] hover:shadow-[0_8px_32px_rgba(0,0,0,0.1)]',
+                      )}
+                    >
                       {/* Left accent bar */}
                       <div
                         className="w-1 min-h-full flex-shrink-0 rounded-l-full"
@@ -139,15 +145,20 @@ export default function Features() {
                             >
                               {index + 1}
                             </Badge>
-                            <span className="text-label-sm uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                            <span className={cn('text-label-sm uppercase tracking-wide', isDark ? 'text-gray-400' : 'text-gray-500')}>
                               {getBlockContent(`landing.features.step${index + 1}.subtitle`, t(feature.subtitleKey))}
                             </span>
                           </div>
                         </CardHeader>
-                        <CardTitle className="text-2xl sm:text-3xl md:text-4xl font-bold font-heading mb-4 leading-tight text-strategy-blue dark:text-white">
+                        <CardTitle
+                          className={cn(
+                            'text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold font-heading mb-3 sm:mb-4 leading-tight',
+                            isDark ? 'text-white' : 'text-strategy-blue',
+                          )}
+                        >
                           {getBlockContent(`landing.features.step${index + 1}.title`, t(feature.titleKey))}
                         </CardTitle>
-                        <CardDescription className="text-body-lg mb-6 leading-relaxed text-gray-500 dark:text-gray-400">
+                        <CardDescription className={cn('text-body-lg mb-6 leading-relaxed', isDark ? 'text-gray-400' : 'text-gray-500')}>
                           {getBlockContent(`landing.features.step${index + 1}.description`, t(feature.descriptionKey))}
                         </CardDescription>
                         <CardContent className="p-0">
@@ -159,7 +170,7 @@ export default function Features() {
                                   className="flex-shrink-0 mt-0.5 text-green-500"
                                   aria-hidden="true"
                                 />
-                                <span className="text-gray-700 dark:text-gray-300">
+                                <span className={cn('text-gray-700', isDark && 'text-gray-300')}>
                                   {getBlockContent(`landing.features.step${index + 1}.benefit${benefitIndex + 1}`, t(benefitKey))}
                                 </span>
                               </li>
@@ -170,44 +181,24 @@ export default function Features() {
                     </Card>
                   </div>
 
-                  {/* Product visual (video or screenshot) */}
+                  {/* Product screenshot */}
                   <div className={cn(isReversed && 'lg:order-1')}>
-                    <div className="rounded-2xl overflow-hidden shadow-elevated border border-border">
-                      {feature.video ? (
-                        <video
-                          key={isDark ? 'dark' : 'light'}
-                          autoPlay
-                          loop
-                          muted
-                          playsInline
-                          poster={feature.screenshot}
-                          className="w-full h-auto block"
-                          width={1440}
-                          height={900}
-                          aria-label={t(feature.imageAltKey)}
-                        >
-                          <source
-                            src={isDark ? feature.video.dark : feature.video.light}
-                            type="video/webm"
-                          />
-                          <img
-                            src={feature.screenshot}
-                            alt={t(feature.imageAltKey)}
-                            className="w-full h-auto block"
-                            width={1440}
-                            height={900}
-                          />
-                        </video>
-                      ) : (
-                        <img
-                          src={feature.screenshot}
-                          alt={t(feature.imageAltKey)}
-                          className="w-full h-auto block"
-                          loading="lazy"
-                          width={1440}
-                          height={900}
-                        />
+                    <div
+                      className={cn(
+                        'rounded-2xl overflow-hidden border transition-all duration-300 hover:-translate-y-1',
+                        isDark
+                          ? 'border-white/[0.08] shadow-[0_8px_32px_rgba(0,0,0,0.4)]'
+                          : 'border-gray-200/60 shadow-[0_8px_32px_rgba(0,0,0,0.08)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.12)]',
                       )}
+                    >
+                      <img
+                        src={feature.screenshot}
+                        alt={t(feature.imageAltKey)}
+                        className="w-full h-auto block"
+                        loading="lazy"
+                        width={1440}
+                        height={900}
+                      />
                     </div>
                   </div>
                 </div>

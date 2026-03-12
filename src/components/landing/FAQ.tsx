@@ -60,12 +60,19 @@ export default function FAQ() {
   return (
     <section
       id="faq"
-      className="py-section-lg bg-gray-50 dark:bg-slate-900"
+      className="relative py-12 sm:py-16 md:py-24 lg:py-32 bg-gray-50 dark:bg-[#0B0C0A]"
       aria-labelledby="faq-heading"
     >
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Noise texture */}
+      <div
+        className="absolute inset-0 pointer-events-none opacity-[0.02]"
+        style={{ backgroundImage: "url('/noise.svg')", backgroundRepeat: 'repeat' }}
+        aria-hidden="true"
+      />
+
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Header */}
-        <div className="text-center max-w-3xl mx-auto mb-16 md:mb-20">
+        <div className="text-center max-w-3xl mx-auto mb-8 sm:mb-12 md:mb-16 lg:mb-20">
           <ScrollReveal>
             <p className="text-label-sm uppercase tracking-widest text-amber-600 dark:text-amber-400 mb-4 font-semibold">
               {getBlockContent('landing.faq.badge', t('landing.faq.badge'))}
@@ -74,10 +81,10 @@ export default function FAQ() {
           <ScrollReveal delay={0.1}>
             <h2
               id="faq-heading"
-              className="text-display-md sm:text-display-lg font-heading mb-6 text-strategy-blue dark:text-white"
+              className="text-2xl sm:text-3xl md:text-display-md lg:text-display-lg font-heading mb-4 sm:mb-6 text-strategy-blue dark:text-white"
             >
               {getBlockContent('landing.faq.title', t('landing.faq.title'))}{' '}
-              <span className="text-momentum-orange">
+              <span className="bg-gradient-to-r from-momentum-orange to-amber-500 bg-clip-text text-transparent">
                 {getBlockContent('landing.faq.title_highlight', t('landing.faq.title.highlight'))}
               </span>
             </h2>
@@ -100,10 +107,10 @@ export default function FAQ() {
                   <StaggerItem key={index}>
                     <div
                       className={cn(
-                        'rounded-xl border overflow-hidden transition-all duration-200 bg-white dark:bg-gray-800',
+                        'rounded-xl border overflow-hidden transition-all duration-200 backdrop-blur-sm bg-white/80 dark:bg-white/[0.03]',
                         isOpen
-                          ? 'border-momentum-orange shadow-sm'
-                          : 'border-border',
+                          ? 'border-momentum-orange/50 shadow-[0_2px_12px_rgba(255,107,0,0.08)]'
+                          : 'border-gray-200/50 dark:border-white/[0.06]',
                       )}
                     >
                       <button
@@ -156,7 +163,7 @@ export default function FAQ() {
                             transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
                             className="overflow-hidden"
                           >
-                            <div className="px-5 pb-5 md:px-7 md:pb-6 pl-[68px] md:pl-[76px] text-body-sm leading-relaxed text-gray-600 dark:text-gray-300">
+                            <div className="px-5 pb-5 md:px-7 md:pb-6 pl-5 sm:pl-[68px] md:pl-[76px] text-body-sm leading-relaxed text-gray-600 dark:text-gray-300">
                               <p>{cmsItem.answer}</p>
                             </div>
                           </motion.div>
@@ -173,10 +180,10 @@ export default function FAQ() {
                   <StaggerItem key={index}>
                     <div
                       className={cn(
-                        'rounded-xl border overflow-hidden transition-all duration-200 bg-white dark:bg-gray-800',
+                        'rounded-xl border overflow-hidden transition-all duration-200 backdrop-blur-sm bg-white/80 dark:bg-white/[0.03]',
                         isOpen
-                          ? 'border-momentum-orange shadow-sm'
-                          : 'border-border',
+                          ? 'border-momentum-orange/50 shadow-[0_2px_12px_rgba(255,107,0,0.08)]'
+                          : 'border-gray-200/50 dark:border-white/[0.06]',
                       )}
                     >
                       <button
@@ -229,7 +236,7 @@ export default function FAQ() {
                             transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
                             className="overflow-hidden"
                           >
-                            <div className="px-5 pb-5 md:px-7 md:pb-6 pl-[68px] md:pl-[76px] text-body-sm leading-relaxed text-gray-600 dark:text-gray-300">
+                            <div className="px-5 pb-5 md:px-7 md:pb-6 pl-5 sm:pl-[68px] md:pl-[76px] text-body-sm leading-relaxed text-gray-600 dark:text-gray-300">
                               <p>{t(item.answerKey)}</p>
                             </div>
                           </motion.div>
