@@ -13,3 +13,21 @@ import { twMerge } from "tailwind-merge";
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
+
+/**
+ * Unwraps a Result<T> response from the backend API.
+ * If the response is a Result envelope ({ isSuccess, value, error }),
+ * extracts the value or throws. Otherwise returns data as-is.
+ */
+export function unwrap<T>(data: unknown): T {
+  if (data && typeof data === 'object' && 'isSuccess' in data) {
+    const result = data as { isSuccess: boolean; value?: T; error?: { message: string } };
+    if (result.isSuccess && result.value !== undefined) {
+      return result.value;
+    }
+    if (!result.isSuccess) {
+      throw new Error(result.error?.message || 'Operation failed');
+    }
+  }
+  return data as T;
+}
