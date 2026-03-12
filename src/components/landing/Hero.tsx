@@ -289,14 +289,14 @@ export default function Hero() {
                     sqordia.com
                   </div>
                 </div>
-                {/* Screenshot — crop tall full-page capture to 16:10 viewport */}
-                <div className="aspect-[16/10] overflow-hidden">
-                  <img
-                    src={isDark ? '/images/screenshots/dashboard-full-dark.png' : '/images/screenshots/dashboard-full.png'}
-                    alt={t('landing.hero.screenshot.alt')}
-                    className="w-full h-full object-cover object-top"
-                  />
-                </div>
+                {/* Screenshot */}
+                <img
+                  src={isDark ? '/images/screenshots/dashboard-dark.png' : '/images/screenshots/dashboard.png'}
+                  alt={t('landing.hero.screenshot.alt')}
+                  className="w-full h-auto block"
+                  width={2880}
+                  height={1800}
+                />
               </div>
             </motion.div>
           </motion.div>
