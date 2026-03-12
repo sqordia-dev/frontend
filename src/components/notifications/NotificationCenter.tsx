@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -12,57 +12,12 @@ import {
 } from 'lucide-react';
 import { useNotifications } from '../../contexts/NotificationContext';
 import { useTheme } from '../../contexts/ThemeContext';
+import { groupNotificationsByDate } from '../../lib/utils';
 import NotificationItem from './NotificationItem';
-import type { Notification, NotificationGroup } from '../../lib/notification-types';
 
 interface NotificationCenterProps {
   isOpen: boolean;
   onClose: () => void;
-}
-
-function groupNotificationsByDate(
-  notifications: Notification[],
-  lang: string,
-): NotificationGroup[] {
-  const now = new Date();
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const yesterday = new Date(today.getTime() - 86400000);
-  const weekAgo = new Date(today.getTime() - 7 * 86400000);
-
-  const groups: Record<string, NotificationGroup> = {};
-
-  for (const n of notifications) {
-    const date = new Date(n.createdAt);
-    let key: string;
-    let label: string;
-    let labelFr: string;
-
-    if (date >= today) {
-      key = 'today';
-      label = 'Today';
-      labelFr = "Aujourd'hui";
-    } else if (date >= yesterday) {
-      key = 'yesterday';
-      label = 'Yesterday';
-      labelFr = 'Hier';
-    } else if (date >= weekAgo) {
-      key = 'this-week';
-      label = 'This week';
-      labelFr = 'Cette semaine';
-    } else {
-      key = 'older';
-      label = 'Older';
-      labelFr = 'Plus ancien';
-    }
-
-    if (!groups[key]) {
-      groups[key] = { label, labelFr, notifications: [] };
-    }
-    groups[key].notifications.push(n);
-  }
-
-  const order = ['today', 'yesterday', 'this-week', 'older'];
-  return order.filter(k => groups[k]).map(k => groups[k]);
 }
 
 export default function NotificationCenter({ isOpen, onClose }: NotificationCenterProps) {
@@ -96,9 +51,14 @@ export default function NotificationCenter({ isOpen, onClose }: NotificationCent
     return () => document.removeEventListener('keydown', handleKey);
   }, [isOpen, onClose]);
 
-  const filteredNotifications =
-    filter === 'unread' ? notifications.filter(n => !n.isRead) : notifications;
-  const groups = groupNotificationsByDate(filteredNotifications, language);
+  const filteredNotifications = useMemo(
+    () => filter === 'unread' ? notifications.filter(n => !n.isRead) : notifications,
+    [filter, notifications],
+  );
+  const groups = useMemo(
+    () => groupNotificationsByDate(filteredNotifications, language),
+    [filteredNotifications, language],
+  );
 
   return (
     <AnimatePresence>

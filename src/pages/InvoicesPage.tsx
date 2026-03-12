@@ -99,7 +99,6 @@ export default function InvoicesPage() {
   const darkBg = '#0B0C0A';
   const darkCard = '#161714';
   const darkBorder = 'rgba(255,255,255,0.08)';
-  const darkBorderSubtle = 'rgba(255,255,255,0.06)';
 
   useEffect(() => {
     loadInvoices();
