@@ -1,22 +1,12 @@
 import { apiClient } from './api-client';
+import { unwrap } from './utils';
 import type {
   Notification,
   NotificationListResponse,
   UnreadCountResponse,
+  NotificationPreference,
+  NotificationPreferencesListResponse,
 } from './notification-types';
-
-function unwrap<T>(data: unknown): T {
-  if (data && typeof data === 'object' && 'isSuccess' in data) {
-    const result = data as { isSuccess: boolean; value?: T; error?: { message: string } };
-    if (result.isSuccess && result.value !== undefined) {
-      return result.value;
-    }
-    if (!result.isSuccess) {
-      throw new Error(result.error?.message || 'Operation failed');
-    }
-  }
-  return data as T;
-}
 
 export const notificationService = {
   async getNotifications(
@@ -62,5 +52,25 @@ export const notificationService = {
 
   async deleteNotification(id: string): Promise<void> {
     await apiClient.delete(`/api/v1/notifications/${id}`);
+  },
+
+  // Preferences
+  async getPreferences(): Promise<NotificationPreference[]> {
+    const response = await apiClient.get<NotificationPreferencesListResponse>(
+      '/api/v1/notifications/preferences',
+    );
+    return unwrap<NotificationPreferencesListResponse>(response.data).preferences;
+  },
+
+  async updatePreferences(
+    preferences: Array<{
+      notificationType: string;
+      inAppEnabled: boolean;
+      emailEnabled: boolean;
+      emailFrequency: string;
+      soundEnabled: boolean;
+    }>,
+  ): Promise<void> {
+    await apiClient.put('/api/v1/notifications/preferences', { preferences });
   },
 };

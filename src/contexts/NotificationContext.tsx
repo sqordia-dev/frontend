@@ -1,11 +1,14 @@
 import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
-import type { Notification } from '../lib/notification-types';
+import type { Notification, NotificationPreference } from '../lib/notification-types';
 import { notificationService } from '../lib/notification-service';
+import { startConnection, stopConnection, getConnection } from '../lib/signalr-service';
+import { playNotificationSound } from '../lib/notification-sound';
 
 interface NotificationContextValue {
   unreadCount: number;
   notifications: Notification[];
   isLoading: boolean;
+  isRealtime: boolean;
   refreshNotifications: () => Promise<void>;
   markAsRead: (id: string) => Promise<void>;
   markAllAsRead: () => Promise<void>;
@@ -14,20 +17,23 @@ interface NotificationContextValue {
 
 const NotificationContext = createContext<NotificationContextValue | null>(null);
 
-const POLL_INTERVAL = 30_000; // 30 seconds
+const POLL_INTERVAL = 60_000; // 60s fallback (SignalR is primary)
 
 export function NotificationProvider({ children }: { children: React.ReactNode }) {
   const [unreadCount, setUnreadCount] = useState(0);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isRealtime, setIsRealtime] = useState(false);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const mountedRef = useRef(true);
+  const prefsRef = useRef<NotificationPreference[]>([]);
 
   const fetchUnreadCount = useCallback(async () => {
     try {
       const result = await notificationService.getUnreadCount();
-      setUnreadCount(result.count);
+      if (mountedRef.current) setUnreadCount(result.count);
     } catch {
-      // Silently fail - user may not be authenticated
+      // Silently fail
     }
   }, []);
 
@@ -38,12 +44,14 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
         notificationService.getUnreadCount(),
         notificationService.getNotifications(1, 10),
       ]);
-      setUnreadCount(countResult.count);
-      setNotifications(listResult.items);
+      if (mountedRef.current) {
+        setUnreadCount(countResult.count);
+        setNotifications(listResult.items);
+      }
     } catch {
       // Silently fail
     } finally {
-      setIsLoading(false);
+      if (mountedRef.current) setIsLoading(false);
     }
   }, []);
 
@@ -72,15 +80,84 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
   const deleteNotification = useCallback(async (id: string) => {
     try {
       await notificationService.deleteNotification(id);
-      const wasUnread = notifications.find(n => n.id === id && !n.isRead);
-      setNotifications(prev => prev.filter(n => n.id !== id));
-      if (wasUnread) setUnreadCount(prev => Math.max(0, prev - 1));
+      setNotifications(prev => {
+        const wasUnread = prev.some(n => n.id === id && !n.isRead);
+        if (wasUnread) setUnreadCount(c => Math.max(0, c - 1));
+        return prev.filter(n => n.id !== id);
+      });
     } catch {
       // Silently fail
     }
-  }, [notifications]);
+  }, []);
 
-  // Initial fetch + polling for unread count
+  // SignalR connection
+  useEffect(() => {
+    const token = localStorage.getItem('accessToken');
+    if (!token) return;
+
+    let cancelled = false;
+
+    // Load preferences for sound setting
+    notificationService.getPreferences()
+      .then(prefs => { prefsRef.current = prefs; })
+      .catch(() => { /* non-critical */ });
+
+    const connectSignalR = async () => {
+      try {
+        await startConnection();
+        const conn = getConnection();
+        if (!conn || cancelled) return;
+
+        const handleReceive = (notification: Notification) => {
+          if (!mountedRef.current) return;
+          setNotifications(prev => {
+            if (prev.some(n => n.id === notification.id)) return prev;
+            return [notification, ...prev].slice(0, 20);
+          });
+          setUnreadCount(prev => prev + 1);
+
+          // Play sound if enabled for this notification type
+          const pref = prefsRef.current.find(p => p.notificationType === notification.type);
+          if (!pref || pref.soundEnabled) {
+            playNotificationSound();
+          }
+        };
+
+        const handleCountUpdated = (count: number) => {
+          if (mountedRef.current) setUnreadCount(count);
+        };
+
+        conn.on('ReceiveNotification', handleReceive);
+        conn.on('UnreadCountUpdated', handleCountUpdated);
+        conn.onreconnected(() => {
+          if (cancelled) return;
+          setIsRealtime(true);
+          fetchUnreadCount();
+        });
+        conn.onclose(() => {
+          if (cancelled || !mountedRef.current) return;
+          setIsRealtime(false);
+        });
+
+        setIsRealtime(true);
+      } catch {
+        setIsRealtime(false);
+      }
+    };
+
+    connectSignalR();
+
+    return () => {
+      cancelled = true;
+      const conn = getConnection();
+      if (conn) {
+        conn.off('ReceiveNotification');
+        conn.off('UnreadCountUpdated');
+      }
+    };
+  }, [fetchUnreadCount]);
+
+  // Fallback polling (slower interval since SignalR is primary)
   useEffect(() => {
     fetchUnreadCount();
     intervalRef.current = setInterval(fetchUnreadCount, POLL_INTERVAL);
@@ -89,12 +166,22 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     };
   }, [fetchUnreadCount]);
 
+  // Cleanup on unmount
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      stopConnection();
+    };
+  }, []);
+
   return (
     <NotificationContext.Provider
       value={{
         unreadCount,
         notifications,
         isLoading,
+        isRealtime,
         refreshNotifications,
         markAsRead,
         markAllAsRead,

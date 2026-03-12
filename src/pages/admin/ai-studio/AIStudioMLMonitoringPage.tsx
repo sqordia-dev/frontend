@@ -418,7 +418,7 @@ export function AIStudioMLMonitoringPage() {
                       {driftReport.overallHealthy ? t.healthy : t.unhealthy}
                     </p>
                     <p className="text-sm text-gray-500 dark:text-gray-400">
-                      {driftReport.alerts.length} {language === 'fr' ? 'alerte(s)' : 'alert(s)'}
+                      {(driftReport.alerts?.length ?? 0)} {language === 'fr' ? 'alerte(s)' : 'alert(s)'}
                     </p>
                   </div>
                 </div>
@@ -426,11 +426,11 @@ export function AIStudioMLMonitoringPage() {
                 <div className="flex flex-wrap gap-6 md:ml-auto text-sm">
                   <div>
                     <span className="text-gray-500 dark:text-gray-400">{t.monitoredSections}</span>
-                    <p className="font-semibold text-gray-900 dark:text-white">{driftReport.monitoredSections}</p>
+                    <p className="font-semibold text-gray-900 dark:text-white">{driftReport.monitoredSections ?? 0}</p>
                   </div>
                   <div>
                     <span className="text-gray-500 dark:text-gray-400">{t.totalSamples}</span>
-                    <p className="font-semibold text-gray-900 dark:text-white">{driftReport.totalSamples.toLocaleString()}</p>
+                    <p className="font-semibold text-gray-900 dark:text-white">{(driftReport.totalSamples ?? 0).toLocaleString()}</p>
                   </div>
                   <div>
                     <span className="text-gray-500 dark:text-gray-400">{t.lastChecked}</span>
@@ -440,7 +440,7 @@ export function AIStudioMLMonitoringPage() {
               </motion.div>
 
               {/* Alert cards */}
-              {driftReport.alerts.length === 0 ? (
+              {(!driftReport.alerts || driftReport.alerts.length === 0) ? (
                 <motion.div
                   variants={fadeUp}
                   className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-12 text-center"
@@ -450,7 +450,7 @@ export function AIStudioMLMonitoringPage() {
                 </motion.div>
               ) : (
                 <motion.div variants={stagger} initial="hidden" animate="show" className="space-y-3">
-                  {driftReport.alerts.map((alert, i) => (
+                  {(driftReport.alerts ?? []).map((alert, i) => (
                     <motion.div
                       key={`${alert.sectionType}-${alert.metric}-${i}`}
                       variants={fadeUp}

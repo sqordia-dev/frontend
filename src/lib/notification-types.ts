@@ -16,10 +16,15 @@ export type NotificationCategory =
   | 'AI'
   | 'Collaboration';
 
+export type NotificationPriority = 'Low' | 'Normal' | 'High' | 'Urgent';
+
+export type NotificationFrequency = 'Instant' | 'DailyDigest' | 'WeeklyDigest' | 'Disabled';
+
 export interface Notification {
   id: string;
   type: NotificationType;
   category: NotificationCategory;
+  priority: NotificationPriority;
   titleFr: string;
   titleEn: string;
   messageFr: string;
@@ -29,6 +34,7 @@ export interface Notification {
   actionUrl: string | null;
   metadataJson: string | null;
   relatedEntityId: string | null;
+  groupKey: string | null;
   createdAt: string;
 }
 
@@ -42,4 +48,24 @@ export interface NotificationListResponse {
 
 export interface UnreadCountResponse {
   count: number;
+}
+
+export interface NotificationPreference {
+  id: string;
+  notificationType: NotificationType;
+  inAppEnabled: boolean;
+  emailEnabled: boolean;
+  emailFrequency: NotificationFrequency;
+  soundEnabled: boolean;
+}
+
+export interface NotificationPreferencesListResponse {
+  preferences: NotificationPreference[];
+}
+
+// Grouping helpers
+export interface NotificationGroup {
+  label: string;
+  labelFr: string;
+  notifications: Notification[];
 }

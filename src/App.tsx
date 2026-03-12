@@ -56,6 +56,7 @@ const CompliancePage = lazy(() => import('./pages/CompliancePage'));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 const BugReportPage = lazy(() => import('./pages/BugReportPage'));
 const NotificationsPage = lazy(() => import('./pages/NotificationsPage'));
+const NotificationPreferencesPage = lazy(() => import('./pages/NotificationPreferencesPage'));
 
 // Financial Projections (Previsio) pages
 const FinancialProjectionsPage = lazy(() => import('./pages/financial/FinancialProjectionsPage'));
@@ -320,6 +321,7 @@ function App() {
               }
             >
               <Route index element={<NotificationsPage />} />
+              <Route path="preferences" element={<NotificationPreferencesPage />} />
             </Route>
 
             {/* Subscription management */}

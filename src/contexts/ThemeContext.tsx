@@ -666,7 +666,6 @@ const translations = {
     // Navigation
     'nav.examplePlans': 'Example Plans',
     'nav.about': 'About',
-    'nav.blog': 'Blog',
     'nav.contact': 'Contact',
     // CTA
     'cta.title': 'Ready to bring your business vision to life?',
@@ -2764,7 +2763,6 @@ const translations = {
     // Navigation
     'nav.examplePlans': 'Exemples de plans',
     'nav.about': 'À propos',
-    'nav.blog': 'Blog',
     'nav.contact': 'Contact',
     // CTA
     'cta.title': 'Prêt à donner vie à votre vision d\'affaires?',

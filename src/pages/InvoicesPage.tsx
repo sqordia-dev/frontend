@@ -96,6 +96,10 @@ export default function InvoicesPage() {
   const momentumOrange = '#FF6B00';
   const momentumOrangeHover = '#E55F00';
   const lightAIGrey = '#F4F7FA';
+  const darkBg = '#0B0C0A';
+  const darkCard = '#161714';
+  const darkBorder = 'rgba(255,255,255,0.08)';
+  const darkBorderSubtle = 'rgba(255,255,255,0.06)';
 
   useEffect(() => {
     loadInvoices();
@@ -247,12 +251,12 @@ export default function InvoicesPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: theme === 'dark' ? '#111827' : lightAIGrey }}>
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: theme === 'dark' ? darkBg : lightAIGrey }}>
         <div className="text-center">
           <div className="relative w-16 h-16 mx-auto mb-4">
             <div
               className="absolute inset-0 rounded-full border-4"
-              style={{ borderColor: theme === 'dark' ? '#374151' : '#E5E7EB' }}
+              style={{ borderColor: theme === 'dark' ? darkBorder : '#E5E7EB' }}
             />
             <div
               className="absolute inset-0 rounded-full border-4 border-t-transparent animate-spin"
@@ -266,7 +270,7 @@ export default function InvoicesPage() {
   }
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: theme === 'dark' ? '#111827' : lightAIGrey }}>
+    <div className="min-h-screen" style={{ backgroundColor: theme === 'dark' ? darkBg : lightAIGrey }}>
       <SEO
         title={language === 'fr' ? "Factures | Sqordia" : "Invoices | Sqordia"}
         description={language === 'fr' ? "Consultez vos factures Sqordia." : "View your Sqordia invoices."}
@@ -290,7 +294,7 @@ export default function InvoicesPage() {
           <div className="flex items-center gap-4 mb-2">
             <div
               className="w-12 h-12 rounded-xl flex items-center justify-center"
-              style={{ backgroundColor: theme === 'dark' ? strategyBlue : strategyBlue }}
+              style={{ backgroundColor: theme === 'dark' ? darkCard : strategyBlue }}
             >
               <Receipt className="w-6 h-6 text-white" />
             </div>
@@ -325,15 +329,15 @@ export default function InvoicesPage() {
         {/* Empty State */}
         {invoices.length === 0 ? (
           <div
-            className="rounded-2xl border-2 p-12 text-center shadow-lg"
+            className="rounded-2xl border p-12 text-center shadow-lg"
             style={{
-              backgroundColor: theme === 'dark' ? '#1F2937' : '#FFFFFF',
-              borderColor: theme === 'dark' ? '#374151' : strategyBlue
+              backgroundColor: theme === 'dark' ? darkCard : '#FFFFFF',
+              borderColor: theme === 'dark' ? darkBorder : '#E5E7EB'
             }}
           >
             <div
               className="w-20 h-20 mx-auto mb-6 rounded-2xl flex items-center justify-center"
-              style={{ backgroundColor: theme === 'dark' ? '#374151' : lightAIGrey }}
+              style={{ backgroundColor: theme === 'dark' ? 'rgba(255,255,255,0.04)' : lightAIGrey }}
             >
               <FileText className="w-10 h-10" style={{ color: theme === 'dark' ? '#9CA3AF' : '#6B7280' }} />
             </div>
@@ -363,10 +367,10 @@ export default function InvoicesPage() {
             {/* Stats Summary */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
               <div
-                className="rounded-xl border-2 p-4"
+                className="rounded-xl border p-4"
                 style={{
-                  backgroundColor: theme === 'dark' ? '#1F2937' : '#FFFFFF',
-                  borderColor: theme === 'dark' ? '#374151' : '#E5E7EB'
+                  backgroundColor: theme === 'dark' ? darkCard : '#FFFFFF',
+                  borderColor: theme === 'dark' ? darkBorder : '#E5E7EB'
                 }}
               >
                 <div className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">{t.totalInvoices}</div>
@@ -375,10 +379,10 @@ export default function InvoicesPage() {
                 </div>
               </div>
               <div
-                className="rounded-xl border-2 p-4"
+                className="rounded-xl border p-4"
                 style={{
-                  backgroundColor: theme === 'dark' ? '#1F2937' : '#FFFFFF',
-                  borderColor: theme === 'dark' ? '#374151' : '#E5E7EB'
+                  backgroundColor: theme === 'dark' ? darkCard : '#FFFFFF',
+                  borderColor: theme === 'dark' ? darkBorder : '#E5E7EB'
                 }}
               >
                 <div className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">{t.paid}</div>
@@ -387,10 +391,10 @@ export default function InvoicesPage() {
                 </div>
               </div>
               <div
-                className="rounded-xl border-2 p-4"
+                className="rounded-xl border p-4"
                 style={{
-                  backgroundColor: theme === 'dark' ? '#1F2937' : '#FFFFFF',
-                  borderColor: theme === 'dark' ? '#374151' : '#E5E7EB'
+                  backgroundColor: theme === 'dark' ? darkCard : '#FFFFFF',
+                  borderColor: theme === 'dark' ? darkBorder : '#E5E7EB'
                 }}
               >
                 <div className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">{t.totalSpent}</div>
@@ -407,17 +411,17 @@ export default function InvoicesPage() {
 
             {/* Invoice Table/Cards */}
             <div
-              className="rounded-2xl border-2 overflow-hidden shadow-lg"
+              className="rounded-2xl border overflow-hidden shadow-lg"
               style={{
-                backgroundColor: theme === 'dark' ? '#1F2937' : '#FFFFFF',
-                borderColor: theme === 'dark' ? '#374151' : strategyBlue
+                backgroundColor: theme === 'dark' ? darkCard : '#FFFFFF',
+                borderColor: theme === 'dark' ? darkBorder : '#E5E7EB'
               }}
             >
               {/* Desktop Table */}
               <div className="hidden md:block">
                 <table className="w-full table-fixed">
                   <thead>
-                    <tr style={{ backgroundColor: theme === 'dark' ? '#111827' : lightAIGrey }}>
+                    <tr style={{ backgroundColor: theme === 'dark' ? darkBg : lightAIGrey }}>
                       <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider w-[28%]" style={{ color: theme === 'dark' ? '#9CA3AF' : strategyBlue }}>
                         {t.invoice}
                       </th>
@@ -448,14 +452,14 @@ export default function InvoicesPage() {
                           key={invoice.id}
                           className="transition-colors"
                           style={{ backgroundColor: 'transparent' }}
-                          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = theme === 'dark' ? 'rgba(55, 65, 81, 0.5)' : 'rgba(244, 247, 250, 0.5)'}
+                          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = theme === 'dark' ? 'rgba(255,255,255,0.03)' : 'rgba(244, 247, 250, 0.5)'}
                           onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                         >
                           <td className="px-4 py-4">
                             <div className="flex items-center gap-2">
                               <div
                                 className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
-                                style={{ backgroundColor: theme === 'dark' ? '#374151' : lightAIGrey }}
+                                style={{ backgroundColor: theme === 'dark' ? 'rgba(255,255,255,0.04)' : lightAIGrey }}
                               >
                                 <FileText className="w-4 h-4" style={{ color: momentumOrange }} />
                               </div>
@@ -562,7 +566,7 @@ export default function InvoicesPage() {
                         <div className="flex items-center gap-3">
                           <div
                             className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
-                            style={{ backgroundColor: theme === 'dark' ? '#374151' : lightAIGrey }}
+                            style={{ backgroundColor: theme === 'dark' ? 'rgba(255,255,255,0.04)' : lightAIGrey }}
                           >
                             <FileText className="w-5 h-5" style={{ color: momentumOrange }} />
                           </div>

@@ -82,6 +82,10 @@ export default function SubscriptionPage() {
   const momentumOrange = '#FF6B00';
   const momentumOrangeHover = '#E55F00';
   const lightAIGrey = '#F4F7FA';
+  const darkBg = '#0B0C0A';
+  const darkCard = '#161714';
+  const darkBorder = 'rgba(255,255,255,0.08)';
+  const darkBorderSubtle = 'rgba(255,255,255,0.06)';
 
   useEffect(() => {
     loadSubscription();
@@ -96,7 +100,6 @@ export default function SubscriptionPage() {
       if (document.visibilityState === 'visible') {
         const now = Date.now();
         if (now - lastCheck > minInterval) {
-          console.log('Page became visible, refreshing subscription...');
           lastCheck = now;
           loadSubscription(true);
         }
@@ -106,7 +109,6 @@ export default function SubscriptionPage() {
     const handleFocus = () => {
       const now = Date.now();
       if (now - lastCheck > minInterval) {
-        console.log('Window regained focus, refreshing subscription...');
         lastCheck = now;
         loadSubscription(true);
       }
@@ -128,8 +130,6 @@ export default function SubscriptionPage() {
                          document.referrer.includes('/checkout/success');
     
     if (fromCheckout) {
-      console.log('Detected checkout return, starting subscription polling...');
-      
       const originalPlanId = subscription?.subscriptionPlanId || subscription?.plan?.id;
       let lastSeenPlanId = originalPlanId;
       
@@ -140,44 +140,28 @@ export default function SubscriptionPage() {
       const pollSubscription = async () => {
         try {
           attempts++;
-          console.log(`Polling subscription update (attempt ${attempts}/${maxAttempts})...`);
-          
           const sub = await subscriptionService.getCurrent();
           
           if (sub) {
             const newPlanId = sub.subscriptionPlanId || sub.plan?.id;
             const newPlanName = sub.plan?.name;
             
-            console.log('Subscription data:', {
-              subscriptionId: sub.id,
-              planId: newPlanId,
-              planName: newPlanName,
-              status: sub.status,
-              lastSeenPlanId,
-              originalPlanId
-            });
-            
             setSubscription(sub);
             setError(null);
             
             if (newPlanId && newPlanId !== lastSeenPlanId && newPlanId !== originalPlanId) {
-              console.log('✅ Plan changed detected! New plan:', newPlanName);
               return;
             }
             
             lastSeenPlanId = newPlanId;
-          } else {
-            console.log('No subscription found yet...');
           }
           
           if (attempts < maxAttempts) {
             setTimeout(pollSubscription, pollInterval);
           } else {
-            console.log('Max polling attempts reached. Forcing final refresh...');
             await loadSubscription(true);
           }
         } catch (err) {
-          console.error('Error polling subscription:', err);
           if (attempts < maxAttempts) {
             setTimeout(pollSubscription, pollInterval);
           } else {
@@ -207,34 +191,19 @@ export default function SubscriptionPage() {
       }
       setError(null);
       
-      console.log('Loading subscription...');
       const sub = await subscriptionService.getCurrent();
-      console.log('Subscription loaded:', sub ? {
-        id: sub.id,
-        planId: sub.subscriptionPlanId,
-        planName: sub.plan?.name,
-        status: sub.status
-      } : 'No subscription');
-      
+
       if (sub) {
         const currentPlanId = subscription?.subscriptionPlanId || subscription?.plan?.id;
         const newPlanId = sub.subscriptionPlanId || sub.plan?.id;
-        
+
         if (currentPlanId !== newPlanId || !subscription) {
-          console.log('Subscription plan changed or new subscription:', {
-            from: currentPlanId,
-            to: newPlanId,
-            planName: sub.plan?.name
-          });
           setSubscription(sub);
-        } else {
-          console.log('Subscription unchanged, skipping update');
         }
       } else {
         setSubscription(null);
       }
     } catch (err: any) {
-      console.error('Failed to load subscription:', err);
       if (err.response?.status === 400 || err.response?.status === 404) {
         setSubscription(null);
         setError(null);
@@ -489,7 +458,7 @@ export default function SubscriptionPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: theme === 'dark' ? '#111827' : lightAIGrey }}>
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: theme === 'dark' ? darkBg : lightAIGrey }}>
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-4 mx-auto mb-4" style={{ borderColor: lightAIGrey, borderTopColor: momentumOrange }}></div>
           <p className="text-gray-600 dark:text-gray-400">Loading subscription...</p>
@@ -500,7 +469,7 @@ export default function SubscriptionPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center px-4" style={{ backgroundColor: theme === 'dark' ? '#111827' : lightAIGrey }}>
+      <div className="min-h-screen flex items-center justify-center px-4" style={{ backgroundColor: theme === 'dark' ? darkBg : lightAIGrey }}>
         <div className="text-center max-w-md">
           <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4" style={{ backgroundColor: theme === 'dark' ? '#7F1D1D' : '#FEE2E2' }}>
             <AlertCircle className="w-8 h-8" style={{ color: theme === 'dark' ? '#FCA5A5' : '#DC2626' }} />
@@ -529,9 +498,9 @@ export default function SubscriptionPage() {
 
   if (!subscription) {
     return (
-      <div className="min-h-screen py-12 px-4 sm:px-6 lg:px-8" style={{ backgroundColor: theme === 'dark' ? '#111827' : lightAIGrey }}>
+      <div className="min-h-screen py-12 px-4 sm:px-6 lg:px-8" style={{ backgroundColor: theme === 'dark' ? darkBg : lightAIGrey }}>
         <div className="max-w-4xl mx-auto">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border-2 p-12 text-center" style={{ borderColor: theme === 'dark' ? '#374151' : strategyBlue }}>
+          <div className="rounded-2xl shadow-xl border p-12 text-center" style={{ backgroundColor: theme === 'dark' ? darkCard : '#FFFFFF', borderColor: theme === 'dark' ? darkBorder : '#E5E7EB' }}>
             <div className="w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6" style={{ backgroundColor: strategyBlue }}>
               <CreditCard className="w-10 h-10 text-white" />
             </div>
@@ -560,7 +529,7 @@ export default function SubscriptionPage() {
   const isActive = subscription.status === 'Active';
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: theme === 'dark' ? '#111827' : lightAIGrey }}>
+    <div className="min-h-screen" style={{ backgroundColor: theme === 'dark' ? darkBg : lightAIGrey }}>
       <SEO
         title={language === 'fr' 
           ? "Abonnement | Sqordia"
@@ -593,10 +562,10 @@ export default function SubscriptionPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left Sidebar - Key Info */}
           <div className="lg:col-span-1">
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border-2 p-6 sticky top-8" style={{ borderColor: theme === 'dark' ? '#374151' : strategyBlue }}>
+            <div className="rounded-2xl shadow-xl border p-6 sticky top-8" style={{ backgroundColor: theme === 'dark' ? darkCard : '#FFFFFF', borderColor: theme === 'dark' ? darkBorder : '#E5E7EB' }}>
               {/* Plan Icon & Name */}
-              <div className="text-center mb-6 pb-6 border-b-2" style={{ borderColor: theme === 'dark' ? '#374151' : lightAIGrey }}>
-                <div className="w-16 h-16 mx-auto mb-4 rounded-xl flex items-center justify-center" style={{ backgroundColor: lightAIGrey }}>
+              <div className="text-center mb-6 pb-6 border-b-2" style={{ borderColor: theme === 'dark' ? darkBorderSubtle : lightAIGrey }}>
+                <div className="w-16 h-16 mx-auto mb-4 rounded-xl flex items-center justify-center" style={{ backgroundColor: theme === 'dark' ? 'rgba(255,255,255,0.04)' : lightAIGrey }}>
                   {getPlanIcon(subscription.plan.planType)}
                 </div>
                 <h2 className="text-2xl font-bold mb-2" style={{ color: theme === 'dark' ? '#FFFFFF' : strategyBlue }}>
@@ -606,7 +575,7 @@ export default function SubscriptionPage() {
               </div>
 
               {/* Price */}
-              <div className="text-center mb-6 pb-6 border-b-2" style={{ borderColor: theme === 'dark' ? '#374151' : lightAIGrey }}>
+              <div className="text-center mb-6 pb-6 border-b-2" style={{ borderColor: theme === 'dark' ? darkBorderSubtle : lightAIGrey }}>
                 <div className="text-4xl font-bold mb-1" style={{ color: momentumOrange }}>
                   {formatPrice(subscription.amount, subscription.currency)}
                 </div>
@@ -629,7 +598,8 @@ export default function SubscriptionPage() {
                     Cancelled
                   </div>
                 ) : (
-                  <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg font-semibold bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
+                  <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg font-semibold"
+                    style={{ backgroundColor: theme === 'dark' ? 'rgba(255,255,255,0.06)' : '#F3F4F6', color: theme === 'dark' ? '#D1D5DB' : '#374151' }}>
                     {subscription.status}
                   </div>
                 )}
@@ -693,7 +663,7 @@ export default function SubscriptionPage() {
           <div className="lg:col-span-2 space-y-6">
             {/* Cancellation Alert */}
             {isCancelled && subscription.cancelledAt && (
-              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border-l-4 p-6" style={{ borderLeftColor: momentumOrange }}>
+              <div className="rounded-2xl shadow-xl border-l-4 p-6" style={{ backgroundColor: theme === 'dark' ? darkCard : '#FFFFFF', borderLeftColor: momentumOrange }}>
                 <div className="flex items-start gap-4">
                   <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: theme === 'dark' ? '#78350F' : '#FEF3C7' }}>
                     <AlertCircle className="w-5 h-5" style={{ color: theme === 'dark' ? '#FCD34D' : '#92400E' }} />
@@ -715,16 +685,16 @@ export default function SubscriptionPage() {
             <UsageDashboard organizationId={subscription.organizationId} />
 
             {/* Details Grid */}
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border-2 p-6" style={{ borderColor: theme === 'dark' ? '#374151' : strategyBlue }}>
+            <div className="rounded-2xl shadow-xl border p-6" style={{ backgroundColor: theme === 'dark' ? darkCard : '#FFFFFF', borderColor: theme === 'dark' ? darkBorder : '#E5E7EB' }}>
               <h3 className="text-xl font-bold mb-6" style={{ color: theme === 'dark' ? '#FFFFFF' : strategyBlue }}>
                 Subscription Details
               </h3>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Billing Cycle */}
-                <div className="p-4 rounded-xl border-2" style={{ borderColor: theme === 'dark' ? '#374151' : lightAIGrey, backgroundColor: theme === 'dark' ? '#1F2937' : lightAIGrey }}>
+                <div className="p-4 rounded-xl border-2" style={{ borderColor: theme === 'dark' ? darkBorderSubtle : lightAIGrey, backgroundColor: theme === 'dark' ? 'rgba(255,255,255,0.03)' : lightAIGrey }}>
                   <div className="flex items-center gap-3 mb-2">
-                    <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: theme === 'dark' ? '#374151' : '#FFFFFF' }}>
+                    <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: theme === 'dark' ? 'rgba(255,255,255,0.06)' : '#FFFFFF' }}>
                       <CreditCard className="w-5 h-5" style={{ color: momentumOrange }} />
                     </div>
                     <div>
@@ -737,9 +707,9 @@ export default function SubscriptionPage() {
                 </div>
 
                 {/* Start Date */}
-                <div className="p-4 rounded-xl border-2" style={{ borderColor: theme === 'dark' ? '#374151' : lightAIGrey, backgroundColor: theme === 'dark' ? '#1F2937' : lightAIGrey }}>
+                <div className="p-4 rounded-xl border-2" style={{ borderColor: theme === 'dark' ? darkBorderSubtle : lightAIGrey, backgroundColor: theme === 'dark' ? 'rgba(255,255,255,0.03)' : lightAIGrey }}>
                   <div className="flex items-center gap-3 mb-2">
-                    <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: theme === 'dark' ? '#374151' : '#FFFFFF' }}>
+                    <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: theme === 'dark' ? 'rgba(255,255,255,0.06)' : '#FFFFFF' }}>
                       <Calendar className="w-5 h-5" style={{ color: momentumOrange }} />
                     </div>
                     <div>
@@ -752,9 +722,9 @@ export default function SubscriptionPage() {
                 </div>
 
                 {/* End/Renewal Date */}
-                <div className="p-4 rounded-xl border-2" style={{ borderColor: theme === 'dark' ? '#374151' : lightAIGrey, backgroundColor: theme === 'dark' ? '#1F2937' : lightAIGrey }}>
+                <div className="p-4 rounded-xl border-2" style={{ borderColor: theme === 'dark' ? darkBorderSubtle : lightAIGrey, backgroundColor: theme === 'dark' ? 'rgba(255,255,255,0.03)' : lightAIGrey }}>
                   <div className="flex items-center gap-3 mb-2">
-                    <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: theme === 'dark' ? '#374151' : '#FFFFFF' }}>
+                    <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: theme === 'dark' ? 'rgba(255,255,255,0.06)' : '#FFFFFF' }}>
                       <Clock className="w-5 h-5" style={{ color: momentumOrange }} />
                     </div>
                     <div>
@@ -769,9 +739,9 @@ export default function SubscriptionPage() {
                 </div>
 
                 {/* Plan Type */}
-                <div className="p-4 rounded-xl border-2" style={{ borderColor: theme === 'dark' ? '#374151' : lightAIGrey, backgroundColor: theme === 'dark' ? '#1F2937' : lightAIGrey }}>
+                <div className="p-4 rounded-xl border-2" style={{ borderColor: theme === 'dark' ? darkBorderSubtle : lightAIGrey, backgroundColor: theme === 'dark' ? 'rgba(255,255,255,0.03)' : lightAIGrey }}>
                   <div className="flex items-center gap-3 mb-2">
-                    <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: theme === 'dark' ? '#374151' : '#FFFFFF' }}>
+                    <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: theme === 'dark' ? 'rgba(255,255,255,0.06)' : '#FFFFFF' }}>
                       <TrendingUp className="w-5 h-5" style={{ color: momentumOrange }} />
                     </div>
                     <div>
@@ -787,7 +757,7 @@ export default function SubscriptionPage() {
 
             {/* Cancel Button */}
             {isActive && (
-              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border-2 p-6" style={{ borderColor: theme === 'dark' ? '#374151' : strategyBlue }}>
+              <div className="rounded-2xl shadow-xl border p-6" style={{ backgroundColor: theme === 'dark' ? darkCard : '#FFFFFF', borderColor: theme === 'dark' ? darkBorder : '#E5E7EB' }}>
                 <div className="flex items-center justify-between">
                   <div>
                     <h3 className="text-lg font-bold mb-1" style={{ color: theme === 'dark' ? '#FFFFFF' : strategyBlue }}>
@@ -823,8 +793,9 @@ export default function SubscriptionPage() {
       {showProrationConfirm && prorationPreview && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
           <div
-            className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-lg w-full"
+            className="rounded-2xl shadow-2xl max-w-lg w-full"
             style={{
+              backgroundColor: theme === 'dark' ? darkCard : '#FFFFFF',
               boxShadow: theme === 'dark'
                 ? '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
                 : '0 25px 50px -12px rgba(26, 43, 71, 0.25)'
@@ -835,8 +806,8 @@ export default function SubscriptionPage() {
               className="px-6 py-5 rounded-t-2xl"
               style={{
                 background: theme === 'dark'
-                  ? 'linear-gradient(135deg, #1F2937 0%, #111827 100%)'
-                  : `linear-gradient(135deg, ${strategyBlue} 0%, #0F1A2B 100%)`
+                  ? `linear-gradient(135deg, ${darkCard} 0%, ${darkBg} 100%)`
+                  : `linear-gradient(135deg, ${strategyBlue} 0%, #0B0C0A 100%)`
               }}
             >
               <div className="flex items-center gap-3">
@@ -858,7 +829,7 @@ export default function SubscriptionPage() {
 
             <div className="p-6 space-y-5">
               {/* Proration Summary */}
-              <div className="rounded-xl border-2 p-4 space-y-3" style={{ borderColor: theme === 'dark' ? '#374151' : lightAIGrey, backgroundColor: theme === 'dark' ? '#1F2937' : lightAIGrey }}>
+              <div className="rounded-xl border-2 p-4 space-y-3" style={{ borderColor: theme === 'dark' ? darkBorderSubtle : lightAIGrey, backgroundColor: theme === 'dark' ? 'rgba(255,255,255,0.03)' : lightAIGrey }}>
                 <div className="flex justify-between items-center text-sm">
                   <span className="text-gray-600 dark:text-gray-400">Remaining days in period</span>
                   <span className="font-semibold" style={{ color: theme === 'dark' ? '#FFFFFF' : strategyBlue }}>
@@ -877,7 +848,7 @@ export default function SubscriptionPage() {
                     {formatPrice(prorationPreview.chargeAmount, prorationPreview.currency)}
                   </span>
                 </div>
-                <div className="border-t pt-3" style={{ borderColor: theme === 'dark' ? '#4B5563' : '#D1D5DB' }}>
+                <div className="border-t pt-3" style={{ borderColor: theme === 'dark' ? darkBorderSubtle : '#D1D5DB' }}>
                   <div className="flex justify-between items-center text-sm">
                     <span className="text-gray-600 dark:text-gray-400">Subtotal</span>
                     <span className="font-semibold" style={{ color: theme === 'dark' ? '#FFFFFF' : strategyBlue }}>
@@ -893,7 +864,7 @@ export default function SubscriptionPage() {
                     </div>
                   )}
                 </div>
-                <div className="border-t pt-3" style={{ borderColor: theme === 'dark' ? '#4B5563' : '#D1D5DB' }}>
+                <div className="border-t pt-3" style={{ borderColor: theme === 'dark' ? darkBorderSubtle : '#D1D5DB' }}>
                   <div className="flex justify-between items-center">
                     <span className="font-bold text-lg" style={{ color: theme === 'dark' ? '#FFFFFF' : strategyBlue }}>
                       {prorationPreview.netAmount >= 0 ? 'Amount due today' : 'Credit to your account'}
@@ -906,7 +877,7 @@ export default function SubscriptionPage() {
               </div>
 
               {/* New recurring amount */}
-              <div className="flex items-center gap-3 p-3 rounded-xl" style={{ backgroundColor: theme === 'dark' ? '#1F2937' : '#EFF6FF' }}>
+              <div className="flex items-center gap-3 p-3 rounded-xl" style={{ backgroundColor: theme === 'dark' ? 'rgba(255,255,255,0.03)' : '#EFF6FF' }}>
                 <Calendar className="w-5 h-5 flex-shrink-0" style={{ color: momentumOrange }} />
                 <div className="text-sm">
                   <span className="text-gray-600 dark:text-gray-400">New recurring charge: </span>
@@ -928,7 +899,7 @@ export default function SubscriptionPage() {
                   onClick={handleCancelProration}
                   className="flex-1 px-4 py-3 rounded-xl font-semibold transition-all border-2"
                   style={{
-                    borderColor: theme === 'dark' ? '#4B5563' : '#D1D5DB',
+                    borderColor: theme === 'dark' ? darkBorderSubtle : '#D1D5DB',
                     color: theme === 'dark' ? '#D1D5DB' : '#6B7280',
                     backgroundColor: 'transparent'
                   }}
@@ -965,8 +936,9 @@ export default function SubscriptionPage() {
       {showChangePlanModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div
-            className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-5xl w-full max-h-[90vh] overflow-y-auto"
+            className="rounded-2xl shadow-2xl max-w-5xl w-full max-h-[90vh] overflow-y-auto"
             style={{
+              backgroundColor: theme === 'dark' ? darkCard : '#FFFFFF',
               boxShadow: theme === 'dark'
                 ? '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
                 : '0 25px 50px -12px rgba(26, 43, 71, 0.25)'
@@ -977,8 +949,8 @@ export default function SubscriptionPage() {
               className="sticky top-0 z-10 px-8 py-6 flex items-center justify-between"
               style={{
                 background: theme === 'dark'
-                  ? 'linear-gradient(135deg, #1F2937 0%, #111827 100%)'
-                  : `linear-gradient(135deg, ${strategyBlue} 0%, #0F1A2B 100%)`
+                  ? `linear-gradient(135deg, ${darkCard} 0%, ${darkBg} 100%)`
+                  : `linear-gradient(135deg, ${strategyBlue} 0%, #0B0C0A 100%)`
               }}
             >
               <div>
@@ -1005,7 +977,7 @@ export default function SubscriptionPage() {
               <div className="flex items-center justify-center mb-10">
                 <div
                   className="inline-flex items-center gap-1 p-1.5 rounded-full"
-                  style={{ backgroundColor: theme === 'dark' ? '#1F2937' : lightAIGrey }}
+                  style={{ backgroundColor: theme === 'dark' ? 'rgba(255,255,255,0.03)' : lightAIGrey }}
                 >
                   <button
                     onClick={() => setBillingCycle('monthly')}
@@ -1031,7 +1003,7 @@ export default function SubscriptionPage() {
                     <span
                       className="px-2 py-0.5 rounded-full text-xs font-bold"
                       style={{
-                        backgroundColor: billingCycle === 'yearly' ? momentumOrange : (theme === 'dark' ? '#374151' : '#E5E7EB'),
+                        backgroundColor: billingCycle === 'yearly' ? momentumOrange : (theme === 'dark' ? darkBorder : '#E5E7EB'),
                         color: billingCycle === 'yearly' ? '#FFFFFF' : (theme === 'dark' ? '#9CA3AF' : '#6B7280')
                       }}
                     >
@@ -1044,7 +1016,7 @@ export default function SubscriptionPage() {
               {loadingPlans ? (
                 <div className="flex flex-col items-center justify-center py-16">
                   <div className="relative w-16 h-16 mb-4">
-                    <div className="absolute inset-0 rounded-full border-4" style={{ borderColor: theme === 'dark' ? '#374151' : '#E5E7EB' }} />
+                    <div className="absolute inset-0 rounded-full border-4" style={{ borderColor: theme === 'dark' ? darkBorder : '#E5E7EB' }} />
                     <div className="absolute inset-0 rounded-full border-4 border-t-transparent animate-spin" style={{ borderColor: `${momentumOrange} transparent transparent transparent` }} />
                   </div>
                   <p className="text-gray-500 dark:text-gray-400 font-medium">Loading plans...</p>
@@ -1074,8 +1046,8 @@ export default function SubscriptionPage() {
                             ? `3px solid ${momentumOrange}`
                             : isPro
                               ? `2px solid ${momentumOrange}`
-                              : `2px solid ${theme === 'dark' ? '#374151' : '#E5E7EB'}`,
-                          backgroundColor: theme === 'dark' ? '#1F2937' : '#FFFFFF',
+                              : `2px solid ${theme === 'dark' ? darkBorder : '#E5E7EB'}`,
+                          backgroundColor: theme === 'dark' ? darkCard : '#FFFFFF',
                           boxShadow: isPro && !(isCurrentPlan && isCurrentBilling)
                             ? `0 8px 32px ${theme === 'dark' ? 'rgba(255, 107, 0, 0.15)' : 'rgba(255, 107, 0, 0.2)'}`
                             : undefined
@@ -1112,7 +1084,7 @@ export default function SubscriptionPage() {
                           <div className="flex items-center gap-3 mb-4">
                             <div
                               className="w-12 h-12 rounded-xl flex items-center justify-center"
-                              style={{ backgroundColor: theme === 'dark' ? '#374151' : lightAIGrey }}
+                              style={{ backgroundColor: theme === 'dark' ? 'rgba(255,255,255,0.04)' : lightAIGrey }}
                             >
                               {plan.planType === 'Free' && <Zap className="w-6 h-6" style={{ color: momentumOrange }} />}
                               {plan.planType === 'Pro' && <Crown className="w-6 h-6" style={{ color: momentumOrange }} />}
@@ -1129,7 +1101,7 @@ export default function SubscriptionPage() {
                           </div>
 
                           {/* Price */}
-                          <div className="mb-6 pb-6 border-b-2" style={{ borderColor: theme === 'dark' ? '#374151' : lightAIGrey }}>
+                          <div className="mb-6 pb-6 border-b-2" style={{ borderColor: theme === 'dark' ? darkBorderSubtle : lightAIGrey }}>
                             <div className="flex items-baseline gap-1">
                               <span className="text-4xl font-bold" style={{ color: momentumOrange }}>
                                 {formatPrice(price, plan.currency).replace(/\.00$/, '')}
@@ -1183,7 +1155,7 @@ export default function SubscriptionPage() {
                             className="w-full py-3.5 rounded-xl font-semibold transition-all disabled:cursor-not-allowed flex items-center justify-center gap-2"
                             style={{
                               backgroundColor: isCurrentPlan && isCurrentBilling
-                                ? (theme === 'dark' ? '#374151' : '#E5E7EB')
+                                ? (theme === 'dark' ? darkBorder : '#E5E7EB')
                                 : momentumOrange,
                               color: isCurrentPlan && isCurrentBilling
                                 ? (theme === 'dark' ? '#9CA3AF' : '#6B7280')

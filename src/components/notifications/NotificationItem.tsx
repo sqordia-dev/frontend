@@ -9,11 +9,12 @@ import {
   Bot,
   MessageSquare,
   Trash2,
+  Flame,
   type LucideIcon,
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { useTheme } from '../../contexts/ThemeContext';
-import type { Notification, NotificationType } from '../../lib/notification-types';
+import type { Notification, NotificationType, NotificationPriority } from '../../lib/notification-types';
 
 const ICON_MAP: Record<NotificationType, LucideIcon> = {
   BusinessPlanGenerated: FileCheck,
@@ -35,6 +36,13 @@ const ICON_COLOR_MAP: Record<NotificationType, string> = {
   ExportCompleted: 'text-teal-500 bg-teal-50 dark:bg-teal-900/20',
   AICoachReply: 'text-cyan-500 bg-cyan-50 dark:bg-cyan-900/20',
   CommentAdded: 'text-orange-500 bg-orange-50 dark:bg-orange-900/20',
+};
+
+const PRIORITY_STYLES: Record<NotificationPriority, string> = {
+  Low: '',
+  Normal: '',
+  High: 'border-l-2 border-l-amber-400',
+  Urgent: 'border-l-2 border-l-red-500',
 };
 
 function formatRelativeTime(dateStr: string, lang: string): string {
@@ -80,6 +88,8 @@ export default function NotificationItem({
   const iconColor = ICON_COLOR_MAP[notification.type] ?? 'text-gray-500 bg-gray-50 dark:bg-gray-800';
   const title = language === 'fr' ? notification.titleFr : notification.titleEn;
   const message = language === 'fr' ? notification.messageFr : notification.messageEn;
+  const priority = notification.priority || 'Normal';
+  const priorityStyle = PRIORITY_STYLES[priority] ?? '';
 
   const handleClick = () => {
     if (!notification.isRead) {
@@ -94,40 +104,49 @@ export default function NotificationItem({
     <div
       onClick={handleClick}
       className={cn(
-        'group flex items-start gap-3 rounded-lg transition-colors cursor-pointer',
+        'group flex items-start gap-3 transition-all cursor-pointer',
         compact ? 'px-3 py-2.5' : 'px-4 py-3',
+        priorityStyle,
         !notification.isRead
-          ? 'bg-blue-50/50 dark:bg-blue-900/10'
+          ? 'bg-blue-50/60 dark:bg-blue-900/10 hover:bg-blue-50 dark:hover:bg-blue-900/20'
           : 'hover:bg-gray-50 dark:hover:bg-gray-800/50',
       )}
     >
-      {/* Unread indicator */}
+      {/* Unread dot */}
       <div className="flex items-center pt-1 shrink-0">
         <div
           className={cn(
-            'h-2 w-2 rounded-full',
-            !notification.isRead ? 'bg-blue-500' : 'bg-transparent',
+            'h-2 w-2 rounded-full transition-all',
+            !notification.isRead ? 'bg-blue-500 shadow-sm shadow-blue-500/50' : 'bg-transparent',
           )}
         />
       </div>
 
       {/* Icon */}
-      <div className={cn('flex h-8 w-8 items-center justify-center rounded-lg shrink-0', iconColor)}>
+      <div className={cn('flex h-9 w-9 items-center justify-center rounded-xl shrink-0', iconColor)}>
         <Icon className="h-4 w-4" />
       </div>
 
       {/* Content */}
       <div className="flex-1 min-w-0">
-        <p
-          className={cn(
-            'text-sm truncate',
-            !notification.isRead
-              ? 'font-semibold text-gray-900 dark:text-white'
-              : 'font-medium text-gray-700 dark:text-gray-300',
+        <div className="flex items-center gap-2">
+          <p
+            className={cn(
+              'text-sm truncate',
+              !notification.isRead
+                ? 'font-semibold text-gray-900 dark:text-white'
+                : 'font-medium text-gray-700 dark:text-gray-300',
+            )}
+          >
+            {title}
+          </p>
+          {priority === 'Urgent' && (
+            <Flame className="h-3.5 w-3.5 text-red-500 shrink-0 animate-pulse" />
           )}
-        >
-          {title}
-        </p>
+          {priority === 'High' && (
+            <AlertTriangle className="h-3.5 w-3.5 text-amber-500 shrink-0" />
+          )}
+        </div>
         <p
           className={cn(
             'text-xs text-gray-500 dark:text-gray-400 mt-0.5',
@@ -148,7 +167,7 @@ export default function NotificationItem({
             e.stopPropagation();
             onDelete(notification.id);
           }}
-          className="opacity-0 group-hover:opacity-100 shrink-0 p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-400 hover:text-red-500 transition-all"
+          className="opacity-0 group-hover:opacity-100 shrink-0 p-1.5 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-400 hover:text-red-500 transition-all"
           title={language === 'fr' ? 'Supprimer' : 'Delete'}
         >
           <Trash2 className="h-3.5 w-3.5" />

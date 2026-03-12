@@ -241,14 +241,15 @@ export default function AdminSubscriptionIntelligencePage() {
       const coupon = await subscriptionIntelligenceService.generatePersonalizedCoupon(selectedOrgId);
       setGeneratedCoupon(coupon);
     } catch (err: any) {
-      const msg = err.message || '';
-      const isNoPromo = msg.includes('NoPromotion') || msg.includes('No promotion');
+      const backendCode = err.response?.data?.code || '';
+      const backendMsg = err.response?.data?.message || err.message || '';
+      const isNoPromo = backendCode.includes('NoPromotion') || backendMsg.includes('No promotion');
       if (isNoPromo) {
         setCouponInfo(isFr
           ? 'Aucune promotion recommandée pour cette organisation actuellement.'
           : 'No promotion is recommended for this organization at this time.');
       } else {
-        setDataError(msg || (isFr ? 'Erreur lors de la génération du coupon' : 'Failed to generate coupon'));
+        setDataError(backendMsg || (isFr ? 'Erreur lors de la génération du coupon' : 'Failed to generate coupon'));
       }
     } finally {
       setCouponGenerating(false);
