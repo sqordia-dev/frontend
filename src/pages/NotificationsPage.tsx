@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import {
   Bell,
   CheckCheck,
   Inbox,
-  Filter,
-  Trash2,
+  Settings,
   FileCheck,
   Share2,
   UserPlus,
@@ -13,6 +14,8 @@ import {
   Download,
   Bot,
   MessageSquare,
+  ChevronDown,
+  RefreshCw,
   type LucideIcon,
 } from 'lucide-react';
 import { cn } from '../lib/utils';
@@ -22,7 +25,6 @@ import { notificationService } from '../lib/notification-service';
 import type {
   Notification,
   NotificationCategory,
-  NotificationType,
   NotificationGroup,
 } from '../lib/notification-types';
 import NotificationItem from '../components/notifications/NotificationItem';
@@ -34,12 +36,12 @@ const CATEGORIES: { value: NotificationCategory | ''; labelFr: string; labelEn: 
   { value: 'BusinessPlan', labelFr: "Plan d'affaires", labelEn: 'Business Plan', icon: FileCheck },
   { value: 'Organization', labelFr: 'Organisation', labelEn: 'Organization', icon: UserPlus },
   { value: 'Subscription', labelFr: 'Abonnement', labelEn: 'Subscription', icon: AlertTriangle },
-  { value: 'System', labelFr: 'Système', labelEn: 'System', icon: Megaphone },
+  { value: 'System', labelFr: 'Systeme', labelEn: 'System', icon: Megaphone },
   { value: 'AI', labelFr: 'IA', labelEn: 'AI', icon: Bot },
   { value: 'Collaboration', labelFr: 'Collaboration', labelEn: 'Collaboration', icon: MessageSquare },
 ];
 
-function groupByDate(notifications: Notification[], lang: string): NotificationGroup[] {
+function groupByDate(notifications: Notification[], _lang: string): NotificationGroup[] {
   const now = new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const yesterday = new Date(today.getTime() - 86400000);
@@ -75,7 +77,7 @@ function groupByDate(notifications: Notification[], lang: string): NotificationG
 
 export default function NotificationsPage() {
   const { language } = useTheme();
-  const { markAsRead: ctxMarkAsRead, markAllAsRead: ctxMarkAllAsRead, deleteNotification: ctxDelete, refreshNotifications } = useNotifications();
+  const { markAsRead: ctxMarkAsRead, markAllAsRead: ctxMarkAllAsRead, deleteNotification: ctxDelete } = useNotifications();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [readFilter, setReadFilter] = useState<ReadFilter>('all');
@@ -83,10 +85,11 @@ export default function NotificationsPage() {
   const [pageNumber, setPageNumber] = useState(1);
   const [hasNextPage, setHasNextPage] = useState(false);
   const [totalCount, setTotalCount] = useState(0);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const fetchNotifications = useCallback(
     async (page: number, append = false) => {
-      setIsLoading(true);
+      if (page === 1) setIsLoading(true);
       try {
         const isRead = readFilter === 'unread' ? false : readFilter === 'read' ? true : undefined;
         const result = await notificationService.getNotifications(
@@ -96,8 +99,8 @@ export default function NotificationsPage() {
         setHasNextPage(result.hasNextPage);
         setTotalCount(result.totalCount);
         setPageNumber(page);
-      } catch {
-        // Silently fail
+      } catch (err) {
+        console.error('[NotificationsPage] Failed to fetch notifications:', err);
       } finally {
         setIsLoading(false);
       }
@@ -108,6 +111,12 @@ export default function NotificationsPage() {
   useEffect(() => {
     fetchNotifications(1);
   }, [fetchNotifications]);
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    await fetchNotifications(1);
+    setIsRefreshing(false);
+  };
 
   const handleMarkRead = async (id: string) => {
     await ctxMarkAsRead(id);
@@ -141,21 +150,26 @@ export default function NotificationsPage() {
   const groups = useMemo(() => groupByDate(notifications, language), [notifications, language]);
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="max-w-4xl mx-auto px-4 sm:px-0">
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+        className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8"
+      >
         <div className="flex items-center gap-4">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-lg shadow-blue-500/20">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-strategy-blue text-white shadow-lg shadow-strategy-blue/20">
             <Bell className="h-6 w-6" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+            <h1 className="text-display-sm font-heading text-foreground tracking-tight">
               {language === 'fr' ? 'Centre de notifications' : 'Notification Center'}
             </h1>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+            <p className="text-body-sm text-muted-foreground mt-0.5">
               {totalCount} {language === 'fr' ? 'notification(s)' : 'notification(s)'}
               {unreadInView > 0 && (
-                <span className="ml-2 text-blue-600 dark:text-blue-400 font-medium">
+                <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-label-sm bg-momentum-orange/10 text-momentum-orange font-semibold">
                   {unreadInView} {language === 'fr' ? 'non lue(s)' : 'unread'}
                 </span>
               )}
@@ -163,30 +177,52 @@ export default function NotificationsPage() {
           </div>
         </div>
 
-        {unreadInView > 0 && (
+        <div className="flex items-center gap-2">
           <button
-            onClick={handleMarkAllRead}
-            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-xl transition-colors"
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+            className="flex items-center gap-2 px-3 py-2 text-label-sm text-muted-foreground hover:text-foreground hover:bg-muted rounded-xl transition-all disabled:opacity-50"
+            title={language === 'fr' ? 'Rafraichir' : 'Refresh'}
           >
-            <CheckCheck className="h-4 w-4" />
-            {language === 'fr' ? 'Tout marquer comme lu' : 'Mark all as read'}
+            <RefreshCw className={cn('h-4 w-4', isRefreshing && 'animate-spin')} />
           </button>
-        )}
-      </div>
+          {unreadInView > 0 && (
+            <button
+              onClick={handleMarkAllRead}
+              className="flex items-center gap-2 px-4 py-2 text-label-sm font-medium text-momentum-orange hover:bg-momentum-orange/10 rounded-xl transition-all"
+            >
+              <CheckCheck className="h-4 w-4" />
+              {language === 'fr' ? 'Tout marquer lu' : 'Mark all read'}
+            </button>
+          )}
+          <Link
+            to="/notifications/preferences"
+            className="flex items-center gap-2 px-4 py-2 text-label-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted rounded-xl transition-all"
+          >
+            <Settings className="h-4 w-4" />
+            {language === 'fr' ? 'Preferences' : 'Preferences'}
+          </Link>
+        </div>
+      </motion.div>
 
       {/* Filters */}
-      <div className="flex flex-col sm:flex-row gap-3 mb-6">
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.05 }}
+        className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-6"
+      >
         {/* Read/Unread tabs */}
-        <div className="flex gap-1 p-1 bg-gray-100 dark:bg-gray-800 rounded-xl">
+        <div className="flex gap-1 p-1 bg-muted rounded-xl shrink-0">
           {readFilterTabs.map(tab => (
             <button
               key={tab.value}
               onClick={() => setReadFilter(tab.value)}
               className={cn(
-                'px-4 py-2 text-sm font-medium rounded-lg transition-all',
+                'px-4 py-2 text-label-sm rounded-lg transition-all',
                 readFilter === tab.value
-                  ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
-                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300',
+                  ? 'bg-card text-foreground shadow-sm font-semibold'
+                  : 'text-muted-foreground hover:text-foreground',
               )}
             >
               {language === 'fr' ? tab.labelFr : tab.labelEn}
@@ -204,60 +240,74 @@ export default function NotificationsPage() {
                 key={cat.value}
                 onClick={() => setCategoryFilter(cat.value)}
                 className={cn(
-                  'flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full border transition-all',
+                  'flex items-center gap-1.5 px-3 py-1.5 text-label-sm rounded-full border transition-all',
                   isActive
-                    ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300'
-                    : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:border-gray-300 dark:hover:border-gray-600',
+                    ? 'bg-momentum-orange/10 border-momentum-orange/30 text-momentum-orange font-semibold'
+                    : 'bg-card border-border text-muted-foreground hover:border-momentum-orange/30 hover:text-foreground',
                 )}
               >
-                <Icon className="h-3 w-3" />
+                <Icon className="h-3.5 w-3.5" />
                 {language === 'fr' ? cat.labelFr : cat.labelEn}
               </button>
             );
           })}
         </div>
-      </div>
+      </motion.div>
 
       {/* Notifications list */}
-      <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl overflow-hidden shadow-sm">
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.1 }}
+        className="bg-card border border-border rounded-2xl overflow-hidden shadow-card"
+      >
         {isLoading && notifications.length === 0 ? (
-          <div className="flex items-center justify-center py-20">
-            <div className="h-7 w-7 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin" />
+          <div className="flex flex-col items-center justify-center py-24">
+            <div className="h-8 w-8 border-2 border-muted border-t-momentum-orange rounded-full animate-spin" />
+            <p className="text-label-sm text-muted-foreground mt-4">
+              {language === 'fr' ? 'Chargement...' : 'Loading...'}
+            </p>
           </div>
         ) : notifications.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 text-gray-400 dark:text-gray-500">
-            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gray-100 dark:bg-gray-800 mb-4">
-              <Inbox className="h-8 w-8" />
+          <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
+            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-muted mb-5">
+              <Inbox className="h-7 w-7" />
             </div>
-            <p className="text-base font-medium">
+            <p className="text-heading-sm font-heading text-foreground">
               {language === 'fr' ? 'Aucune notification' : 'No notifications'}
             </p>
-            <p className="text-sm mt-1">
+            <p className="text-body-sm text-muted-foreground mt-1.5 max-w-xs text-center">
               {language === 'fr'
-                ? 'Vous recevrez des notifications ici'
-                : "You'll receive notifications here"}
+                ? 'Vos notifications apparaitront ici lorsque vous en recevrez.'
+                : "You'll see notifications here when you get them."}
             </p>
           </div>
         ) : (
           <div>
-            {groups.map(group => (
+            {groups.map((group, groupIdx) => (
               <div key={group.label}>
-                <div className="sticky top-0 z-10 px-5 py-2.5 bg-gray-50/95 dark:bg-gray-900/95 backdrop-blur-sm border-b border-gray-100 dark:border-gray-800">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                <div className="sticky top-0 z-10 px-5 py-2.5 bg-muted/80 backdrop-blur-sm border-b border-border">
+                  <span className="text-label-sm uppercase tracking-wider text-muted-foreground font-semibold">
                     {language === 'fr' ? group.labelFr : group.label}
-                    <span className="ml-2 text-gray-400 dark:text-gray-500 font-normal">
+                    <span className="ml-2 text-muted-foreground/60 font-normal">
                       ({group.notifications.length})
                     </span>
                   </span>
                 </div>
-                <div className="divide-y divide-gray-50 dark:divide-gray-800/50">
-                  {group.notifications.map(notification => (
-                    <NotificationItem
+                <div className="divide-y divide-border/50">
+                  {group.notifications.map((notification, idx) => (
+                    <motion.div
                       key={notification.id}
-                      notification={notification}
-                      onMarkRead={handleMarkRead}
-                      onDelete={handleDelete}
-                    />
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.2, delay: Math.min(idx * 0.03, 0.3) }}
+                    >
+                      <NotificationItem
+                        notification={notification}
+                        onMarkRead={handleMarkRead}
+                        onDelete={handleDelete}
+                      />
+                    </motion.div>
                   ))}
                 </div>
               </div>
@@ -267,19 +317,20 @@ export default function NotificationsPage() {
 
         {/* Load more */}
         {hasNextPage && (
-          <div className="border-t border-gray-100 dark:border-gray-800 p-4 text-center">
+          <div className="border-t border-border p-4 text-center">
             <button
               onClick={handleLoadMore}
               disabled={isLoading}
-              className="px-6 py-2.5 text-sm font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-xl transition-colors disabled:opacity-50"
+              className="inline-flex items-center gap-2 px-6 py-2.5 text-label-sm font-medium text-momentum-orange hover:bg-momentum-orange/10 rounded-xl transition-all disabled:opacity-50"
             >
+              <ChevronDown className="h-4 w-4" />
               {isLoading
                 ? (language === 'fr' ? 'Chargement...' : 'Loading...')
                 : (language === 'fr' ? 'Charger plus' : 'Load more')}
             </button>
           </div>
         )}
-      </div>
+      </motion.div>
     </div>
   );
 }

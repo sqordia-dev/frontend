@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import {
   Bell,
   BellOff,
@@ -14,6 +16,8 @@ import {
   Download,
   Bot,
   MessageSquare,
+  ArrowLeft,
+  Settings2,
   type LucideIcon,
 } from 'lucide-react';
 import { cn } from '../lib/utils';
@@ -35,83 +39,83 @@ interface TypeConfig {
 const TYPE_CONFIGS: TypeConfig[] = [
   {
     type: 'BusinessPlanGenerated',
-    labelFr: "Plan d'affaires généré",
+    labelFr: "Plan d'affaires genere",
     labelEn: 'Business Plan Generated',
-    descFr: 'Quand la génération de votre plan est terminée',
+    descFr: 'Quand la generation de votre plan est terminee',
     descEn: 'When your plan generation is complete',
     icon: FileCheck,
-    color: 'text-green-500 bg-green-50 dark:bg-green-900/20',
+    color: 'text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20 dark:text-emerald-400',
   },
   {
     type: 'BusinessPlanShared',
-    labelFr: "Plan d'affaires partagé",
+    labelFr: "Plan d'affaires partage",
     labelEn: 'Business Plan Shared',
-    descFr: 'Quand quelqu\'un partage un plan avec vous',
+    descFr: "Quand quelqu'un partage un plan avec vous",
     descEn: 'When someone shares a plan with you',
     icon: Share2,
-    color: 'text-blue-500 bg-blue-50 dark:bg-blue-900/20',
+    color: 'text-strategy-blue bg-strategy-blue/10 dark:bg-strategy-blue/20 dark:text-blue-300',
   },
   {
     type: 'OrganizationInvitation',
     labelFr: "Invitation d'organisation",
     labelEn: 'Organization Invitation',
-    descFr: 'Invitations à rejoindre une organisation',
+    descFr: 'Invitations a rejoindre une organisation',
     descEn: 'Invitations to join an organization',
     icon: UserPlus,
-    color: 'text-purple-500 bg-purple-50 dark:bg-purple-900/20',
+    color: 'text-momentum-orange bg-momentum-orange/10 dark:bg-momentum-orange/20 dark:text-momentum-orange',
   },
   {
     type: 'SubscriptionExpiring',
-    labelFr: 'Expiration d\'abonnement',
+    labelFr: "Expiration d'abonnement",
     labelEn: 'Subscription Expiring',
-    descFr: 'Rappels avant l\'expiration de votre abonnement',
+    descFr: "Rappels avant l'expiration de votre abonnement",
     descEn: 'Reminders before your subscription expires',
     icon: AlertTriangle,
-    color: 'text-amber-500 bg-amber-50 dark:bg-amber-900/20',
+    color: 'text-amber-600 bg-amber-50 dark:bg-amber-900/20 dark:text-amber-400',
   },
   {
     type: 'SystemAnnouncement',
-    labelFr: 'Annonce système',
+    labelFr: 'Annonce systeme',
     labelEn: 'System Announcement',
-    descFr: 'Annonces et mises à jour de la plateforme',
+    descFr: 'Annonces et mises a jour de la plateforme',
     descEn: 'Platform announcements and updates',
     icon: Megaphone,
-    color: 'text-indigo-500 bg-indigo-50 dark:bg-indigo-900/20',
+    color: 'text-strategy-blue bg-strategy-blue/10 dark:bg-strategy-blue/20 dark:text-blue-300',
   },
   {
     type: 'ExportCompleted',
-    labelFr: 'Export terminé',
+    labelFr: 'Export termine',
     labelEn: 'Export Completed',
-    descFr: 'Quand un export de document est prêt',
+    descFr: "Quand un export de document est pret",
     descEn: 'When a document export is ready',
     icon: Download,
-    color: 'text-teal-500 bg-teal-50 dark:bg-teal-900/20',
+    color: 'text-teal-600 bg-teal-50 dark:bg-teal-900/20 dark:text-teal-400',
   },
   {
     type: 'AICoachReply',
-    labelFr: 'Réponse du coach IA',
+    labelFr: 'Reponse du coach IA',
     labelEn: 'AI Coach Reply',
     descFr: 'Messages du coach IA',
     descEn: 'Messages from the AI Coach',
     icon: Bot,
-    color: 'text-cyan-500 bg-cyan-50 dark:bg-cyan-900/20',
+    color: 'text-cyan-600 bg-cyan-50 dark:bg-cyan-900/20 dark:text-cyan-400',
   },
   {
     type: 'CommentAdded',
-    labelFr: 'Commentaire ajouté',
+    labelFr: 'Commentaire ajoute',
     labelEn: 'Comment Added',
-    descFr: 'Quand quelqu\'un commente votre plan',
+    descFr: "Quand quelqu'un commente votre plan",
     descEn: 'When someone comments on your plan',
     icon: MessageSquare,
-    color: 'text-orange-500 bg-orange-50 dark:bg-orange-900/20',
+    color: 'text-orange-600 bg-orange-50 dark:bg-orange-900/20 dark:text-orange-400',
   },
 ];
 
 const FREQUENCY_OPTIONS: { value: NotificationFrequency; labelFr: string; labelEn: string }[] = [
   { value: 'Instant', labelFr: 'Instant', labelEn: 'Instant' },
-  { value: 'DailyDigest', labelFr: 'Résumé quotidien', labelEn: 'Daily Digest' },
-  { value: 'WeeklyDigest', labelFr: 'Résumé hebdomadaire', labelEn: 'Weekly Digest' },
-  { value: 'Disabled', labelFr: 'Désactivé', labelEn: 'Disabled' },
+  { value: 'DailyDigest', labelFr: 'Resume quotidien', labelEn: 'Daily Digest' },
+  { value: 'WeeklyDigest', labelFr: 'Resume hebdomadaire', labelEn: 'Weekly Digest' },
+  { value: 'Disabled', labelFr: 'Desactive', labelEn: 'Disabled' },
 ];
 
 export default function NotificationPreferencesPage() {
@@ -130,7 +134,7 @@ export default function NotificationPreferencesPage() {
       } catch {
         toast.error(
           language === 'fr' ? 'Erreur de chargement' : 'Failed to load',
-          language === 'fr' ? 'Impossible de charger les préférences' : 'Could not load preferences',
+          language === 'fr' ? 'Impossible de charger les preferences' : 'Could not load preferences',
         );
       } finally {
         setIsLoading(false);
@@ -167,7 +171,7 @@ export default function NotificationPreferencesPage() {
       );
       setHasChanges(false);
       toast.success(
-        language === 'fr' ? 'Préférences sauvegardées' : 'Preferences saved',
+        language === 'fr' ? 'Preferences sauvegardees' : 'Preferences saved',
       );
     } catch {
       toast.error(
@@ -181,25 +185,49 @@ export default function NotificationPreferencesPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-20">
-        <div className="h-7 w-7 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin" />
+      <div className="flex flex-col items-center justify-center py-24">
+        <div className="h-8 w-8 border-2 border-muted border-t-momentum-orange rounded-full animate-spin" />
+        <p className="text-label-sm text-muted-foreground mt-4">
+          {language === 'fr' ? 'Chargement...' : 'Loading...'}
+        </p>
       </div>
     );
   }
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="max-w-4xl mx-auto px-4 sm:px-0">
+      {/* Back link */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.3 }}
+        className="mb-6"
+      >
+        <Link
+          to="/notifications"
+          className="inline-flex items-center gap-1.5 text-label-sm text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <ArrowLeft className="h-3.5 w-3.5" />
+          {language === 'fr' ? 'Retour aux notifications' : 'Back to notifications'}
+        </Link>
+      </motion.div>
+
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+        className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8"
+      >
         <div className="flex items-center gap-4">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 text-white shadow-lg shadow-purple-500/20">
-            <Bell className="h-6 w-6" />
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-strategy-blue text-white shadow-lg shadow-strategy-blue/20">
+            <Settings2 className="h-6 w-6" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-              {language === 'fr' ? 'Préférences de notification' : 'Notification Preferences'}
+            <h1 className="text-display-sm font-heading text-foreground tracking-tight">
+              {language === 'fr' ? 'Preferences' : 'Preferences'}
             </h1>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+            <p className="text-body-sm text-muted-foreground mt-0.5">
               {language === 'fr'
                 ? 'Personnalisez vos alertes par type de notification'
                 : 'Customize your alerts per notification type'}
@@ -208,24 +236,31 @@ export default function NotificationPreferencesPage() {
         </div>
 
         {hasChanges && (
-          <button
+          <motion.button
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
             onClick={handleSave}
             disabled={isSaving}
-            className="flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-sm transition-colors disabled:opacity-50"
+            className="flex items-center gap-2 px-5 py-2.5 text-label-sm font-medium text-white bg-momentum-orange hover:bg-[#E56000] rounded-xl shadow-lg shadow-momentum-orange/20 transition-all disabled:opacity-50"
           >
             <Save className="h-4 w-4" />
             {isSaving
               ? (language === 'fr' ? 'Enregistrement...' : 'Saving...')
-              : (language === 'fr' ? 'Enregistrer' : 'Save')}
-          </button>
+              : (language === 'fr' ? 'Enregistrer' : 'Save changes')}
+          </motion.button>
         )}
-      </div>
+      </motion.div>
 
       {/* Legend */}
-      <div className="flex items-center gap-6 mb-6 px-4 py-3 bg-gray-50 dark:bg-gray-800/50 rounded-xl text-xs text-gray-500 dark:text-gray-400">
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.05 }}
+        className="flex items-center gap-6 mb-6 px-4 py-3 bg-muted/50 rounded-xl text-label-sm text-muted-foreground border border-border/50"
+      >
         <div className="flex items-center gap-2">
           <Bell className="h-3.5 w-3.5" />
-          {language === 'fr' ? 'Dans l\'application' : 'In-app'}
+          {language === 'fr' ? "Dans l'application" : 'In-app'}
         </div>
         <div className="flex items-center gap-2">
           <Mail className="h-3.5 w-3.5" />
@@ -235,20 +270,23 @@ export default function NotificationPreferencesPage() {
           <Volume2 className="h-3.5 w-3.5" />
           {language === 'fr' ? 'Son' : 'Sound'}
         </div>
-      </div>
+      </motion.div>
 
       {/* Preferences grid */}
       <div className="space-y-3">
-        {TYPE_CONFIGS.map(config => {
+        {TYPE_CONFIGS.map((config, idx) => {
           const pref = getPreference(config.type);
           if (!pref) return null;
 
           const Icon = config.icon;
 
           return (
-            <div
+            <motion.div
               key={config.type}
-              className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-5 hover:shadow-sm transition-shadow"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: 0.08 + idx * 0.04 }}
+              className="bg-card border border-border rounded-2xl p-5 hover:shadow-card transition-all duration-200"
             >
               <div className="flex items-start gap-4">
                 {/* Icon */}
@@ -258,56 +296,56 @@ export default function NotificationPreferencesPage() {
 
                 {/* Info */}
                 <div className="flex-1 min-w-0">
-                  <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
+                  <h3 className="text-heading-sm font-heading text-foreground">
                     {language === 'fr' ? config.labelFr : config.labelEn}
                   </h3>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                  <p className="text-body-xs text-muted-foreground mt-0.5">
                     {language === 'fr' ? config.descFr : config.descEn}
                   </p>
                 </div>
 
                 {/* Toggles */}
-                <div className="flex items-center gap-4 shrink-0">
+                <div className="flex items-center gap-2.5 shrink-0">
                   {/* In-App toggle */}
                   <button
                     onClick={() => updatePref(config.type, 'inAppEnabled', !pref.inAppEnabled)}
                     className={cn(
-                      'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all',
+                      'flex items-center justify-center h-9 w-9 rounded-lg transition-all',
                       pref.inAppEnabled
-                        ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'
-                        : 'bg-gray-100 dark:bg-gray-800 text-gray-400',
+                        ? 'bg-momentum-orange/15 dark:bg-momentum-orange/20 text-momentum-orange shadow-sm'
+                        : 'bg-muted text-muted-foreground hover:text-foreground',
                     )}
-                    title={language === 'fr' ? 'Dans l\'application' : 'In-app'}
+                    title={language === 'fr' ? "Dans l'application" : 'In-app'}
                   >
-                    {pref.inAppEnabled ? <Bell className="h-3.5 w-3.5" /> : <BellOff className="h-3.5 w-3.5" />}
+                    {pref.inAppEnabled ? <Bell className="h-4 w-4" /> : <BellOff className="h-4 w-4" />}
                   </button>
 
                   {/* Email toggle */}
                   <button
                     onClick={() => updatePref(config.type, 'emailEnabled', !pref.emailEnabled)}
                     className={cn(
-                      'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all',
+                      'flex items-center justify-center h-9 w-9 rounded-lg transition-all',
                       pref.emailEnabled
-                        ? 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400'
-                        : 'bg-gray-100 dark:bg-gray-800 text-gray-400',
+                        ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 shadow-sm'
+                        : 'bg-muted text-muted-foreground hover:text-foreground',
                     )}
                     title={language === 'fr' ? 'Courriel' : 'Email'}
                   >
-                    <Mail className="h-3.5 w-3.5" />
+                    <Mail className="h-4 w-4" />
                   </button>
 
                   {/* Sound toggle */}
                   <button
                     onClick={() => updatePref(config.type, 'soundEnabled', !pref.soundEnabled)}
                     className={cn(
-                      'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all',
+                      'flex items-center justify-center h-9 w-9 rounded-lg transition-all',
                       pref.soundEnabled
-                        ? 'bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400'
-                        : 'bg-gray-100 dark:bg-gray-800 text-gray-400',
+                        ? 'bg-momentum-orange/15 dark:bg-momentum-orange/20 text-momentum-orange shadow-sm'
+                        : 'bg-muted text-muted-foreground hover:text-foreground',
                     )}
                     title={language === 'fr' ? 'Son' : 'Sound'}
                   >
-                    {pref.soundEnabled ? <Volume2 className="h-3.5 w-3.5" /> : <VolumeX className="h-3.5 w-3.5" />}
+                    {pref.soundEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
                   </button>
 
                   {/* Email frequency (only if email enabled) */}
@@ -315,7 +353,7 @@ export default function NotificationPreferencesPage() {
                     <select
                       value={pref.emailFrequency}
                       onChange={e => updatePref(config.type, 'emailFrequency', e.target.value)}
-                      className="text-xs bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-2 py-1.5 text-gray-700 dark:text-gray-300"
+                      className="text-label-sm bg-card border border-border rounded-lg px-2.5 py-2 text-foreground focus:ring-2 focus:ring-momentum-orange/20 focus:border-momentum-orange/40 transition-all"
                     >
                       {FREQUENCY_OPTIONS.map(opt => (
                         <option key={opt.value} value={opt.value}>
@@ -326,7 +364,7 @@ export default function NotificationPreferencesPage() {
                   )}
                 </div>
               </div>
-            </div>
+            </motion.div>
           );
         })}
       </div>

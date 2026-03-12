@@ -14,6 +14,7 @@ import {
   BookOpen,
   Eye,
   Presentation,
+  Loader2,
 } from 'lucide-react';
 import { Skeleton, SkeletonText } from '../../components/ui/skeleton';
 import { Button } from '../../components/ui/button';
@@ -113,6 +114,187 @@ const preFlightI18n = {
     previewTemplate: 'Aperçu',
   },
 } as const;
+
+// ---------------------------------------------------------------------------
+// ExportProgressOverlay — full-screen feedback while export is in progress
+// ---------------------------------------------------------------------------
+
+const EXPORT_STEPS_EN: Record<ExportFormat, string[]> = {
+  pdf: [
+    'Preparing document layout...',
+    'Rendering sections with theme...',
+    'Generating selectable text...',
+    'Building table of contents...',
+    'Finalizing PDF...',
+  ],
+  word: [
+    'Preparing document structure...',
+    'Formatting sections...',
+    'Building tables and lists...',
+    'Generating Word file...',
+    'Finalizing document...',
+  ],
+  powerpoint: [
+    'Analyzing business plan content...',
+    'Generating slide summaries with AI...',
+    'Creating presentation slides...',
+    'Adding charts and visuals...',
+    'Building SWOT and risk slides...',
+    'Finalizing presentation...',
+  ],
+};
+
+const EXPORT_STEPS_FR: Record<ExportFormat, string[]> = {
+  pdf: [
+    'Préparation de la mise en page...',
+    'Rendu des sections avec le thème...',
+    'Génération du texte sélectionnable...',
+    'Construction de la table des matières...',
+    'Finalisation du PDF...',
+  ],
+  word: [
+    'Préparation de la structure...',
+    'Mise en forme des sections...',
+    'Construction des tableaux et listes...',
+    'Génération du fichier Word...',
+    'Finalisation du document...',
+  ],
+  powerpoint: [
+    'Analyse du contenu du plan d\u2019affaires...',
+    'Génération des résumés de diapositives par IA...',
+    'Création des diapositives...',
+    'Ajout des graphiques et visuels...',
+    'Construction des diapositives SWOT et risques...',
+    'Finalisation de la présentation...',
+  ],
+};
+
+const FORMAT_LABELS: Record<ExportFormat, { en: string; fr: string }> = {
+  pdf: { en: 'PDF Document', fr: 'Document PDF' },
+  word: { en: 'Word Document', fr: 'Document Word' },
+  powerpoint: { en: 'PowerPoint Presentation', fr: 'Présentation PowerPoint' },
+};
+
+const FORMAT_ICONS: Record<ExportFormat, React.ReactNode> = {
+  pdf: <FileText className="w-6 h-6 text-red-500" />,
+  word: <FileType className="w-6 h-6 text-blue-500" />,
+  powerpoint: <Presentation className="w-6 h-6 text-orange-500" />,
+};
+
+function ExportProgressOverlay({
+  format,
+  language,
+}: {
+  format: ExportFormat;
+  language: 'en' | 'fr';
+}) {
+  const [stepIndex, setStepIndex] = useState(0);
+  const [fakeProgress, setFakeProgress] = useState(0);
+  const isFr = language === 'fr';
+  const steps = isFr ? EXPORT_STEPS_FR[format] : EXPORT_STEPS_EN[format];
+
+  // Advance steps every ~8s (PowerPoint) or ~4s (PDF/Word)
+  useEffect(() => {
+    const interval = format === 'powerpoint' ? 8000 : 4000;
+    const timer = setInterval(() => {
+      setStepIndex((prev) => Math.min(prev + 1, steps.length - 1));
+    }, interval);
+    return () => clearInterval(timer);
+  }, [format, steps.length]);
+
+  // Simulate progress bar (asymptotic — never reaches 100%)
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setFakeProgress((prev) => {
+        if (prev >= 92) return prev; // Cap at 92%
+        const increment = prev < 30 ? 3 : prev < 60 ? 2 : prev < 80 ? 1 : 0.3;
+        return Math.min(prev + increment, 92);
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.3 }}
+      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm"
+    >
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95, y: 24 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+        className="w-full max-w-md bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-8"
+      >
+        {/* Animated icon */}
+        <div className="flex justify-center mb-6">
+          <div className="relative">
+            <div className="w-20 h-20 rounded-full bg-orange-50 dark:bg-orange-900/20 flex items-center justify-center">
+              {FORMAT_ICONS[format]}
+            </div>
+            <motion.div
+              className="absolute -top-1 -right-1 w-8 h-8 rounded-full bg-white dark:bg-gray-700 shadow-md flex items-center justify-center"
+              animate={{ rotate: 360 }}
+              transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+            >
+              <Loader2 className="w-5 h-5 text-momentum-orange" />
+            </motion.div>
+          </div>
+        </div>
+
+        {/* Title */}
+        <h3 className="text-lg font-semibold text-center text-gray-900 dark:text-white mb-1">
+          {isFr ? 'Exportation en cours...' : 'Exporting your plan...'}
+        </h3>
+        <p className="text-sm text-center text-gray-500 dark:text-gray-400 mb-6">
+          {FORMAT_LABELS[format][language]}
+        </p>
+
+        {/* Progress bar */}
+        <div className="mb-4">
+          <div
+            className="h-2.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden"
+            role="progressbar"
+            aria-valuenow={Math.round(fakeProgress)}
+            aria-valuemin={0}
+            aria-valuemax={100}
+          >
+            <motion.div
+              className="h-full bg-momentum-orange rounded-full"
+              animate={{ width: `${fakeProgress}%` }}
+              transition={{ duration: 0.5, ease: 'easeOut' }}
+            />
+          </div>
+        </div>
+
+        {/* Current step */}
+        <AnimatePresence mode="wait">
+          <motion.p
+            key={stepIndex}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.25 }}
+            className="text-sm text-center text-orange-600 dark:text-orange-400 font-medium"
+          >
+            {steps[stepIndex]}
+          </motion.p>
+        </AnimatePresence>
+
+        {/* Hint for long exports */}
+        {format === 'powerpoint' && (
+          <p className="text-xs text-center text-gray-400 dark:text-gray-500 mt-4">
+            {isFr
+              ? 'La génération PowerPoint utilise l\u2019IA pour créer des diapositives adaptées. Cela peut prendre jusqu\u2019à 2 minutes.'
+              : 'PowerPoint generation uses AI to create tailored slides. This may take up to 2 minutes.'}
+          </p>
+        )}
+      </motion.div>
+    </motion.div>
+  );
+}
 
 // ---------------------------------------------------------------------------
 // ExportPreFlightModal component
@@ -389,21 +571,32 @@ function ExportPreFlightModal({
                     </span>
                   </button>
 
-                  {/* PowerPoint option — coming soon */}
-                  <div
-                    className="relative flex flex-col items-center gap-2 rounded-xl border-2 p-4 border-gray-200 dark:border-gray-700 opacity-50 cursor-not-allowed"
+                  {/* PowerPoint option */}
+                  <button
+                    type="button"
+                    onClick={() => setSelectedFormat('powerpoint')}
+                    className={cn(
+                      'flex flex-col items-center gap-2 rounded-xl border-2 p-4 transition-all',
+                      selectedFormat === 'powerpoint'
+                        ? 'border-momentum-orange bg-orange-50 dark:bg-orange-900/20 ring-1 ring-momentum-orange/30'
+                        : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600',
+                    )}
                   >
-                    <span className="absolute -top-2 -right-2 bg-gray-500 text-white text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-full leading-none tracking-wide">
-                      {language === 'fr' ? 'Bientôt' : 'Soon'}
-                    </span>
-                    <Presentation className="w-8 h-8 text-gray-400 dark:text-gray-500" />
-                    <span className="text-sm font-semibold text-gray-400 dark:text-gray-500">
+                    <Presentation
+                      className={cn(
+                        'w-8 h-8',
+                        selectedFormat === 'powerpoint'
+                          ? 'text-orange-500'
+                          : 'text-gray-400 dark:text-gray-500',
+                      )}
+                    />
+                    <span className="text-sm font-semibold text-gray-900 dark:text-white">
                       {strings.pptxTitle}
                     </span>
-                    <span className="text-[11px] text-gray-400 dark:text-gray-500 text-center leading-tight">
+                    <span className="text-[11px] text-gray-500 dark:text-gray-400 text-center leading-tight">
                       {strings.pptxDesc}
                     </span>
-                  </div>
+                  </button>
                 </div>
               </div>
 
@@ -1266,6 +1459,13 @@ export default function BusinessPlanPreviewPage() {
         sections={sectionsForDisplay}
         language={language}
       />
+
+      {/* Export Progress Overlay */}
+      <AnimatePresence>
+        {isExporting && exportingFormat && (
+          <ExportProgressOverlay format={exportingFormat} language={language} />
+        )}
+      </AnimatePresence>
 
       {/* Export Success Celebration Modal */}
       <ExportSuccessModal

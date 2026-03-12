@@ -40,16 +40,18 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
   const refreshNotifications = useCallback(async () => {
     setIsLoading(true);
     try {
-      const [countResult, listResult] = await Promise.all([
-        notificationService.getUnreadCount(),
-        notificationService.getNotifications(1, 10),
-      ]);
-      if (mountedRef.current) {
-        setUnreadCount(countResult.count);
-        setNotifications(listResult.items);
-      }
-    } catch {
-      // Silently fail
+      // Fetch count and list independently so one failure doesn't block the other
+      const countPromise = notificationService.getUnreadCount()
+        .then(r => { if (mountedRef.current) setUnreadCount(r.count); })
+        .catch(err => console.error('[Notifications] Failed to fetch unread count:', err));
+
+      const listPromise = notificationService.getNotifications(1, 10)
+        .then(r => { if (mountedRef.current) setNotifications(r.items); })
+        .catch(err => console.error('[Notifications] Failed to fetch notification list:', err));
+
+      await Promise.all([countPromise, listPromise]);
+    } catch (err) {
+      console.error('[Notifications] Unexpected error in refreshNotifications:', err);
     } finally {
       if (mountedRef.current) setIsLoading(false);
     }

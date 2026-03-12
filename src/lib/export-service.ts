@@ -1,4 +1,5 @@
 import { saveAs } from 'file-saver';
+import { AxiosResponse } from 'axios';
 import { generateWordDocument } from './export/word-document';
 import { PlanSection } from '../types/preview';
 import { CoverPageSettings } from '../types/cover-page';
@@ -6,6 +7,14 @@ import type { ExportTheme } from '../types/export-theme';
 import { apiClient } from './api-client';
 
 export type ExportFormat = 'pdf' | 'word' | 'powerpoint';
+
+/** Extract filename from Content-Disposition header, if present. */
+function extractFileName(response: AxiosResponse): string | null {
+  const disposition = response.headers?.['content-disposition'];
+  if (!disposition) return null;
+  const match = disposition.match(/filename\*?=(?:UTF-8''|"?)([^";]+)/i);
+  return match ? decodeURIComponent(match[1].replace(/"/g, '')) : null;
+}
 
 export interface ExportData {
   coverSettings: CoverPageSettings;
@@ -61,7 +70,7 @@ export const exportService = {
         const response = await apiClient.get(
           `/api/v1/business-plans/${planId}/export/themed-pdf`,
           { language: lang, themeId: exportTheme.id },
-          { responseType: 'blob' },
+          { responseType: 'blob', timeout: 180000 },
         );
         saveAs(response.data as Blob, fileName);
         return;
@@ -76,7 +85,7 @@ export const exportService = {
         const response = await apiClient.get(
           `/api/v1/business-plans/${planId}/export/pdf`,
           { language: lang },
-          { responseType: 'blob' },
+          { responseType: 'blob', timeout: 180000 },
         );
         saveAs(response.data as Blob, fileName);
         return;
@@ -138,10 +147,10 @@ export const exportService = {
     const response = await apiClient.get(
       `/api/v1/business-plans/${planId}/export/powerpoint`,
       { language: language || 'en', themeId: exportTheme?.id },
-      { responseType: 'blob' },
+      { responseType: 'blob', timeout: 180000 },
     );
 
-    const fileName = buildExportFileName(companyName, 'pptx', language);
+    const fileName = extractFileName(response) || buildExportFileName(companyName, 'pptx', language);
     saveAs(response.data as Blob, fileName);
   },
 
@@ -196,7 +205,7 @@ export const exportService = {
               }
             : undefined,
         },
-        { responseType: 'blob' },
+        { responseType: 'blob', timeout: 180000 },
       );
 
       const companyName = coverSettings?.companyName || 'Export';
@@ -207,11 +216,11 @@ export const exportService = {
       const response = await apiClient.get(
         `/api/v1/business-plans/${planId}/export/powerpoint`,
         { language, themeId: templateId },
-        { responseType: 'blob' },
+        { responseType: 'blob', timeout: 180000 },
       );
 
       const companyName = coverSettings?.companyName || 'Export';
-      const fileName = buildExportFileName(companyName, 'pptx', language);
+      const fileName = extractFileName(response) || buildExportFileName(companyName, 'pptx', language);
       saveAs(response.data as Blob, fileName);
     } else {
       // Word export via GET endpoint

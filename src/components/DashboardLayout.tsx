@@ -196,9 +196,11 @@ export default function DashboardLayout() {
           tabIndex={-1}
         >
           {/* Top bar */}
-          <div className="sticky top-0 z-30 flex items-center justify-between h-14 px-4 sm:px-6 lg:px-8 bg-gray-50/80 dark:bg-gray-950/80 backdrop-blur-sm border-b border-gray-200/60 dark:border-gray-800/60">
+          <div className="sticky top-0 z-30 flex items-center h-12 px-4 sm:px-6 lg:px-8 bg-background/80 backdrop-blur-sm border-b border-border/60">
             <DashboardBreadcrumb pathname={location.pathname} t={t} />
-            <NotificationBell />
+            <div className="ml-auto">
+              <NotificationBell />
+            </div>
           </div>
 
           <div className="p-4 sm:p-6 lg:p-8">
