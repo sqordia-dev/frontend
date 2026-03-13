@@ -2,6 +2,7 @@ import type { Organization } from '../lib/types';
 
 export interface OrganizationProfile extends Organization {
   sector?: string;
+  legalForm?: string;
   teamSize?: string;
   fundingStatus?: string;
   targetMarket?: string;
@@ -19,6 +20,7 @@ export interface UpdateOrganizationProfileRequest {
   website?: string;
   industry?: string;
   sector?: string;
+  legalForm?: string;
   teamSize?: string;
   fundingStatus?: string;
   targetMarket?: string;

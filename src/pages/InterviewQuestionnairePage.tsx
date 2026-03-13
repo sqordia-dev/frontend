@@ -787,7 +787,7 @@ function InterviewQuestionnaireContent() {
         action,
         context: contextSummary || question?.questionText,
         persona: persona || 'Entrepreneur',
-        language,
+        language: language || 'fr',
         previousAnswers,
         businessName,
         businessSector,

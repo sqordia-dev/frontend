@@ -1,124 +1,391 @@
-import React, { useState } from 'react';
+import { useState, useMemo, useCallback, type FC } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import { Plus, HardDrive, Pencil, Trash2 } from 'lucide-react';
+import { Trash2, X } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
-import FinancialSectionHeader from '../../components/financial/FinancialSectionHeader';
-import { useCapexAssets, useDeleteCapex } from '../../hooks/usePrevisio';
-import AddCapexDialog from '../../components/financial/dialogs/AddCapexDialog';
-import type { FinancialPlanDto, CapexAsset } from '../../types/financial-projections';
-import { ResponsiveTable, type Column } from '../../components/ui/responsive-table';
+import YearTabBar from '../../components/financial/YearTabBar';
+import { useCapexAssets, useCreateCapex, useUpdateCapex, useDeleteCapex } from '../../hooks/usePrevisio';
+import type { FinancialPlanDto, CapexAsset, AssetType } from '../../types/financial-projections';
 import { SkeletonTable } from '../../components/ui/skeleton';
 import { Button } from '../../components/ui/button';
-import { Badge } from '../../components/ui/badge';
+import { Input } from '../../components/ui/input';
 import {
   AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle,
   AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction,
 } from '../../components/ui/alert-dialog';
 
-const CapexSection: React.FC = () => {
-  const { t } = useTheme();
-  const { businessPlanId } = useOutletContext<{ plan: FinancialPlanDto; businessPlanId: string }>();
+interface OutletContext {
+  plan: FinancialPlanDto;
+  businessPlanId: string;
+}
+
+const MONTH_ABBR_FR = ['JANV.', 'FEVR.', 'MARS', 'AVR.', 'MAI', 'JUIN', 'JUIL.', 'AOUT', 'SEPT.', 'OCT.', 'NOV.', 'DEC.'];
+const MONTH_ABBR_EN = ['JAN.', 'FEB.', 'MAR.', 'APR.', 'MAY', 'JUN.', 'JUL.', 'AUG.', 'SEP.', 'OCT.', 'NOV.', 'DEC.'];
+
+const ASSET_TYPES: AssetType[] = ['LeaseholdImprovements', 'IT', 'Equipment', 'Furniture', 'Vehicle'];
+
+function getMonthHeaders(startMonth: number, startYear: number, projectionYear: number, lang: string) {
+  const sm = Math.max(1, Math.min(12, startMonth));
+  const abbr = lang === 'fr' ? MONTH_ABBR_FR : MONTH_ABBR_EN;
+  const headers: string[] = [];
+  const baseYear = projectionYear <= 0 ? startYear - 1 : startYear + (projectionYear - 1);
+  for (let i = 0; i < 12; i++) {
+    const m0 = (sm - 1 + i) % 12;
+    const y = baseYear + Math.floor((sm - 1 + i) / 12);
+    headers.push(`${abbr[m0]} ${String(y).slice(-2)}`);
+  }
+  return headers;
+}
+
+function fmtCell(value: number): string {
+  if (value === 0) return '0';
+  return Math.round(value).toLocaleString('fr-CA');
+}
+
+interface CapexRow {
+  id: string;
+  isNew: boolean;
+  category: AssetType;
+  name: string;
+  taxRate: number;
+  purchaseValue: number;
+}
+
+const GRID_COLS = 'minmax(120px, auto) repeat(12, 1fr) minmax(60px, auto)';
+
+const CapexSection: FC = () => {
+  const { t, language } = useTheme();
+  const { plan, businessPlanId } = useOutletContext<OutletContext>();
   const { data: assets, isLoading } = useCapexAssets(businessPlanId);
-  const deleteMutation = useDeleteCapex(businessPlanId);
+  const createCapex = useCreateCapex(businessPlanId);
+  const updateCapex = useUpdateCapex(businessPlanId);
+  const deleteCapex = useDeleteCapex(businessPlanId);
 
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [editItem, setEditItem] = useState<CapexAsset | null>(null);
+  const [activeYear, setActiveYear] = useState(1);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [forecastRow, setForecastRow] = useState<CapexRow | null>(null);
 
-  const handleAdd = () => { setEditItem(null); setDialogOpen(true); };
-  const handleEdit = (item: CapexAsset) => { setEditItem(item); setDialogOpen(true); };
+  // Inline rows
+  const [rows, setRows] = useState<CapexRow[]>([]);
+  const [rowsInitialized, setRowsInitialized] = useState(false);
 
-  const fmt = (v: number) => v.toLocaleString('fr-CA', { maximumFractionDigits: 0 });
+  if (assets && !rowsInitialized) {
+    setRows(
+      assets.map((a) => ({
+        id: a.id,
+        isNew: false,
+        category: a.assetType,
+        name: a.name,
+        taxRate: 14.98,
+        purchaseValue: a.purchaseValue,
+      }))
+    );
+    setRowsInitialized(true);
+  }
 
-  const columns: Column<CapexAsset>[] = [
-    { key: 'name', header: t('fin.capex.assetName'), render: (a) => <span className="font-medium">{a.name}</span> },
-    { key: 'assetType', header: t('fin.capex.assetType'), align: 'center', hideOnMobile: true },
-    { key: 'purchaseValue', header: t('fin.capex.value'), align: 'right', render: (a) => `${fmt(a.purchaseValue)} $` },
-    { key: 'depreciationMethod', header: t('fin.capex.depreciation'), align: 'center', hideOnMobile: true },
-    { key: 'usefulLifeYears', header: t('fin.capex.usefulLife'), align: 'right', hideOnMobile: true },
-    { key: 'annualDepreciation', header: t('fin.capex.annualDepr'), align: 'right', hideOnTablet: true, render: (a) => <span className="font-medium">{fmt(a.annualDepreciation)} $</span> },
-    {
-      key: 'actions', header: t('fin.common.actions'), align: 'center',
-      render: (a) => (
-        <div className="inline-flex gap-1">
-          <button onClick={() => handleEdit(a)} className="p-1 text-muted-foreground hover:text-strategy-blue rounded"><Pencil className="w-3.5 h-3.5" /></button>
-          <button onClick={() => setDeleteId(a.id)} className="p-1 text-muted-foreground hover:text-red-500 rounded"><Trash2 className="w-3.5 h-3.5" /></button>
-        </div>
-      ),
+  const monthHeaders = useMemo(
+    () => getMonthHeaders(plan.startMonth || 1, plan.startYear, activeYear, language),
+    [plan.startMonth, plan.startYear, activeYear, language],
+  );
+
+  const projectionYears = plan.projectionYears ?? 3;
+
+  const [capexGrid, setCapexGrid] = useState<Record<string, Record<number, number[]>>>({});
+
+  const handleAddLine = () => {
+    setRows((prev) => [
+      ...prev,
+      { id: `new-${Date.now()}`, isNew: true, category: 'LeaseholdImprovements', name: '', taxRate: 14.98, purchaseValue: 0 },
+    ]);
+  };
+
+  const handleRowChange = (id: string, field: keyof CapexRow, value: string | number) => {
+    setRows((prev) => prev.map((r) => (r.id === id ? { ...r, [field]: value } : r)));
+  };
+
+  const handleRemoveRow = (id: string) => {
+    const row = rows.find((r) => r.id === id);
+    if (row?.isNew) {
+      setRows((prev) => prev.filter((r) => r.id !== id));
+    } else {
+      setDeleteId(id);
+    }
+  };
+
+  const handleCellChange = useCallback(
+    (rowId: string, monthIndex: number, value: number) => {
+      setCapexGrid((prev) => {
+        const rowGrid = { ...(prev[rowId] ?? {}) };
+        const yearVals = [...(rowGrid[activeYear] ?? Array(12).fill(0))];
+        yearVals[monthIndex] = value;
+        rowGrid[activeYear] = yearVals;
+        return { ...prev, [rowId]: rowGrid };
+      });
     },
+    [activeYear],
+  );
+
+  const handleAddToForecast = (rowId: string, amount: number, startDate: string, recurring: boolean) => {
+    const [yearStr, monthStr] = startDate.split('-');
+    const startYr = parseInt(yearStr, 10);
+    const startMo = parseInt(monthStr, 10);
+    const planStart = plan.startMonth || 1;
+    const planStartYear = plan.startYear;
+
+    setCapexGrid((prev) => {
+      const updated = { ...prev };
+      const rowGrid = { ...(updated[rowId] ?? {}) };
+
+      for (let yr = 0; yr <= projectionYears; yr++) {
+        const baseYear = yr <= 0 ? planStartYear - 1 : planStartYear + (yr - 1);
+        const yearVals = [...(rowGrid[yr] ?? Array(12).fill(0))];
+
+        for (let i = 0; i < 12; i++) {
+          const m0 = (planStart - 1 + i) % 12;
+          const cellYear = baseYear + Math.floor((planStart - 1 + i) / 12);
+          const cellMonth = m0 + 1;
+
+          if (cellYear > startYr || (cellYear === startYr && cellMonth >= startMo)) {
+            yearVals[i] = amount;
+            if (!recurring) {
+              rowGrid[yr] = yearVals;
+              updated[rowId] = rowGrid;
+              return updated;
+            }
+          }
+        }
+        rowGrid[yr] = yearVals;
+      }
+
+      updated[rowId] = rowGrid;
+      return updated;
+    });
+
+    setForecastRow(null);
+  };
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      for (const row of rows) {
+        const payload = {
+          name: row.name,
+          assetType: row.category,
+          purchaseValue: row.purchaseValue,
+          purchaseMonth: plan.startMonth || 1,
+          purchaseYear: plan.startYear,
+          depreciationMethod: 'StraightLine' as const,
+          usefulLifeYears: 5,
+          salvageValue: 0,
+        };
+        if (row.isNew && row.name.trim()) {
+          await createCapex.mutateAsync(payload);
+        } else if (!row.isNew) {
+          await updateCapex.mutateAsync({ assetId: row.id, data: payload });
+        }
+      }
+      setRowsInitialized(false);
+    } catch {
+      // handled by hooks
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleCancel = () => {
+    setRowsInitialized(false);
+    setCapexGrid({});
+  };
+
+  // Build grid rows
+  const savedAssets = assets ?? [];
+
+  const gridRows = [
+    ...savedAssets.map((item) => {
+      const overrides = capexGrid[item.id]?.[activeYear];
+      const monthly = overrides ?? Array(12).fill(0) as number[];
+      return { id: item.id, name: item.name, monthly };
+    }),
+    ...rows
+      .filter((r) => r.isNew)
+      .map((r) => ({
+        id: r.id,
+        name: r.name || t('fin.capex.descPlaceholder'),
+        monthly: capexGrid[r.id]?.[activeYear] ?? Array(12).fill(0) as number[],
+      })),
   ];
 
-  if (isLoading) return <SkeletonTable rows={4} columns={6} />;
+  const monthlyTotals = Array.from({ length: 12 }, (_, i) =>
+    gridRows.reduce((sum, r) => sum + (r.monthly[i] ?? 0), 0),
+  );
+  const grandTotal = monthlyTotals.reduce((a, b) => a + b, 0);
+
+  if (isLoading) return <SkeletonTable rows={5} columns={6} />;
 
   return (
     <div>
-      <FinancialSectionHeader
-        title={t('fin.capex.title')}
-        description={t('fin.capex.description')}
-        icon={<HardDrive className="w-5 h-5" />}
-        actions={
-          <Button onClick={handleAdd} size="sm">
-            <Plus className="w-4 h-4" /> {t('fin.capex.addAsset')}
-          </Button>
-        }
-      />
+      {/* Title */}
+      <h2 className="text-2xl font-heading font-bold text-strategy-blue mb-6">
+        {t('fin.capex.title')}
+      </h2>
 
-      {assets && assets.length > 0 ? (
-        <div className="border border-border rounded-lg overflow-hidden">
-          <ResponsiveTable
-            data={assets}
-            columns={columns}
-            keyExtractor={(a) => a.id}
-            mobileAsCards
-            renderCard={(a) => (
-              <div className="border border-border rounded-lg p-4 bg-card space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="font-medium text-foreground">{a.name}</span>
-                  <div className="flex gap-1">
-                    <button onClick={() => handleEdit(a)} className="p-1.5 text-muted-foreground hover:text-strategy-blue rounded"><Pencil className="w-4 h-4" /></button>
-                    <button onClick={() => setDeleteId(a.id)} className="p-1.5 text-muted-foreground hover:text-red-500 rounded"><Trash2 className="w-4 h-4" /></button>
+      {/* Inline form header */}
+      <div className="flex flex-wrap items-end gap-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
+        <span className="min-w-[200px]">
+          {t('fin.capex.category')} <span className="text-red-500">*</span>
+        </span>
+        <span className="min-w-[180px]">
+          {t('fin.capex.descLabel')}
+        </span>
+        <span className="min-w-[90px]">
+          {t('fin.capex.taxesLabel')} <span className="text-red-500">*</span>
+        </span>
+      </div>
+
+      {/* Rows */}
+      <div className="space-y-2 mb-4">
+        {rows.map((row) => (
+          <div key={row.id} className="flex flex-wrap items-center gap-3">
+            <select
+              className="min-w-[200px] max-w-[240px] h-10 px-3 border border-border rounded-lg text-sm font-medium bg-card focus:outline-none focus:border-strategy-blue focus:ring-2 focus:ring-strategy-blue/20"
+              value={row.category}
+              onChange={(e) => handleRowChange(row.id, 'category', e.target.value)}
+            >
+              {ASSET_TYPES.map((type) => (
+                <option key={type} value={type}>{t(`fin.capex.type.${type}`)}</option>
+              ))}
+            </select>
+            <Input
+              className="min-w-[180px] max-w-[220px] bg-card"
+              placeholder={t('fin.capex.descPlaceholder')}
+              value={row.name}
+              onChange={(e) => handleRowChange(row.id, 'name', e.target.value)}
+            />
+            <Input
+              className="w-[90px] bg-card text-center font-medium"
+              type="number"
+              step="0.01"
+              value={row.taxRate || ''}
+              onChange={(e) =>
+                handleRowChange(row.id, 'taxRate', parseFloat(e.target.value) || 0)
+              }
+            />
+            <Button
+              variant="outline"
+              size="sm"
+              className="rounded-full text-xs whitespace-nowrap"
+              onClick={() => setForecastRow(row)}
+            >
+              {t('fin.capex.addToForecast')}
+            </Button>
+            <button
+              onClick={() => handleRemoveRow(row.id)}
+              className="p-1.5 text-muted-foreground hover:text-red-500 rounded"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+          </div>
+        ))}
+      </div>
+
+      {/* Add line button */}
+      <Button
+        variant="outline"
+        size="sm"
+        className="rounded-full mb-8"
+        onClick={handleAddLine}
+      >
+        {t('fin.capex.addLine')}
+      </Button>
+
+      {/* Monthly Forecasts card */}
+      <div className="bg-card border border-border rounded-2xl p-6">
+        <h3 className="text-lg font-heading font-bold text-foreground mb-4">
+          {t('fin.capex.monthlyForecasts')}
+        </h3>
+
+        <YearTabBar
+          projectionYears={projectionYears}
+          activeYear={activeYear}
+          onYearChange={setActiveYear}
+          showPreOpening
+          className="mb-8"
+        />
+
+        {/* Grid */}
+        <div className="grid gap-y-1" style={{ gridTemplateColumns: GRID_COLS }}>
+          <div />
+          {monthHeaders.map((label, i) => (
+            <div key={i} className="px-1 py-2 text-center font-bold text-[11px] uppercase tracking-wider text-muted-foreground">
+              {label}
+            </div>
+          ))}
+          <div className="px-1 py-2 text-center font-bold text-[11px] uppercase tracking-wider text-muted-foreground">
+            TOTAL
+          </div>
+
+          {gridRows.map((gr) => (
+            <EditableGridRow
+              key={gr.id}
+              rowId={gr.id}
+              label={gr.name}
+              values={gr.monthly}
+              total={gr.monthly.reduce((a: number, b: number) => a + b, 0)}
+              onCellChange={handleCellChange}
+            />
+          ))}
+
+          {gridRows.length > 0 && (
+            <>
+              <div className="px-2 py-2 text-sm font-semibold text-foreground self-center">
+                Total
+              </div>
+              {monthlyTotals.map((val, i) => (
+                <div key={i} className="px-1 py-1">
+                  <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200/50 dark:border-blue-800/30 rounded-lg h-10 flex items-center justify-center text-sm text-foreground">
+                    {fmtCell(val)}
                   </div>
                 </div>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">{t('fin.capex.assetType')}</span>
-                  <Badge variant="info">{a.assetType}</Badge>
-                </div>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">{t('fin.capex.value')}</span>
-                  <span className="font-medium">{fmt(a.purchaseValue)} $</span>
-                </div>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">{t('fin.capex.depreciation')}</span>
-                  <span>{a.depreciationMethod} / {a.usefulLifeYears} {t('fin.projectCost.months').replace('mois', 'ans')}</span>
-                </div>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">{t('fin.capex.annualDepr')}</span>
-                  <span className="font-semibold">{fmt(a.annualDepreciation)} $</span>
+              ))}
+              <div className="px-1 py-1">
+                <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200/50 dark:border-blue-800/30 rounded-lg h-10 flex items-center justify-center text-sm font-bold text-foreground">
+                  {fmtCell(grandTotal)}
                 </div>
               </div>
-            )}
-          />
+            </>
+          )}
         </div>
-      ) : (
-        <div className="text-center py-12 border border-dashed border-border rounded-lg">
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-muted mb-3">
-            <HardDrive className="w-6 h-6 text-muted-foreground" />
-          </div>
-          <h3 className="text-base font-medium text-foreground mb-1">{t('fin.capex.noAssets')}</h3>
-          <p className="text-sm text-muted-foreground mb-4">{t('fin.capex.description')}</p>
-          <Button variant="outline" onClick={handleAdd}>
-            <Plus className="w-4 h-4" /> {t('fin.capex.addAsset')}
-          </Button>
-        </div>
-      )}
+      </div>
 
-      <AddCapexDialog
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
-        businessPlanId={businessPlanId}
-        editItem={editItem}
+      {/* Save / Cancel */}
+      <div className="flex items-center gap-4 mt-10 pt-8 border-t border-border">
+        <Button onClick={handleSave} disabled={saving} className="rounded-full px-8">
+          {saving ? t('fin.ident.saving') : t('fin.common.save')}
+        </Button>
+        <Button
+          variant="outline"
+          onClick={handleCancel}
+          disabled={saving}
+          className="rounded-full px-8 text-strategy-blue border-strategy-blue hover:bg-strategy-blue/5"
+        >
+          {t('fin.common.cancel')}
+        </Button>
+      </div>
+
+      {/* Add to Forecast Dialog */}
+      <AddToForecastDialog
+        open={!!forecastRow}
+        rowName={forecastRow?.name ?? ''}
+        defaultAmount={forecastRow?.purchaseValue ?? 0}
+        defaultStartDate={`${plan.startYear}-${String(plan.startMonth || 1).padStart(2, '0')}`}
+        onClose={() => setForecastRow(null)}
+        onSubmit={(amount, startDate, recurring) => {
+          if (forecastRow) handleAddToForecast(forecastRow.id, amount, startDate, recurring);
+        }}
+        t={t}
       />
 
+      {/* Delete confirmation */}
       <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -127,7 +394,15 @@ const CapexSection: React.FC = () => {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>{t('fin.common.cancel')}</AlertDialogCancel>
-            <AlertDialogAction onClick={() => { if (deleteId) { deleteMutation.mutate(deleteId); setDeleteId(null); } }}>
+            <AlertDialogAction
+              onClick={() => {
+                if (deleteId) {
+                  deleteCapex.mutate(deleteId);
+                  setRows((prev) => prev.filter((r) => r.id !== deleteId));
+                  setDeleteId(null);
+                }
+              }}
+            >
               {t('fin.common.delete')}
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -138,3 +413,142 @@ const CapexSection: React.FC = () => {
 };
 
 export default CapexSection;
+
+// -- Editable grid row --
+
+function EditableGridRow({
+  rowId, label, values, total, onCellChange,
+}: {
+  rowId: string; label: string; values: number[]; total: number;
+  onCellChange: (rowId: string, monthIndex: number, value: number) => void;
+}) {
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  const [editValue, setEditValue] = useState('');
+
+  const startEdit = (index: number) => {
+    setEditingIndex(index);
+    setEditValue(values[index] === 0 ? '' : String(values[index]));
+  };
+
+  const commitAndMove = (nextIndex: number | null) => {
+    if (editingIndex !== null) onCellChange(rowId, editingIndex, parseFloat(editValue) || 0);
+    if (nextIndex !== null && nextIndex >= 0 && nextIndex < 12) {
+      setEditingIndex(nextIndex);
+      setEditValue(values[nextIndex] === 0 ? '' : String(values[nextIndex]));
+    } else {
+      setEditingIndex(null);
+      setEditValue('');
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') { e.preventDefault(); commitAndMove(editingIndex !== null ? editingIndex + 1 : null); }
+    if (e.key === 'Tab') { e.preventDefault(); commitAndMove(editingIndex !== null ? editingIndex + (e.shiftKey ? -1 : 1) : null); }
+    if (e.key === 'Escape') { setEditingIndex(null); setEditValue(''); }
+  };
+
+  return (
+    <>
+      <div className="px-2 py-2 text-sm text-foreground font-medium self-center truncate">{label}</div>
+      {values.map((val, i) => (
+        <div key={i} className="px-1 py-1">
+          {editingIndex === i ? (
+            <input
+              type="number" value={editValue}
+              onChange={(e) => setEditValue(e.target.value)}
+              onBlur={() => commitAndMove(null)} onKeyDown={handleKeyDown} autoFocus
+              className="w-full h-10 text-center border-2 border-strategy-blue rounded-lg text-sm bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-strategy-blue/20"
+            />
+          ) : (
+            <div
+              className="border border-border rounded-lg h-10 flex items-center justify-center text-sm font-medium text-foreground cursor-pointer bg-card hover:border-strategy-blue/40 hover:bg-blue-50/30 dark:hover:bg-blue-900/10 transition-colors"
+              onClick={() => startEdit(i)}
+            >{fmtCell(val)}</div>
+          )}
+        </div>
+      ))}
+      <div className="px-1 py-1">
+        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200/50 dark:border-blue-800/30 rounded-lg h-10 flex items-center justify-center text-sm font-bold text-foreground">
+          {fmtCell(total)}
+        </div>
+      </div>
+    </>
+  );
+}
+
+// -- Add to Forecast Dialog --
+
+function AddToForecastDialog({
+  open, rowName, defaultAmount, defaultStartDate, onClose, onSubmit, t,
+}: {
+  open: boolean; rowName: string; defaultAmount: number; defaultStartDate: string;
+  onClose: () => void; onSubmit: (amount: number, startDate: string, recurring: boolean) => void;
+  t: (key: string) => string;
+}) {
+  const [amount, setAmount] = useState(defaultAmount);
+  const [startDate, setStartDate] = useState(defaultStartDate);
+  const [recurring, setRecurring] = useState(false);
+
+  const [prevName, setPrevName] = useState(rowName);
+  if (rowName !== prevName) {
+    setPrevName(rowName);
+    setAmount(defaultAmount);
+    setStartDate(defaultStartDate);
+    setRecurring(false);
+  }
+
+  if (!open) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+      <div className="bg-card border border-border rounded-2xl shadow-xl w-full max-w-md p-6 relative">
+        <button onClick={onClose} className="absolute top-4 right-4 p-1.5 text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted transition-colors">
+          <X className="w-5 h-5" />
+        </button>
+
+        <h3 className="text-lg font-heading font-bold text-foreground mb-6 pr-8">
+          {t('fin.forecast.dialogTitle')} &ldquo;{rowName}&rdquo;
+        </h3>
+
+        <div className="flex flex-wrap items-end gap-4 mb-2">
+          <div className="flex flex-col gap-2">
+            <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">{t('fin.forecast.amount')}</label>
+            <input
+              type="number" value={amount || ''}
+              onChange={(e) => setAmount(parseFloat(e.target.value) || 0)}
+              className="w-[100px] h-10 text-center border border-border rounded-lg text-sm font-medium bg-card focus:outline-none focus:border-strategy-blue focus:ring-2 focus:ring-strategy-blue/20"
+            />
+          </div>
+          <div className="flex flex-col gap-2">
+            <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">{t('fin.forecast.startDate')}</label>
+            <input
+              type="month" value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              className="h-10 px-3 border border-border rounded-lg text-sm font-medium bg-card focus:outline-none focus:border-strategy-blue focus:ring-2 focus:ring-strategy-blue/20"
+            />
+          </div>
+          <div className="flex flex-col gap-2">
+            <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">{t('fin.forecast.recurring')}</label>
+            <button
+              onClick={() => setRecurring(!recurring)}
+              className={`w-10 h-10 rounded-lg border flex items-center justify-center transition-colors ${
+                recurring ? 'bg-strategy-blue border-strategy-blue' : 'bg-card border-border hover:border-strategy-blue/40'
+              }`}
+            >
+              {recurring && (
+                <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+              )}
+            </button>
+          </div>
+          <Button variant="outline" size="sm" className="rounded-full text-xs whitespace-nowrap h-10"
+            onClick={() => onSubmit(amount, startDate, recurring)}
+          >
+            {t('fin.forecast.addBtn')}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}

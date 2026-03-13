@@ -60,6 +60,8 @@ const NotificationPreferencesPage = lazy(() => import('./pages/NotificationPrefe
 
 // Financial Projections (Previsio) pages
 const FinancialProjectionsPage = lazy(() => import('./pages/financial/FinancialProjectionsPage'));
+const IdentificationSection = lazy(() => import('./pages/financial/IdentificationSection'));
+const OpeningBalanceSection = lazy(() => import('./pages/financial/OpeningBalanceSection'));
 const SalesSection = lazy(() => import('./pages/financial/SalesSection'));
 const COGSSection = lazy(() => import('./pages/financial/COGSSection'));
 const PayrollSection = lazy(() => import('./pages/financial/PayrollSection'));
@@ -299,7 +301,9 @@ function App() {
                 </ProtectedRoute>
               }
             >
-              <Route index element={<Navigate to="sales" replace />} />
+              <Route index element={<Navigate to="identification" replace />} />
+              <Route path="identification" element={<IdentificationSection />} />
+              <Route path="opening-balance" element={<OpeningBalanceSection />} />
               <Route path="sales" element={<SalesSection />} />
               <Route path="cogs" element={<COGSSection />} />
               <Route path="payroll" element={<PayrollSection />} />

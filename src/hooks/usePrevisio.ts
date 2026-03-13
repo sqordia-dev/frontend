@@ -366,6 +366,54 @@ export function useProjectCost(businessPlanId: string) {
   });
 }
 
+export function useUpdateProjectCost(businessPlanId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Parameters<typeof previsioService.updateProjectCostSettings>[1]) =>
+      previsioService.updateProjectCostSettings(businessPlanId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.previsio.projectCost(businessPlanId) });
+    },
+  });
+}
+
+// === Statements ===
+
+export function useRecalculateStatements(businessPlanId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (language: string = 'fr') => previsioService.recalculate(businessPlanId, language),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [...queryKeys.previsio.all, businessPlanId, 'statements'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.previsio.ratios(businessPlanId) });
+    },
+  });
+}
+
+export function useProfitLoss(businessPlanId: string, year: number, language: string = 'fr') {
+  return useQuery({
+    queryKey: queryKeys.previsio.statements(businessPlanId, 'profit-loss', year),
+    queryFn: () => previsioService.getProfitLoss(businessPlanId, year, language),
+    enabled: !!businessPlanId && year > 0,
+  });
+}
+
+export function useCashFlow(businessPlanId: string, year: number, language: string = 'fr') {
+  return useQuery({
+    queryKey: queryKeys.previsio.statements(businessPlanId, 'cash-flow', year),
+    queryFn: () => previsioService.getCashFlow(businessPlanId, year, language),
+    enabled: !!businessPlanId && year > 0,
+  });
+}
+
+export function useBalanceSheet(businessPlanId: string, year: number, language: string = 'fr') {
+  return useQuery({
+    queryKey: queryKeys.previsio.statements(businessPlanId, 'balance-sheet', year),
+    queryFn: () => previsioService.getBalanceSheet(businessPlanId, year, language),
+    enabled: !!businessPlanId && year > 0,
+  });
+}
+
 // === Ratios ===
 
 export function useFinancialRatios(businessPlanId: string) {

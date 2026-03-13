@@ -5,6 +5,9 @@ export interface FinancialPlanDto {
   businessPlanId: string;
   projectionYears: number;
   startYear: number;
+  startMonth: number;
+  salesTaxFrequency?: string;
+  isAlreadyOperating: boolean;
   defaultVolumeGrowthRate: number;
   defaultPriceIndexationRate: number;
   defaultExpenseIndexationRate: number;
@@ -22,6 +25,9 @@ export interface FinancialPlanSettings {
   defaultExpenseIndexationRate: number;
   defaultSocialChargeRate: number;
   defaultSalesTaxRate: number;
+  startMonth?: number;
+  salesTaxFrequency?: string;
+  isAlreadyOperating?: boolean;
 }
 
 // === Sales ===
@@ -212,6 +218,28 @@ export interface ProjectCostData {
   workingCapitalMonthsSalesExpenses: number;
   workingCapitalMonthsAdminExpenses: number;
   capexInclusionMonths: number;
+  // Per-category breakdown
+  salaryAlreadyAcquired: number;
+  salaryAcquireBefore: number;
+  salaryAcquireAfter: number;
+  salaryDurationMonths: number;
+  salesExpAlreadyAcquired: number;
+  salesExpAcquireBefore: number;
+  salesExpAcquireAfter: number;
+  salesExpDurationMonths: number;
+  adminExpAlreadyAcquired: number;
+  adminExpAcquireBefore: number;
+  adminExpAcquireAfter: number;
+  adminExpDurationMonths: number;
+  inventoryAlreadyAcquired: number;
+  inventoryAcquireBefore: number;
+  inventoryAcquireAfter: number;
+  inventoryDurationMonths: number;
+  capexAlreadyAcquired: number;
+  capexAcquireBefore: number;
+  capexAcquireAfter: number;
+  capexDurationMonths: number;
+  // Computed totals
   totalStartupCosts: number;
   totalWorkingCapital: number;
   totalCapex: number;
@@ -282,6 +310,8 @@ export interface FinancialRatios {
 // === Section Navigation ===
 
 export type PrevisioSection =
+  | 'identification'
+  | 'opening-balance'
   | 'sales'
   | 'cogs'
   | 'payroll'
@@ -299,7 +329,37 @@ export interface PrevisioSectionConfig {
   path: string;
 }
 
+export interface PrevisioNavItem {
+  key: string;
+  translationKey: string;
+  path?: string;
+  children?: PrevisioNavItem[];
+}
+
+export const PREVISIO_NAV: PrevisioNavItem[] = [
+  { key: 'identification', translationKey: 'fin.nav.identification', path: 'identification' },
+  { key: 'opening-balance', translationKey: 'fin.nav.openingBalance', path: 'opening-balance' },
+  { key: 'sales', translationKey: 'fin.nav.sales', path: 'sales' },
+  {
+    key: 'expenses',
+    translationKey: 'fin.nav.expenses',
+    children: [
+      { key: 'cogs', translationKey: 'fin.nav.cogs', path: 'cogs' },
+      { key: 'payroll', translationKey: 'fin.nav.payroll', path: 'payroll' },
+      { key: 'sales-expenses', translationKey: 'fin.nav.salesExpenses', path: 'sales-expenses' },
+      { key: 'admin-expenses', translationKey: 'fin.nav.adminExpenses', path: 'admin-expenses' },
+      { key: 'capex', translationKey: 'fin.nav.capex', path: 'capex' },
+    ],
+  },
+  { key: 'project-cost', translationKey: 'fin.nav.projectCost', path: 'project-cost' },
+  { key: 'financing', translationKey: 'fin.nav.financing', path: 'financing' },
+  { key: 'reports', translationKey: 'fin.nav.reports', path: 'reports' },
+];
+
+// Flat list for backward compatibility (used by mobile sheet, breadcrumbs, etc.)
 export const PREVISIO_SECTIONS: PrevisioSectionConfig[] = [
+  { key: 'identification', translationKey: 'fin.nav.identification', icon: 'FileText', path: 'identification' },
+  { key: 'opening-balance', translationKey: 'fin.nav.openingBalance', icon: 'Scale', path: 'opening-balance' },
   { key: 'sales', translationKey: 'fin.nav.sales', icon: 'ShoppingCart', path: 'sales' },
   { key: 'cogs', translationKey: 'fin.nav.cogs', icon: 'Package', path: 'cogs' },
   { key: 'payroll', translationKey: 'fin.nav.payroll', icon: 'Users', path: 'payroll' },

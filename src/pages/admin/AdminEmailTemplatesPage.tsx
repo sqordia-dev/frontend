@@ -36,11 +36,11 @@ const CATEGORIES = ['all', 'auth', 'notification', 'marketing', 'billing', 'syst
 type Category = typeof CATEGORIES[number];
 
 const CATEGORY_CONFIG: Record<string, { icon: typeof Mail; color: string; bg: string; label: string }> = {
-  auth:         { icon: Shield,     color: 'text-blue-600 dark:text-blue-400',    bg: 'bg-blue-500/10',    label: 'Auth' },
-  notification: { icon: Bell,       color: 'text-amber-600 dark:text-amber-400',  bg: 'bg-amber-500/10',   label: 'Notification' },
-  marketing:    { icon: Megaphone,  color: 'text-purple-600 dark:text-purple-400', bg: 'bg-purple-500/10',  label: 'Marketing' },
-  billing:      { icon: CreditCard, color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-500/10', label: 'Billing' },
-  system:       { icon: Settings,   color: 'text-gray-600 dark:text-gray-400',    bg: 'bg-gray-500/10',    label: 'System' },
+  auth:         { icon: Shield,     color: 'text-strategy-blue dark:text-blue-300',           bg: 'bg-strategy-blue/10',    label: 'Auth' },
+  notification: { icon: Bell,       color: 'text-momentum-orange dark:text-momentum-orange',  bg: 'bg-momentum-orange/10',  label: 'Notification' },
+  marketing:    { icon: Megaphone,  color: 'text-teal-600 dark:text-teal-400',                bg: 'bg-teal-500/10',         label: 'Marketing' },
+  billing:      { icon: CreditCard, color: 'text-emerald-600 dark:text-emerald-400',          bg: 'bg-emerald-500/10',      label: 'Billing' },
+  system:       { icon: Settings,   color: 'text-gray-600 dark:text-gray-400',                bg: 'bg-gray-500/10',         label: 'System' },
 };
 
 function getCategoryConfig(category: string) {
@@ -51,6 +51,13 @@ function formatDate(dateStr: string) {
   return new Date(dateStr).toLocaleDateString('en-US', {
     month: 'short', day: 'numeric', year: 'numeric',
   });
+}
+
+/** Convert snake_case template name to human-readable title */
+function formatTemplateName(name: string): string {
+  return name
+    .replace(/_/g, ' ')
+    .replace(/\b\w/g, c => c.toUpperCase());
 }
 
 export default function AdminEmailTemplatesPage() {
@@ -439,7 +446,7 @@ export default function AdminEmailTemplatesPage() {
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2">
                           <h3 className="truncate font-semibold text-foreground">
-                            {template.name}
+                            {formatTemplateName(template.name)}
                           </h3>
                           <Badge
                             variant="secondary"
@@ -610,7 +617,7 @@ export default function AdminEmailTemplatesPage() {
             <AlertDialogHeader>
               <AlertDialogTitle>Delete template?</AlertDialogTitle>
               <AlertDialogDescription>
-                This will permanently delete <span className="font-medium text-foreground">{deleteTarget?.name}</span>.
+                This will permanently delete <span className="font-medium text-foreground">{deleteTarget ? formatTemplateName(deleteTarget.name) : ''}</span>.
                 This action cannot be undone.
               </AlertDialogDescription>
             </AlertDialogHeader>
@@ -821,7 +828,7 @@ function GenerateDialog({ open, saving, onGenerate, onClose }: {
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-momentum-orange/20 to-purple-500/20">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-momentum-orange/10">
               <Sparkles className="h-4 w-4 text-momentum-orange" />
             </div>
             AI Generate Template
@@ -888,13 +895,13 @@ function PreviewDialog({ open, html, template, language, onLanguageChange, onClo
       <DialogContent className="sm:max-w-3xl max-h-[90vh]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-500/10">
-              <Eye className="h-4 w-4 text-blue-500" />
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-strategy-blue/10">
+              <Eye className="h-4 w-4 text-strategy-blue dark:text-blue-300" />
             </div>
             Email Preview
             {template && (
               <Badge variant="secondary" className="ml-2 text-xs font-normal">
-                {template.name}
+                {formatTemplateName(template.name)}
               </Badge>
             )}
           </DialogTitle>

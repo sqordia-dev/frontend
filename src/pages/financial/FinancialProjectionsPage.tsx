@@ -1,25 +1,19 @@
 import React, { useState } from 'react';
 import { Outlet, useParams, useNavigate, useLocation } from 'react-router-dom';
+import { ChevronUp } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useIsMobile } from '../../hooks';
 import FinancialSectionSidebar from '../../components/financial/FinancialSectionSidebar';
 import FinancialPageHeader from '../../components/financial/FinancialPageHeader';
 import { useFinancialPlan, useCreateFinancialPlan } from '../../hooks/usePrevisio';
-import { PREVISIO_SECTIONS } from '../../types/financial-projections';
+import { PREVISIO_NAV, type PrevisioNavItem } from '../../types/financial-projections';
 import { PageTransition } from '../../components/ui/page-transition';
 import { SkeletonPage } from '../../components/ui/skeleton';
 import {
   Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription,
 } from '../../components/ui/sheet';
-import {
-  ShoppingCart, Package, Users, TrendingUp, Building2,
-  HardDrive, Calculator, Landmark, BarChart3
-} from 'lucide-react';
 
-const iconMap: Record<string, React.FC<{ className?: string }>> = {
-  ShoppingCart, Package, Users, TrendingUp, Building2,
-  HardDrive, Calculator, Landmark, BarChart3,
-};
+const EXPENSE_CHILD_PATHS = ['cogs', 'payroll', 'sales-expenses', 'admin-expenses', 'capex'];
 
 const FinancialProjectionsPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -30,8 +24,9 @@ const FinancialProjectionsPage: React.FC = () => {
   const { data: plan, isLoading, error } = useFinancialPlan(id || '');
   const createPlan = useCreateFinancialPlan(id || '');
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [mobileExpensesOpen, setMobileExpensesOpen] = useState(false);
 
-  const currentPath = location.pathname.split('/').pop() || 'sales';
+  const currentPath = location.pathname.split('/').pop() || 'identification';
 
   // Auto-create plan if it doesn't exist
   React.useEffect(() => {
@@ -41,6 +36,13 @@ const FinancialProjectionsPage: React.FC = () => {
     }
   }, [error]);
 
+  // Auto-expand expenses group on mobile when a child is active
+  React.useEffect(() => {
+    if (EXPENSE_CHILD_PATHS.includes(currentPath)) {
+      setMobileExpensesOpen(true);
+    }
+  }, [currentPath]);
+
   if (isLoading || createPlan.isPending) {
     return (
       <div className="flex flex-col min-h-screen bg-background">
@@ -49,6 +51,57 @@ const FinancialProjectionsPage: React.FC = () => {
       </div>
     );
   }
+
+  const handleMobileNavigate = (path: string) => {
+    navigate(`/business-plan/${id}/financials/${path}`);
+    setSheetOpen(false);
+  };
+
+  const renderMobileItem = (item: PrevisioNavItem) => {
+    if (item.children) {
+      const isChildActive = item.children.some((c) => c.path === currentPath);
+      return (
+        <li key={item.key}>
+          <button
+            onClick={() => setMobileExpensesOpen((prev) => !prev)}
+            className={`w-full flex items-center justify-between px-3 py-3 text-sm rounded-lg transition-colors ${
+              isChildActive
+                ? 'text-strategy-blue font-medium'
+                : 'text-muted-foreground hover:bg-muted'
+            }`}
+          >
+            <span>{t(item.translationKey)}</span>
+            <ChevronUp
+              className={`w-4 h-4 text-muted-foreground transition-transform duration-200 ${
+                mobileExpensesOpen ? '' : 'rotate-180'
+              }`}
+            />
+          </button>
+          {mobileExpensesOpen && (
+            <ul className="ml-4 border-l border-border pl-2 space-y-0.5">
+              {item.children.map((child) => renderMobileItem(child))}
+            </ul>
+          )}
+        </li>
+      );
+    }
+
+    const isActive = currentPath === item.path;
+    return (
+      <li key={item.key}>
+        <button
+          onClick={() => item.path && handleMobileNavigate(item.path)}
+          className={`w-full text-left px-3 py-3 text-sm rounded-lg transition-colors ${
+            isActive
+              ? 'bg-strategy-blue/10 text-strategy-blue font-medium'
+              : 'text-muted-foreground hover:bg-muted'
+          }`}
+        >
+          {t(item.translationKey)}
+        </button>
+      </li>
+    );
+  };
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
@@ -75,38 +128,8 @@ const FinancialProjectionsPage: React.FC = () => {
               <SheetDescription>{t('fin.header.sections')}</SheetDescription>
             </SheetHeader>
             <nav>
-              <ul className="space-y-1">
-                {PREVISIO_SECTIONS.map((section) => {
-                  const Icon = iconMap[section.icon];
-                  const isActive = currentPath === section.path;
-                  return (
-                    <li key={section.key}>
-                      <button
-                        onClick={() => {
-                          navigate(`/business-plan/${id}/financials/${section.path}`);
-                          setSheetOpen(false);
-                        }}
-                        className={`w-full flex items-center gap-3 px-3 py-3 text-sm rounded-lg transition-colors ${
-                          isActive
-                            ? 'bg-strategy-blue/10 text-strategy-blue font-medium'
-                            : 'text-muted-foreground hover:bg-muted'
-                        }`}
-                      >
-                        {Icon && (
-                          <span className={`flex items-center justify-center w-8 h-8 rounded-md ${
-                            isActive ? 'bg-strategy-blue/15' : 'bg-muted'
-                          }`}>
-                            <Icon className="w-4 h-4" />
-                          </span>
-                        )}
-                        <span>{t(section.translationKey)}</span>
-                        {isActive && (
-                          <span className="ml-auto w-1.5 h-1.5 rounded-full bg-strategy-blue" />
-                        )}
-                      </button>
-                    </li>
-                  );
-                })}
+              <ul className="space-y-0.5">
+                {PREVISIO_NAV.map((item) => renderMobileItem(item))}
               </ul>
             </nav>
           </SheetContent>

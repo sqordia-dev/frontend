@@ -37,7 +37,7 @@ const FinancialPageHeader: React.FC<FinancialPageHeaderProps> = ({ onOpenSheet }
       .catch(() => {});
   }, []);
 
-  const currentPath = location.pathname.split('/').pop() || 'sales';
+  const currentPath = location.pathname.split('/').pop() || 'identification';
   const currentSection = PREVISIO_SECTIONS.find(s => s.path === currentPath);
   const sectionName = currentSection ? t(currentSection.translationKey) : '';
 
