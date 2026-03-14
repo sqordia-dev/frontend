@@ -2,104 +2,221 @@ name: Frontend CI
 
 on:
   push:
-    branches: [main, develop, feature/**]
+    branches: [main, develop]
     paths:
       - 'src/**'
+      - 'e2e/**'
       - 'package.json'
       - 'tsconfig.json'
       - 'vite.config.ts'
+      - 'playwright.config.ts'
       - '.github/workflows/ci.yml'
   pull_request:
     branches: [main, develop]
     paths:
       - 'src/**'
+      - 'e2e/**'
       - 'package.json'
+      - 'tsconfig.json'
+  workflow_dispatch:
+    inputs:
+      run_full_e2e:
+        description: 'Run full E2E suite (not just smoke)'
+        type: boolean
+        default: false
 
 env:
   NODE_VERSION: '20'
+  PROD_API_URL: https://sqordia-production-api.proudwater-90136d2c.canadacentral.azurecontainerapps.io
+  PROD_URL: https://sqordia.app
 
 jobs:
-  build:
+  # ─────────────────────────────────────────────
+  # Stage 1: Quality gates (parallel, blocking)
+  # ─────────────────────────────────────────────
+  quality:
+    name: Typecheck & Lint
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
+          cache: npm
           cache-dependency-path: package-lock.json
 
-      - name: Install dependencies
-        run: npm ci
+      - run: npm ci
 
-      - name: Run TypeScript check
+      - name: TypeScript check
         run: npm run typecheck
-        continue-on-error: true
 
-      - name: Run ESLint
+      - name: ESLint
         run: npm run lint
-        continue-on-error: true
 
-      - name: Build application
-        run: npm run build
-        env:
-          VITE_API_URL: ${{ vars.VITE_API_URL || 'https://api.sqordia.app' }}
-
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: frontend-build
-          path: dist/
-          retention-days: 7
-
-  # Dependency audit
   audit:
+    name: Security audit
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
+          cache: npm
           cache-dependency-path: package-lock.json
 
-      - name: Install dependencies
-        run: npm ci
+      - run: npm ci
 
-      - name: Run security audit
+      - name: npm audit (high + critical)
         run: npm audit --audit-level=high
         continue-on-error: true
 
-  # Bundle size check
-  bundle-size:
+  # ─────────────────────────────────────────────
+  # Stage 2: Build (parallel with quality)
+  # ─────────────────────────────────────────────
+  build:
+    name: Build
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
+          cache: npm
           cache-dependency-path: package-lock.json
 
-      - name: Install dependencies
-        run: npm ci
+      - run: npm ci
 
-      - name: Build and analyze bundle
-        run: |
-          npm run build
-          echo "## Bundle Size Analysis" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "| File | Size |" >> $GITHUB_STEP_SUMMARY
-          echo "|------|------|" >> $GITHUB_STEP_SUMMARY
-          find dist/assets -name "*.js" -exec sh -c 'echo "| {} | $(du -h {} | cut -f1) |"' \; >> $GITHUB_STEP_SUMMARY
+      - name: Build
+        run: npm run build
         env:
-          VITE_API_URL: https://api.sqordia.app
+          VITE_API_URL: ${{ env.PROD_API_URL }}
+
+      - name: Bundle size report
+        run: |
+          echo "## Bundle Size" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          TOTAL=$(du -sh dist/ | cut -f1)
+          echo "**Total:** ${TOTAL}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Chunk | Size |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|------|" >> $GITHUB_STEP_SUMMARY
+          find dist/assets -name "*.js" -size +100k -exec sh -c 'echo "| $(basename {}) | $(du -h {} | cut -f1) |"' \; | sort -t'|' -k3 -rh >> $GITHUB_STEP_SUMMARY
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: frontend-build
+          path: dist/
+          retention-days: 3
+
+  # ─────────────────────────────────────────────
+  # Stage 3: E2E smoke tests against production API
+  # ─────────────────────────────────────────────
+  e2e-smoke:
+    name: E2E smoke tests
+    needs: [quality, build]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - run: npm ci
+
+      - name: Install Playwright (chromium only)
+        run: npx playwright install --with-deps chromium
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: frontend-build
+          path: dist/
+
+      - name: Start preview server
+        run: npx vite preview --port 4173 &
+        env:
+          VITE_API_URL: ${{ env.PROD_API_URL }}
+
+      - name: Wait for server
+        run: npx wait-on http://localhost:4173 --timeout 30000
+
+      - name: Run smoke tests
+        run: npx playwright test --project=smoke --retries=1
+        env:
+          TEST_ENV: local
+          BASE_URL: http://localhost:4173
+          SKIP_AUTH_SETUP: 'true'
+
+      - name: Upload test report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-smoke-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
+
+  # ─────────────────────────────────────────────
+  # Stage 4: Full E2E (manual or main branch only)
+  # ─────────────────────────────────────────────
+  e2e-full:
+    name: E2E full suite
+    needs: [e2e-smoke]
+    if: >-
+      github.event_name == 'workflow_dispatch' && github.event.inputs.run_full_e2e == 'true'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - run: npm ci
+
+      - name: Install Playwright (chromium only)
+        run: npx playwright install --with-deps chromium
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: frontend-build
+          path: dist/
+
+      - name: Start preview server
+        run: npx vite preview --port 4173 &
+        env:
+          VITE_API_URL: ${{ env.PROD_API_URL }}
+
+      - name: Wait for server
+        run: npx wait-on http://localhost:4173 --timeout 30000
+
+      - name: Run full E2E suite (shard ${{ matrix.shard }}/2)
+        run: npx playwright test --project=chromium --shard=${{ matrix.shard }}/2
+        env:
+          TEST_ENV: local
+          BASE_URL: http://localhost:4173
+          SKIP_AUTH_SETUP: 'true'
+          TEST_ADMIN_EMAIL: ${{ secrets.TEST_ADMIN_EMAIL }}
+          TEST_ADMIN_PASSWORD: ${{ secrets.TEST_ADMIN_PASSWORD }}
+
+      - name: Upload test report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-full-report-shard-${{ matrix.shard }}
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
