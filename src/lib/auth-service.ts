@@ -7,6 +7,18 @@ const MICROSOFT_CLIENT_ID = import.meta.env.VITE_MICROSOFT_CLIENT_ID || '';
 const MICROSOFT_REDIRECT_URI = import.meta.env.VITE_MICROSOFT_REDIRECT_URI || `${window.location.origin}/auth/microsoft/callback`;
 const MICROSOFT_TENANT = import.meta.env.VITE_MICROSOFT_TENANT || 'common';
 
+/** Set a same-domain is_authenticated cookie so synchronous checks work */
+function setAuthCookie(expiresAt?: string) {
+  const maxAge = expiresAt
+    ? Math.max(0, Math.floor((new Date(expiresAt).getTime() - Date.now()) / 1000))
+    : 3600;
+  document.cookie = `is_authenticated=true; path=/; max-age=${maxAge}; SameSite=Lax${location.protocol === 'https:' ? '; Secure' : ''}`;
+}
+
+function clearAuthCookie() {
+  document.cookie = 'is_authenticated=; path=/; max-age=0';
+}
+
 export const authService = {
   async login(credentials: LoginRequest): Promise<LoginResponse> {
     try {
@@ -30,6 +42,7 @@ export const authService = {
         }
 
         localStorage.removeItem('demoMode');
+        setAuthCookie(value.expiresAt);
         activityLogger.logLogin().catch(console.error); // fire-and-forget
         return value;
       }
@@ -52,6 +65,7 @@ export const authService = {
         const refreshToken = data.refreshToken;
 
         localStorage.removeItem('demoMode');
+        setAuthCookie(data.expiresAt);
         activityLogger.logLogin().catch(console.error); // fire-and-forget
 
         return {
@@ -100,6 +114,7 @@ export const authService = {
         const refreshToken = value.refreshToken;
 
         localStorage.removeItem('demoMode');
+        setAuthCookie(value.expiresAt);
         activityLogger.logLogin().catch(console.error);
 
         return {
@@ -116,6 +131,7 @@ export const authService = {
         const refreshToken = data.refreshToken;
 
         localStorage.removeItem('demoMode');
+        setAuthCookie(data.expiresAt);
         activityLogger.logLogin().catch(console.error);
 
         return {
@@ -221,12 +237,13 @@ export const authService = {
         // Backend returns Token and RefreshToken, map to accessToken and refreshToken
         const accessToken = authResponse.token || authResponse.accessToken || authResponse.Token;
         const refreshToken = authResponse.refreshToken || authResponse.RefreshToken;
-        
+
         if (!accessToken || !refreshToken) {
           throw new Error('Invalid response format from server');
         }
 
         localStorage.removeItem('demoMode');
+        setAuthCookie(authResponse.expiresAt);
         activityLogger.logLogin().catch(console.error); // fire-and-forget
 
         return {
@@ -247,6 +264,7 @@ export const authService = {
         }
 
         localStorage.removeItem('demoMode');
+        setAuthCookie(data.expiresAt);
         activityLogger.logLogin().catch(console.error); // fire-and-forget
 
         return {
@@ -428,6 +446,7 @@ export const authService = {
         }
 
         localStorage.removeItem('demoMode');
+        setAuthCookie(authResponse.expiresAt);
         activityLogger.logLogin().catch(console.error); // fire-and-forget
 
         return {
@@ -448,6 +467,7 @@ export const authService = {
         }
 
         localStorage.removeItem('demoMode');
+        setAuthCookie(data.expiresAt);
         activityLogger.logLogin().catch(console.error); // fire-and-forget
 
         return {
@@ -476,6 +496,8 @@ export const authService = {
       await apiClient.post('/api/v1/auth/logout', { refreshToken: '' });
     } catch (error) {
       if (import.meta.env.DEV) console.error('Logout error:', error);
+    } finally {
+      clearAuthCookie();
     }
   },
 
@@ -486,10 +508,12 @@ export const authService = {
       const data = response.data;
 
       if (data.isSuccess && data.value) {
+        setAuthCookie(data.value.expiresAt);
         return data.value;
       }
       throw new Error(data.errorMessage || 'Token refresh failed');
     } catch (error: any) {
+      clearAuthCookie();
       throw new Error(error.message || 'Token refresh failed');
     }
   },

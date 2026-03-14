@@ -38,9 +38,9 @@ export default function SessionExpiryWarning() {
 
   const handleExtend = async () => {
     try {
-      const { apiClient } = await import('../lib/api-client');
-      // Backend reads refresh_token from cookie, sets new cookies
-      await apiClient.post('/api/v1/auth/refresh-token', {});
+      const { authService } = await import('../lib/auth-service');
+      // authService.refreshToken() handles cookie refresh internally
+      await authService.refreshToken();
       setShowExpired(false);
     } catch {
       setShowExpired(true);
