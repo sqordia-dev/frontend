@@ -39,6 +39,7 @@ class ApiClient {
     this.client = axios.create({
       baseURL: API_BASE_URL,
       timeout: 60000,
+      withCredentials: true, // Send HttpOnly cookies with every request
       headers: {
         'Content-Type': 'application/json',
       },
@@ -50,10 +51,6 @@ class ApiClient {
   private setupInterceptors() {
     this.client.interceptors.request.use(
       (config: InternalAxiosRequestConfig) => {
-        const token = localStorage.getItem('accessToken');
-        if (token && config.headers) {
-          config.headers.Authorization = `Bearer ${token}`;
-        }
         // Remove Content-Type header for FormData - axios will set it automatically with boundary
         if (config.data instanceof FormData && config.headers) {
           delete config.headers['Content-Type'];
@@ -71,7 +68,7 @@ class ApiClient {
           status: error.response?.status,
           message: error.message,
           data: error.response?.data,
-          requestData: error.config?.data ? (typeof error.config.data === 'string' ? JSON.parse(error.config.data) : error.config.data) : null
+          // Never log request body — may contain passwords, tokens, or PII
         };
 
         // Don't log expected 404s from endpoints where "not found" is normal
@@ -79,36 +76,28 @@ class ApiClient {
           error.config?.url?.includes('/api/v1/content/') ||  // CMS content (no published version)
           error.config?.url?.includes('/api/v1/subscriptions/current')  // No subscription
         );
-        if (!isExpected404) {
+        if (!isExpected404 && import.meta.env.DEV) {
           console.error('API Error:', errorDetails);
         }
-        
+
         // Handle CORS and network errors
-        // Note: When a 401 response lacks CORS headers, the browser blocks it
-        // and reports it as ERR_NETWORK instead. We handle this by attempting
-        // a token refresh when we have stored credentials.
         if (error.code === 'ERR_NETWORK' || error.message === 'Network Error') {
           const isDevelopment = import.meta.env.MODE === 'development';
-          console.error('Network Error Details:', {
-            message: error.message,
-            code: error.code,
-            config: error.config,
-            isDevelopment,
-            apiBaseUrl: API_BASE_URL
-          });
+          if (isDevelopment) {
+            console.error('Network Error Details:', {
+              message: error.message,
+              code: error.code,
+              url: error.config?.url,
+            });
+          }
 
-          // If we have a token, this might be a CORS-blocked 401 (expired token).
-          // Attempt a token refresh before giving up.
-          const hasToken = localStorage.getItem('accessToken');
-          if (hasToken && error.config && !error.config._networkRetried) {
+          // Attempt a token refresh before giving up
+          if (error.config && !error.config._networkRetried) {
             const refreshed = await this.refreshToken();
             if (refreshed) {
               error.config._networkRetried = true;
               return this.client.request(error.config);
             }
-            // Refresh failed — token is truly invalid, redirect to login
-            localStorage.removeItem('accessToken');
-            localStorage.removeItem('refreshToken');
             window.location.href = '/login';
             return Promise.reject(error);
           }
@@ -118,7 +107,7 @@ class ApiClient {
             : 'Network error: Unable to connect to the server. Please check your internet connection.';
           error.userMessage = errorMessage;
         }
-        
+
         // Handle rate limiting (429)
         if (error.response?.status === 429) {
           const retryAfter = error.response.headers['retry-after'];
@@ -128,9 +117,9 @@ class ApiClient {
           error.userMessage = errorMessage;
           console.warn('Rate limit exceeded:', { retryAfter, url: error.config?.url });
         }
-        
-        // Also log the full error response data for debugging
-        if (error.response?.data && !isExpected404) {
+
+        // Log full error response only in development
+        if (error.response?.data && !isExpected404 && import.meta.env.DEV) {
           console.error('Full error response:', JSON.stringify(error.response.data, null, 2));
         }
 
@@ -139,8 +128,6 @@ class ApiClient {
           if (refreshed && error.config) {
             return this.client.request(error.config);
           }
-          localStorage.removeItem('accessToken');
-          localStorage.removeItem('refreshToken');
           window.location.href = '/login';
         }
         return Promise.reject(error);
@@ -150,44 +137,32 @@ class ApiClient {
 
   private async refreshToken(): Promise<boolean> {
     try {
-      const accessToken = localStorage.getItem('accessToken');
-      const refreshToken = localStorage.getItem('refreshToken');
-      if (!refreshToken) return false;
-
       // Build the refresh token URL - handle empty base URL for proxy
-      const refreshUrl = API_BASE_URL 
+      const refreshUrl = API_BASE_URL
         ? `${API_BASE_URL}/api/v1/auth/refresh-token`
         : '/api/v1/auth/refresh-token';
 
-      // Backend expects both Token and RefreshToken in the request
-      const response = await axios.post(refreshUrl, {
-        token: accessToken || '',
-        refreshToken: refreshToken,
-      });
+      // Cookies are sent automatically via withCredentials
+      // Send empty body — backend reads tokens from cookies
+      const response = await axios.post(refreshUrl, {}, { withCredentials: true });
 
       const data = response.data;
-      
+
       // Handle wrapped response format (isSuccess/value)
-      if (data.isSuccess && data.value) {
-        localStorage.setItem('accessToken', data.value.token || data.value.accessToken);
-        localStorage.setItem('refreshToken', data.value.refreshToken);
+      if (data.isSuccess && data.value?.token) {
         return true;
       }
-      
-      // Handle direct response format (token/refreshToken at root level)
+
+      // Handle direct response format
       if (data.token || data.accessToken) {
-        const newAccessToken = data.token || data.accessToken;
-        const newRefreshToken = data.refreshToken;
-        localStorage.setItem('accessToken', newAccessToken);
-        if (newRefreshToken) {
-          localStorage.setItem('refreshToken', newRefreshToken);
-        }
         return true;
       }
 
       return false;
     } catch (error) {
-      console.error('Token refresh failed:', error);
+      if (import.meta.env.DEV) {
+        console.error('Token refresh failed:', error);
+      }
       return false;
     }
   }

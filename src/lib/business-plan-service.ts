@@ -1,5 +1,6 @@
 import { apiClient } from './api-client';
 import { BusinessPlan, CreateBusinessPlanRequest, ApiResponse, UserDashboardStats } from './types';
+import { sanitizeHtml } from '../utils/sanitize';
 
 const DEMO_PLANS: BusinessPlan[] = [
   {
@@ -254,12 +255,12 @@ export const businessPlanService = {
         return html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
       }
       const tmp = document.createElement('DIV');
-      tmp.innerHTML = html;
+      tmp.innerHTML = sanitizeHtml(html);
       return tmp.textContent || tmp.innerText || '';
     };
-    
+
     const plainText = stripHtml(currentContent || '').trim();
-    
+
     // If content is too short, provide a default prompt
     let finalContent = currentContent || '';
     if (plainText.length < 10) {
@@ -293,15 +294,15 @@ export const businessPlanService = {
       }
       try {
         const tmp = document.createElement('DIV');
-        tmp.innerHTML = html;
+        tmp.innerHTML = sanitizeHtml(html);
         return tmp.textContent || tmp.innerText || '';
       } catch {
         return html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
       }
     };
-    
+
     const plainText = stripHtml(currentContent || '').trim();
-    
+
     // If content is too short, provide a default prompt based on section name
     let finalContent = currentContent || '';
     if (plainText.length < 10) {
@@ -371,12 +372,12 @@ export const businessPlanService = {
         return html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
       }
       const tmp = document.createElement('DIV');
-      tmp.innerHTML = html;
+      tmp.innerHTML = sanitizeHtml(html);
       return tmp.textContent || tmp.innerText || '';
     };
-    
+
     const plainText = stripHtml(currentContent || '').trim();
-    
+
     // If content is too short, we can't simplify it
     if (plainText.length < 10) {
       throw new Error('Section content must be at least 10 characters to simplify. Please add content first.');

@@ -3,41 +3,30 @@ import { useNavigate } from 'react-router-dom';
 import { Clock } from 'lucide-react';
 import { Button } from './ui/button';
 
-const WARNING_MINUTES = 5;
 const CHECK_INTERVAL_MS = 60_000; // Check every minute
 
 /**
- * Monitors session expiry and shows a warning modal 5 minutes before expiry.
+ * Monitors session expiry via the is_authenticated cookie.
+ * When the cookie expires (same lifetime as access_token), shows a warning.
  */
 export default function SessionExpiryWarning() {
-  const [showWarning, setShowWarning] = useState(false);
   const [showExpired, setShowExpired] = useState(false);
   const navigate = useNavigate();
 
   const checkExpiry = useCallback(() => {
-    const token = localStorage.getItem('accessToken');
-    if (!token) return;
-
-    try {
-      // Decode JWT to get exp claim
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      const expMs = payload.exp * 1000;
-      const now = Date.now();
-      const remainingMs = expMs - now;
-      const remainingMin = remainingMs / 60_000;
-
-      if (remainingMin <= 0) {
-        setShowWarning(false);
+    const isAuth = document.cookie.split(';').some(c => c.trim().startsWith('is_authenticated='));
+    if (!isAuth && window.location.pathname !== '/login' && window.location.pathname !== '/register') {
+      // Only show expired if user was previously interacting (not on public pages)
+      const isProtectedRoute = window.location.pathname.startsWith('/dashboard') ||
+        window.location.pathname.startsWith('/interview') ||
+        window.location.pathname.startsWith('/admin') ||
+        window.location.pathname.startsWith('/settings') ||
+        window.location.pathname.startsWith('/plans');
+      if (isProtectedRoute) {
         setShowExpired(true);
-      } else if (remainingMin <= WARNING_MINUTES) {
-        setShowWarning(true);
-        setShowExpired(false);
-      } else {
-        setShowWarning(false);
-        setShowExpired(false);
       }
-    } catch {
-      // Can't parse token, ignore
+    } else {
+      setShowExpired(false);
     }
   }, []);
 
@@ -49,31 +38,21 @@ export default function SessionExpiryWarning() {
 
   const handleExtend = async () => {
     try {
-      const refreshToken = localStorage.getItem('refreshToken');
-      if (refreshToken) {
-        const { apiClient } = await import('../lib/api-client');
-        const response = await apiClient.post<any>('/api/v1/auth/refresh', { refreshToken });
-        const data = response.data?.value || response.data;
-        if (data?.accessToken) {
-          localStorage.setItem('accessToken', data.accessToken);
-          if (data.refreshToken) localStorage.setItem('refreshToken', data.refreshToken);
-          setShowWarning(false);
-        }
-      }
+      const { apiClient } = await import('../lib/api-client');
+      // Backend reads refresh_token from cookie, sets new cookies
+      await apiClient.post('/api/v1/auth/refresh-token', {});
+      setShowExpired(false);
     } catch {
       setShowExpired(true);
-      setShowWarning(false);
     }
   };
 
   const handleSignIn = () => {
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
     setShowExpired(false);
     navigate('/login');
   };
 
-  if (!showWarning && !showExpired) return null;
+  if (!showExpired) return null;
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50">
@@ -81,29 +60,19 @@ export default function SessionExpiryWarning() {
         <div className="flex items-center gap-3 mb-4">
           <Clock className="h-5 w-5 text-amber-500" />
           <h2 className="text-lg font-semibold text-foreground">
-            {showExpired ? 'Session Expired' : 'Session Expiring Soon'}
+            Session Expired
           </h2>
         </div>
         <p className="text-sm text-muted-foreground mb-5">
-          {showExpired
-            ? 'Your session has expired. Please sign in again to continue.'
-            : 'Your session will expire in a few minutes. Extend your session to continue working.'}
+          Your session has expired. You can try to extend it or sign in again.
         </p>
         <div className="flex gap-3 justify-end">
-          {showExpired ? (
-            <Button onClick={handleSignIn} className="bg-momentum-orange hover:bg-orange-600 text-white">
-              Sign In
-            </Button>
-          ) : (
-            <>
-              <Button variant="outline" onClick={() => setShowWarning(false)}>
-                Dismiss
-              </Button>
-              <Button onClick={handleExtend} className="bg-momentum-orange hover:bg-orange-600 text-white">
-                Extend Session
-              </Button>
-            </>
-          )}
+          <Button variant="outline" onClick={handleExtend}>
+            Extend Session
+          </Button>
+          <Button onClick={handleSignIn} className="bg-momentum-orange hover:bg-orange-600 text-white">
+            Sign In
+          </Button>
         </div>
       </div>
     </div>

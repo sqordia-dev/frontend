@@ -8,8 +8,9 @@ import {
 } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useToast } from '../../contexts/ToastContext';
-import RichTextEditor from '../../components/RichTextEditor';
+import { RichTextEditor } from '../../components/editor/RichTextEditor';
 import { getUserFriendlyError } from '../../utils/error-messages';
+import { sanitizeHtml } from '../../utils/sanitize';
 import { Button } from '../../components/ui/button';
 
 // Section definitions with categories
@@ -220,7 +221,7 @@ export default function AdminAIPromptsPage() {
     const extractText = (html: string): string => {
       if (!html) return '';
       const div = document.createElement('div');
-      div.innerHTML = html;
+      div.innerHTML = sanitizeHtml(html);
       return div.textContent || div.innerText || '';
     };
 
@@ -883,7 +884,7 @@ export default function AdminAIPromptsPage() {
                   {t('admin.aiPrompts.systemPrompt')} *
                 </label>
                 <RichTextEditor
-                  value={formData.systemPrompt}
+                  content={formData.systemPrompt}
                   onChange={(value) => setFormData({ ...formData, systemPrompt: value })}
                   placeholder={t('admin.aiPrompts.systemPromptPlaceholder')}
                 />
@@ -898,7 +899,7 @@ export default function AdminAIPromptsPage() {
                   </span>
                 </label>
                 <RichTextEditor
-                  value={formData.userPromptTemplate}
+                  content={formData.userPromptTemplate}
                   onChange={(value) => setFormData({ ...formData, userPromptTemplate: value })}
                   placeholder={t('admin.aiPrompts.userPromptTemplatePlaceholder')}
                 />

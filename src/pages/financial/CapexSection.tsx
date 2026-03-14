@@ -1,7 +1,9 @@
 import { useState, useMemo, useCallback, type FC } from 'react';
 import { useOutletContext } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { Trash2, X } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
+import { queryKeys } from '../../lib/query-client';
 import YearTabBar from '../../components/financial/YearTabBar';
 import { useCapexAssets, useCreateCapex, useUpdateCapex, useDeleteCapex } from '../../hooks/usePrevisio';
 import type { FinancialPlanDto, CapexAsset, AssetType } from '../../types/financial-projections';
@@ -55,6 +57,7 @@ const GRID_COLS = 'minmax(120px, auto) repeat(12, 1fr) minmax(60px, auto)';
 const CapexSection: FC = () => {
   const { t, language } = useTheme();
   const { plan, businessPlanId } = useOutletContext<OutletContext>();
+  const queryClient = useQueryClient();
   const { data: assets, isLoading } = useCapexAssets(businessPlanId);
   const createCapex = useCreateCapex(businessPlanId);
   const updateCapex = useUpdateCapex(businessPlanId);
@@ -184,6 +187,7 @@ const CapexSection: FC = () => {
           await updateCapex.mutateAsync({ assetId: row.id, data: payload });
         }
       }
+      await queryClient.refetchQueries({ queryKey: queryKeys.previsio.capex(businessPlanId) });
       setRowsInitialized(false);
     } catch {
       // handled by hooks

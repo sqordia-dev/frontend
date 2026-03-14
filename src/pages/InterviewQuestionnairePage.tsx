@@ -1321,8 +1321,10 @@ function InterviewQuestionnaireContent() {
             {/* Adaptive Interview: Profile Context Panel */}
             {(showProfileContext || (adaptiveEnabled && skippedQuestions.length > 0)) && (
               <ProfileContextPanel
+                orgProfile={orgProfile}
                 skippedQuestions={skippedQuestions}
                 profileCompletenessScore={orgProfile?.profileCompletenessScore ?? 0}
+                onClose={() => setShowProfileContext(false)}
               />
             )}
 

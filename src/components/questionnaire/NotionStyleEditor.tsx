@@ -4,6 +4,7 @@ import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
 import { DOMParser as ProseMirrorDOMParser } from '@tiptap/pm/model';
 import { marked } from 'marked';
+import { sanitizeHtml } from '../../utils/sanitize';
 
 // Create base extensions once outside component
 // Note: StarterKit v3 already includes Underline, so we don't import it separately
@@ -124,7 +125,7 @@ const AI_ACTION_ICONS: Record<AIActionType, React.ElementType> = {
 // Helper to strip HTML tags for counting
 function stripHtml(html: string): string {
   const tmp = document.createElement('div');
-  tmp.innerHTML = html;
+  tmp.innerHTML = sanitizeHtml(html);
   return tmp.textContent || tmp.innerText || '';
 }
 

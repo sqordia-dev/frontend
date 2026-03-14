@@ -1,7 +1,9 @@
 import { useState, useMemo, useCallback, type FC } from 'react';
 import { useOutletContext } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { Trash2, Calculator, X, Check } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
+import { queryKeys } from '../../lib/query-client';
 import YearTabBar from '../../components/financial/YearTabBar';
 import { usePayrollModule, useCreatePayroll, useUpdatePayroll, useDeletePayroll } from '../../hooks/usePrevisio';
 import type { FinancialPlanDto, PayrollItem, PayrollType, EmploymentStatus } from '../../types/financial-projections';
@@ -69,6 +71,7 @@ const GRID_COLS = 'minmax(120px, auto) repeat(12, 1fr) minmax(60px, auto)';
 const PayrollSection: FC = () => {
   const { t, language } = useTheme();
   const { plan, businessPlanId } = useOutletContext<OutletContext>();
+  const queryClient = useQueryClient();
   const { data: payrollData, isLoading } = usePayrollModule(businessPlanId);
   const createPayroll = useCreatePayroll(businessPlanId);
   const updatePayroll = useUpdatePayroll(businessPlanId);
@@ -176,6 +179,7 @@ const PayrollSection: FC = () => {
           await updatePayroll.mutateAsync({ itemId: row.id, data: payload });
         }
       }
+      await queryClient.refetchQueries({ queryKey: queryKeys.previsio.payroll(businessPlanId) });
       setRowsInitialized(false);
     } catch {
       // handled by hooks

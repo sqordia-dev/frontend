@@ -1,7 +1,9 @@
 import { useState, useMemo, useCallback, type FC } from 'react';
 import { useOutletContext } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { Trash2 } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
+import { queryKeys } from '../../lib/query-client';
 import YearTabBar from '../../components/financial/YearTabBar';
 import { useFinancingModule, useCreateFinancing, useUpdateFinancing, useDeleteFinancing } from '../../hooks/usePrevisio';
 import type { FinancialPlanDto, FinancingType } from '../../types/financial-projections';
@@ -75,6 +77,7 @@ const GRID_COLS = 'minmax(100px, auto) repeat(12, 1fr) minmax(60px, auto)';
 const FinancingSection: FC = () => {
   const { t, language } = useTheme();
   const { plan, businessPlanId } = useOutletContext<OutletContext>();
+  const queryClient = useQueryClient();
   const { data, isLoading } = useFinancingModule(businessPlanId);
   const createFinancing = useCreateFinancing(businessPlanId);
   const updateFinancing = useUpdateFinancing(businessPlanId);
@@ -176,6 +179,7 @@ const FinancingSection: FC = () => {
           await updateFinancing.mutateAsync({ sourceId: row.id, data: payload });
         }
       }
+      await queryClient.refetchQueries({ queryKey: queryKeys.previsio.financing(businessPlanId) });
       setRowsInitialized(false);
     } catch {
       // handled by hooks

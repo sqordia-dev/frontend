@@ -89,9 +89,7 @@ export const bugReportService = {
   // Download PDF export
   async downloadPdf(bugReportId: string, ticketNumber: string): Promise<void> {
     const response = await fetch(`/api/v1/bug-reports/${bugReportId}/export/pdf`, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
-      },
+      credentials: 'include',
     });
 
     if (!response.ok) {
@@ -112,9 +110,7 @@ export const bugReportService = {
   // Download Word export
   async downloadWord(bugReportId: string, ticketNumber: string): Promise<void> {
     const response = await fetch(`/api/v1/bug-reports/${bugReportId}/export/word`, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
-      },
+      credentials: 'include',
     });
 
     if (!response.ok) {

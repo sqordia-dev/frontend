@@ -18,7 +18,8 @@ export function buildConnection(): signalR.HubConnection {
 
   connection = new signalR.HubConnectionBuilder()
     .withUrl(getHubUrl(), {
-      accessTokenFactory: () => localStorage.getItem('accessToken') || '',
+      // HttpOnly cookies are sent automatically with the WebSocket handshake
+      withCredentials: true,
     })
     .withAutomaticReconnect([0, 2000, 5000, 10000, 30000])
     .configureLogging(signalR.LogLevel.Warning)

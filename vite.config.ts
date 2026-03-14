@@ -56,17 +56,29 @@ export default defineConfig({
         // Manual chunk splitting for vendor libraries
         // Note: Libraries using React hooks must NOT be separated from React
         manualChunks(id) {
-          // React core + ALL React-dependent libraries bundled together
+          // React core — keep small for fast initial load
           if (id.includes('node_modules/react/') ||
               id.includes('node_modules/react-dom/') ||
               id.includes('node_modules/react-router') ||
-              id.includes('node_modules/recharts/') ||
-              id.includes('node_modules/framer-motion/') ||
-              id.includes('node_modules/@react-pdf/') ||
-              id.includes('node_modules/@tiptap/') ||
               id.includes('node_modules/@radix-ui/') ||
               id.includes('node_modules/lucide-react/')) {
             return 'vendor-react';
+          }
+          // Charts — only needed on financial/preview pages
+          if (id.includes('node_modules/recharts/')) {
+            return 'vendor-charts';
+          }
+          // Rich text editor — only needed on editor pages
+          if (id.includes('node_modules/@tiptap/')) {
+            return 'vendor-editor';
+          }
+          // PDF rendering — only needed in export flow
+          if (id.includes('node_modules/@react-pdf/')) {
+            return 'vendor-pdf';
+          }
+          // Animation — lazy-loaded
+          if (id.includes('node_modules/framer-motion/')) {
+            return 'vendor-animation';
           }
           // D3 utilities (no React dependency) - can be separate
           if (id.includes('node_modules/d3-')) {

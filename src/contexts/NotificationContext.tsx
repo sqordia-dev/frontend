@@ -94,8 +94,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
 
   // SignalR connection
   useEffect(() => {
-    const token = localStorage.getItem('accessToken');
-    if (!token) return;
+    // Auth is handled via HttpOnly cookies
 
     let cancelled = false;
 

@@ -1,7 +1,10 @@
 import { useState, useMemo, useCallback, type FC } from 'react';
 import { useOutletContext } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { Trash2, Copy } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useToast } from '../../contexts/ToastContext';
+import { queryKeys } from '../../lib/query-client';
 import YearTabBar from '../../components/financial/YearTabBar';
 import {
   useSalesModule, useCreateProduct, useUpdateProduct,
@@ -63,7 +66,9 @@ function fmtCell(value: number): string {
 
 const SalesSection: FC = () => {
   const { t, language } = useTheme();
+  const toast = useToast();
   const { plan, businessPlanId } = useOutletContext<OutletContext>();
+  const queryClient = useQueryClient();
   const { data: salesData, isLoading } = useSalesModule(businessPlanId);
   const createProduct = useCreateProduct(businessPlanId);
   const updateProduct = useUpdateProduct(businessPlanId);
@@ -149,9 +154,13 @@ const SalesSection: FC = () => {
           await updateProduct.mutateAsync({ productId: row.id, data: payload });
         }
       }
+      // Wait for fresh data before re-syncing local state
+      await queryClient.refetchQueries({ queryKey: queryKeys.previsio.sales(businessPlanId) });
       setRowsInitialized(false);
-    } catch {
-      // handled by hooks
+      toast.success(language === 'fr' ? 'Enregistré' : 'Saved', language === 'fr' ? 'Données sauvegardées avec succès.' : 'Data saved successfully.');
+    } catch (err) {
+      console.error('[SalesSection] handleSave failed:', err);
+      toast.error(t('fin.common.save'), String(err));
     } finally {
       setSaving(false);
     }

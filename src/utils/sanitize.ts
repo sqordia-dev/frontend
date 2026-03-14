@@ -19,7 +19,7 @@ export function sanitizeHtml(dirty: string): string {
     ],
     ALLOWED_ATTR: [
       'href', 'target', 'rel', 'title', 'alt', 'src', 'width', 'height',
-      'class', 'id', 'style',
+      'class', 'id',
       'colspan', 'rowspan', 'scope',
       'viewBox', 'd', 'fill', 'stroke', 'stroke-width', 'cx', 'cy', 'r',
       'x', 'y', 'x1', 'y1', 'x2', 'y2', 'points',

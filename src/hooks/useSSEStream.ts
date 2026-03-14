@@ -32,15 +32,14 @@ export function useSSEStream() {
     abortRef.current = controller;
 
     try {
-      const token = localStorage.getItem('accessToken');
       const baseUrl = getSSEBaseUrl();
 
       const response = await fetch(`${baseUrl}${url}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
+        credentials: 'include', // Send HttpOnly cookies
         body: JSON.stringify(body),
         signal: controller.signal,
       });

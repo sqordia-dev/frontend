@@ -4,6 +4,7 @@ import { Pencil, Check, Undo2, Redo2, Loader2 } from 'lucide-react';
 import { useInlineEdit } from '../../../hooks/useInlineEdit';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { markdownToHtmlForEditor } from '../../../utils/markdown-to-html';
+import { sanitizeHtml } from '../../../utils/sanitize';
 import { SaveIndicator } from './SaveIndicator';
 import { FloatingToolbar, FormatCommand } from './FloatingToolbar';
 import { cn } from '../../../lib/utils';
@@ -107,7 +108,7 @@ export function EditableSection({
     if (!isEditing) return;
     const el = editableRef.current;
     if (!el) return;
-    el.innerHTML = initialContentForEditor || placeholder;
+    el.innerHTML = sanitizeHtml(initialContentForEditor || placeholder);
     el.focus();
     const sel = window.getSelection();
     if (sel) {
@@ -128,7 +129,7 @@ export function EditableSection({
       contentUpdateFromInputRef.current = false;
       return;
     }
-    el.innerHTML = editedContent || placeholder;
+    el.innerHTML = sanitizeHtml(editedContent || placeholder);
     const sel = window.getSelection();
     if (sel) {
       const range = document.createRange();
@@ -244,7 +245,7 @@ export function EditableSection({
           const html = el.innerHTML;
           const idx = html.indexOf(savedText);
           if (idx !== -1) {
-            el.innerHTML = html.slice(0, idx) + newText + html.slice(idx + savedText.length);
+            el.innerHTML = sanitizeHtml(html.slice(0, idx) + newText + html.slice(idx + savedText.length));
           }
         }
         contentUpdateFromInputRef.current = true;

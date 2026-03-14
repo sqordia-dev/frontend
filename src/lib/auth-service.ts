@@ -29,8 +29,6 @@ export const authService = {
           };
         }
 
-        localStorage.setItem('accessToken', value.accessToken || value.token);
-        localStorage.setItem('refreshToken', value.refreshToken);
         localStorage.removeItem('demoMode');
         activityLogger.logLogin().catch(console.error); // fire-and-forget
         return value;
@@ -53,8 +51,6 @@ export const authService = {
         const accessToken = data.token || data.accessToken;
         const refreshToken = data.refreshToken;
 
-        localStorage.setItem('accessToken', accessToken);
-        localStorage.setItem('refreshToken', refreshToken);
         localStorage.removeItem('demoMode');
         activityLogger.logLogin().catch(console.error); // fire-and-forget
 
@@ -103,8 +99,6 @@ export const authService = {
         const accessToken = value.accessToken || value.token;
         const refreshToken = value.refreshToken;
 
-        localStorage.setItem('accessToken', accessToken);
-        localStorage.setItem('refreshToken', refreshToken);
         localStorage.removeItem('demoMode');
         activityLogger.logLogin().catch(console.error);
 
@@ -121,8 +115,6 @@ export const authService = {
         const accessToken = data.token || data.accessToken;
         const refreshToken = data.refreshToken;
 
-        localStorage.setItem('accessToken', accessToken);
-        localStorage.setItem('refreshToken', refreshToken);
         localStorage.removeItem('demoMode');
         activityLogger.logLogin().catch(console.error);
 
@@ -234,8 +226,6 @@ export const authService = {
           throw new Error('Invalid response format from server');
         }
 
-        localStorage.setItem('accessToken', accessToken);
-        localStorage.setItem('refreshToken', refreshToken);
         localStorage.removeItem('demoMode');
         activityLogger.logLogin().catch(console.error); // fire-and-forget
 
@@ -256,8 +246,6 @@ export const authService = {
           throw new Error('Invalid response format from server');
         }
 
-        localStorage.setItem('accessToken', accessToken);
-        localStorage.setItem('refreshToken', refreshToken);
         localStorage.removeItem('demoMode');
         activityLogger.logLogin().catch(console.error); // fire-and-forget
 
@@ -329,8 +317,10 @@ export const authService = {
         return;
       }
 
-      // Generate random state for CSRF protection
-      const state = Math.random().toString(36).substring(2, 15);
+      // Generate cryptographically secure random state for CSRF protection
+      const stateBytes = new Uint8Array(16);
+      crypto.getRandomValues(stateBytes);
+      const state = Array.from(stateBytes).map(b => b.toString(16).padStart(2, '0')).join('');
       sessionStorage.setItem('microsoft_oauth_state', state);
 
       // Build Microsoft OAuth URL
@@ -437,8 +427,6 @@ export const authService = {
           throw new Error('Invalid response format from server');
         }
 
-        localStorage.setItem('accessToken', accessToken);
-        localStorage.setItem('refreshToken', refreshToken);
         localStorage.removeItem('demoMode');
         activityLogger.logLogin().catch(console.error); // fire-and-forget
 
@@ -459,8 +447,6 @@ export const authService = {
           throw new Error('Invalid response format from server');
         }
 
-        localStorage.setItem('accessToken', accessToken);
-        localStorage.setItem('refreshToken', refreshToken);
         localStorage.removeItem('demoMode');
         activityLogger.logLogin().catch(console.error); // fire-and-forget
 
@@ -484,35 +470,26 @@ export const authService = {
   },
 
   async logout(): Promise<void> {
-    const refreshToken = localStorage.getItem('refreshToken');
     try {
       await activityLogger.logLogout().catch(console.error);
-      if (refreshToken) {
-        await apiClient.post('/api/v1/auth/logout', { refreshToken });
-      }
+      // Backend clears HttpOnly cookies on logout
+      await apiClient.post('/api/v1/auth/logout', { refreshToken: '' });
     } catch (error) {
-      console.error('Logout error:', error);
-    } finally {
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
+      if (import.meta.env.DEV) console.error('Logout error:', error);
     }
   },
 
   async refreshToken(): Promise<LoginResponse> {
     try {
-      const refreshToken = localStorage.getItem('refreshToken');
-      const response = await apiClient.post<ApiResponse<LoginResponse>>('/api/v1/auth/refresh-token', { refreshToken });
+      // Cookies sent automatically — backend reads tokens from cookies
+      const response = await apiClient.post<ApiResponse<LoginResponse>>('/api/v1/auth/refresh-token', {});
       const data = response.data;
 
       if (data.isSuccess && data.value) {
-        localStorage.setItem('accessToken', data.value.accessToken);
-        localStorage.setItem('refreshToken', data.value.refreshToken);
         return data.value;
       }
       throw new Error(data.errorMessage || 'Token refresh failed');
     } catch (error: any) {
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
       throw new Error(error.message || 'Token refresh failed');
     }
   },
@@ -716,6 +693,7 @@ export const authService = {
   },
 
   isAuthenticated(): boolean {
-    return !!localStorage.getItem('accessToken');
+    // Check the non-HttpOnly flag cookie set by the backend alongside the HttpOnly token
+    return document.cookie.split(';').some(c => c.trim().startsWith('is_authenticated='));
   }
 };

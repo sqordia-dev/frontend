@@ -1,7 +1,9 @@
 import { useState, useMemo, useCallback, type FC } from 'react';
 import { useOutletContext } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { Trash2, X } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
+import { queryKeys } from '../../lib/query-client';
 import YearTabBar from '../../components/financial/YearTabBar';
 import { useSalesExpenses, useCreateSalesExpense, useUpdateSalesExpense, useDeleteSalesExpense } from '../../hooks/usePrevisio';
 import type { FinancialPlanDto, SalesExpenseItem, ExpenseMode } from '../../types/financial-projections';
@@ -59,6 +61,7 @@ const GRID_COLS = 'minmax(100px, auto) repeat(12, 1fr) minmax(60px, auto)';
 const SalesExpensesSection: FC = () => {
   const { t, language } = useTheme();
   const { plan, businessPlanId } = useOutletContext<OutletContext>();
+  const queryClient = useQueryClient();
   const { data: expenses, isLoading } = useSalesExpenses(businessPlanId);
   const createExpense = useCreateSalesExpense(businessPlanId);
   const updateExpense = useUpdateSalesExpense(businessPlanId);
@@ -158,6 +161,7 @@ const SalesExpensesSection: FC = () => {
           await updateExpense.mutateAsync({ itemId: row.id, data: payload });
         }
       }
+      await queryClient.refetchQueries({ queryKey: queryKeys.previsio.salesExpenses(businessPlanId) });
       setRowsInitialized(false);
     } catch {
       // handled by hooks

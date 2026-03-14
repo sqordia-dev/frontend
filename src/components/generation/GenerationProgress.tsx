@@ -6,6 +6,7 @@ import { Check, Circle, Loader2, AlertCircle, X, User, TrendingUp, CheckCircle2,
 import { GenerationStatusDto, SectionStatusDto } from '../../types/generation';
 import { useCmsContent } from '../../hooks/useCmsContent';
 import { useTheme } from '../../contexts/ThemeContext';
+import { sanitizeHtml } from '../../utils/sanitize';
 import { businessPlanService } from '../../lib/business-plan-service';
 
 const LOTTIE_ANIMATION_URL = '/assets/business-plan-with-executives-lightbulb-and-briefcase.json';
@@ -155,7 +156,7 @@ export default function GenerationProgress({
     try {
       if (typeof document !== 'undefined') {
         const tmp = document.createElement('DIV');
-        tmp.innerHTML = html;
+        tmp.innerHTML = sanitizeHtml(html);
         return tmp.textContent || tmp.innerText || '';
       }
     } catch {

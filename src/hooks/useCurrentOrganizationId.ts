@@ -13,8 +13,7 @@ export function useCurrentOrganizationId(): string | null {
   useEffect(() => {
     if (orgId) return;
 
-    const token = localStorage.getItem('accessToken');
-    if (!token) return;
+    // Auth is handled via HttpOnly cookies — just attempt the API call
 
     let cancelled = false;
     organizationService.getOrganizations().then((orgs) => {

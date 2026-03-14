@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Check, X, Sparkles, Zap, Crown, Building2, ArrowLeft, ChevronDown, Rocket } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { apiClient } from '../lib/api-client';
+import { authService } from '../lib/auth-service';
 import { useNavigate } from 'react-router-dom';
 import { organizationService } from '../lib/organization-service';
 import { subscriptionService } from '../lib/subscription-service';
@@ -220,14 +221,6 @@ export default function SubscriptionPlansPage() {
   const checkOrganizations = async () => {
     try {
       setLoadingOrgs(true);
-      const token = localStorage.getItem('accessToken');
-      if (!token) {
-        setLoadingOrgs(false);
-        setNeedsOrganization(false);
-        setOrganizations([]);
-        return;
-      }
-
       try {
         const orgsResponse = await apiClient.get('/api/v1/organizations');
         const orgsData = orgsResponse.data as { isSuccess?: boolean; value?: any[] } | any[];
@@ -243,13 +236,12 @@ export default function SubscriptionPlansPage() {
           setOrganizations([]);
         } else {
           setOrganizations([]);
-          setNeedsOrganization(!!token);
+          setNeedsOrganization(authService.isAuthenticated());
         }
       }
     } catch {
-      const token = localStorage.getItem('accessToken');
       setOrganizations([]);
-      setNeedsOrganization(!!token);
+      setNeedsOrganization(authService.isAuthenticated());
     } finally {
       setLoadingOrgs(false);
     }
@@ -382,8 +374,7 @@ export default function SubscriptionPlansPage() {
         return;
       }
 
-      const token = localStorage.getItem('accessToken');
-      if (!token) {
+      if (!authService.isAuthenticated()) {
         toast.warning('Authentication Required', t.loginRequired);
         navigate('/login');
         return;
