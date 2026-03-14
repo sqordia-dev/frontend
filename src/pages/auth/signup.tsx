@@ -74,7 +74,7 @@ export default function SignupPage() {
         email: formData.email,
         password: formData.password,
         confirmPassword: formData.confirmPassword || '',
-        userName: formData.email, // Use email as username
+        userName: formData.email.split('@')[0].replace(/[^a-zA-Z0-9_-]/g, '_'), // Derive username from email local part
         userType: 'Entrepreneur', // Default to Entrepreneur, can be changed in onboarding
         organizationName: formData.organizationName || undefined,
       });
