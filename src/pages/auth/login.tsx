@@ -174,23 +174,8 @@ export default function LoginPage() {
     }
   };
 
-  const handleMicrosoftSignIn = async () => {
-    setServerError('');
-    try {
-      const response = await authService.signInWithMicrosoft();
-      // Check if user has completed onboarding
-      if (!response?.user?.onboardingCompleted) {
-        navigate('/onboarding');
-      } else {
-        if (response.user?.persona) {
-          localStorage.setItem('userPersona', response.user.persona);
-        }
-        navigate('/dashboard');
-      }
-    } catch (err: any) {
-      setServerError(getUserFriendlyError(err, 'login', language));
-    }
-  };
+  // Microsoft OAuth disabled until VITE_MICROSOFT_CLIENT_ID is configured
+  // const handleMicrosoftSignIn = async () => { ... };
 
   return (
     <AuthLayout
@@ -345,7 +330,6 @@ export default function LoginPage() {
       <div className="animate-fade-in-up animation-delay-300">
         <SocialLoginButtons
           onGoogleClick={handleGoogleSignIn}
-          onMicrosoftClick={handleMicrosoftSignIn}
           disabled={loading}
           mode="signin"
         />
