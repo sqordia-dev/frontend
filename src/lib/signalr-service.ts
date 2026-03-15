@@ -1,4 +1,5 @@
 import * as signalR from '@microsoft/signalr';
+import { getAccessToken } from './api-client';
 
 const getHubUrl = (): string => {
   const envUrl = import.meta.env.VITE_API_URL;
@@ -18,8 +19,8 @@ export function buildConnection(): signalR.HubConnection {
 
   connection = new signalR.HubConnectionBuilder()
     .withUrl(getHubUrl(), {
-      // HttpOnly cookies are sent automatically with the WebSocket handshake
-      withCredentials: true,
+      // Send Bearer token for cross-origin auth (cookies blocked cross-domain)
+      accessTokenFactory: () => getAccessToken() || '',
     })
     .withAutomaticReconnect([0, 2000, 5000, 10000, 30000])
     .configureLogging(signalR.LogLevel.Warning)

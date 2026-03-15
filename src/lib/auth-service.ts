@@ -517,7 +517,7 @@ export const authService = {
     try {
       await activityLogger.logLogout().catch(console.error);
       // Backend clears HttpOnly cookies on logout
-      await apiClient.post('/api/v1/auth/logout', { refreshToken: '' });
+      await apiClient.post('/api/v1/auth/logout', {});
     } catch (error) {
       if (import.meta.env.DEV) console.error('Logout error:', error);
     } finally {
