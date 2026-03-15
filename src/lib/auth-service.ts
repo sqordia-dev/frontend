@@ -1,4 +1,4 @@
-import { apiClient } from './api-client';
+import { apiClient, setAccessToken, getAccessToken, clearAccessToken } from './api-client';
 import { LoginRequest, RegisterRequest, LoginResponse, User, ApiResponse, GoogleAuthRequest, LinkGoogleAccountRequest, MicrosoftAuthRequest } from './types';
 import { activityLogger } from './activity-logger';
 
@@ -41,6 +41,10 @@ export const authService = {
           };
         }
 
+        // Store token in memory for Authorization header (works even when cross-origin cookies are blocked)
+        const token = value.token || value.accessToken;
+        if (token) setAccessToken(token);
+
         localStorage.removeItem('demoMode');
         setAuthCookie(value.expiresAt);
         activityLogger.logLogin().catch(console.error); // fire-and-forget
@@ -63,6 +67,9 @@ export const authService = {
       if (data.token || data.accessToken) {
         const accessToken = data.token || data.accessToken;
         const refreshToken = data.refreshToken;
+
+        // Store token in memory for Authorization header
+        if (accessToken) setAccessToken(accessToken);
 
         localStorage.removeItem('demoMode');
         setAuthCookie(data.expiresAt);
@@ -113,6 +120,8 @@ export const authService = {
         const accessToken = value.accessToken || value.token;
         const refreshToken = value.refreshToken;
 
+        if (accessToken) setAccessToken(accessToken);
+
         localStorage.removeItem('demoMode');
         setAuthCookie(value.expiresAt);
         activityLogger.logLogin().catch(console.error);
@@ -129,6 +138,8 @@ export const authService = {
       if (data.token || data.accessToken) {
         const accessToken = data.token || data.accessToken;
         const refreshToken = data.refreshToken;
+
+        if (accessToken) setAccessToken(accessToken);
 
         localStorage.removeItem('demoMode');
         setAuthCookie(data.expiresAt);
@@ -161,6 +172,10 @@ export const authService = {
 
       // Handle wrapped response format (isSuccess/value)
       if (data.isSuccess && data.value) {
+        // Store token if present in auth response (register may return tokens)
+        const token = data.value.token || data.value.accessToken;
+        if (token) setAccessToken(token);
+
         // If value contains user directly
         if (data.value.id && data.value.email) {
           return data.value;
@@ -173,6 +188,7 @@ export const authService = {
 
       // Handle direct auth response format (token/user at root level)
       if (data.token && data.user) {
+        setAccessToken(data.token);
         return data.user;
       }
 
@@ -242,6 +258,7 @@ export const authService = {
           throw new Error('Invalid response format from server');
         }
 
+        setAccessToken(accessToken);
         localStorage.removeItem('demoMode');
         setAuthCookie(authResponse.expiresAt);
         activityLogger.logLogin().catch(console.error); // fire-and-forget
@@ -263,6 +280,7 @@ export const authService = {
           throw new Error('Invalid response format from server');
         }
 
+        setAccessToken(accessToken);
         localStorage.removeItem('demoMode');
         setAuthCookie(data.expiresAt);
         activityLogger.logLogin().catch(console.error); // fire-and-forget
@@ -445,6 +463,7 @@ export const authService = {
           throw new Error('Invalid response format from server');
         }
 
+        setAccessToken(accessToken);
         localStorage.removeItem('demoMode');
         setAuthCookie(authResponse.expiresAt);
         activityLogger.logLogin().catch(console.error); // fire-and-forget
@@ -466,6 +485,7 @@ export const authService = {
           throw new Error('Invalid response format from server');
         }
 
+        setAccessToken(accessToken);
         localStorage.removeItem('demoMode');
         setAuthCookie(data.expiresAt);
         activityLogger.logLogin().catch(console.error); // fire-and-forget
@@ -497,6 +517,7 @@ export const authService = {
     } catch (error) {
       if (import.meta.env.DEV) console.error('Logout error:', error);
     } finally {
+      clearAccessToken();
       clearAuthCookie();
     }
   },
@@ -504,15 +525,20 @@ export const authService = {
   async refreshToken(): Promise<LoginResponse> {
     try {
       // Cookies sent automatically — backend reads tokens from cookies
+      // Authorization header also sent if token is in memory
       const response = await apiClient.post<ApiResponse<LoginResponse>>('/api/v1/auth/refresh-token', {});
       const data = response.data;
 
       if (data.isSuccess && data.value) {
+        // Store new token in memory
+        const token = (data.value as any).token || data.value.accessToken;
+        if (token) setAccessToken(token);
         setAuthCookie(data.value.expiresAt);
         return data.value;
       }
       throw new Error(data.errorMessage || 'Token refresh failed');
     } catch (error: any) {
+      clearAccessToken();
       clearAuthCookie();
       throw new Error(error.message || 'Token refresh failed');
     }
@@ -717,7 +743,9 @@ export const authService = {
   },
 
   isAuthenticated(): boolean {
-    // Check the non-HttpOnly flag cookie set by the backend alongside the HttpOnly token
+    // Check in-memory token first (works when cross-origin cookies are blocked)
+    if (getAccessToken()) return true;
+    // Fallback: check the non-HttpOnly flag cookie
     return document.cookie.split(';').some(c => c.trim().startsWith('is_authenticated='));
   }
 };

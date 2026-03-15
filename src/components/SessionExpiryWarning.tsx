@@ -2,19 +2,22 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Clock } from 'lucide-react';
 import { Button } from './ui/button';
+import { getAccessToken } from '../lib/api-client';
 
 const CHECK_INTERVAL_MS = 60_000; // Check every minute
 
 /**
- * Monitors session expiry via the is_authenticated cookie.
- * When the cookie expires (same lifetime as access_token), shows a warning.
+ * Monitors session expiry via the is_authenticated cookie or in-memory token.
+ * When both are absent, shows a warning on protected routes.
  */
 export default function SessionExpiryWarning() {
   const [showExpired, setShowExpired] = useState(false);
   const navigate = useNavigate();
 
   const checkExpiry = useCallback(() => {
-    const isAuth = document.cookie.split(';').some(c => c.trim().startsWith('is_authenticated='));
+    const hasCookie = document.cookie.split(';').some(c => c.trim().startsWith('is_authenticated='));
+    const hasToken = !!getAccessToken();
+    const isAuth = hasCookie || hasToken;
     if (!isAuth && window.location.pathname !== '/login' && window.location.pathname !== '/register') {
       // Only show expired if user was previously interacting (not on public pages)
       const isProtectedRoute = window.location.pathname.startsWith('/dashboard') ||

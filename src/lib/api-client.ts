@@ -27,6 +27,27 @@ const getApiBaseUrl = (): string => {
 
 const API_BASE_URL = getApiBaseUrl();
 
+/**
+ * In-memory token storage for cross-origin auth.
+ * Modern browsers block third-party cookies (SameSite=None) when frontend and API
+ * are on different domains. Storing the token in memory and sending it via
+ * Authorization header ensures auth works regardless of cookie policy.
+ * In-memory is more secure than localStorage (cleared on tab close, not accessible to XSS scripts in other tabs).
+ */
+let _accessToken: string | null = null;
+
+export function setAccessToken(token: string | null) {
+  _accessToken = token;
+}
+
+export function getAccessToken(): string | null {
+  return _accessToken;
+}
+
+export function clearAccessToken() {
+  _accessToken = null;
+}
+
 class ApiClient {
   private client: AxiosInstance;
 
@@ -39,7 +60,7 @@ class ApiClient {
     this.client = axios.create({
       baseURL: API_BASE_URL,
       timeout: 60000,
-      withCredentials: true, // Send HttpOnly cookies with every request
+      withCredentials: true, // Send HttpOnly cookies with every request (fallback)
       headers: {
         'Content-Type': 'application/json',
       },
@@ -54,6 +75,11 @@ class ApiClient {
         // Remove Content-Type header for FormData - axios will set it automatically with boundary
         if (config.data instanceof FormData && config.headers) {
           delete config.headers['Content-Type'];
+        }
+        // Attach in-memory access token as Authorization header (primary auth transport)
+        // Backend checks Authorization header first, then falls back to cookies
+        if (_accessToken && config.headers) {
+          config.headers['Authorization'] = `Bearer ${_accessToken}`;
         }
         return config;
       },
@@ -128,6 +154,7 @@ class ApiClient {
           if (refreshed && error.config) {
             return this.client.request(error.config);
           }
+          clearAccessToken();
           window.location.href = '/login';
         }
         return Promise.reject(error);
@@ -143,18 +170,24 @@ class ApiClient {
         : '/api/v1/auth/refresh-token';
 
       // Cookies are sent automatically via withCredentials
-      // Send empty body — backend reads tokens from cookies
-      const response = await axios.post(refreshUrl, {}, { withCredentials: true });
+      // Also send Authorization header if we have a token (for cross-origin where cookies may be blocked)
+      const headers: Record<string, string> = {};
+      if (_accessToken) {
+        headers['Authorization'] = `Bearer ${_accessToken}`;
+      }
+      const response = await axios.post(refreshUrl, {}, { withCredentials: true, headers });
 
       const data = response.data;
 
       // Handle wrapped response format (isSuccess/value)
       if (data.isSuccess && data.value?.token) {
+        setAccessToken(data.value.token);
         return true;
       }
 
       // Handle direct response format
       if (data.token || data.accessToken) {
+        setAccessToken(data.token || data.accessToken);
         return true;
       }
 
@@ -163,6 +196,7 @@ class ApiClient {
       if (import.meta.env.DEV) {
         console.error('Token refresh failed:', error);
       }
+      clearAccessToken();
       return false;
     }
   }
