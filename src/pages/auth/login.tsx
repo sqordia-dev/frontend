@@ -160,7 +160,11 @@ export default function LoginPage() {
       };
       const response = await authService.googleAuth(tokens);
 
-      // Check if user has completed onboarding
+      // Store user info for onboarding greeting
+      if (response.user) {
+        localStorage.setItem('user', JSON.stringify(response.user));
+      }
+
       if (!response.user?.onboardingCompleted) {
         navigate('/onboarding');
       } else {

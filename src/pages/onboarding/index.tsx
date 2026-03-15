@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import OnboardingWizard from '../../components/onboarding/OnboardingWizard';
 import { useOnboarding } from '../../hooks/useOnboarding';
 import { useTheme } from '../../contexts/ThemeContext';
+import { authService } from '../../lib/auth-service';
 import SEO from '../../components/SEO';
 import { getCanonicalUrl } from '../../utils/seo';
 import { LoadingSpinner } from '../../components/ui/loading-spinner';
@@ -18,17 +19,25 @@ export default function OnboardingPage() {
   const { language } = useTheme();
   const [userName, setUserName] = useState<string>('');
 
-  // Fetch user name from localStorage or API
+  // Fetch user name from localStorage, fall back to API
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
     if (storedUser) {
       try {
         const user = JSON.parse(storedUser);
         setUserName(user.firstName || user.name || '');
+        return;
       } catch {
-        // Ignore parse errors
+        // Fall through to API call
       }
     }
+    // Fallback: fetch from API (e.g., page refresh cleared localStorage)
+    authService.getCurrentUser()
+      .then(user => {
+        setUserName(user.firstName || '');
+        localStorage.setItem('user', JSON.stringify(user));
+      })
+      .catch(() => {});
   }, []);
 
   // Redirect to dashboard if onboarding is complete

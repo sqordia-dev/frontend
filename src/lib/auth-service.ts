@@ -165,40 +165,47 @@ export const authService = {
     }
   },
 
-  async register(userData: RegisterRequest): Promise<User> {
+  async register(userData: RegisterRequest): Promise<LoginResponse> {
     try {
       const response = await apiClient.post<any>('/api/v1/auth/register', userData);
       const data = response.data;
 
       // Handle wrapped response format (isSuccess/value)
       if (data.isSuccess && data.value) {
-        // Store token if present in auth response (register may return tokens)
-        const token = data.value.token || data.value.accessToken;
-        if (token) {
-          setAccessToken(token);
-          setAuthCookie(data.value.expiresAt);
+        const value = data.value;
+        const accessToken = value.token || value.accessToken;
+        const refreshToken = value.refreshToken || value.RefreshToken || '';
+
+        if (accessToken) {
+          setAccessToken(accessToken);
+          setAuthCookie(value.expiresAt);
         }
 
-        // If value contains user directly
-        if (data.value.id && data.value.email) {
-          return data.value;
-        }
-        // If value contains auth response with user
-        if (data.value.user) {
-          return data.value.user;
-        }
+        localStorage.removeItem('demoMode');
+        activityLogger.logLogin().catch(console.error);
+
+        return {
+          accessToken: accessToken || '',
+          refreshToken,
+          expiresAt: value.expiresAt || new Date(Date.now() + 3600000).toISOString(),
+          user: value.user || value.User,
+        };
       }
 
       // Handle direct auth response format (token/user at root level)
-      if (data.token && data.user) {
-        setAccessToken(data.token);
+      if (data.token || data.accessToken) {
+        const accessToken = data.token || data.accessToken;
+        setAccessToken(accessToken);
         setAuthCookie(data.expiresAt);
-        return data.user;
-      }
+        localStorage.removeItem('demoMode');
+        activityLogger.logLogin().catch(console.error);
 
-      // Handle direct user response format
-      if (data.id && data.email) {
-        return data;
+        return {
+          accessToken,
+          refreshToken: data.refreshToken || '',
+          expiresAt: data.expiresAt || new Date(Date.now() + 3600000).toISOString(),
+          user: data.user,
+        };
       }
 
       if (data.errors && Array.isArray(data.errors)) {

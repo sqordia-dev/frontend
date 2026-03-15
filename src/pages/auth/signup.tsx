@@ -68,31 +68,26 @@ export default function SignupPage() {
     setLoading(true);
 
     try {
-      await authService.register({
+      const response = await authService.register({
         firstName: formData.firstName,
         lastName: formData.lastName,
         email: formData.email,
         password: formData.password,
         confirmPassword: formData.confirmPassword || '',
-        userName: formData.email.split('@')[0].replace(/[^a-zA-Z0-9_-]/g, '_'), // Derive username from email local part
-        userType: 'Entrepreneur', // Default to Entrepreneur, can be changed in onboarding
+        userName: formData.email.split('@')[0].replace(/[^a-zA-Z0-9_-]/g, '_'),
+        userType: 'Entrepreneur',
         organizationName: formData.organizationName || undefined,
       });
 
-      // Auto-login after successful registration
-      try {
-        const loginResponse = await authService.login({
-          email: formData.email,
-          password: formData.password,
-        });
-        if (loginResponse.user?.onboardingCompleted) {
-          navigate('/dashboard');
-        } else {
-          navigate('/onboarding');
-        }
-      } catch {
-        // If auto-login fails, fall back to login page with success message
-        navigate('/login', { state: { message: cms('auth.signup.success', 'register.success') } });
+      // Store user info for onboarding greeting
+      if (response.user) {
+        localStorage.setItem('user', JSON.stringify(response.user));
+      }
+
+      if (response.user?.onboardingCompleted) {
+        navigate('/dashboard');
+      } else {
+        navigate('/onboarding');
       }
     } catch (err: any) {
       setServerError(getUserFriendlyError(err, 'signup', language));
@@ -111,7 +106,12 @@ export default function SignupPage() {
         accessToken: googleUser.accessToken,
       };
       const response = await authService.googleAuth(tokens);
-      // Check if returning user has completed onboarding
+
+      // Store user info for onboarding greeting
+      if (response.user) {
+        localStorage.setItem('user', JSON.stringify(response.user));
+      }
+
       if (response.user?.onboardingCompleted) {
         if (response.user?.persona) {
           localStorage.setItem('userPersona', response.user.persona);

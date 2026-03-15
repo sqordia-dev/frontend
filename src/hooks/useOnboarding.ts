@@ -3,7 +3,6 @@ import { onboardingService } from '../lib/onboarding-service';
 import {
   OnboardingProgressDto,
   OnboardingData,
-  OnboardingCompleteRequest,
 } from '../types/onboarding';
 import { getUserFriendlyError } from '../utils/error-messages';
 
@@ -18,15 +17,13 @@ interface UseOnboardingReturn {
   isComplete: boolean;
   /** Save progress to backend */
   saveProgress: (currentStep: number, data: OnboardingData) => Promise<void>;
-  /** Complete onboarding and create plan */
-  completeOnboarding: (request: OnboardingCompleteRequest) => Promise<{ planId: string }>;
   /** Refresh progress from backend */
   refreshProgress: () => Promise<void>;
 }
 
 /**
  * Hook for managing onboarding state
- * Fetches progress on mount and provides methods for saving/completing
+ * Fetches progress on mount and provides methods for saving
  */
 export function useOnboarding(): UseOnboardingReturn {
   const [progress, setProgress] = useState<OnboardingProgressDto | null>(null);
@@ -73,27 +70,12 @@ export function useOnboarding(): UseOnboardingReturn {
     }
   }, []);
 
-  // Complete onboarding
-  const completeOnboarding = useCallback(async (request: OnboardingCompleteRequest) => {
-    const result = await onboardingService.completeOnboarding(request);
-
-    // Update local state
-    setProgress((prev) => prev ? {
-      ...prev,
-      isComplete: true,
-      completedAt: new Date().toISOString(),
-    } : null);
-
-    return result;
-  }, []);
-
   return {
     progress,
     isLoading,
     error,
     isComplete: progress?.isComplete ?? false,
     saveProgress,
-    completeOnboarding,
     refreshProgress: fetchProgress,
   };
 }
