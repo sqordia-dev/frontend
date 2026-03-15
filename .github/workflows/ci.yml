@@ -27,7 +27,8 @@ on:
 
 env:
   NODE_VERSION: '20'
-  PROD_API_URL: https://sqordia-production-api.proudwater-90136d2c.canadacentral.azurecontainerapps.io
+  # API URL is set per-environment in deploy workflows; CI uses a placeholder for build validation
+  CI_API_URL: ${{ secrets.PROD_API_URL || 'https://sqordia-production-api.proudwater-90136d2c.canadacentral.azurecontainerapps.io' }}
   PROD_URL: https://sqordia.app
 
 jobs:
@@ -93,7 +94,7 @@ jobs:
       - name: Build
         run: npm run build
         env:
-          VITE_API_URL: ${{ env.PROD_API_URL }}
+          VITE_API_URL: ${{ env.CI_API_URL }}
 
       - name: Bundle size report
         run: |
@@ -141,7 +142,7 @@ jobs:
       - name: Start preview server
         run: npx vite preview --port 4173 &
         env:
-          VITE_API_URL: ${{ env.PROD_API_URL }}
+          VITE_API_URL: ${{ env.CI_API_URL }}
 
       - name: Wait for server
         run: npx wait-on http://localhost:4173 --timeout 30000
@@ -199,7 +200,7 @@ jobs:
       - name: Start preview server
         run: npx vite preview --port 4173 &
         env:
-          VITE_API_URL: ${{ env.PROD_API_URL }}
+          VITE_API_URL: ${{ env.CI_API_URL }}
 
       - name: Wait for server
         run: npx wait-on http://localhost:4173 --timeout 30000

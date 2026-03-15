@@ -23,6 +23,10 @@ export interface UsePublishedContentReturn {
 // Preview context: when provided, usePublishedContent returns this data instead of fetching
 export const CmsPreviewContext = createContext<UsePublishedContentReturn | null>(null);
 
+// Skip CMS fetches when backend CMS endpoints are not available.
+// Set VITE_CMS_ENABLED=true in .env once the CMS backend is fully set up.
+const CMS_ENABLED = import.meta.env.VITE_CMS_ENABLED === 'true';
+
 // Global cache to avoid re-fetching across components
 const contentCache: Map<string, { data: PublishedContent; timestamp: number }> = new Map();
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
@@ -43,7 +47,7 @@ export function usePublishedContent(options: UsePublishedContentOptions = {}): U
   const cacheKey = `${sectionKey || 'all'}:${language}`;
 
   const fetchContent = useCallback(async () => {
-    if (!enabled) return;
+    if (!CMS_ENABLED || !enabled) return;
 
     // Check cache
     const cached = contentCache.get(cacheKey);
