@@ -15,9 +15,13 @@ export default function AdminRoute({ children }: AdminRouteProps) {
     let cancelled = false;
     (async () => {
       try {
+        // Rehydrate token on page reload before checking auth
         if (!authService.isAuthenticated()) {
-          if (!cancelled) { setChecking(false); }
-          return;
+          const restored = await authService.rehydrateToken();
+          if (!restored) {
+            if (!cancelled) { setChecking(false); }
+            return;
+          }
         }
         const user = await authService.getCurrentUser();
         if (!cancelled) {

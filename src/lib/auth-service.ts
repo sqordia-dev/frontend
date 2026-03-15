@@ -1,4 +1,4 @@
-import { apiClient, setAccessToken, getAccessToken, clearAccessToken } from './api-client';
+import { apiClient, setAccessToken, getAccessToken, clearAccessToken, isTokenExpired } from './api-client';
 import { LoginRequest, RegisterRequest, LoginResponse, User, ApiResponse, GoogleAuthRequest, LinkGoogleAccountRequest, MicrosoftAuthRequest } from './types';
 import { activityLogger } from './activity-logger';
 
@@ -174,7 +174,10 @@ export const authService = {
       if (data.isSuccess && data.value) {
         // Store token if present in auth response (register may return tokens)
         const token = data.value.token || data.value.accessToken;
-        if (token) setAccessToken(token);
+        if (token) {
+          setAccessToken(token);
+          setAuthCookie(data.value.expiresAt);
+        }
 
         // If value contains user directly
         if (data.value.id && data.value.email) {
@@ -189,6 +192,7 @@ export const authService = {
       // Handle direct auth response format (token/user at root level)
       if (data.token && data.user) {
         setAccessToken(data.token);
+        setAuthCookie(data.expiresAt);
         return data.user;
       }
 
@@ -744,8 +748,33 @@ export const authService = {
 
   isAuthenticated(): boolean {
     // Check in-memory token first (works when cross-origin cookies are blocked)
-    if (getAccessToken()) return true;
-    // Fallback: check the non-HttpOnly flag cookie
+    const token = getAccessToken();
+    if (token && !isTokenExpired(token)) return true;
+    // Fallback: check the non-HttpOnly flag cookie (has natural expiry via max-age)
     return document.cookie.split(';').some(c => c.trim().startsWith('is_authenticated='));
+  },
+
+  /**
+   * Re-hydrate the in-memory token on page reload / new tab.
+   * Called once on app startup — if we have a cookie but no in-memory token,
+   * performs a token refresh to restore the session without a visible 401 round-trip.
+   * Returns true if the session was restored.
+   */
+  async rehydrateToken(): Promise<boolean> {
+    // Already have a valid in-memory token — nothing to do
+    const existing = getAccessToken();
+    if (existing && !isTokenExpired(existing)) return true;
+
+    // No cookie either — user is genuinely not authenticated
+    const hasCookie = document.cookie.split(';').some(c => c.trim().startsWith('is_authenticated='));
+    if (!hasCookie) return false;
+
+    // Have a cookie but no in-memory token — refresh to restore the session
+    try {
+      await this.refreshToken();
+      return !!getAccessToken();
+    } catch {
+      return false;
+    }
   }
 };

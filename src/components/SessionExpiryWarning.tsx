@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Clock } from 'lucide-react';
 import { Button } from './ui/button';
-import { getAccessToken } from '../lib/api-client';
+import { getAccessToken, isTokenExpired } from '../lib/api-client';
 
 const CHECK_INTERVAL_MS = 60_000; // Check every minute
 
@@ -16,8 +16,9 @@ export default function SessionExpiryWarning() {
 
   const checkExpiry = useCallback(() => {
     const hasCookie = document.cookie.split(';').some(c => c.trim().startsWith('is_authenticated='));
-    const hasToken = !!getAccessToken();
-    const isAuth = hasCookie || hasToken;
+    const token = getAccessToken();
+    const hasValidToken = !!token && !isTokenExpired(token);
+    const isAuth = hasCookie || hasValidToken;
     if (!isAuth && window.location.pathname !== '/login' && window.location.pathname !== '/register') {
       // Only show expired if user was previously interacting (not on public pages)
       const isProtectedRoute = window.location.pathname.startsWith('/dashboard') ||

@@ -32,7 +32,10 @@ const API_BASE_URL = getApiBaseUrl();
  * Modern browsers block third-party cookies (SameSite=None) when frontend and API
  * are on different domains. Storing the token in memory and sending it via
  * Authorization header ensures auth works regardless of cookie policy.
- * In-memory is more secure than localStorage (cleared on tab close, not accessible to XSS scripts in other tabs).
+ *
+ * Security note: In-memory is more secure than localStorage (cleared on tab close).
+ * An XSS attack within the same origin can still access it via getAccessToken(),
+ * but this is an acceptable tradeoff vs. broken auth with cookie-only transport.
  */
 let _accessToken: string | null = null;
 
@@ -48,8 +51,23 @@ export function clearAccessToken() {
   _accessToken = null;
 }
 
+/**
+ * Check if a JWT token is expired by decoding its exp claim.
+ * Returns true if expired or if the token cannot be parsed.
+ */
+export function isTokenExpired(token: string): boolean {
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    return payload.exp * 1000 < Date.now();
+  } catch {
+    return true;
+  }
+}
+
 class ApiClient {
   private client: AxiosInstance;
+  /** Deduplicates concurrent refresh calls — prevents token rotation races */
+  private _refreshPromise: Promise<boolean> | null = null;
 
   constructor() {
     const mode = import.meta.env.MODE;
@@ -162,7 +180,23 @@ class ApiClient {
     );
   }
 
+  /**
+   * Deduplicated refresh — concurrent 401s share a single in-flight request.
+   * This prevents token rotation races when multiple API calls fail simultaneously.
+   */
   private async refreshToken(): Promise<boolean> {
+    if (this._refreshPromise) return this._refreshPromise;
+    this._refreshPromise = this._doRefreshToken().finally(() => {
+      this._refreshPromise = null;
+    });
+    return this._refreshPromise;
+  }
+
+  /**
+   * Actual refresh implementation.
+   * Uses raw axios (not this.client) to avoid interceptor loops.
+   */
+  private async _doRefreshToken(): Promise<boolean> {
     try {
       // Build the refresh token URL - handle empty base URL for proxy
       const refreshUrl = API_BASE_URL
