@@ -1,23 +1,8 @@
 import React, { useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  FileText,
-  Building2,
-  BarChart3,
-  Package,
-  Megaphone,
-  Cog,
-  Users,
-  DollarSign,
-  Wallet,
-  Grid3X3,
-  AlertTriangle,
-  Calendar,
-  LogOut,
-  Paperclip,
   Sparkles,
   Loader2,
-  type LucideIcon,
 } from 'lucide-react';
 import { PlanSection } from '../../types/preview';
 import { EditableSection } from './inline-edit';
@@ -43,48 +28,6 @@ interface SectionCardProps {
   sectionRef?: React.RefObject<HTMLElement>;
   /** Force actions visible (for mobile) */
   alwaysShowActions?: boolean;
-}
-
-// Icon mapping
-const sectionIconMap: Record<string, LucideIcon> = {
-  'executive summary': FileText,
-  'company overview': Building2,
-  'company description': Building2,
-  'market analysis': BarChart3,
-  'market research': BarChart3,
-  'products': Package,
-  'services': Package,
-  'products and services': Package,
-  'marketing': Megaphone,
-  'marketing strategy': Megaphone,
-  'operations': Cog,
-  'operations plan': Cog,
-  'management': Users,
-  'management team': Users,
-  'team': Users,
-  'financial': DollarSign,
-  'financial projections': DollarSign,
-  'financials': DollarSign,
-  'funding': Wallet,
-  'funding request': Wallet,
-  'swot': Grid3X3,
-  'swot analysis': Grid3X3,
-  'risk': AlertTriangle,
-  'risks': AlertTriangle,
-  'timeline': Calendar,
-  'milestones': Calendar,
-  'exit': LogOut,
-  'exit strategy': LogOut,
-  'appendix': Paperclip,
-};
-
-function getSectionIcon(title: string): LucideIcon {
-  const normalizedTitle = title.toLowerCase().trim();
-  if (sectionIconMap[normalizedTitle]) return sectionIconMap[normalizedTitle];
-  for (const [key, icon] of Object.entries(sectionIconMap)) {
-    if (normalizedTitle.includes(key) || key.includes(normalizedTitle)) return icon;
-  }
-  return FileText;
 }
 
 const sectionVariants = {
@@ -131,7 +74,6 @@ const SectionCard = React.memo(function SectionCard({
   const hasContent = section.content && section.content.trim().length > 0;
   const wordCount = hasContent ? (section.content || '').split(/\s+/).filter(Boolean).length : 0;
   const isThinContent = hasContent && wordCount < 100;
-  const Icon = getSectionIcon(section.title);
 
   const handleInlineSave = useCallback(
     async (content: string) => {
@@ -160,42 +102,26 @@ const SectionCard = React.memo(function SectionCard({
       className="group scroll-mt-20 lg:scroll-mt-24 mb-12"
       aria-labelledby={`section-title-${section.id}`}
     >
-      {/* Section Header - Number + Title + Hover Actions */}
-      <header className="flex items-start justify-between gap-4 mb-6">
-        <div className="flex items-center gap-3">
-          {/* Section Number */}
-          <span className="text-sm font-medium text-warm-gray-400 dark:text-warm-gray-500 tabular-nums">
-            {sectionNumber}.
-          </span>
+      {/* Section Header - Document-style numbered heading with bottom border */}
+      <header className="relative mb-2">
+        <h2
+          id={`section-title-${section.id}`}
+          className="document-section-heading"
+        >
+          {sectionNumber}. {section.title}
+        </h2>
 
-          {/* Icon - subtle, not in a box */}
-          <Icon
-            size={20}
-            className="text-warm-gray-400 dark:text-warm-gray-500 flex-shrink-0"
-            aria-hidden="true"
-          />
-
-          {/* Title */}
-          <h2
-            id={`section-title-${section.id}`}
-            className={cn(
-              'text-lg sm:text-xl lg:text-2xl font-semibold tracking-tight',
-              'text-warm-gray-900 dark:text-white'
-            )}
-          >
-            {section.title}
-          </h2>
-        </div>
-
-        {/* Hover Actions */}
+        {/* Hover Actions - floating top-right */}
         {hasContent && !isRegenerating && (
-          <HoverActions
-            onEdit={onEdit}
-            onRegenerate={onRegenerate}
-            isRegenerating={isRegenerating}
-            showAIAssist={false}
-            alwaysVisible={shouldAlwaysShowActions}
-          />
+          <div className="absolute top-0 right-0 no-print">
+            <HoverActions
+              onEdit={onEdit}
+              onRegenerate={onRegenerate}
+              isRegenerating={isRegenerating}
+              showAIAssist={false}
+              alwaysVisible={shouldAlwaysShowActions}
+            />
+          </div>
         )}
       </header>
 
@@ -210,7 +136,7 @@ const SectionCard = React.memo(function SectionCard({
             initial="hidden"
             animate="visible"
             exit="exit"
-            className="prose-warm"
+            className="document-prose"
           >
             {isInlineEditEnabled ? (
               <EditableSection
@@ -243,8 +169,8 @@ const SectionCard = React.memo(function SectionCard({
         </div>
       )}
 
-      {/* Subtle Divider */}
-      <div className="mt-12 h-px bg-gradient-to-r from-transparent via-warm-gray-200 dark:via-secondary to-transparent" />
+      {/* Document Divider */}
+      <hr className="document-divider" />
     </motion.section>
   );
 });
@@ -330,7 +256,7 @@ function ContentDisplay({
             return (
               <div
                 key={`prose-${index}`}
-                className="prose-warm-content"
+                className="prose-warm-content document-prose"
                 dangerouslySetInnerHTML={{ __html: sanitizeHtml(formatContent(block.content)) }}
               />
             );
@@ -347,14 +273,15 @@ function ContentDisplay({
   // Simple content rendering
   return (
     <div
-      className="prose-warm-content"
+      className="prose-warm-content document-prose"
       dangerouslySetInnerHTML={{ __html: sanitizeHtml(formatContent(content)) }}
     />
   );
 }
 
 /**
- * Format content - convert markdown to HTML
+ * Format content - convert markdown to rich HTML
+ * Handles headings, bold, italic, lists, tables, and horizontal rules
  */
 function formatContent(content: string): string {
   if (!content) return '';
@@ -363,11 +290,56 @@ function formatContent(content: string): string {
 
   // Check if already HTML
   const hasCompleteHTML = /<[a-z]+[^>]*>[\s\S]*<\/[a-z]+>/i.test(html);
-  const hasMarkdown = /#{1,6}\s|\*\*[^*]+\*\*|^\* |^\d+\.\s/m.test(html);
+  const hasMarkdown = /#{1,6}\s|\*\*[^*]+\*\*|^\* |^\d+\.\s|^\|/m.test(html);
 
   if (hasCompleteHTML && !hasMarkdown) {
     return html;
   }
+
+  // Strip any remaining raw JSON code blocks (failed visual elements) - don't show raw JSON
+  html = html.replace(/```json:(chart|table|metrics|infographic|swot)\s*\n[\s\S]*?```/gi, '');
+
+  // Convert markdown tables (| col1 | col2 |) to HTML tables
+  html = html.replace(
+    /((?:^\|.+\|[ \t]*$\n?)+)/gm,
+    (tableBlock) => {
+      const rows = tableBlock.trim().split('\n').filter(r => r.trim());
+      if (rows.length < 2) return tableBlock;
+
+      // Check if second row is separator (|---|---|)
+      const isSeparator = (row: string) => /^\|[\s\-:]+\|/.test(row);
+      const hasSeparator = rows.length >= 2 && isSeparator(rows[1]);
+
+      const parseRow = (row: string) =>
+        row.split('|').filter((_, i, arr) => i > 0 && i < arr.length - 1).map(c => c.trim());
+
+      let tableHtml = '<table class="business-plan-table">';
+
+      if (hasSeparator) {
+        // Header + separator + body
+        const headerCells = parseRow(rows[0]);
+        tableHtml += '<thead><tr>' + headerCells.map(c => `<th>${c}</th>`).join('') + '</tr></thead>';
+        tableHtml += '<tbody>';
+        for (let i = 2; i < rows.length; i++) {
+          if (isSeparator(rows[i])) continue;
+          const cells = parseRow(rows[i]);
+          tableHtml += '<tr>' + cells.map(c => `<td>${c}</td>`).join('') + '</tr>';
+        }
+        tableHtml += '</tbody>';
+      } else {
+        // No separator - all body rows
+        tableHtml += '<tbody>';
+        for (const row of rows) {
+          const cells = parseRow(row);
+          tableHtml += '<tr>' + cells.map(c => `<td>${c}</td>`).join('') + '</tr>';
+        }
+        tableHtml += '</tbody>';
+      }
+
+      tableHtml += '</table>';
+      return tableHtml;
+    }
+  );
 
   // Convert markdown headings
   html = html.replace(/(^|\n)(#{1,6})\s+([^\n]+)/g, (_match, prefix, hashes, text) => {
@@ -378,18 +350,36 @@ function formatContent(content: string): string {
   // Convert bold
   html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
 
-  // Convert italic
-  html = html.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+  // Convert italic (but not already-converted bold)
+  html = html.replace(/(?<!\*)\*([^*]+)\*(?!\*)/g, '<em>$1</em>');
+
+  // Convert horizontal rules (---)
+  html = html.replace(/^---+$/gm, '<hr class="document-divider">');
+
+  // Convert numbered lists
+  html = html.replace(/((?:^\d+\.\s+.+$\n?)+)/gm, (listBlock) => {
+    const items = listBlock.trim().split('\n')
+      .filter(l => l.trim())
+      .map(l => l.replace(/^\d+\.\s+/, ''));
+    return '<ol>' + items.map(item => `<li>${item}</li>`).join('') + '</ol>';
+  });
 
   // Convert unordered lists
-  html = html.replace(/^[\*\-]\s+(.+)$/gm, '<li>$1</li>');
-  html = html.replace(/(<li>.*<\/li>\n?)+/g, '<ul>$&</ul>');
+  html = html.replace(/((?:^[\*\-]\s+.+$\n?)+)/gm, (listBlock) => {
+    const items = listBlock.trim().split('\n')
+      .filter(l => l.trim())
+      .map(l => l.replace(/^[\*\-]\s+/, ''));
+    return '<ul>' + items.map(item => `<li>${item}</li>`).join('') + '</ul>';
+  });
 
   // Convert paragraphs (double newlines)
   html = html.replace(/\n\n/g, '</p><p>');
   if (!html.startsWith('<')) {
     html = '<p>' + html + '</p>';
   }
+
+  // Clean up empty paragraphs
+  html = html.replace(/<p>\s*<\/p>/g, '');
 
   return html;
 }

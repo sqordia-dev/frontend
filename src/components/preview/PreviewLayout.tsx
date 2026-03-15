@@ -130,7 +130,7 @@ export default function PreviewLayout({
 
   return (
     <PreviewLayoutContext.Provider value={contextValue}>
-      <div className="min-h-screen bg-warm-gray-50 dark:bg-background">
+      <div className="min-h-screen document-background">
         {/* Reading Progress Bar */}
         <ReadingProgressBar className="fixed top-0 left-0 right-0 z-50" />
 
@@ -211,28 +211,32 @@ export default function PreviewLayout({
               transition={{ type: 'spring', stiffness: 400, damping: 35 }}
               className="transition-[margin]"
             >
-              <div className="mx-auto max-w-[720px] py-4">
+              <div className="mx-auto max-w-[880px] py-6">
                 {/* Prominent Export CTA */}
                 <ExportCTA
                   onExportClick={onExportClick}
                   isExporting={isExporting}
                   exportingFormat={exportingFormat}
                 />
-                {children}
+                <div className="document-page">
+                  {children}
+                </div>
               </div>
             </motion.div>
           </div>
 
           {/* Mobile/Tablet content (no sidebar margin) */}
           <div className="lg:hidden">
-            <div className="mx-auto max-w-[680px]">
+            <div className="mx-auto max-w-[880px]">
               {/* Prominent Export CTA */}
               <ExportCTA
                 onExportClick={onExportClick}
                 isExporting={isExporting}
                 exportingFormat={exportingFormat}
               />
-              {children}
+              <div className="document-page">
+                {children}
+              </div>
             </div>
           </div>
         </main>
