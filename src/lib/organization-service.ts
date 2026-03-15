@@ -129,12 +129,22 @@ export const organizationService = {
 
   async getOrganizationProfile(organizationId: string): Promise<OrganizationProfile> {
     const response = await apiClient.get<OrganizationProfile>(`/api/v1/organizations/${organizationId}`);
-    return response.data;
+    const data = response.data;
+    // Handle potential Result<T> wrapper format
+    if (data && typeof data === 'object' && 'value' in data && (data as any).isSuccess !== undefined) {
+      return (data as any).value;
+    }
+    return data;
   },
 
   async updateOrganizationProfile(organizationId: string, data: UpdateOrganizationProfileRequest): Promise<OrganizationProfile> {
     const response = await apiClient.put<OrganizationProfile>(`/api/v1/organizations/${organizationId}`, data);
-    return response.data;
+    const result = response.data;
+    // Handle potential Result<T> wrapper format
+    if (result && typeof result === 'object' && 'value' in result && (result as any).isSuccess !== undefined) {
+      return (result as any).value;
+    }
+    return result;
   },
 
   async getMyOrganizationProfile(organizationId?: string): Promise<OrganizationProfile | null> {
@@ -145,7 +155,10 @@ export const organizationService = {
       const orgs = await organizationService.getOrganizations();
       if (orgs.length === 0) return null;
       return await organizationService.getOrganizationProfile(orgs[0].id);
-    } catch {
+    } catch (err) {
+      if (import.meta.env.DEV) {
+        console.warn('[getMyOrganizationProfile] Failed to load profile:', err);
+      }
       return null;
     }
   },

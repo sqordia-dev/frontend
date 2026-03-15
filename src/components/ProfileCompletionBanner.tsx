@@ -64,7 +64,7 @@ export default function ProfileCompletionBanner({
     }
   }, [variant]);
 
-  if (loading || dismissed) return null;
+  if (loading || dismissed || !profile) return null;
 
   const { score, missing } = calculateProfileCompletion(profile);
   if (score >= threshold || missing.length === 0) return null;
