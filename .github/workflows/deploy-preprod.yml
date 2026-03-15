@@ -38,15 +38,15 @@ jobs:
           VITE_API_URL: ${{ secrets.PREPROD_API_URL }}
           VITE_ENVIRONMENT: preprod
 
-      - name: Deploy to Azure Static Web Apps
-        uses: Azure/static-web-apps-deploy@v1
+      - name: Deploy to Netlify (preview)
+        uses: nwtgck/actions-netlify@v3
         with:
-          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          action: upload
-          app_location: /
-          output_location: dist
-          skip_app_build: true
+          publish-dir: ./dist
+          production-deploy: false
+          alias: preprod
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
 
       - name: Deployment summary
         if: always()
