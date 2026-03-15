@@ -46,7 +46,7 @@ const AI_PROVIDERS = [
     id: 'claude',
     name: 'Claude',
     fullName: 'Anthropic Claude',
-    models: ['claude-3-5-sonnet-20241022', 'claude-3-opus-20240229', 'claude-3-haiku-20240307'],
+    models: ['claude-sonnet-4-6', 'claude-opus-4-6', 'claude-haiku-4-5-20251001'],
     icon: Brain,
     color: '#D97706',
     bgGradient: 'from-amber-500 to-orange-600'
@@ -55,7 +55,7 @@ const AI_PROVIDERS = [
     id: 'openai',
     name: 'OpenAI',
     fullName: 'OpenAI GPT',
-    models: ['gpt-4-turbo', 'gpt-4o', 'gpt-4o-mini', 'gpt-3.5-turbo'],
+    models: ['gpt-4.1', 'gpt-4.1-mini', 'gpt-4.1-nano', 'o3', 'o4-mini'],
     icon: Sparkles,
     color: '#10B981',
     bgGradient: 'from-emerald-500 to-teal-600'
@@ -64,7 +64,7 @@ const AI_PROVIDERS = [
     id: 'gemini',
     name: 'Gemini',
     fullName: 'Google Gemini',
-    models: ['gemini-1.5-pro', 'gemini-1.5-flash', 'gemini-pro'],
+    models: ['gemini-2.5-flash', 'gemini-2.5-pro'],
     icon: Zap,
     color: '#3B82F6',
     bgGradient: 'from-blue-500 to-indigo-600'
@@ -95,7 +95,7 @@ export function AIStudioPromptEditorPage() {
 
   // AI Provider & Model
   const [selectedProvider, setSelectedProvider] = useState('openai');
-  const [selectedModel, setSelectedModel] = useState('gpt-4o');
+  const [selectedModel, setSelectedModel] = useState('gpt-4.1');
   const [showProviderDropdown, setShowProviderDropdown] = useState(false);
   const [showModelDropdown, setShowModelDropdown] = useState(false);
 

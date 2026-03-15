@@ -202,9 +202,9 @@ export function AIStudioConfigPage() {
     }
     // Fallback to static list
     const STATIC_MODELS: Record<string, string[]> = {
-      OpenAI: ['gpt-4.1', 'gpt-4.1-mini', 'o3', 'o4-mini', 'gpt-4o', 'gpt-4o-mini'],
-      Claude: ['claude-sonnet-4-6', 'claude-opus-4-6', 'claude-haiku-4-5'],
-      Gemini: ['gemini-2.5-flash', 'gemini-2.5-pro', 'gemini-2.0-flash'],
+      OpenAI: ['gpt-4.1', 'gpt-4.1-mini', 'gpt-4.1-nano', 'o3', 'o4-mini'],
+      Claude: ['claude-sonnet-4-6', 'claude-opus-4-6', 'claude-haiku-4-5-20251001'],
+      Gemini: ['gemini-2.5-flash', 'gemini-2.5-pro'],
     };
     return STATIC_MODELS[provider] || [];
   };
