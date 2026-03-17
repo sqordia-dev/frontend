@@ -57,6 +57,7 @@ const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 const BugReportPage = lazy(() => import('./pages/BugReportPage'));
 const NotificationsPage = lazy(() => import('./pages/NotificationsPage'));
 const NotificationPreferencesPage = lazy(() => import('./pages/NotificationPreferencesPage'));
+const SettingsPage = lazy(() => import('./pages/SettingsPage'));
 
 // Financial Projections (Previsio) pages
 const FinancialProjectionsPage = lazy(() => import('./pages/financial/FinancialProjectionsPage'));
@@ -232,6 +233,17 @@ function App() {
               }
             >
               <Route index element={<ProfilePage />} />
+            </Route>
+
+            <Route
+              path="/settings"
+              element={
+                <ProtectedRoute>
+                  <DashboardLayout />
+                </ProtectedRoute>
+              }
+            >
+              <Route index element={<SettingsPage />} />
             </Route>
 
             <Route

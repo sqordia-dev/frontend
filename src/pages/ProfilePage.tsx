@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
+import React, { useState, useEffect, useRef, useMemo, lazy, Suspense } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { User, Mail, Building2, Phone, MapPin, Save, ArrowLeft, Shield, Lock, Key, AlertCircle, Upload, Image as ImageIcon, X, Rocket, Briefcase, Heart, ExternalLink, Download, Trash2, FileText, CheckCircle, Clock, Monitor, Smartphone, Globe, Eye, EyeOff } from 'lucide-react';
+import { User, Mail, Building2, Phone, Save, ArrowLeft, Shield, Lock, Key, AlertCircle, Upload, Image as ImageIcon, X, Rocket, Briefcase, Heart, ExternalLink, Download, Trash2, FileText, CheckCircle, Clock, Monitor, Smartphone, Globe, Eye, EyeOff } from 'lucide-react';
 import TwoFactorSettings from '../components/security/TwoFactorSettings';
 import { authService } from '../lib/auth-service';
 import { profileService, ProfileValidationError } from '../lib/profile-service';
@@ -12,24 +12,39 @@ import { useCmsContent } from '../hooks/useCmsContent';
 import { getUserFriendlyError } from '../utils/error-messages';
 import { useToast } from '../contexts/ToastContext';
 import { useFeatureFlag } from '../hooks/useFeatureFlag';
+import { useTheme } from '../contexts/ThemeContext';
+import { organizationService } from '../lib/organization-service';
 
 const OrganizationProfileTab = lazy(() => import('../components/profile/OrganizationProfileTab'));
 
-const baseTabs = [
-  { id: 'profile', label: 'Profile', icon: User },
-  { id: 'organization', label: 'Organization', icon: Building2 },
-  { id: 'security', label: 'Security', icon: Shield },
-  { id: 'sessions', label: 'Sessions', icon: Monitor },
-  { id: 'privacy', label: 'Privacy & Data', icon: Lock },
-] as const;
+const TAB_IDS = ['profile', 'organization', 'security', 'sessions', 'privacy'] as const;
+type TabId = typeof TAB_IDS[number];
 
-type TabId = typeof baseTabs[number]['id'];
+const tabIcons: Record<TabId, typeof User> = {
+  profile: User,
+  organization: Building2,
+  security: Shield,
+  sessions: Monitor,
+  privacy: Lock,
+};
 
 export default function ProfilePage() {
   const { getContent: cms } = useCmsContent('profile');
+  const { t } = useTheme();
   const navigate = useNavigate();
   const toast = useToast();
   const { isEnabled: showOrgTab } = useFeatureFlag('profile-org-tab', true);
+
+  const tabs = useMemo(() =>
+    TAB_IDS
+      .filter(id => id !== 'organization' || showOrgTab)
+      .map(id => ({
+        id,
+        label: cms(`profile.tab_${id}`, `profile.tabs.${id}`) || id,
+        icon: tabIcons[id],
+      })),
+    [cms, showOrgTab]
+  );
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -93,12 +108,22 @@ export default function ProfilePage() {
       setLoading(true);
       setError(null);
       const data = await profileService.getProfile();
+
+      // If company is empty, fall back to organization name from onboarding
+      let company = data.company || '';
+      if (!company) {
+        try {
+          const orgProfile = await organizationService.getMyOrganizationProfile();
+          company = orgProfile?.name || '';
+        } catch { /* ignore */ }
+      }
+
       setProfile({
         firstName: data.firstName || '',
         lastName: data.lastName || '',
         email: data.email || '',
         phoneNumber: data.phoneNumber || '',
-        company: data.company || '',
+        company,
         address: data.address || '',
         profilePictureUrl: data.profilePictureUrl || ''
       });
@@ -270,7 +295,8 @@ export default function ProfilePage() {
       setError(null);
       await privacyService.updateConsent(consentType, version, true);
       await loadConsents();
-      setSuccess(`${consentType === 'TermsOfService' ? 'Terms of Service' : 'Privacy Policy'} accepted`);
+      const consentLabel = consentType === 'TermsOfService' ? t('profile.termsOfService') : t('profile.privacyPolicy');
+      setSuccess(`${consentLabel} - ${t('profile.accept')}`);
       setTimeout(() => setSuccess(null), 5000);
     } catch (err: any) {
       setError(err.message);
@@ -377,8 +403,8 @@ export default function ProfilePage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
       <SEO
-        title={`${cms('profile.page_title', '') || 'Profile Settings'} | Sqordia`}
-        description={cms('profile.page_description', '') || 'Manage your profile, security settings, and account preferences'}
+        title={`${cms('profile.page_title', 'profile.seoTitle') || 'Profile Settings'} | Sqordia`}
+        description={cms('profile.page_description', 'profile.seoDescription') || 'Manage your profile, security settings, and account preferences'}
         noindex={true}
         nofollow={true}
       />
@@ -390,16 +416,16 @@ export default function ProfilePage() {
           className="inline-flex items-center gap-2 text-body-sm text-gray-600 dark:text-gray-400 hover:text-strategy-blue dark:hover:text-white transition-colors mb-8 group"
         >
           <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
-          {cms('profile.back_to_dashboard', '') || 'Back to Dashboard'}
+          {cms('profile.back_to_dashboard', 'profile.backToDashboard') || 'Back to Dashboard'}
         </Link>
 
         {/* Page Header */}
         <div className="mb-8">
           <h1 className="text-display-sm text-strategy-blue dark:text-white font-heading">
-            {cms('profile.page_title', '') || 'Settings'}
+            {cms('profile.page_title', 'profile.pageTitle') || 'Settings'}
           </h1>
           <p className="mt-2 text-body-md text-gray-600 dark:text-gray-400">
-            {cms('profile.page_description', '') || 'Manage your account settings and preferences'}
+            {cms('profile.page_description', 'profile.pageDescription') || 'Manage your account settings and preferences'}
           </p>
         </div>
 
@@ -434,14 +460,21 @@ export default function ProfilePage() {
         <div className="bg-white dark:bg-gray-800/50 rounded-2xl shadow-card border border-gray-200/80 dark:border-gray-700/50 overflow-hidden backdrop-blur-sm">
           {/* Tab Navigation */}
           <div className="border-b border-gray-200 dark:border-gray-700/50 bg-gray-50/50 dark:bg-gray-800/30">
-            <nav className="flex gap-1 px-3 sm:px-4 py-2 overflow-x-auto scrollbar-hide -mx-px" aria-label="Settings tabs">
-              {baseTabs.filter(tab => tab.id !== 'organization' || showOrgTab).map((tab) => {
+            <nav className="flex gap-1 px-3 sm:px-4 py-2 overflow-x-auto scrollbar-hide -mx-px" aria-label={`${t('profile.pageTitle')} tabs`}>
+              {tabs.map((tab) => {
                 const Icon = tab.icon;
                 const isActive = activeTab === tab.id;
                 return (
                   <button
                     key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
+                    onClick={(e) => { setActiveTab(tab.id); (e.currentTarget as HTMLButtonElement).blur(); }}
+                    onKeyDown={(e) => {
+                      if (e.key === ' ') {
+                        e.preventDefault();
+                        setActiveTab(tab.id);
+                        (e.currentTarget as HTMLButtonElement).blur();
+                      }
+                    }}
                     className={`
                       flex items-center justify-center gap-2 px-3 sm:px-4 py-2.5 rounded-lg text-label-md whitespace-nowrap transition-all duration-200 min-h-[44px] min-w-[44px] sm:min-w-0
                       ${isActive
@@ -450,10 +483,10 @@ export default function ProfilePage() {
                       }
                     `}
                     aria-current={isActive ? 'page' : undefined}
-                    aria-label={cms(`profile.tab_${tab.id}`, '') || tab.label}
+                    aria-label={tab.label}
                   >
                     <Icon className="w-4 h-4 flex-shrink-0" />
-                    <span className="hidden sm:inline">{cms(`profile.tab_${tab.id}`, '') || tab.label}</span>
+                    <span className="hidden sm:inline">{tab.label}</span>
                   </button>
                 );
               })}
@@ -461,7 +494,15 @@ export default function ProfilePage() {
           </div>
 
           {/* Tab Content */}
-          <div className="p-6 sm:p-8">
+          <div
+            className="p-6 sm:p-8"
+            onKeyDown={(e) => {
+              const target = e.target as HTMLElement;
+              if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) {
+                e.stopPropagation();
+              }
+            }}
+          >
             {/* Profile Tab */}
             {activeTab === 'profile' && (
               <form onSubmit={handleProfileUpdate} className="space-y-8 animate-fade-in">
@@ -501,10 +542,10 @@ export default function ProfilePage() {
                   <div className="flex-1 space-y-4">
                     <div>
                       <h3 className="text-heading-sm text-strategy-blue dark:text-white">
-                        {cms('profile.profile_picture_label', '') || 'Profile Picture'}
+                        {cms('profile.profile_picture_label', 'profile.profilePicture') || 'Profile Picture'}
                       </h3>
                       <p className="text-body-sm text-gray-500 dark:text-gray-400 mt-1">
-                        {cms('profile.picture_help', '') || 'Upload an image (max 5MB) or enter a URL. Supported: JPEG, PNG, GIF, WebP'}
+                        {cms('profile.picture_help', 'profile.pictureHelp') || 'Upload an image (max 5MB) or enter a URL. Supported: JPEG, PNG, GIF, WebP'}
                       </p>
                     </div>
 
@@ -529,12 +570,12 @@ export default function ProfilePage() {
                         {uploadingPicture ? (
                           <>
                             <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                            <span>{cms('profile.uploading', '') || 'Uploading...'}</span>
+                            <span>{cms('profile.uploading', 'profile.uploading') || 'Uploading...'}</span>
                           </>
                         ) : (
                           <>
                             <Upload size={16} />
-                            <span>{cms('profile.upload_from_device', '') || 'Upload Photo'}</span>
+                            <span>{cms('profile.upload_from_device', 'profile.uploadPhoto') || 'Upload Photo'}</span>
                           </>
                         )}
                       </label>
@@ -572,7 +613,7 @@ export default function ProfilePage() {
                             }
                           }
                         }}
-                        placeholder={cms('profile.url_placeholder', '') || 'Or paste image URL...'}
+                        placeholder={cms('profile.url_placeholder', 'profile.urlPlaceholder') || 'Or paste image URL...'}
                         className="w-full pl-10 pr-4 py-2.5 text-body-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:border-momentum-orange focus:ring-2 focus:ring-momentum-orange/20 outline-none transition-all"
                       />
                     </div>
@@ -585,7 +626,7 @@ export default function ProfilePage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <label className="block text-label-md text-gray-700 dark:text-gray-300">
-                      {cms('profile.first_name_label', '') || 'First Name'} <span className="text-red-500">*</span>
+                      {cms('profile.first_name_label', 'profile.firstName') || 'First Name'} <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="text"
@@ -608,7 +649,7 @@ export default function ProfilePage() {
 
                   <div className="space-y-2">
                     <label className="block text-label-md text-gray-700 dark:text-gray-300">
-                      {cms('profile.last_name_label', '') || 'Last Name'} <span className="text-red-500">*</span>
+                      {cms('profile.last_name_label', 'profile.lastName') || 'Last Name'} <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="text"
@@ -633,7 +674,7 @@ export default function ProfilePage() {
                 {/* Email Field */}
                 <div className="space-y-2">
                   <label className="block text-label-md text-gray-700 dark:text-gray-300">
-                    {cms('profile.email_label', '') || 'Email Address'}
+                    {cms('profile.email_label', 'profile.emailAddress') || 'Email Address'}
                   </label>
                   <div className="relative">
                     <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -645,7 +686,7 @@ export default function ProfilePage() {
                     />
                   </div>
                   <p className="text-body-xs text-gray-500 dark:text-gray-500">
-                    {cms('profile.email_cant_change', '') || 'Email address cannot be changed'}
+                    {cms('profile.email_cant_change', 'profile.emailCantChange') || 'Email address cannot be changed'}
                   </p>
                 </div>
 
@@ -653,7 +694,7 @@ export default function ProfilePage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <label className="block text-label-md text-gray-700 dark:text-gray-300">
-                      {cms('profile.phone_number_label', '') || 'Phone Number'}
+                      {cms('profile.phone_number_label', 'profile.phoneNumber') || 'Phone Number'}
                     </label>
                     <div className="relative">
                       <Phone className={`absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 ${fieldErrors.phonenumber ? 'text-red-400' : 'text-gray-400'}`} />
@@ -679,7 +720,7 @@ export default function ProfilePage() {
 
                   <div className="space-y-2">
                     <label className="block text-label-md text-gray-700 dark:text-gray-300">
-                      {cms('profile.company_label', '') || 'Company'}
+                      {cms('profile.company_label', 'profile.company') || 'Company'}
                     </label>
                     <div className="relative">
                       <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -690,22 +731,6 @@ export default function ProfilePage() {
                         className="w-full pl-11 pr-4 py-3 text-body-md rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-momentum-orange focus:ring-2 focus:ring-momentum-orange/20 outline-none transition-all"
                       />
                     </div>
-                  </div>
-                </div>
-
-                {/* Address */}
-                <div className="space-y-2">
-                  <label className="block text-label-md text-gray-700 dark:text-gray-300">
-                    {cms('profile.address_label', '') || 'Address'}
-                  </label>
-                  <div className="relative">
-                    <MapPin className="absolute left-4 top-4 w-4 h-4 text-gray-400" />
-                    <textarea
-                      value={profile.address}
-                      onChange={(e) => setProfile({ ...profile, address: e.target.value })}
-                      rows={3}
-                      className="w-full pl-11 pr-4 py-3 text-body-md rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-momentum-orange focus:ring-2 focus:ring-momentum-orange/20 outline-none transition-all resize-none"
-                    />
                   </div>
                 </div>
 
@@ -721,12 +746,12 @@ export default function ProfilePage() {
                     {saving ? (
                       <>
                         <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                        {cms('profile.saving', '') || 'Saving...'}
+                        {cms('profile.saving', 'profile.saving') || 'Saving...'}
                       </>
                     ) : (
                       <>
                         <Save className="w-4 h-4" />
-                        {cms('profile.save_changes_button', '') || 'Save Changes'}
+                        {cms('profile.save_changes_button', 'profile.saveChanges') || 'Save Changes'}
                       </>
                     )}
                   </button>
@@ -737,7 +762,7 @@ export default function ProfilePage() {
             {/* Organization Tab */}
             {activeTab === 'organization' && showOrgTab && (
               <div className="p-6">
-                <Suspense fallback={<div className="flex justify-center py-12"><div className="w-8 h-8 border-4 border-orange-500 border-t-transparent rounded-full animate-spin" /></div>}>
+                <Suspense fallback={<div className="flex justify-center py-12"><div className="w-8 h-8 border-4 border-momentum-orange border-t-transparent rounded-full animate-spin" /></div>}>
                   <OrganizationProfileTab />
                 </Suspense>
               </div>
@@ -750,17 +775,17 @@ export default function ProfilePage() {
                 <div className="space-y-6">
                   <div>
                     <h3 className="text-heading-lg text-strategy-blue dark:text-white">
-                      {cms('profile.change_password_heading', '') || 'Change Password'}
+                      {cms('profile.change_password_heading', 'profile.changePassword') || 'Change Password'}
                     </h3>
                     <p className="text-body-sm text-gray-500 dark:text-gray-400 mt-1">
-                      Update your password to keep your account secure
+                      {cms('profile.change_password_description', 'profile.changePasswordDescription') || 'Update your password to keep your account secure'}
                     </p>
                   </div>
 
                   <form onSubmit={handlePasswordChange} className="space-y-4 max-w-md">
                     <div className="space-y-2">
                       <label className="block text-label-md text-gray-700 dark:text-gray-300">
-                        {cms('profile.current_password_label', '') || 'Current Password'}
+                        {cms('profile.current_password_label', 'profile.currentPassword') || 'Current Password'}
                       </label>
                       <div className="relative">
                         <input
@@ -782,7 +807,7 @@ export default function ProfilePage() {
 
                     <div className="space-y-2">
                       <label className="block text-label-md text-gray-700 dark:text-gray-300">
-                        {cms('profile.new_password_label', '') || 'New Password'}
+                        {cms('profile.new_password_label', 'profile.newPassword') || 'New Password'}
                       </label>
                       <div className="relative">
                         <input
@@ -804,7 +829,7 @@ export default function ProfilePage() {
 
                     <div className="space-y-2">
                       <label className="block text-label-md text-gray-700 dark:text-gray-300">
-                        {cms('profile.confirm_new_password_label', '') || 'Confirm New Password'}
+                        {cms('profile.confirm_new_password_label', 'profile.confirmNewPassword') || 'Confirm New Password'}
                       </label>
                       <div className="relative">
                         <input
@@ -829,7 +854,7 @@ export default function ProfilePage() {
                       disabled={saving}
                       className="inline-flex items-center gap-2 px-5 py-2.5 text-label-md text-white bg-momentum-orange rounded-lg shadow-sm hover:bg-[#E55F00] hover:shadow-md disabled:opacity-60 disabled:cursor-not-allowed transition-all duration-200"
                     >
-                      {saving ? 'Updating...' : (cms('profile.update_password_button', '') || 'Update Password')}
+                      {saving ? (cms('profile.updating_label', 'profile.updating') || 'Updating...') : (cms('profile.update_password_button', 'profile.updatePassword') || 'Update Password')}
                     </button>
                   </form>
                 </div>
@@ -847,10 +872,10 @@ export default function ProfilePage() {
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div>
                     <h3 className="text-heading-lg text-strategy-blue dark:text-white">
-                      {cms('profile.active_sessions_heading', '') || 'Active Sessions'}
+                      {cms('profile.active_sessions_heading', 'profile.activeSessions') || 'Active Sessions'}
                     </h3>
                     <p className="text-body-sm text-gray-500 dark:text-gray-400 mt-1">
-                      {cms('profile.active_sessions_description', '') || 'Manage your active sessions across devices'}
+                      {cms('profile.active_sessions_description', 'profile.activeSessionsDescription') || 'Manage your active sessions across devices'}
                     </p>
                   </div>
                   {sessions.length > 1 && (
@@ -859,7 +884,7 @@ export default function ProfilePage() {
                       className="inline-flex items-center gap-2 px-4 py-2.5 text-label-md rounded-lg border border-red-200 dark:border-red-900/50 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
                     >
                       <X className="w-4 h-4" />
-                      {cms('profile.revoke_all_sessions_button', '') || 'Revoke All Others'}
+                      {cms('profile.revoke_all_sessions_button', 'profile.revokeAllOthers') || 'Revoke All Others'}
                     </button>
                   )}
                 </div>
@@ -869,7 +894,7 @@ export default function ProfilePage() {
                     <div className="text-center py-12">
                       <Monitor className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
                       <p className="text-body-md text-gray-500 dark:text-gray-400">
-                        {cms('profile.no_sessions', '') || 'No active sessions found'}
+                        {cms('profile.no_sessions', 'profile.noSessions') || 'No active sessions found'}
                       </p>
                     </div>
                   ) : (
@@ -898,20 +923,20 @@ export default function ProfilePage() {
                                 </p>
                                 {isCurrent && (
                                   <span className="px-2 py-0.5 text-label-sm text-momentum-orange bg-momentum-orange/10 rounded-full whitespace-nowrap">
-                                    {cms('profile.current_session_badge', '') || 'Current'}
+                                    {cms('profile.current_session_badge', 'profile.currentSessionBadge') || 'Current'}
                                   </span>
                                 )}
                               </div>
                               <p className="text-body-sm text-gray-500 dark:text-gray-400 truncate">
                                 {formatIpAddress(session.ipAddress)}
                                 <span className="hidden sm:inline">
-                                  {session.lastActivityAt && ` · Last active ${new Date(session.lastActivityAt).toLocaleDateString()}`}
+                                  {session.lastActivityAt && ` · ${t('profile.lastActive')} ${new Date(session.lastActivityAt).toLocaleDateString()}`}
                                 </span>
                               </p>
                               {/* Show last activity on separate line for mobile */}
                               {session.lastActivityAt && (
                                 <p className="sm:hidden text-body-xs text-gray-400 dark:text-gray-500 mt-0.5">
-                                  Last active {new Date(session.lastActivityAt).toLocaleDateString()}
+                                  {t('profile.lastActive')} {new Date(session.lastActivityAt).toLocaleDateString()}
                                 </p>
                               )}
                             </div>
@@ -921,7 +946,7 @@ export default function ProfilePage() {
                               onClick={() => handleRevokeSession(session.id)}
                               className="w-full sm:w-auto px-3 py-2 sm:py-1.5 text-label-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg transition-colors border border-red-200 dark:border-red-900/50 sm:border-0 min-h-[44px] sm:min-h-0"
                             >
-                              {cms('profile.revoke_session_button', '') || 'Revoke'}
+                              {cms('profile.revoke_session_button', 'profile.revokeSession') || 'Revoke'}
                             </button>
                           )}
                         </div>
@@ -939,10 +964,10 @@ export default function ProfilePage() {
                 <div className="space-y-4">
                   <div>
                     <h3 className="text-heading-lg text-strategy-blue dark:text-white">
-                      {cms('profile.consent_heading', '') || 'Consent Management'}
+                      {cms('profile.consent_heading', 'profile.consentManagement') || 'Consent Management'}
                     </h3>
                     <p className="text-body-sm text-gray-500 dark:text-gray-400 mt-1">
-                      {cms('profile.consent_description', '') || 'Manage your consent for Terms of Service and Privacy Policy'}
+                      {cms('profile.consent_description', 'profile.consentDescription') || 'Manage your consent for Terms of Service and Privacy Policy'}
                     </p>
                   </div>
 
@@ -952,50 +977,72 @@ export default function ProfilePage() {
                     </div>
                   ) : (
                     <div className="space-y-3">
-                      {consents.map((consent) => (
-                        <div
-                          key={consent.type}
-                          className="flex items-center justify-between p-4 rounded-xl bg-white dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700"
-                        >
-                          <div className="flex items-center gap-4">
-                            <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${consent.isAccepted ? 'bg-emerald-100 dark:bg-emerald-900/30' : 'bg-amber-100 dark:bg-amber-900/30'}`}>
-                              {consent.isAccepted ? (
-                                <CheckCircle className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-                              ) : (
-                                <Clock className="w-5 h-5 text-amber-600 dark:text-amber-400" />
-                              )}
-                            </div>
-                            <div>
-                              <p className="text-heading-sm text-strategy-blue dark:text-white">
-                                {consent.type === 'TermsOfService' ? 'Terms of Service' : 'Privacy Policy'}
-                              </p>
-                              <p className="text-body-sm text-gray-500 dark:text-gray-400">
-                                {consent.isAccepted
-                                  ? `Accepted v${consent.version} on ${new Date(consent.acceptedAt!).toLocaleDateString()}`
-                                  : 'Not yet accepted'}
-                              </p>
-                              {consent.requiresUpdate && (
-                                <p className="text-label-sm text-amber-600 dark:text-amber-400 mt-1">
-                                  New version available (v{consent.latestVersion})
+                      {consents.map((consent) => {
+                        const consentLabel = consent.type === 'TermsOfService'
+                          ? (cms('profile.terms_label', 'profile.termsOfService') || 'Terms of Service')
+                          : (cms('profile.privacy_label', 'profile.privacyPolicy') || 'Privacy Policy');
+                        const consentLink = consent.type === 'TermsOfService' ? '/terms' : '/privacy';
+                        const acceptedText = consent.isAccepted
+                          ? (t('profile.acceptedOn')
+                              .replace('{version}', consent.version)
+                              .replace('{date}', new Date(consent.acceptedAt!).toLocaleDateString()))
+                          : (t('profile.notYetAccepted'));
+                        return (
+                          <div
+                            key={consent.type}
+                            className="flex items-center justify-between p-4 rounded-xl bg-white dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700"
+                          >
+                            <div className="flex items-center gap-4">
+                              <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${consent.isAccepted ? 'bg-emerald-100 dark:bg-emerald-900/30' : 'bg-amber-100 dark:bg-amber-900/30'}`}>
+                                {consent.isAccepted ? (
+                                  <CheckCircle className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                                ) : (
+                                  <Clock className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+                                )}
+                              </div>
+                              <div>
+                                <div className="flex items-center gap-2">
+                                  <p className="text-heading-sm text-strategy-blue dark:text-white">
+                                    {consentLabel}
+                                  </p>
+                                  <Link
+                                    to={consentLink}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center gap-1 text-label-sm text-momentum-orange hover:text-[#E55F00] transition-colors"
+                                  >
+                                    <ExternalLink className="w-3.5 h-3.5" />
+                                    {cms('profile.view_document', 'profile.viewDocument') || 'View'}
+                                  </Link>
+                                </div>
+                                <p className="text-body-sm text-gray-500 dark:text-gray-400">
+                                  {acceptedText}
                                 </p>
+                                {consent.requiresUpdate && (
+                                  <p className="text-label-sm text-amber-600 dark:text-amber-400 mt-1">
+                                    {(t('profile.newVersionAvailable')).replace('{version}', consent.latestVersion)}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              {(!consent.isAccepted || consent.requiresUpdate) && (
+                                <button
+                                  onClick={() => handleUpdateConsent(consent.type, consent.latestVersion)}
+                                  disabled={saving}
+                                  className="px-4 py-2 text-label-md text-white bg-momentum-orange rounded-lg hover:bg-[#E55F00] disabled:opacity-60 transition-colors"
+                                >
+                                  {saving ? (t('profile.accepting')) : (t('profile.accept'))}
+                                </button>
                               )}
                             </div>
                           </div>
-                          {(!consent.isAccepted || consent.requiresUpdate) && (
-                            <button
-                              onClick={() => handleUpdateConsent(consent.type, consent.latestVersion)}
-                              disabled={saving}
-                              className="px-4 py-2 text-label-md text-white bg-momentum-orange rounded-lg hover:bg-[#E55F00] disabled:opacity-60 transition-colors"
-                            >
-                              {saving ? 'Accepting...' : 'Accept'}
-                            </button>
-                          )}
-                        </div>
-                      ))}
+                        );
+                      })}
                       {consents.length === 0 && (
                         <div className="text-center py-8">
                           <FileText className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
-                          <p className="text-body-md text-gray-500 dark:text-gray-400">No consent records found</p>
+                          <p className="text-body-md text-gray-500 dark:text-gray-400">{t('profile.noConsentRecords')}</p>
                         </div>
                       )}
                     </div>
@@ -1008,10 +1055,10 @@ export default function ProfilePage() {
                 <div className="space-y-4">
                   <div>
                     <h3 className="text-heading-lg text-strategy-blue dark:text-white">
-                      {cms('profile.export_heading', '') || 'Export Your Data'}
+                      {cms('profile.export_heading', 'profile.exportHeading') || 'Export Your Data'}
                     </h3>
                     <p className="text-body-sm text-gray-500 dark:text-gray-400 mt-1">
-                      {cms('profile.export_description', '') || 'Download a copy of your personal data in a machine-readable format (JSON).'}
+                      {cms('profile.export_description', 'profile.exportDescription') || 'Download a copy of your personal data in a machine-readable format (JSON).'}
                     </p>
                   </div>
                   <button
@@ -1022,12 +1069,12 @@ export default function ProfilePage() {
                     {exportingData ? (
                       <>
                         <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
-                        <span>Exporting...</span>
+                        <span>{t('profile.exporting')}</span>
                       </>
                     ) : (
                       <>
                         <Download className="w-4 h-4" />
-                        <span>{cms('profile.download_data_button', '') || 'Download My Data'}</span>
+                        <span>{cms('profile.download_data_button', 'profile.downloadMyData') || 'Download My Data'}</span>
                       </>
                     )}
                   </button>
@@ -1039,10 +1086,10 @@ export default function ProfilePage() {
                 <div className="space-y-4">
                   <div>
                     <h3 className="text-heading-lg text-strategy-blue dark:text-white">
-                      {cms('profile.delete_heading', '') || 'Delete Account'}
+                      {cms('profile.delete_heading', 'profile.deleteAccount') || 'Delete Account'}
                     </h3>
                     <p className="text-body-sm text-gray-500 dark:text-gray-400 mt-1">
-                      {cms('profile.delete_description', '') || 'You can deactivate your account temporarily or permanently delete it.'}
+                      {cms('profile.delete_description', 'profile.deleteDescription') || 'You can deactivate your account temporarily or permanently delete it.'}
                     </p>
                   </div>
 
@@ -1055,17 +1102,17 @@ export default function ProfilePage() {
                         </div>
                         <div className="flex-1">
                           <h4 className="text-heading-sm text-strategy-blue dark:text-white">
-                            {cms('profile.deactivate_heading', '') || 'Deactivate Account'}
+                            {cms('profile.deactivate_heading', 'profile.deactivateAccount') || 'Deactivate Account'}
                           </h4>
                           <p className="text-body-sm text-gray-600 dark:text-gray-400 mt-1">
-                            {cms('profile.deactivate_description', '') || 'Account disabled for 30 days. Log in to reactivate.'}
+                            {cms('profile.deactivate_description', 'profile.deactivateDescription') || 'Account disabled for 30 days. Log in to reactivate.'}
                           </p>
                           <button
                             onClick={() => openDeleteModal('Deactivate')}
                             className="mt-4 inline-flex items-center gap-2 px-4 py-2 text-label-md rounded-lg border border-amber-400 dark:border-amber-600 text-amber-700 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/30 transition-colors"
                           >
                             <Clock className="w-4 h-4" />
-                            Deactivate
+                            {t('profile.deactivate')}
                           </button>
                         </div>
                       </div>
@@ -1079,17 +1126,17 @@ export default function ProfilePage() {
                         </div>
                         <div className="flex-1">
                           <h4 className="text-heading-sm text-strategy-blue dark:text-white">
-                            {cms('profile.permanent_delete_heading', '') || 'Permanently Delete'}
+                            {cms('profile.permanent_delete_heading', 'profile.permanentlyDelete') || 'Permanently Delete'}
                           </h4>
                           <p className="text-body-sm text-gray-600 dark:text-gray-400 mt-1">
-                            {cms('profile.permanent_delete_description', '') || 'All data permanently deleted. Cannot be recovered.'}
+                            {cms('profile.permanent_delete_description', 'profile.permanentDeleteDescription') || 'All data permanently deleted. Cannot be recovered.'}
                           </p>
                           <button
                             onClick={() => openDeleteModal('Permanent')}
                             className="mt-4 inline-flex items-center gap-2 px-4 py-2 text-label-md rounded-lg border border-red-400 dark:border-red-600 text-red-700 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors"
                           >
                             <Trash2 className="w-4 h-4" />
-                            Delete Account
+                            {t('profile.deleteAccountButton')}
                           </button>
                         </div>
                       </div>
@@ -1120,7 +1167,7 @@ export default function ProfilePage() {
                   )}
                 </div>
                 <h3 className="text-heading-lg text-strategy-blue dark:text-white">
-                  {deletionType === 'Deactivate' ? 'Deactivate Account' : 'Delete Account'}
+                  {deletionType === 'Deactivate' ? t('profile.deactivateAccount') : t('profile.deleteAccount')}
                 </h3>
               </div>
             </div>
@@ -1130,27 +1177,27 @@ export default function ProfilePage() {
                 <div className="flex items-start gap-3 p-4 rounded-lg bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50">
                   <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
                   <p className="text-body-sm text-red-800 dark:text-red-300">
-                    <strong>Warning:</strong> This action cannot be undone. All your data will be permanently deleted.
+                    <strong>Warning:</strong> {t('profile.deleteModalWarning')}
                   </p>
                 </div>
               )}
 
               <p className="text-body-sm text-gray-600 dark:text-gray-400">
                 {deletionType === 'Deactivate'
-                  ? 'Your account will be deactivated. You can reactivate it within 30 days by logging in.'
-                  : 'Enter your password to confirm permanent deletion.'}
+                  ? t('profile.deleteModalDeactivateDescription')
+                  : t('profile.deleteModalPermanentDescription')}
               </p>
 
               <div className="space-y-2">
                 <label className="block text-label-md text-gray-700 dark:text-gray-300">
-                  Password <span className="text-red-500">*</span>
+                  {t('profile.password')} <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
                   <input
                     type={showDeletePasswordField ? 'text' : 'password'}
                     value={deletePassword}
                     onChange={(e) => setDeletePassword(e.target.value)}
-                    placeholder="Enter your password"
+                    placeholder={t('profile.enterPassword')}
                     className="w-full px-4 py-3 pr-12 text-body-md rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-momentum-orange focus:ring-2 focus:ring-momentum-orange/20 outline-none transition-all"
                     required
                   />
@@ -1166,12 +1213,12 @@ export default function ProfilePage() {
 
               <div className="space-y-2">
                 <label className="block text-label-md text-gray-700 dark:text-gray-300">
-                  Reason (optional)
+                  {t('profile.reasonOptional')}
                 </label>
                 <textarea
                   value={deleteReason}
                   onChange={(e) => setDeleteReason(e.target.value)}
-                  placeholder="Help us improve..."
+                  placeholder={t('profile.helpUsImprove')}
                   rows={3}
                   maxLength={500}
                   className="w-full px-4 py-3 text-body-md rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-momentum-orange focus:ring-2 focus:ring-momentum-orange/20 outline-none transition-all resize-none"
@@ -1185,7 +1232,7 @@ export default function ProfilePage() {
                 onClick={() => setShowDeleteModal(false)}
                 className="px-4 py-2.5 text-label-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
               >
-                Cancel
+                {t('profile.cancel')}
               </button>
               <button
                 onClick={handleDeleteAccount}
@@ -1199,10 +1246,10 @@ export default function ProfilePage() {
                 `}
               >
                 {deletingAccount
-                  ? 'Processing...'
+                  ? t('profile.processing')
                   : deletionType === 'Deactivate'
-                  ? 'Deactivate Account'
-                  : 'Delete Account'}
+                  ? t('profile.deactivateAccount')
+                  : t('profile.deleteAccount')}
               </button>
             </div>
           </div>

@@ -36,7 +36,8 @@ import NotificationBell from '@/components/notifications/NotificationBell';
 const ROUTE_LABELS: Record<string, string> = {
   '/dashboard': 'nav.dashboard',
   '/create-plan': 'nav.createPlan',
-  '/profile': 'nav.settings',
+  '/profile': 'nav.profile',
+  '/settings': 'nav.settings',
   '/subscription': 'nav.subscription',
   '/invoices': 'nav.invoices',
   '/notifications': 'nav.notifications',
@@ -91,18 +92,15 @@ export default function DashboardLayout() {
     return () => clearTimeout(timer);
   }, [location.pathname]);
 
-  // Track sidebar collapse state
+  // Track sidebar collapse state (listen for cross-tab changes only)
   useEffect(() => {
-    const handleStorageChange = () => {
+    const handleStorageChange = (e?: StorageEvent) => {
+      if (e && e.key !== 'dashboard-sidebar-collapsed') return;
       const saved = localStorage.getItem('dashboard-sidebar-collapsed');
       setSidebarCollapsed(saved === 'true');
     };
-    const interval = setInterval(handleStorageChange, 100);
     window.addEventListener('storage', handleStorageChange);
-    return () => {
-      clearInterval(interval);
-      window.removeEventListener('storage', handleStorageChange);
-    };
+    return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
   const loadUser = async () => {
@@ -140,7 +138,7 @@ export default function DashboardLayout() {
         ...(userOrgId ? [{ name: language === 'fr' ? 'Équipe' : 'Team', href: `/organization/${userOrgId}/manage`, icon: Users }] : []),
         { name: t('nav.subscription'), href: '/subscription', icon: CreditCard },
         { name: t('nav.invoices'), href: '/invoices', icon: Receipt },
-        { name: t('nav.settings'), href: '/profile', icon: Settings },
+        { name: t('nav.settings'), href: '/settings', icon: Settings },
       ],
     },
     ...(isAdmin ? [{
@@ -154,7 +152,7 @@ export default function DashboardLayout() {
   const mobileMainNav = [
     { name: t('nav.dashboard'), href: '/dashboard', icon: LayoutDashboard },
     { name: t('nav.createPlan'), href: '/create-plan', icon: Plus, accent: true },
-    { name: t('nav.settings'), href: '/profile', icon: Settings },
+    { name: t('nav.settings'), href: '/settings', icon: Settings },
   ];
 
   const mobileMoreNav = [

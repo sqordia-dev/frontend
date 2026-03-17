@@ -118,7 +118,11 @@ const FREQUENCY_OPTIONS: { value: NotificationFrequency; labelFr: string; labelE
   { value: 'Disabled', labelFr: 'Desactive', labelEn: 'Disabled' },
 ];
 
-export default function NotificationPreferencesPage() {
+interface NotificationPreferencesPageProps {
+  embedded?: boolean;
+}
+
+export default function NotificationPreferencesPage({ embedded = false }: NotificationPreferencesPageProps) {
   const { language } = useTheme();
   const toast = useToast();
   const [preferences, setPreferences] = useState<NotificationPreference[]>([]);
@@ -195,47 +199,69 @@ export default function NotificationPreferencesPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-0">
-      {/* Back link */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.3 }}
-        className="mb-6"
-      >
-        <Link
-          to="/notifications"
-          className="inline-flex items-center gap-1.5 text-label-sm text-muted-foreground hover:text-foreground transition-colors"
+    <div className={embedded ? '' : 'max-w-4xl mx-auto px-4 sm:px-0'}>
+      {/* Back link - standalone only */}
+      {!embedded && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.3 }}
+          className="mb-6"
         >
-          <ArrowLeft className="h-3.5 w-3.5" />
-          {language === 'fr' ? 'Retour aux notifications' : 'Back to notifications'}
-        </Link>
-      </motion.div>
+          <Link
+            to="/notifications"
+            className="inline-flex items-center gap-1.5 text-label-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <ArrowLeft className="h-3.5 w-3.5" />
+            {language === 'fr' ? 'Retour aux notifications' : 'Back to notifications'}
+          </Link>
+        </motion.div>
+      )}
 
-      {/* Header */}
-      <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-        className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8"
-      >
-        <div className="flex items-center gap-4">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-strategy-blue text-white shadow-lg shadow-strategy-blue/20">
-            <Settings2 className="h-6 w-6" />
+      {/* Header - standalone only */}
+      {!embedded && (
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8"
+        >
+          <div className="flex items-center gap-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-strategy-blue text-white shadow-lg shadow-strategy-blue/20">
+              <Settings2 className="h-6 w-6" />
+            </div>
+            <div>
+              <h1 className="text-display-sm font-heading text-foreground tracking-tight">
+                {language === 'fr' ? 'Preferences' : 'Preferences'}
+              </h1>
+              <p className="text-body-sm text-muted-foreground mt-0.5">
+                {language === 'fr'
+                  ? 'Personnalisez vos alertes par type de notification'
+                  : 'Customize your alerts per notification type'}
+              </p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-display-sm font-heading text-foreground tracking-tight">
-              {language === 'fr' ? 'Preferences' : 'Preferences'}
-            </h1>
-            <p className="text-body-sm text-muted-foreground mt-0.5">
-              {language === 'fr'
-                ? 'Personnalisez vos alertes par type de notification'
-                : 'Customize your alerts per notification type'}
-            </p>
-          </div>
-        </div>
 
-        {hasChanges && (
+          {hasChanges && (
+            <motion.button
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              onClick={handleSave}
+              disabled={isSaving}
+              className="flex items-center gap-2 px-5 py-2.5 text-label-sm font-medium text-white bg-momentum-orange hover:bg-[#E56000] rounded-xl shadow-lg shadow-momentum-orange/20 transition-all disabled:opacity-50"
+            >
+              <Save className="h-4 w-4" />
+              {isSaving
+                ? (language === 'fr' ? 'Enregistrement...' : 'Saving...')
+                : (language === 'fr' ? 'Enregistrer' : 'Save changes')}
+            </motion.button>
+          )}
+        </motion.div>
+      )}
+
+      {/* Save button - embedded mode */}
+      {embedded && hasChanges && (
+        <div className="flex justify-end mb-6">
           <motion.button
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -248,8 +274,8 @@ export default function NotificationPreferencesPage() {
               ? (language === 'fr' ? 'Enregistrement...' : 'Saving...')
               : (language === 'fr' ? 'Enregistrer' : 'Save changes')}
           </motion.button>
-        )}
-      </motion.div>
+        </div>
+      )}
 
       {/* Legend */}
       <motion.div

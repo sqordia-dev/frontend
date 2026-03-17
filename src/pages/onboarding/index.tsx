@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import OnboardingWizard from '../../components/onboarding/OnboardingWizard';
 import { useOnboarding } from '../../hooks/useOnboarding';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -15,6 +15,8 @@ import { LoadingSpinner } from '../../components/ui/loading-spinner';
  */
 export default function OnboardingPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const resumeMode = searchParams.get('resume') === 'true';
   const { progress, isLoading, isComplete } = useOnboarding();
   const { language } = useTheme();
   const [userName, setUserName] = useState<string>('');
@@ -40,12 +42,12 @@ export default function OnboardingPage() {
       .catch(() => {});
   }, []);
 
-  // Redirect to dashboard if onboarding is complete
+  // Redirect to dashboard if onboarding is complete (unless resuming)
   useEffect(() => {
-    if (!isLoading && isComplete) {
+    if (!isLoading && isComplete && !resumeMode) {
       navigate('/dashboard', { replace: true });
     }
-  }, [isLoading, isComplete, navigate]);
+  }, [isLoading, isComplete, resumeMode, navigate]);
 
   // Show loading state
   if (isLoading) {
@@ -66,8 +68,8 @@ export default function OnboardingPage() {
     );
   }
 
-  // Don't render if already complete (will redirect)
-  if (isComplete) {
+  // Don't render if already complete and not resuming (will redirect)
+  if (isComplete && !resumeMode) {
     return null;
   }
 
@@ -81,7 +83,7 @@ export default function OnboardingPage() {
       />
       <OnboardingWizard
         userName={userName}
-        initialStep={progress?.currentStep || 0}
+        initialStep={resumeMode ? 0 : (progress?.currentStep || 0)}
         initialData={progress?.data || {}}
       />
     </>

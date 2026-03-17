@@ -98,17 +98,14 @@ export interface OnboardingProfileCompleteResponse {
 }
 
 export const PROFILE_FIELD_KEYS = {
-  companyName: 'companyName',
+  name: 'name',
   industry: 'industry',
-  sector: 'sector',
   teamSize: 'teamSize',
   fundingStatus: 'fundingStatus',
   targetMarket: 'targetMarket',
   businessStage: 'businessStage',
   goalsJson: 'goalsJson',
-  city: 'city',
-  province: 'province',
-  country: 'country',
+  location: 'location',
 } as const;
 
 export function calculateProfileCompletion(profile: OrganizationProfile | null): {
@@ -118,21 +115,21 @@ export function calculateProfileCompletion(profile: OrganizationProfile | null):
 } {
   if (!profile) return { score: 0, filled: [], missing: Object.keys(PROFILE_FIELD_KEYS) };
 
-  const fields: Array<{ key: string; value: string | undefined }> = [
-    { key: 'industry', value: profile.industry },
-    { key: 'sector', value: profile.sector },
-    { key: 'teamSize', value: profile.teamSize },
-    { key: 'fundingStatus', value: profile.fundingStatus },
-    { key: 'targetMarket', value: profile.targetMarket },
-    { key: 'businessStage', value: profile.businessStage },
-    { key: 'goalsJson', value: profile.goalsJson },
-    { key: 'city', value: profile.city },
-    { key: 'province', value: profile.province },
-    { key: 'country', value: profile.country },
+  const hasValue = (v: string | undefined) => !!v && v.trim() !== '';
+
+  const fields: Array<{ key: string; isFilled: boolean }> = [
+    { key: 'name', isFilled: hasValue(profile.name) },
+    { key: 'industry', isFilled: hasValue(profile.industry) },
+    { key: 'businessStage', isFilled: hasValue(profile.businessStage) },
+    { key: 'teamSize', isFilled: hasValue(profile.teamSize) },
+    { key: 'fundingStatus', isFilled: hasValue(profile.fundingStatus) },
+    { key: 'targetMarket', isFilled: hasValue(profile.targetMarket) },
+    { key: 'goalsJson', isFilled: hasValue(profile.goalsJson) },
+    { key: 'location', isFilled: hasValue(profile.city) || hasValue(profile.province) || hasValue(profile.country) },
   ];
 
-  const filled = fields.filter(f => f.value && f.value.trim() !== '').map(f => f.key);
-  const missing = fields.filter(f => !f.value || f.value.trim() === '').map(f => f.key);
+  const filled = fields.filter(f => f.isFilled).map(f => f.key);
+  const missing = fields.filter(f => !f.isFilled).map(f => f.key);
   const score = Math.round((filled.length / fields.length) * 100);
 
   return { score, filled, missing };

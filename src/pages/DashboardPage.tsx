@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import SEO from '../components/SEO';
 import {
@@ -246,23 +246,26 @@ export default function DashboardPage() {
     authService.getCurrentUser().then(setUser).catch(() => {});
   }, []);
 
-  // Auto-refresh when any plan is generating
+  // Auto-refresh when any plan is generating (use ref to avoid dependency loop)
+  const hasGeneratingRef = useRef(false);
   useEffect(() => {
-    const hasGenerating = plans.some(p =>
+    hasGeneratingRef.current = plans.some(p =>
       p.status?.toLowerCase() === 'generating'
     );
-    if (!hasGenerating) return;
-
-    const interval = setInterval(() => {
-      loadDashboardData();
-    }, 30000);
-
-    return () => clearInterval(interval);
   }, [plans]);
 
-  const loadDashboardData = async () => {
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (hasGeneratingRef.current) {
+        loadDashboardData(true);
+      }
+    }, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const loadDashboardData = async (silent = false) => {
     try {
-      setLoading(true);
+      if (!silent) setLoading(true);
 
       const plansData = await businessPlanService.getBusinessPlans();
       const activePlans = plansData.filter((plan: BusinessPlan) => !plan.isDeleted);
@@ -392,6 +395,23 @@ export default function DashboardPage() {
   const totalPlans = plans.length;
   const draftCount = plans.filter(p => p.status?.toLowerCase() === 'draft' || !planProgress[p.id]?.isComplete).length;
   const completedCount = plans.filter(p => ['completed', 'generated', 'exported'].includes(p.status?.toLowerCase() || '')).length;
+
+  // Compute getting-started step statuses from actual plan data
+  const hasAnyPlan = plans.length > 0;
+  const hasInterviewComplete = Object.values(planProgress).some(p => p.isComplete);
+  const hasGenerated = plans.some(p => ['completed', 'generated', 'exported'].includes(p.status?.toLowerCase() || ''));
+  const hasExported = plans.some(p => (p.exportCount ?? 0) > 0);
+
+  const gettingStartedStatuses: [StepStatus, StepStatus, StepStatus] = [
+    // Step 1: Complete Interview
+    hasInterviewComplete ? 'done' : hasAnyPlan ? 'active' : 'pending',
+    // Step 2: Generate Plan
+    hasGenerated ? 'done' : hasInterviewComplete ? 'active' : 'pending',
+    // Step 3: Export & Share
+    hasExported ? 'done' : hasGenerated ? 'active' : 'pending',
+  ];
+  const allStepsDone = gettingStartedStatuses.every(s => s === 'done');
+
   const dateLocale = language === 'fr' ? 'fr-CA' : 'en-US';
 
   // Get the most recent activity date from local plans
@@ -692,23 +712,18 @@ export default function DashboardPage() {
             <div className="space-y-8">
               <GettingStartedChecklist
                 userName={user?.firstName}
-                stepStatuses={['pending', 'pending', 'pending']}
+                stepStatuses={gettingStartedStatuses}
                 ctaHref="/create-plan"
                 ctaLabel={t('dashboard.gettingStarted.cta')}
                 t={t}
               />
             </div>
-          ) : completedCount === 0 ? (
+          ) : !allStepsDone ? (
             /* Getting Started Checklist - In Progress State */
             <>
               <GettingStartedChecklist
                 userName={user?.firstName}
-                stepStatuses={[
-                  Object.values(planProgress).some(p => p.isComplete) ? 'done' :
-                  plans.length > 0 ? 'active' : 'pending',
-                  Object.values(planProgress).some(p => p.isComplete) ? 'active' : 'pending',
-                  'pending',
-                ]}
+                stepStatuses={gettingStartedStatuses}
                 ctaHref={mostRecentDraft ? `/interview/${mostRecentDraft.id}` : '/create-plan'}
                 ctaLabel={mostRecentDraft ? t('dashboard.gettingStarted.ctaResume') : t('dashboard.gettingStarted.cta')}
                 t={t}

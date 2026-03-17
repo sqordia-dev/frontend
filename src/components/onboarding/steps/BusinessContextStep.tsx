@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ArrowLeft, ArrowRight, Lightbulb, Rocket, Building, Users, DollarSign, Target, SkipForward } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Lightbulb, Rocket, Building, Users, DollarSign, Target, SkipForward, MapPin } from 'lucide-react';
 import { useTheme } from '../../../contexts/ThemeContext';
 import type { StepProps } from '../OnboardingWizard';
 
@@ -35,6 +35,9 @@ export default function BusinessContextStep({ data, onNext, onBack }: StepProps)
   const [teamSize, setTeamSize] = useState(data.teamSize || '');
   const [fundingStatus, setFundingStatus] = useState(data.fundingStatus || '');
   const [targetMarket, setTargetMarket] = useState(data.targetMarket || '');
+  const [city, setCity] = useState(data.city || '');
+  const [province, setProvince] = useState(data.province || '');
+  const [country, setCountry] = useState(data.country || '');
 
   const handleContinue = () => {
     onNext({
@@ -42,6 +45,9 @@ export default function BusinessContextStep({ data, onNext, onBack }: StepProps)
       teamSize: teamSize || undefined,
       fundingStatus: fundingStatus || undefined,
       targetMarket: targetMarket || undefined,
+      city: city.trim() || undefined,
+      province: province.trim() || undefined,
+      country: country.trim() || undefined,
     });
   };
 
@@ -169,6 +175,38 @@ export default function BusinessContextStep({ data, onNext, onBack }: StepProps)
                 );
               })}
             </div>
+          </div>
+        </div>
+
+        {/* Location */}
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3">
+            <MapPin size={16} className="inline mr-2 text-gray-400" />
+            {t('onboarding.step2.location')}
+            <span className="text-gray-400 text-xs ml-2 font-normal">(optional)</span>
+          </label>
+          <div className="grid grid-cols-3 gap-3">
+            <input
+              type="text"
+              value={city}
+              onChange={(e) => setCity(e.target.value)}
+              placeholder={t('onboarding.step2.location.city')}
+              className="w-full rounded-xl border border-gray-200 dark:border-gray-700 px-4 py-3 text-sm bg-white dark:bg-gray-800/50 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+            />
+            <input
+              type="text"
+              value={province}
+              onChange={(e) => setProvince(e.target.value)}
+              placeholder={t('onboarding.step2.location.province')}
+              className="w-full rounded-xl border border-gray-200 dark:border-gray-700 px-4 py-3 text-sm bg-white dark:bg-gray-800/50 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+            />
+            <input
+              type="text"
+              value={country}
+              onChange={(e) => setCountry(e.target.value)}
+              placeholder={t('onboarding.step2.location.country')}
+              className="w-full rounded-xl border border-gray-200 dark:border-gray-700 px-4 py-3 text-sm bg-white dark:bg-gray-800/50 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+            />
           </div>
         </div>
       </div>

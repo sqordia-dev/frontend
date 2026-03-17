@@ -11,6 +11,7 @@ const T = {
     title: 'Complete your organization profile',
     subtitle: 'A complete profile helps our AI generate more relevant and personalized content for your business plan.',
     cta: 'Complete profile',
+    onboarding: 'Answer onboarding questions',
     percent: 'complete',
     interviewHint: 'Complete your profile for smarter AI suggestions.',
   },
@@ -18,6 +19,7 @@ const T = {
     title: 'Complétez le profil de votre organisation',
     subtitle: "Un profil complet aide notre IA à générer du contenu plus pertinent et personnalisé pour votre plan d'affaires.",
     cta: 'Compléter le profil',
+    onboarding: "Répondre aux questions d'intégration",
     percent: 'complété',
     interviewHint: 'Complétez votre profil pour des suggestions IA plus intelligentes.',
   },
@@ -88,6 +90,12 @@ export default function ProfileCompletionBanner({
           {t.percent} — {t.interviewHint}
         </p>
         <Link
+          to="/onboarding?resume=true"
+          className="text-xs font-medium text-momentum-orange/70 hover:underline flex-shrink-0"
+        >
+          {t.onboarding}
+        </Link>
+        <Link
           to="/profile"
           className="text-xs font-semibold text-momentum-orange hover:underline flex-shrink-0"
         >
@@ -135,13 +143,21 @@ export default function ProfileCompletionBanner({
               </div>
             </div>
           </div>
-          <Link
-            to="/profile"
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-white bg-momentum-orange hover:bg-[#E55F00] shadow-md shadow-momentum-orange/25 transition-all flex-shrink-0"
-          >
-            {t.cta}
-            <ArrowRight size={14} />
-          </Link>
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 flex-shrink-0">
+            <Link
+              to="/onboarding?resume=true"
+              className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-sm font-medium text-momentum-orange border border-momentum-orange/30 hover:bg-momentum-orange/5 transition-all"
+            >
+              {t.onboarding}
+            </Link>
+            <Link
+              to="/profile"
+              className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-white bg-momentum-orange hover:bg-[#E55F00] shadow-md shadow-momentum-orange/25 transition-all"
+            >
+              {t.cta}
+              <ArrowRight size={14} />
+            </Link>
+          </div>
         </div>
       </div>
     </section>

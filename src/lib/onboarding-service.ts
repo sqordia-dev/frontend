@@ -12,11 +12,28 @@ import type { OnboardingProfileCompleteRequest, OnboardingProfileCompleteRespons
 export const onboardingService = {
   /**
    * Get the current user's onboarding progress
+   * Maps backend field names (isCompleted, data as JSON string) to frontend types
    */
   async getOnboardingProgress(): Promise<OnboardingProgressDto> {
     try {
-      const response = await apiClient.get<OnboardingProgressDto>('/api/v1/onboarding/progress');
-      return response.data;
+      const response = await apiClient.get('/api/v1/onboarding/progress');
+      const raw = response.data as any;
+      // Handle Result<T> wrapper
+      const dto = (raw?.isSuccess !== undefined && raw?.value) ? raw.value : raw;
+
+      // Parse data from JSON string to object
+      let parsedData = {};
+      if (dto.data) {
+        try { parsedData = typeof dto.data === 'string' ? JSON.parse(dto.data) : dto.data; } catch { parsedData = {}; }
+      }
+
+      return {
+        userId: dto.userId ?? '',
+        currentStep: dto.currentStep ?? 0,
+        isComplete: dto.isCompleted ?? false,
+        data: parsedData,
+        startedAt: dto.lastUpdated ?? new Date().toISOString(),
+      };
     } catch (error: any) {
       // If 404, user hasn't started onboarding yet
       if (error.response?.status === 404) {
@@ -34,10 +51,16 @@ export const onboardingService = {
 
   /**
    * Save onboarding progress after each step
+   * Transforms frontend format to backend expected format:
+   *   frontend: { currentStep, data: {} }
+   *   backend:  { step, stepData: "JSON string" }
    */
   async saveOnboardingProgress(request: OnboardingProgressRequest): Promise<void> {
     try {
-      await apiClient.post('/api/v1/onboarding/progress', request);
+      await apiClient.post('/api/v1/onboarding/progress', {
+        step: request.currentStep,
+        stepData: JSON.stringify(request.data),
+      });
     } catch (error: any) {
       console.warn('Failed to save onboarding progress:', error);
       // Don't throw - we don't want to block the user

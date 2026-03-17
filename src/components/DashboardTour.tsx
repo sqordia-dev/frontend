@@ -1,227 +1,201 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { X, ArrowRight, ArrowLeft, Sparkles, FileText, BarChart3, Plus, Check, Rocket, Square, CheckSquare } from 'lucide-react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import { X, ArrowRight, ArrowLeft, FileText, BarChart3, Plus, Check, Rocket, Square, CheckSquare } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 import { cn } from '@/lib/utils';
 
 interface TourStep {
   id: string;
-  title: string;
-  description: string;
+  titleKey: string;
+  descKey: string;
   target: string;
-  position: 'top' | 'bottom' | 'left' | 'right' | 'center';
   icon: any;
-  accent: string;
+  optional?: boolean;
 }
+
+const STEPS: TourStep[] = [
+  {
+    id: 'welcome',
+    titleKey: 'dashboard.tour.welcome.title',
+    descKey: 'dashboard.tour.welcome.description',
+    target: '.dashboard-header',
+    icon: Rocket,
+  },
+  {
+    id: 'stats',
+    titleKey: 'dashboard.tour.stats.title',
+    descKey: 'dashboard.tour.stats.description',
+    target: '.dashboard-stats',
+    icon: BarChart3,
+    optional: true,
+  },
+  {
+    id: 'create-plan',
+    titleKey: 'dashboard.tour.createPlan.title',
+    descKey: 'dashboard.tour.createPlan.description',
+    target: '.dashboard-create-card',
+    icon: Plus,
+  },
+  {
+    id: 'plans-list',
+    titleKey: 'dashboard.tour.plansList.title',
+    descKey: 'dashboard.tour.plansList.description',
+    target: '.dashboard-plans',
+    icon: FileText,
+  },
+];
+
+const BRAND_ORANGE = '#FF6B00';
+const POPUP_WIDTH = 400;
+const GAP = 16;
+const PAD = 10;
 
 interface DashboardTourProps {
   onStartTour?: () => void;
 }
 
-interface SpotlightRect {
-  top: number;
-  left: number;
-  width: number;
-  height: number;
-}
-
 export default function DashboardTour({ onStartTour }: DashboardTourProps = {}) {
   const { t, theme } = useTheme();
-  const [currentStep, setCurrentStep] = useState(0);
+
   const [isVisible, setIsVisible] = useState(false);
-  const [isAnimatingIn, setIsAnimatingIn] = useState(false);
-  const [stepKey, setStepKey] = useState(0);
-  const [highlightedElement, setHighlightedElement] = useState<HTMLElement | null>(null);
-  const [spotlightRect, setSpotlightRect] = useState<SpotlightRect | null>(null);
-  const [popupPosition, setPopupPosition] = useState({ top: 0, left: 0, position: 'right' as 'top' | 'bottom' | 'left' | 'right' });
   const [dontShowAgain, setDontShowAgain] = useState(false);
+  const [spotlightRect, setSpotlightRect] = useState<DOMRect | null>(null);
+  const [popupStyle, setPopupStyle] = useState<React.CSSProperties>({});
+  const [arrowPos, setArrowPos] = useState<'top' | 'bottom'>('top');
+
+  const stepIndexRef = useRef(0);
+  const [stepIndex, setStepIndex] = useState(0);
   const prevElementRef = useRef<HTMLElement | null>(null);
+  const animFrameRef = useRef(0);
 
-  const BRAND_ORANGE = '#FF6B00';
-  const BRAND_BLUE = '#1C1D1A';
+  // Filter to only steps whose target elements exist in the DOM
+  const activeSteps = useMemo(() => {
+    if (!isVisible) return STEPS;
+    return STEPS.filter(s => s.optional ? !!document.querySelector(s.target) : true);
+  }, [isVisible]);
 
-  const steps: TourStep[] = [
-    {
-      id: 'welcome',
-      title: t('dashboard.tour.welcome.title'),
-      description: t('dashboard.tour.welcome.description'),
-      target: '.dashboard-header',
-      position: 'bottom',
-      icon: Rocket,
-      accent: 'orange',
-    },
-    {
-      id: 'stats',
-      title: t('dashboard.tour.stats.title'),
-      description: t('dashboard.tour.stats.description'),
-      target: '.dashboard-stats',
-      position: 'bottom',
-      icon: BarChart3,
-      accent: 'blue',
-    },
-    {
-      id: 'create-plan',
-      title: t('dashboard.tour.createPlan.title'),
-      description: t('dashboard.tour.createPlan.description'),
-      target: '.dashboard-create-card',
-      position: 'top',
-      icon: Plus,
-      accent: 'green',
-    },
-    {
-      id: 'plans-list',
-      title: t('dashboard.tour.plansList.title'),
-      description: t('dashboard.tour.plansList.description'),
-      target: '.dashboard-plans',
-      position: 'top',
-      icon: FileText,
-      accent: 'purple',
-    },
-  ];
+  const currentStep = activeSteps[stepIndex];
+  const isFirst = stepIndex === 0;
+  const isLast = stepIndex === activeSteps.length - 1;
 
-  const cleanupElement = useCallback(() => {
-    if (prevElementRef.current) {
-      prevElementRef.current.style.removeProperty('position');
-      prevElementRef.current.style.removeProperty('z-index');
-      prevElementRef.current.classList.remove('tour-spotlight-target');
+  // --- Helpers ---
+
+  const cleanupPrev = useCallback(() => {
+    const el = prevElementRef.current;
+    if (el) {
+      el.style.removeProperty('position');
+      el.style.removeProperty('z-index');
+      el.classList.remove('tour-target');
+      prevElementRef.current = null;
     }
-    if (highlightedElement) {
-      highlightedElement.style.removeProperty('position');
-      highlightedElement.style.removeProperty('z-index');
-      highlightedElement.classList.remove('tour-spotlight-target');
-    }
-  }, [highlightedElement]);
+  }, []);
 
-  const completeTour = useCallback((permanently: boolean = true) => {
-    cleanupElement();
+  const dismiss = useCallback((permanent: boolean) => {
+    cleanupPrev();
     setIsVisible(false);
-    setIsAnimatingIn(false);
-    setHighlightedElement(null);
     setSpotlightRect(null);
-    if (permanently) {
+    cancelAnimationFrame(animFrameRef.current);
+    if (permanent) {
       localStorage.setItem('dashboardTourCompleted', 'true');
+    } else {
+      sessionStorage.setItem('dashboardTourDismissed', 'true');
     }
-  }, [cleanupElement]);
+  }, [cleanupPrev]);
 
-  const skipTour = useCallback(() => {
-    completeTour(dontShowAgain);
-  }, [completeTour, dontShowAgain]);
+  const positionPopup = useCallback((el: HTMLElement) => {
+    const rect = el.getBoundingClientRect();
+    setSpotlightRect(rect);
 
-  const updateSpotlight = useCallback((element: HTMLElement) => {
-    const rect = element.getBoundingClientRect();
-    const pad = 8;
-    setSpotlightRect({
-      top: rect.top - pad,
-      left: rect.left - pad,
-      width: rect.width + pad * 2,
-      height: rect.height + pad * 2,
+    const spaceBelow = window.innerHeight - rect.bottom;
+    const placeBelow = spaceBelow > 300;
+
+    const top = placeBelow ? rect.bottom + GAP : rect.top - GAP;
+    const left = Math.max(GAP, Math.min(
+      rect.left + rect.width / 2 - POPUP_WIDTH / 2,
+      window.innerWidth - POPUP_WIDTH - GAP,
+    ));
+
+    setArrowPos(placeBelow ? 'top' : 'bottom');
+    setPopupStyle({
+      position: 'fixed',
+      top: placeBelow ? `${top}px` : 'auto',
+      bottom: placeBelow ? 'auto' : `${window.innerHeight - top}px`,
+      left: `${left}px`,
+      width: `${POPUP_WIDTH}px`,
+      zIndex: 10001,
     });
   }, []);
 
-  const calculatePosition = useCallback((element: HTMLElement) => {
-    const rect = element.getBoundingClientRect();
-    const scrollY = window.scrollY;
-    const scrollX = window.scrollX;
-    const popupWidth = 420;
-    const popupHeight = 260;
-    const gap = 16;
+  const goToStep = useCallback((idx: number) => {
+    cleanupPrev();
+    setStepIndex(idx);
+    stepIndexRef.current = idx;
+  }, [cleanupPrev]);
 
-    const spaceRight = window.innerWidth - rect.right;
-    const spaceLeft = rect.left;
-    const spaceBottom = window.innerHeight - rect.bottom;
-    const spaceTop = rect.top;
+  // --- Highlight current step element ---
 
-    let position: 'top' | 'bottom' | 'left' | 'right' = 'right';
-    let top = 0;
-    let left = 0;
+  useEffect(() => {
+    if (!isVisible || !currentStep) return;
 
-    if (spaceBottom >= popupHeight + gap) {
-      position = 'bottom';
-      top = rect.bottom + scrollY + gap;
-      left = rect.left + scrollX + (rect.width / 2);
-    } else if (spaceTop >= popupHeight + gap) {
-      position = 'top';
-      top = rect.top + scrollY - popupHeight - gap;
-      left = rect.left + scrollX + (rect.width / 2);
-    } else if (spaceRight >= popupWidth + gap) {
-      position = 'right';
-      top = rect.top + scrollY + (rect.height / 2);
-      left = rect.right + scrollX + gap;
-    } else if (spaceLeft >= popupWidth + gap) {
-      position = 'left';
-      top = rect.top + scrollY + (rect.height / 2);
-      left = rect.left + scrollX - popupWidth - gap;
-    } else {
-      position = 'bottom';
-      top = rect.bottom + scrollY + gap;
-      left = Math.max(popupWidth / 2 + 20, Math.min(rect.left + scrollX + rect.width / 2, window.innerWidth - popupWidth / 2 - 20));
-    }
-
-    setPopupPosition({ top, left, position });
-  }, []);
-
-  const highlightElement = useCallback((stepIndex: number) => {
-    if (stepIndex >= steps.length) return;
-    const step = steps[stepIndex];
-    const element = document.querySelector(step.target) as HTMLElement;
-
-    if (!element) {
-      console.warn(`Tour element not found: ${step.target}`);
-      if (stepIndex < steps.length - 1) {
-        setTimeout(() => {
-          setCurrentStep(stepIndex + 1);
-          highlightElement(stepIndex + 1);
-        }, 500);
-      } else {
-        completeTour();
+    const el = document.querySelector(currentStep.target) as HTMLElement | null;
+    if (!el) {
+      // Skip missing optional steps
+      if (currentStep.optional && stepIndex < activeSteps.length - 1) {
+        goToStep(stepIndex + 1);
       }
       return;
     }
 
-    // Clean up previous element
-    cleanupElement();
-    prevElementRef.current = element;
+    // Elevate element above overlay
+    const computed = window.getComputedStyle(el).position;
+    if (computed === 'static') el.style.position = 'relative';
+    el.style.zIndex = '10000';
+    el.classList.add('tour-target');
+    prevElementRef.current = el;
 
-    setHighlightedElement(element);
-    element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 
-    setTimeout(() => {
-      // Elevate the target above the overlay
-      const computedPos = window.getComputedStyle(element).position;
-      if (computedPos === 'static') {
-        element.style.position = 'relative';
+    // Position after scroll settles
+    const timer = setTimeout(() => positionPopup(el), 150);
+
+    // Re-position on scroll/resize
+    const reposition = () => {
+      animFrameRef.current = requestAnimationFrame(() => positionPopup(el));
+    };
+    window.addEventListener('scroll', reposition, true);
+    window.addEventListener('resize', reposition);
+
+    return () => {
+      clearTimeout(timer);
+      cancelAnimationFrame(animFrameRef.current);
+      window.removeEventListener('scroll', reposition, true);
+      window.removeEventListener('resize', reposition);
+    };
+  }, [isVisible, stepIndex, activeSteps, currentStep, positionPopup, goToStep]);
+
+  // --- Auto-start ---
+
+  useEffect(() => {
+    if (localStorage.getItem('dashboardTourCompleted') || sessionStorage.getItem('dashboardTourDismissed')) return;
+    const timer = setTimeout(() => {
+      const firstTarget = document.querySelector(STEPS[0].target);
+      if (firstTarget) {
+        setStepIndex(0);
+        stepIndexRef.current = 0;
+        setIsVisible(true);
       }
-      element.style.zIndex = '9998';
-      element.classList.add('tour-spotlight-target');
+    }, 1200);
+    return () => clearTimeout(timer);
+  }, []);
 
-      updateSpotlight(element);
-      calculatePosition(element);
-      setStepKey(k => k + 1);
-    }, 350);
-  }, [steps, cleanupElement, completeTour, updateSpotlight, calculatePosition]);
+  // --- Expose startTour globally ---
 
   const startTour = useCallback(() => {
     localStorage.removeItem('dashboardTourCompleted');
-    setCurrentStep(0);
+    sessionStorage.removeItem('dashboardTourDismissed');
+    setStepIndex(0);
+    stepIndexRef.current = 0;
+    setDontShowAgain(false);
     setIsVisible(true);
-    setIsAnimatingIn(true);
-    setTimeout(() => highlightElement(0), 100);
-  }, [highlightElement]);
-
-  useEffect(() => {
-    const hasSeenTour = localStorage.getItem('dashboardTourCompleted');
-    if (!hasSeenTour) {
-      const checkElements = () => {
-        const firstElement = document.querySelector(steps[0].target);
-        if (firstElement) {
-          setIsVisible(true);
-          setIsAnimatingIn(true);
-          highlightElement(0);
-        } else {
-          setTimeout(checkElements, 200);
-        }
-      };
-      setTimeout(checkElements, 1000);
-    }
   }, []);
 
   useEffect(() => {
@@ -229,320 +203,202 @@ export default function DashboardTour({ onStartTour }: DashboardTourProps = {}) 
     return () => { delete (window as any).startDashboardTour; };
   }, [startTour]);
 
-  // Keyboard navigation
+  // --- Keyboard nav ---
+
   useEffect(() => {
     if (!isVisible) return;
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') { skipTour(); return; }
-      if (e.key === 'ArrowRight' || e.key === 'Enter') {
-        e.preventDefault();
-        if (currentStep < steps.length - 1) { nextStep(); } else { completeTour(true); }
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        dismiss(dontShowAgain);
         return;
       }
-      if (e.key === 'ArrowLeft' && currentStep > 0) { e.preventDefault(); prevStep(); }
+      const idx = stepIndexRef.current;
+      const total = activeSteps.length;
+      if (e.key === 'ArrowRight' || e.key === 'Enter') {
+        e.preventDefault();
+        if (idx < total - 1) goToStep(idx + 1);
+        else dismiss(true);
+      }
+      if (e.key === 'ArrowLeft' && idx > 0) {
+        e.preventDefault();
+        goToStep(idx - 1);
+      }
     };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isVisible, currentStep, skipTour, completeTour]);
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [isVisible, activeSteps.length, dismiss, dontShowAgain, goToStep]);
 
-  // Recalculate spotlight on scroll/resize
-  useEffect(() => {
-    if (!highlightedElement || !isVisible) return;
-    const update = () => {
-      updateSpotlight(highlightedElement);
-      calculatePosition(highlightedElement);
-    };
-    window.addEventListener('scroll', update, true);
-    window.addEventListener('resize', update);
-    return () => {
-      window.removeEventListener('scroll', update, true);
-      window.removeEventListener('resize', update);
-    };
-  }, [highlightedElement, isVisible, updateSpotlight, calculatePosition]);
+  // --- Render ---
 
-  const nextStep = () => {
-    const nextIndex = currentStep + 1;
-    if (nextIndex < steps.length) {
-      setCurrentStep(nextIndex);
-      highlightElement(nextIndex);
-    } else {
-      completeTour();
-    }
-  };
+  if (!isVisible || !currentStep) return null;
 
-  const prevStep = () => {
-    const prevIndex = currentStep - 1;
-    if (prevIndex >= 0) {
-      setCurrentStep(prevIndex);
-      highlightElement(prevIndex);
-    }
-  };
-
-  if (!isVisible || currentStep >= steps.length) return null;
-
-  const step = steps[currentStep];
-  const Icon = step.icon;
-  const isFirstStep = currentStep === 0;
-  const isLastStep = currentStep === steps.length - 1;
-
-  const popupWidth = 420;
-  const safeTop = Math.max(16, popupPosition.top);
-  const safeLeft = Math.max(16, Math.min(popupPosition.left, window.innerWidth - popupWidth / 2 - 16));
-
-  const getTransform = () => {
-    const p = popupPosition.position;
-    if (p === 'right' || p === 'left') return 'translateY(-50%)';
-    if (p === 'top' || p === 'bottom') return 'translateX(-50%)';
-    return 'none';
-  };
-
-  // Arrow rendering with improved styling
-  const renderArrow = () => {
-    const p = popupPosition.position;
-    const arrowSize = 12;
-    const cardBg = theme === 'dark' ? 'hsl(var(--card))' : 'hsl(var(--card))';
-    const base: React.CSSProperties = { position: 'absolute', width: 0, height: 0, zIndex: 10 };
-
-    if (p === 'bottom') return (
-      <div style={{ ...base, top: -arrowSize + 1, left: '50%', transform: 'translateX(-50%)',
-        borderLeft: `${arrowSize}px solid transparent`, borderRight: `${arrowSize}px solid transparent`,
-        borderBottom: `${arrowSize}px solid ${theme === 'dark' ? '#1c1c1e' : '#ffffff'}`,
-        filter: 'drop-shadow(0 -2px 3px rgba(0,0,0,0.05))',
-      }} />
-    );
-    if (p === 'top') return (
-      <div style={{ ...base, bottom: -arrowSize + 1, left: '50%', transform: 'translateX(-50%)',
-        borderLeft: `${arrowSize}px solid transparent`, borderRight: `${arrowSize}px solid transparent`,
-        borderTop: `${arrowSize}px solid ${theme === 'dark' ? '#1c1c1e' : '#ffffff'}`,
-        filter: 'drop-shadow(0 2px 3px rgba(0,0,0,0.05))',
-      }} />
-    );
-    if (p === 'right') return (
-      <div style={{ ...base, left: -arrowSize + 1, top: '50%', transform: 'translateY(-50%)',
-        borderTop: `${arrowSize}px solid transparent`, borderBottom: `${arrowSize}px solid transparent`,
-        borderRight: `${arrowSize}px solid ${theme === 'dark' ? '#1c1c1e' : '#ffffff'}`,
-        filter: 'drop-shadow(-2px 0 3px rgba(0,0,0,0.05))',
-      }} />
-    );
-    if (p === 'left') return (
-      <div style={{ ...base, right: -arrowSize + 1, top: '50%', transform: 'translateY(-50%)',
-        borderTop: `${arrowSize}px solid transparent`, borderBottom: `${arrowSize}px solid transparent`,
-        borderLeft: `${arrowSize}px solid ${theme === 'dark' ? '#1c1c1e' : '#ffffff'}`,
-        filter: 'drop-shadow(2px 0 3px rgba(0,0,0,0.05))',
-      }} />
-    );
-    return null;
-  };
+  const Icon = currentStep.icon;
+  const cardBg = theme === 'dark' ? '#1c1c1e' : '#ffffff';
 
   return (
     <>
-      {/* Spotlight Overlay */}
+      {/* Overlay with spotlight cutout */}
       <div
-        className="fixed inset-0 z-[9997] pointer-events-none"
-        style={{
-          opacity: isAnimatingIn ? 1 : 0,
-          transition: 'opacity 300ms ease-out',
-        }}
+        className="fixed inset-0"
+        style={{ zIndex: 9999 }}
+        onClick={() => dismiss(dontShowAgain)}
       >
-        {spotlightRect && (
-          <div
-            className="absolute pointer-events-auto"
-            onClick={skipTour}
-            style={{
-              top: spotlightRect.top,
-              left: spotlightRect.left,
-              width: spotlightRect.width,
-              height: spotlightRect.height,
-              borderRadius: 12,
-              boxShadow: '0 0 0 9999px rgba(0, 0, 0, 0.55)',
-              transition: 'top 400ms ease, left 400ms ease, width 400ms ease, height 400ms ease',
-            }}
+        <svg className="absolute inset-0 w-full h-full">
+          <defs>
+            <mask id="tour-mask">
+              <rect width="100%" height="100%" fill="white" />
+              {spotlightRect && (
+                <rect
+                  x={spotlightRect.left - PAD}
+                  y={spotlightRect.top - PAD}
+                  width={spotlightRect.width + PAD * 2}
+                  height={spotlightRect.height + PAD * 2}
+                  rx={12}
+                  fill="black"
+                  style={{ transition: 'all 350ms ease' }}
+                />
+              )}
+            </mask>
+          </defs>
+          <rect
+            width="100%"
+            height="100%"
+            fill="rgba(0,0,0,0.55)"
+            mask="url(#tour-mask)"
           />
-        )}
-        {!spotlightRect && (
-          <div
-            className="absolute inset-0 pointer-events-auto"
-            onClick={skipTour}
-            style={{ backgroundColor: 'rgba(0, 0, 0, 0.55)' }}
-          />
-        )}
+        </svg>
       </div>
 
       {/* Tooltip Card */}
       <div
-        key={stepKey}
-        className="fixed z-[9999]"
-        style={{
-          top: `${safeTop}px`,
-          left: `${safeLeft}px`,
-          transform: getTransform(),
-          maxWidth: `${popupWidth}px`,
-          width: '92%',
-          minWidth: '320px',
-          animation: 'tourCardEnter 300ms cubic-bezier(0.34, 1.56, 0.64, 1) both',
-        }}
+        style={popupStyle}
+        onClick={(e) => e.stopPropagation()}
       >
         <div
-          className={cn(
-            "rounded-2xl overflow-hidden relative",
-            "bg-card border border-border/50",
-          )}
+          className="rounded-2xl bg-card border border-border/50 relative animate-in fade-in slide-in-from-bottom-2 duration-300"
           style={{
             boxShadow: theme === 'dark'
-              ? '0 25px 50px -12px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.05)'
-              : '0 25px 50px -12px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.03)',
+              ? '0 25px 50px -12px rgba(0,0,0,0.6)'
+              : '0 25px 50px -12px rgba(0,0,0,0.15)',
           }}
-          onClick={(e) => e.stopPropagation()}
         >
           {/* Arrow */}
-          {renderArrow()}
+          <div
+            className="absolute left-1/2 -translate-x-1/2"
+            style={{
+              ...(arrowPos === 'top'
+                ? { top: -10, borderLeft: '10px solid transparent', borderRight: '10px solid transparent', borderBottom: `10px solid ${cardBg}` }
+                : { bottom: -10, borderLeft: '10px solid transparent', borderRight: '10px solid transparent', borderTop: `10px solid ${cardBg}` }),
+              width: 0,
+              height: 0,
+            }}
+          />
 
-          {/* Content */}
           <div className="p-6">
             {/* Header */}
-            <div className="flex items-start justify-between gap-4 mb-4">
-              <div className="flex items-start gap-4">
-                {/* Icon with gradient background */}
+            <div className="flex items-start justify-between gap-3 mb-3">
+              <div className="flex items-start gap-3">
                 <div
-                  className="relative w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg"
-                  style={{
-                    background: `linear-gradient(135deg, ${BRAND_ORANGE} 0%, #F59E0B 100%)`,
-                  }}
+                  className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 shadow-md"
+                  style={{ background: `linear-gradient(135deg, ${BRAND_ORANGE}, #F59E0B)` }}
                 >
-                  <Icon className="text-white" size={22} strokeWidth={2.5} />
-                  {/* Subtle inner glow */}
-                  <div className="absolute inset-0 rounded-2xl bg-white/10" />
+                  <Icon className="text-white" size={20} strokeWidth={2.5} />
                 </div>
-                <div className="pt-0.5">
-                  <h3 className="text-lg font-bold text-foreground leading-tight tracking-tight">
-                    {step.title}
+                <div>
+                  <h3 className="text-base font-bold text-foreground leading-snug">
+                    {t(currentStep.titleKey)}
                   </h3>
-                  <div className="flex items-center gap-2 mt-1.5">
-                    <span className="text-xs font-semibold text-momentum-orange">
-                      Step {currentStep + 1}
+                  <p className="text-xs mt-0.5">
+                    <span className="font-semibold text-momentum-orange">
+                      {t('dashboard.tour.step') || 'Step'} {stepIndex + 1}
                     </span>
-                    <span className="text-xs text-muted-foreground">
-                      of {steps.length}
-                    </span>
-                  </div>
+                    <span className="text-muted-foreground"> / {activeSteps.length}</span>
+                  </p>
                 </div>
               </div>
               <button
-                onClick={skipTour}
-                className="text-muted-foreground hover:text-foreground transition-colors p-2 hover:bg-muted rounded-xl flex-shrink-0 -mt-1 -mr-1"
-                aria-label="Close tour"
+                onClick={() => dismiss(dontShowAgain)}
+                className="text-muted-foreground hover:text-foreground p-1.5 hover:bg-muted rounded-lg transition-colors"
+                aria-label="Close"
               >
-                <X size={18} />
+                <X size={16} />
               </button>
             </div>
 
             {/* Description */}
-            <p className="text-sm text-muted-foreground leading-relaxed mb-5 pl-0.5">
-              {step.description}
+            <p className="text-sm text-muted-foreground leading-relaxed mb-4">
+              {t(currentStep.descKey)}
             </p>
 
-            {/* Progress bar */}
-            <div className="mb-5">
-              <div className="flex items-center gap-2">
-                {steps.map((_, i) => (
-                  <div
-                    key={i}
-                    className={cn(
-                      "h-1.5 rounded-full transition-all duration-500 flex-1",
-                      i < currentStep && "bg-momentum-orange",
-                      i === currentStep && "bg-momentum-orange",
-                      i > currentStep && "bg-muted"
-                    )}
-                    style={{
-                      opacity: i <= currentStep ? 1 : 0.4,
-                    }}
-                  />
-                ))}
-              </div>
+            {/* Progress */}
+            <div className="flex gap-1.5 mb-4">
+              {activeSteps.map((_, i) => (
+                <div
+                  key={i}
+                  className={cn(
+                    'h-1 rounded-full flex-1 transition-all duration-300',
+                    i <= stepIndex ? 'bg-momentum-orange' : 'bg-muted',
+                  )}
+                />
+              ))}
             </div>
 
-            {/* Footer Actions */}
-            <div className="flex flex-col gap-3 pt-1">
-              {/* Don't show again checkbox */}
-              <button
-                onClick={() => setDontShowAgain(!dontShowAgain)}
-                className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors self-start"
-              >
-                {dontShowAgain ? (
-                  <CheckSquare size={16} className="text-momentum-orange" />
-                ) : (
-                  <Square size={16} />
-                )}
-                <span>{t('dashboard.tour.dontShowAgain')}</span>
-              </button>
+            {/* Don't show again */}
+            <button
+              onClick={() => setDontShowAgain(!dontShowAgain)}
+              className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors mb-3"
+            >
+              {dontShowAgain
+                ? <CheckSquare size={14} className="text-momentum-orange" />
+                : <Square size={14} />
+              }
+              {t('dashboard.tour.dontShowAgain')}
+            </button>
 
-              <div className="flex items-center justify-between">
-                <button
-                  onClick={skipTour}
-                  className="text-sm text-muted-foreground hover:text-foreground font-medium transition-colors px-1 py-1"
-                >
-                  {t('dashboard.tour.skip')}
-                </button>
-                <div className="flex items-center gap-2">
-                  {!isFirstStep && (
-                    <button
-                      onClick={prevStep}
-                      className={cn(
-                        "flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-xl transition-all",
-                        "text-foreground bg-muted hover:bg-muted/80 border border-border/50"
-                      )}
-                    >
-                      <ArrowLeft size={15} />
-                      <span>Back</span>
-                    </button>
-                  )}
+            {/* Actions */}
+            <div className="flex items-center justify-between">
+              <button
+                onClick={() => dismiss(dontShowAgain)}
+                className="text-xs text-muted-foreground hover:text-foreground font-medium transition-colors py-1"
+              >
+                {t('dashboard.tour.skip')}
+              </button>
+              <div className="flex items-center gap-2">
+                {!isFirst && (
                   <button
-                    onClick={isLastStep ? () => completeTour(true) : nextStep}
-                    className={cn(
-                      "flex items-center gap-1.5 px-5 py-2 text-sm text-white rounded-xl font-semibold transition-all",
-                      "hover:brightness-110 active:scale-[0.97]",
-                      "shadow-lg shadow-momentum-orange/25"
-                    )}
-                    style={{ backgroundColor: BRAND_ORANGE }}
+                    onClick={() => goToStep(stepIndex - 1)}
+                    className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium rounded-lg text-foreground bg-muted hover:bg-muted/80 border border-border/50 transition-all"
                   >
-                    {isLastStep ? (
-                      <>
-                        <Check size={15} strokeWidth={2.5} />
-                        <span>Get Started</span>
-                      </>
-                    ) : (
-                      <>
-                        <span>Next</span>
-                        <ArrowRight size={15} strokeWidth={2.5} />
-                      </>
-                    )}
+                    <ArrowLeft size={13} />
+                    {t('dashboard.tour.back') || 'Back'}
                   </button>
-                </div>
+                )}
+                <button
+                  onClick={() => {
+                    if (isLast) dismiss(true);
+                    else goToStep(stepIndex + 1);
+                  }}
+                  className="flex items-center gap-1 px-4 py-1.5 text-xs text-white font-semibold rounded-lg shadow-md shadow-momentum-orange/25 transition-all hover:brightness-110 active:scale-[0.97]"
+                  style={{ backgroundColor: BRAND_ORANGE }}
+                >
+                  {isLast ? (
+                    <><Check size={13} strokeWidth={3} /> {t('dashboard.tour.finish') || 'Get Started'}</>
+                  ) : (
+                    <>{t('dashboard.tour.next') || 'Next'} <ArrowRight size={13} strokeWidth={2.5} /></>
+                  )}
+                </button>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Animations */}
+      {/* Styles */}
       <style>{`
-        @keyframes tourCardEnter {
-          from {
-            opacity: 0;
-            transform: ${getTransform()} translateY(12px) scale(0.95);
-          }
-          to {
-            opacity: 1;
-            transform: ${getTransform()} translateY(0) scale(1);
-          }
-        }
-        @keyframes tourPulse {
-          0%, 100% { box-shadow: 0 0 0 0 rgba(255, 107, 0, 0.4); }
-          50% { box-shadow: 0 0 0 8px rgba(255, 107, 0, 0); }
-        }
-        .tour-spotlight-target {
+        .tour-target {
           border-radius: 12px;
-          animation: tourPulse 2s ease-in-out infinite;
+          box-shadow: 0 0 0 3px rgba(255, 107, 0, 0.3);
+          transition: box-shadow 300ms ease;
         }
       `}</style>
     </>

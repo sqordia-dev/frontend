@@ -24,6 +24,9 @@ export interface OnboardingData {
   fundingStatus?: string;
   targetMarket?: string;
   goals?: string[];
+  city?: string;
+  province?: string;
+  country?: string;
 }
 
 export interface StepProps {
@@ -115,6 +118,9 @@ export default function OnboardingWizard({
         fundingStatus: data.fundingStatus,
         targetMarket: data.targetMarket,
         goalsJson: data.goals ? JSON.stringify(data.goals) : undefined,
+        city: data.city,
+        province: data.province,
+        country: data.country,
         createBusinessPlan: createPlan,
       };
 
