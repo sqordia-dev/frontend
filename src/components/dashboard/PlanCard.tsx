@@ -83,6 +83,11 @@ const statusConfig: Record<string, {
     icon: <Download className="h-3 w-3" />,
     dotColor: "bg-blue-500",
   },
+  inprogress: {
+    variant: "warning",
+    icon: <Loader2 className="h-3 w-3 animate-spin" />,
+    dotColor: "bg-amber-500",
+  },
   draft: {
     variant: "secondary",
     icon: <Clock className="h-3 w-3" />,
@@ -94,6 +99,32 @@ const getStatusConfig = (status?: string) => {
   const key = status?.toLowerCase() || "draft";
   return statusConfig[key] || statusConfig.draft;
 };
+
+/**
+ * Compute effective status from all available data.
+ * The backend status field may be stale (e.g. stays "Draft" after interview).
+ */
+function computeEffectiveStatus(
+  backendStatus?: string,
+  isComplete?: boolean,
+  questionnaireProgress?: number,
+  exportCount?: number,
+): string {
+  const s = backendStatus?.toLowerCase() || 'draft';
+
+  // Backend already set a terminal status — trust it
+  if (s === 'generating') return 'generating';
+  if (s === 'exported' || (exportCount && exportCount > 0)) return 'exported';
+  if (s === 'generated' || s === 'completed') return s;
+
+  // Interview is complete but plan not yet generated
+  if (isComplete) return 'completed';
+
+  // Interview in progress
+  if (questionnaireProgress && questionnaireProgress > 0) return 'inprogress';
+
+  return 'draft';
+}
 
 const getStatusLabel = (
   status?: string,
@@ -164,11 +195,10 @@ export const PlanCard = React.memo(function PlanCard({
   translations,
   className,
 }: PlanCardProps) {
-  const statusLower = status?.toLowerCase();
-  const isGenerated = statusLower === "generated";
-  const isGenerating = statusLower === "generating";
-  const isDraft =
-    (status === "Draft" || status === "draft" || !isComplete) && !isGenerated;
+  const effectiveStatus = computeEffectiveStatus(status, isComplete, questionnaireProgress, exportCount);
+  const isGenerated = effectiveStatus === "generated" || effectiveStatus === "completed" || effectiveStatus === "exported";
+  const isGenerating = effectiveStatus === "generating";
+  const isDraft = !isGenerated && !isGenerating && effectiveStatus !== "completed";
 
   const handleDelete = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -182,7 +212,7 @@ export const PlanCard = React.memo(function PlanCard({
     onDuplicate?.(id);
   };
 
-  const config = getStatusConfig(status);
+  const config = getStatusConfig(effectiveStatus);
 
   // Determine the link destination
   const linkTo = isDraft
@@ -279,7 +309,7 @@ export const PlanCard = React.memo(function PlanCard({
                   className="gap-1.5 text-xs font-medium"
                 >
                   {config.icon}
-                  {getStatusLabel(status, translations)}
+                  {getStatusLabel(effectiveStatus, translations)}
                 </Badge>
 
                 {/* Export Count */}
