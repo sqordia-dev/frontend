@@ -40,6 +40,8 @@ export interface ResponsiveTableProps<T> {
   rowClassName?: string | ((item: T, index: number) => string);
   /** Sticky header */
   stickyHeader?: boolean;
+  /** Accessible table caption (WCAG 1.3.1) */
+  caption?: string;
 }
 
 export function ResponsiveTable<T>({
@@ -55,6 +57,7 @@ export function ResponsiveTable<T>({
   headerClassName,
   rowClassName,
   stickyHeader = false,
+  caption,
 }: ResponsiveTableProps<T>) {
   const isMobile = useIsMobile();
   const showCards = isMobile && mobileAsCards;
@@ -99,10 +102,18 @@ export function ResponsiveTable<T>({
 
           // Use custom card renderer if provided
           if (renderCard) {
-            return (
-              <div key={key} onClick={() => onRowClick?.(item, index)}>
+            return onRowClick ? (
+              <div
+                key={key}
+                role="button"
+                tabIndex={0}
+                onClick={() => onRowClick(item, index)}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onRowClick(item, index); } }}
+              >
                 {renderCard(item, index)}
               </div>
+            ) : (
+              <div key={key}>{renderCard(item, index)}</div>
             );
           }
 
@@ -110,7 +121,10 @@ export function ResponsiveTable<T>({
           return (
             <div
               key={key}
-              onClick={() => onRowClick?.(item, index)}
+              role={onRowClick ? 'button' : undefined}
+              tabIndex={onRowClick ? 0 : undefined}
+              onClick={onRowClick ? () => onRowClick(item, index) : undefined}
+              onKeyDown={onRowClick ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onRowClick(item, index); } } : undefined}
               className={cn(
                 'border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-white dark:bg-gray-800',
                 onRowClick && 'cursor-pointer hover:shadow-md transition-shadow',
@@ -141,6 +155,7 @@ export function ResponsiveTable<T>({
   return (
     <div className="overflow-x-auto">
       <table className={cn('w-full', className)}>
+        {caption && <caption className="sr-only">{caption}</caption>}
         <thead className={cn(
           'bg-gray-50 dark:bg-gray-800/50',
           stickyHeader && 'sticky top-0 z-10',
@@ -150,6 +165,7 @@ export function ResponsiveTable<T>({
             {columns.map(column => (
               <th
                 key={String(column.key)}
+                scope="col"
                 className={cn(
                   'px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider',
                   column.align === 'center' && 'text-center',
@@ -175,10 +191,13 @@ export function ResponsiveTable<T>({
             return (
               <tr
                 key={key}
-                onClick={() => onRowClick?.(item, index)}
+                tabIndex={onRowClick ? 0 : undefined}
+                role={onRowClick ? 'button' : undefined}
+                onClick={onRowClick ? () => onRowClick(item, index) : undefined}
+                onKeyDown={onRowClick ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onRowClick(item, index); } } : undefined}
                 className={cn(
                   'transition-colors',
-                  onRowClick && 'cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50',
+                  onRowClick && 'cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-inset',
                   rowClass,
                 )}
               >

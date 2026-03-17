@@ -162,7 +162,7 @@ export const AICoachBubble = forwardRef<AICoachBubbleRef, AICoachBubbleProps>(({
 
               {/* Conversation indicator */}
               {conversation && conversation.messages.length > 0 && (
-                <div className="absolute -top-1 -left-1 w-5 h-5 md:w-4 md:h-4 bg-[#1C1D1A] rounded-full flex items-center justify-center text-[10px] text-white font-medium shadow-sm">
+                <div className="absolute -top-1 -left-1 w-5 h-5 md:w-4 md:h-4 bg-[#181B22] rounded-full flex items-center justify-center text-[10px] text-white font-medium shadow-sm">
                   {Math.min(conversation.messages.length, 9)}
                   {conversation.messages.length > 9 && '+'}
                 </div>

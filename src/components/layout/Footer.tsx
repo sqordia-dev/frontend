@@ -128,7 +128,7 @@ export default function Footer() {
   return (
     <footer
       className="relative overflow-hidden"
-      style={{ backgroundColor: isDark ? '#0B0C0A' : '#161714' }}
+      style={{ backgroundColor: isDark ? '#101318' : '#181B22' }}
       role="contentinfo"
     >
       {/* Background decoration */}
@@ -217,7 +217,7 @@ export default function Footer() {
               {cmsLogoUrl ? (
                 <img
                   src={cmsLogoUrl}
-                  alt="Sqordia"
+                  alt="Sqordia logo"
                   className="w-10 h-10 rounded-xl object-contain transition-transform duration-200 group-hover:scale-105"
                 />
               ) : (

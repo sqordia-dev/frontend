@@ -31,7 +31,7 @@ export default function StatsBar() {
       ref={ref}
       className={cn(
         'relative py-12 md:py-16',
-        isDark ? 'bg-[#0B0C0A]' : 'bg-[#FAFAF8]',
+        isDark ? 'bg-[#101318]' : 'bg-[#FAFAF8]',
       )}
       aria-label={getBlockContent('landing.statsbar.label', t('landing.statsbar.label'))}
     >

@@ -18,7 +18,7 @@ const QuebecFlag = ({
 }: { size?: number; className?: string; style?: React.CSSProperties }) => (
   <img
     src="/quebec-flag.svg"
-    alt="Quebec Flag"
+    alt=""
     width={size}
     height={size * 0.67}
     className={className}

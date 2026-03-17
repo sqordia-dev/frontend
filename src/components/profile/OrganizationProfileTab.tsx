@@ -142,6 +142,7 @@ export default function OrganizationProfileTab() {
             type="text"
             value={form.name}
             onChange={(e) => setForm(prev => ({ ...prev, name: e.target.value }))}
+            autoComplete="organization"
             className="w-full rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-2.5 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
           />
         </div>
@@ -152,6 +153,7 @@ export default function OrganizationProfileTab() {
             value={form.website}
             onChange={(e) => setForm(prev => ({ ...prev, website: e.target.value }))}
             placeholder="https://..."
+            autoComplete="url"
             className="w-full rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-2.5 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
           />
         </div>
@@ -277,6 +279,7 @@ export default function OrganizationProfileTab() {
               type="text"
               value={form.city}
               onChange={(e) => setForm(prev => ({ ...prev, city: e.target.value }))}
+              autoComplete="address-level2"
               className="w-full rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-2.5 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500"
             />
           </div>
@@ -286,6 +289,7 @@ export default function OrganizationProfileTab() {
               type="text"
               value={form.province}
               onChange={(e) => setForm(prev => ({ ...prev, province: e.target.value }))}
+              autoComplete="address-level1"
               className="w-full rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-2.5 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500"
             />
           </div>
@@ -296,6 +300,7 @@ export default function OrganizationProfileTab() {
               value={form.country}
               onChange={(e) => setForm(prev => ({ ...prev, country: e.target.value }))}
               placeholder="Canada"
+              autoComplete="country-name"
               className="w-full rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-2.5 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500"
             />
           </div>

@@ -52,6 +52,8 @@ export function TextField({
   error,
 }: TextFieldProps) {
   const id = React.useId();
+  const errorId = `${id}-error`;
+  const descriptionId = `${id}-description`;
 
   const commonProps = {
     id,
@@ -61,6 +63,9 @@ export function TextField({
     placeholder,
     disabled,
     maxLength,
+    'aria-invalid': !!error || undefined,
+    'aria-required': required || undefined,
+    'aria-describedby': error ? errorId : description ? descriptionId : undefined,
     className: cn(
       error && 'border-red-500 focus:ring-red-500'
     ),
@@ -77,7 +82,7 @@ export function TextField({
           )}
         >
           {label}
-          {required && <span className="text-red-500 ml-0.5">*</span>}
+          {required && <span className="text-red-500 ml-0.5" aria-hidden="true">*</span>}
         </Label>
       )}
 
@@ -91,7 +96,7 @@ export function TextField({
       {maxLength && (
         <div className="flex justify-between">
           {description ? (
-            <p className="text-xs text-gray-500 dark:text-gray-400">{description}</p>
+            <p id={descriptionId} className="text-xs text-gray-500 dark:text-gray-400">{description}</p>
           ) : (
             <span />
           )}
@@ -106,12 +111,12 @@ export function TextField({
 
       {/* Description (only if no maxLength) */}
       {description && !maxLength && (
-        <p className="text-xs text-gray-500 dark:text-gray-400">{description}</p>
+        <p id={descriptionId} className="text-xs text-gray-500 dark:text-gray-400">{description}</p>
       )}
 
       {/* Error message */}
       {error && (
-        <p className="text-xs text-red-500">{error}</p>
+        <p id={errorId} role="alert" className="text-xs text-red-500">{error}</p>
       )}
     </div>
   );

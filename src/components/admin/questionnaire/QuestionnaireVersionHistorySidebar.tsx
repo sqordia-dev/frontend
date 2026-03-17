@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { X, RefreshCw, History, Loader2, RotateCcw, Eye, Edit } from 'lucide-react';
 import { questionnaireVersionService } from '../../../lib/questionnaire-version-service';
 import type { QuestionnaireVersion } from '../../../types/questionnaire-version';
+import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { cn } from '@/lib/utils';
 
 interface QuestionnaireVersionHistorySidebarProps {
@@ -20,6 +21,7 @@ export function QuestionnaireVersionHistorySidebar({
   const [versions, setVersions] = useState<QuestionnaireVersion[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [restoringId, setRestoringId] = useState<string | null>(null);
+  const { confirm, ConfirmDialog } = useConfirmDialog();
 
   useEffect(() => {
     if (isOpen) {
@@ -40,9 +42,12 @@ export function QuestionnaireVersionHistorySidebar({
   };
 
   const handleRestore = async (versionId: string) => {
-    if (!confirm('Are you sure you want to restore this version? This will create a new draft based on this version.')) {
-      return;
-    }
+    const ok = await confirm({
+      title: 'Restore Version',
+      description: 'Are you sure you want to restore this version? This will create a new draft based on this version.',
+      variant: 'destructive',
+    });
+    if (!ok) return;
 
     setRestoringId(versionId);
     try {
@@ -113,6 +118,7 @@ export function QuestionnaireVersionHistorySidebar({
 
   return (
     <>
+      <ConfirmDialog />
       {/* Backdrop */}
       <div
         className="fixed inset-0 bg-black/20 z-40"

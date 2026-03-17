@@ -172,9 +172,6 @@ export default function QuestionCard({
               <p className={`font-semibold text-base leading-relaxed ${textColor}`}>
                 {question.questionText}
               </p>
-              {question.helpText && (
-                <p className={`text-sm mt-1.5 leading-relaxed ${mutedColor}`}>{question.helpText}</p>
-              )}
             </div>
 
             {/* Editor */}

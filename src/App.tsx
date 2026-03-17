@@ -1,4 +1,4 @@
-import { useEffect, lazy, Suspense } from 'react';
+import { useEffect, useRef, lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { ToastProvider } from './contexts/ToastContext';
 import { SkipLink } from '@/components/ui/skip-link';
@@ -137,6 +137,52 @@ function ScrollRestorationHandler() {
   return null;
 }
 
+/**
+ * RouteAnnouncer - Announces route changes to screen readers (WCAG 2.4.3)
+ * Focuses #main-content on navigation and announces the new page title.
+ */
+function RouteAnnouncer() {
+  const location = useLocation();
+  const announcerRef = useRef<HTMLDivElement>(null);
+  const isFirstRender = useRef(true);
+
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+
+    // Focus the main content element on route change
+    const mainContent = document.getElementById('main-content');
+    if (mainContent) {
+      mainContent.setAttribute('tabIndex', '-1');
+      mainContent.focus({ preventScroll: true });
+    }
+
+    // Announce page title to screen readers
+    const pageTitle = document.title || location.pathname;
+    if (announcerRef.current) {
+      announcerRef.current.textContent = '';
+      // Use rAF to ensure the live region fires
+      requestAnimationFrame(() => {
+        if (announcerRef.current) {
+          announcerRef.current.textContent = pageTitle;
+        }
+      });
+    }
+  }, [location.pathname]);
+
+  return (
+    <div
+      ref={announcerRef}
+      role="status"
+      aria-live="assertive"
+      aria-atomic="true"
+      className="sr-only"
+    />
+  );
+}
+
 // Redirect old /plans/:id routes to new /business-plan/:id/preview
 function RedirectToPreview() {
   const location = useLocation();
@@ -167,6 +213,8 @@ function App() {
           <ScrollToTop />
           {/* Skip to main content link for accessibility */}
           <SkipLink targetId="main-content" />
+          {/* Announce route changes to screen readers (WCAG 2.4.3) */}
+          <RouteAnnouncer />
 
             <SessionExpiryWarning />
             <ErrorBoundary>

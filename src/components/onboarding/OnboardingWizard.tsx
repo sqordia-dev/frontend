@@ -160,7 +160,7 @@ export default function OnboardingWizard({
       <header className="w-full py-6 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <a href="/" className="flex items-center gap-3 group">
-            <div className="p-2 rounded-lg transition-transform group-hover:scale-105" style={{ backgroundColor: '#1C1D1A' }}>
+            <div className="p-2 rounded-lg transition-transform group-hover:scale-105" style={{ backgroundColor: '#181B22' }}>
               <Brain className="w-6 h-6 text-white" aria-hidden="true" />
             </div>
             <span className="text-xl font-bold text-gray-900 dark:text-white">Sqordia</span>

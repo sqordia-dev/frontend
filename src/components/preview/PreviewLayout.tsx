@@ -197,7 +197,7 @@ export default function PreviewLayout({
         </MobileDrawer>
 
         {/* Main Content Area */}
-        <main className={cn(
+        <main id="main-content" className={cn(
           'min-h-screen',
           'pt-16 lg:pt-6 pb-32 lg:pb-16',
           'px-4 sm:px-6 lg:px-8'

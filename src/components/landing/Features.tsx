@@ -75,7 +75,7 @@ export default function Features() {
       id="features"
       className={cn(
         'relative py-12 sm:py-16 md:py-24 lg:py-32',
-        isDark ? 'bg-[#161714]' : 'bg-gray-50',
+        isDark ? 'bg-[#181B22]' : 'bg-gray-50',
       )}
       aria-labelledby="features-heading"
     >

@@ -45,7 +45,7 @@ export function BilingualTextarea({
       <div>
         <div className="flex items-center justify-between mb-1.5">
           <label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
-            <img src="/quebec-flag.svg" alt="FR" className="w-4 h-3 object-contain" />
+            <img src="/quebec-flag.svg" alt="" className="w-4 h-3 object-contain" />
             {labelFR}
           </label>
           <div className="flex items-center gap-1">

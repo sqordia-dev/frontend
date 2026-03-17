@@ -9,6 +9,7 @@ import { getCanonicalUrl } from '../utils/seo';
 import { getUserFriendlyError } from '../utils/error-messages';
 import { useToast } from '../contexts/ToastContext';
 import UsageDashboard from '../components/UsageDashboard';
+import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 
 interface Subscription {
   id: string;
@@ -62,6 +63,7 @@ export default function SubscriptionPage() {
   const [searchParams] = useSearchParams();
   const { t, theme, language } = useTheme();
   const toast = useToast();
+  const { confirm, ConfirmDialog } = useConfirmDialog();
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -78,12 +80,12 @@ export default function SubscriptionPage() {
   const [pendingPlanId, setPendingPlanId] = useState<string | null>(null);
 
   // Theme colors
-  const strategyBlue = '#1C1D1A';
+  const strategyBlue = '#181B22';
   const momentumOrange = '#FF6B00';
   const momentumOrangeHover = '#E55F00';
   const lightAIGrey = '#F4F7FA';
-  const darkBg = '#0B0C0A';
-  const darkCard = '#161714';
+  const darkBg = '#101318';
+  const darkCard = '#181B22';
   const darkBorder = 'rgba(255,255,255,0.08)';
   const darkBorderSubtle = 'rgba(255,255,255,0.06)';
 
@@ -243,9 +245,12 @@ export default function SubscriptionPage() {
   const handleCancel = async () => {
     if (!subscription) return;
     
-    if (!confirm('Are you sure you want to cancel your subscription? Your subscription will remain active until the end of the current billing period.')) {
-      return;
-    }
+    const ok = await confirm({
+      title: 'Cancel Subscription',
+      description: 'Are you sure you want to cancel your subscription? Your subscription will remain active until the end of the current billing period.',
+      variant: 'destructive',
+    });
+    if (!ok) return;
 
     try {
       setCancelling(true);
@@ -807,7 +812,7 @@ export default function SubscriptionPage() {
               style={{
                 background: theme === 'dark'
                   ? `linear-gradient(135deg, ${darkCard} 0%, ${darkBg} 100%)`
-                  : `linear-gradient(135deg, ${strategyBlue} 0%, #0B0C0A 100%)`
+                  : `linear-gradient(135deg, ${strategyBlue} 0%, #101318 100%)`
               }}
             >
               <div className="flex items-center gap-3">
@@ -950,7 +955,7 @@ export default function SubscriptionPage() {
               style={{
                 background: theme === 'dark'
                   ? `linear-gradient(135deg, ${darkCard} 0%, ${darkBg} 100%)`
-                  : `linear-gradient(135deg, ${strategyBlue} 0%, #0B0C0A 100%)`
+                  : `linear-gradient(135deg, ${strategyBlue} 0%, #101318 100%)`
               }}
             >
               <div>
@@ -1202,6 +1207,7 @@ export default function SubscriptionPage() {
           </div>
         </div>
       )}
+      <ConfirmDialog />
     </div>
   );
 }

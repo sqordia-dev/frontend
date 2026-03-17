@@ -14,6 +14,7 @@ import { useToast } from '../contexts/ToastContext';
 import { useFeatureFlag } from '../hooks/useFeatureFlag';
 import { useTheme } from '../contexts/ThemeContext';
 import { organizationService } from '../lib/organization-service';
+import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 
 const OrganizationProfileTab = lazy(() => import('../components/profile/OrganizationProfileTab'));
 
@@ -34,6 +35,7 @@ export default function ProfilePage() {
   const navigate = useNavigate();
   const toast = useToast();
   const { isEnabled: showOrgTab } = useFeatureFlag('profile-org-tab', true);
+  const { confirm, ConfirmDialog } = useConfirmDialog();
 
   const tabs = useMemo(() =>
     TAB_IDS
@@ -146,7 +148,7 @@ export default function ProfilePage() {
       setSessions(data);
     } catch (err: any) {
       console.error('Failed to load sessions:', err);
-      toast.error('Sessions Error', 'Failed to load active sessions.');
+      toast.error(t('profile.messages.sessionsError'), t('profile.messages.sessionsErrorDescription'));
     }
   };
 
@@ -181,7 +183,7 @@ export default function ProfilePage() {
         profilePictureUrl: fileUrl
       });
 
-      setSuccess('Profile picture uploaded successfully');
+      setSuccess(t('profile.messages.pictureUploaded'));
       setTimeout(() => setSuccess(null), 5000);
 
       try {
@@ -193,7 +195,7 @@ export default function ProfilePage() {
       console.error('Profile picture upload error:', err);
       setError(getUserFriendlyError(err, 'upload'));
       setProfileImageError(true);
-      toast.error('Upload Error', getUserFriendlyError(err, 'upload'));
+      toast.error(t('profile.messages.uploadError'), getUserFriendlyError(err, 'upload'));
     } finally {
       setUploadingPicture(false);
     }
@@ -222,7 +224,7 @@ export default function ProfilePage() {
         phoneNumber: profile.phoneNumber,
         profilePictureUrl: profile.profilePictureUrl || undefined
       });
-      setSuccess('Profile updated successfully');
+      setSuccess(t('profile.messages.profileUpdated'));
       setTimeout(() => setSuccess(null), 5000);
     } catch (err: any) {
       if (err instanceof ProfileValidationError) {
@@ -237,7 +239,7 @@ export default function ProfilePage() {
   const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault();
     if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-      setError('Passwords do not match');
+      setError(t('profile.messages.passwordsMismatch'));
       return;
     }
     try {
@@ -245,7 +247,7 @@ export default function ProfilePage() {
       setError(null);
       setSuccess(null);
       await profileService.changePassword(passwordForm.currentPassword, passwordForm.newPassword);
-      setSuccess('Password changed successfully');
+      setSuccess(t('profile.messages.passwordChanged'));
       setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
     } catch (err: any) {
       setError(err.message);
@@ -255,21 +257,33 @@ export default function ProfilePage() {
   };
 
   const handleRevokeSession = async (sessionId: string) => {
-    if (!confirm('Are you sure you want to revoke this session?')) return;
+    const ok = await confirm({
+      title: 'Revoke Session',
+      description: 'Are you sure you want to revoke this session?',
+      variant: 'destructive',
+      confirmLabel: 'Yes, revoke',
+    });
+    if (!ok) return;
     try {
       await securityService.revokeSession(sessionId);
       await loadSessions();
-      setSuccess('Session revoked successfully');
+      setSuccess(t('profile.messages.sessionRevoked'));
     } catch (err: any) {
       setError(err.message);
     }
   };
 
   const handleRevokeAllSessions = async () => {
-    if (!confirm('This will log you out from all devices. Continue?')) return;
+    const ok = await confirm({
+      title: 'Revoke All Sessions',
+      description: 'This will log you out from all devices. Continue?',
+      variant: 'destructive',
+      confirmLabel: 'Yes, revoke all',
+    });
+    if (!ok) return;
     try {
       await securityService.revokeOtherSessions();
-      setSuccess('All other sessions revoked successfully');
+      setSuccess(t('profile.messages.allSessionsRevoked'));
       await loadSessions();
     } catch (err: any) {
       setError(err.message);
@@ -283,7 +297,7 @@ export default function ProfilePage() {
       setConsents(data.consents);
     } catch (err: any) {
       console.error('Failed to load consents:', err);
-      toast.error('Privacy Error', 'Failed to load consent preferences.');
+      toast.error(t('profile.messages.privacyError'), t('profile.messages.privacyErrorDescription'));
     } finally {
       setLoadingConsents(false);
     }
@@ -321,7 +335,7 @@ export default function ProfilePage() {
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
 
-      setSuccess('Your data has been exported successfully');
+      setSuccess(t('profile.messages.dataExported'));
       setTimeout(() => setSuccess(null), 5000);
     } catch (err: any) {
       setError(err.message);
@@ -513,7 +527,7 @@ export default function ProfilePage() {
                       <div className="relative">
                         <img
                           src={profilePicturePreview || profile.profilePictureUrl}
-                          alt="Profile"
+                          alt={`${profile.firstName} ${profile.lastName}`.trim() || 'Profile picture'}
                           className="w-28 h-28 rounded-2xl object-cover border-2 border-gray-200 dark:border-gray-700 shadow-soft"
                           onError={() => {
                             setProfileImageError(true);
@@ -635,6 +649,7 @@ export default function ProfilePage() {
                         setProfile({ ...profile, firstName: e.target.value });
                         if (fieldErrors.firstname) setFieldErrors({ ...fieldErrors, firstname: '' });
                       }}
+                      autoComplete="given-name"
                       required
                       className={`w-full px-4 py-3 text-body-md rounded-lg border bg-white dark:bg-gray-800 text-gray-900 dark:text-white outline-none transition-all ${
                         fieldErrors.firstname
@@ -658,6 +673,7 @@ export default function ProfilePage() {
                         setProfile({ ...profile, lastName: e.target.value });
                         if (fieldErrors.lastname) setFieldErrors({ ...fieldErrors, lastname: '' });
                       }}
+                      autoComplete="family-name"
                       required
                       className={`w-full px-4 py-3 text-body-md rounded-lg border bg-white dark:bg-gray-800 text-gray-900 dark:text-white outline-none transition-all ${
                         fieldErrors.lastname
@@ -682,6 +698,7 @@ export default function ProfilePage() {
                       type="email"
                       value={profile.email}
                       disabled
+                      autoComplete="email"
                       className="w-full pl-11 pr-4 py-3 text-body-md rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800/50 text-gray-500 dark:text-gray-400 cursor-not-allowed"
                     />
                   </div>
@@ -705,6 +722,7 @@ export default function ProfilePage() {
                           setProfile({ ...profile, phoneNumber: e.target.value });
                           if (fieldErrors.phonenumber) setFieldErrors({ ...fieldErrors, phonenumber: '' });
                         }}
+                        autoComplete="tel"
                         placeholder="+1 (555) 123-4567"
                         className={`w-full pl-11 pr-4 py-3 text-body-md rounded-lg border bg-white dark:bg-gray-800 text-gray-900 dark:text-white outline-none transition-all ${
                           fieldErrors.phonenumber
@@ -728,6 +746,7 @@ export default function ProfilePage() {
                         type="text"
                         value={profile.company}
                         onChange={(e) => setProfile({ ...profile, company: e.target.value })}
+                        autoComplete="organization"
                         className="w-full pl-11 pr-4 py-3 text-body-md rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-momentum-orange focus:ring-2 focus:ring-momentum-orange/20 outline-none transition-all"
                       />
                     </div>
@@ -792,6 +811,7 @@ export default function ProfilePage() {
                           type={showCurrentPassword ? 'text' : 'password'}
                           value={passwordForm.currentPassword}
                           onChange={(e) => setPasswordForm({ ...passwordForm, currentPassword: e.target.value })}
+                          autoComplete="current-password"
                           className="w-full px-4 py-3 pr-12 text-body-md rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-momentum-orange focus:ring-2 focus:ring-momentum-orange/20 outline-none transition-all"
                           required
                         />
@@ -814,6 +834,7 @@ export default function ProfilePage() {
                           type={showNewPassword ? 'text' : 'password'}
                           value={passwordForm.newPassword}
                           onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
+                          autoComplete="new-password"
                           className="w-full px-4 py-3 pr-12 text-body-md rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-momentum-orange focus:ring-2 focus:ring-momentum-orange/20 outline-none transition-all"
                           required
                         />
@@ -836,6 +857,7 @@ export default function ProfilePage() {
                           type={showConfirmPassword ? 'text' : 'password'}
                           value={passwordForm.confirmPassword}
                           onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
+                          autoComplete="new-password"
                           className="w-full px-4 py-3 pr-12 text-body-md rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-momentum-orange focus:ring-2 focus:ring-momentum-orange/20 outline-none transition-all"
                           required
                         />
@@ -1198,6 +1220,7 @@ export default function ProfilePage() {
                     value={deletePassword}
                     onChange={(e) => setDeletePassword(e.target.value)}
                     placeholder={t('profile.enterPassword')}
+                    autoComplete="current-password"
                     className="w-full px-4 py-3 pr-12 text-body-md rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-momentum-orange focus:ring-2 focus:ring-momentum-orange/20 outline-none transition-all"
                     required
                   />
@@ -1255,6 +1278,7 @@ export default function ProfilePage() {
           </div>
         </div>
       )}
+      <ConfirmDialog />
     </div>
   );
 }

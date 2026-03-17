@@ -16,6 +16,8 @@ interface ToggleFieldProps {
   disabled?: boolean;
   /** Additional class names */
   className?: string;
+  /** Error message */
+  error?: string;
 }
 
 /**
@@ -28,31 +30,41 @@ export function ToggleField({
   description,
   disabled = false,
   className,
+  error,
 }: ToggleFieldProps) {
   const id = React.useId();
+  const errorId = `${id}-error`;
+  const descriptionId = `${id}-description`;
 
   return (
-    <div className={cn('flex items-center justify-between gap-4', className)}>
-      <div className="space-y-0.5">
-        <Label
-          htmlFor={id}
-          className={cn(
-            'text-sm font-medium',
-            disabled ? 'text-gray-400 dark:text-gray-600' : 'text-gray-700 dark:text-gray-300'
+    <div className={cn('space-y-1', className)}>
+      <div className="flex items-center justify-between gap-4">
+        <div className="space-y-0.5">
+          <Label
+            htmlFor={id}
+            className={cn(
+              'text-sm font-medium',
+              disabled ? 'text-gray-400 dark:text-gray-600' : 'text-gray-700 dark:text-gray-300'
+            )}
+          >
+            {label}
+          </Label>
+          {description && (
+            <p id={descriptionId} className="text-xs text-gray-500 dark:text-gray-400">{description}</p>
           )}
-        >
-          {label}
-        </Label>
-        {description && (
-          <p className="text-xs text-gray-500 dark:text-gray-400">{description}</p>
-        )}
+        </div>
+        <Switch
+          id={id}
+          checked={checked}
+          onCheckedChange={onChange}
+          disabled={disabled}
+          aria-invalid={!!error || undefined}
+          aria-describedby={error ? errorId : description ? descriptionId : undefined}
+        />
       </div>
-      <Switch
-        id={id}
-        checked={checked}
-        onCheckedChange={onChange}
-        disabled={disabled}
-      />
+      {error && (
+        <p id={errorId} role="alert" className="text-xs text-red-500">{error}</p>
+      )}
     </div>
   );
 }

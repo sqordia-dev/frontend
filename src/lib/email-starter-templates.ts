@@ -20,11 +20,11 @@ function wrap(inner: string): string {
 <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background-color:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
 <!-- Header -->
 <tr>
-<td style="background:linear-gradient(135deg,#1C1D1A 0%,#0f1a2e 100%);padding:32px 40px;text-align:center;">
+<td style="background:linear-gradient(135deg,#181B22 0%,#0f1a2e 100%);padding:32px 40px;text-align:center;">
   <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto;">
   <tr>
     <td style="vertical-align:middle;">
-      <img src="${EMAIL_LOGO_URL}" width="36" height="36" alt="Sqordia" style="display:block;border-radius:10px;" />
+      <img src="${EMAIL_LOGO_URL}" width="36" height="36" alt="Sqordia logo" style="display:block;border-radius:10px;" />
     </td>
     <td style="padding-left:12px;font-size:22px;font-weight:700;color:#ffffff;letter-spacing:0.5px;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
       Sqordia
@@ -77,11 +77,11 @@ function wrapFr(inner: string): string {
 <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background-color:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
 <!-- Header -->
 <tr>
-<td style="background:linear-gradient(135deg,#1C1D1A 0%,#0f1a2e 100%);padding:32px 40px;text-align:center;">
+<td style="background:linear-gradient(135deg,#181B22 0%,#0f1a2e 100%);padding:32px 40px;text-align:center;">
   <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto;">
   <tr>
     <td style="vertical-align:middle;">
-      <img src="${EMAIL_LOGO_URL}" width="36" height="36" alt="Sqordia" style="display:block;border-radius:10px;" />
+      <img src="${EMAIL_LOGO_URL}" width="36" height="36" alt="Sqordia logo" style="display:block;border-radius:10px;" />
     </td>
     <td style="padding-left:12px;font-size:22px;font-weight:700;color:#ffffff;letter-spacing:0.5px;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
       Sqordia
@@ -134,7 +134,7 @@ function cta(label: string, url: string = '{{actionUrl}}'): string {
 
 /* ─── Inline styles ───────────────────────────────────────────────────── */
 
-const h1 = 'style="margin:0 0 16px;font-size:24px;font-weight:700;color:#1C1D1A;line-height:1.3;"';
+const h1 = 'style="margin:0 0 16px;font-size:24px;font-weight:700;color:#181B22;line-height:1.3;"';
 const p  = 'style="margin:0 0 16px;font-size:15px;color:#4b5563;line-height:1.6;"';
 const small = 'style="margin:0;font-size:13px;color:#9ca3af;line-height:1.5;"';
 const divider = '<hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0;" />';
@@ -187,7 +187,7 @@ const notificationEn = wrap(`
 <td style="background-color:#f4f7fa;border-radius:8px;padding:20px;">
   <table role="presentation" cellpadding="0" cellspacing="0">
     <tr><td style="font-size:13px;color:#9ca3af;padding-bottom:4px;">Plan</td></tr>
-    <tr><td style="font-size:15px;font-weight:600;color:#1C1D1A;padding-bottom:12px;">{{planName}}</td></tr>
+    <tr><td style="font-size:15px;font-weight:600;color:#181B22;padding-bottom:12px;">{{planName}}</td></tr>
     <tr><td style="font-size:13px;color:#9ca3af;padding-bottom:4px;">Shared by</td></tr>
     <tr><td style="font-size:15px;color:#4b5563;">{{senderName}} ({{senderEmail}})</td></tr>
   </table>
@@ -209,7 +209,7 @@ const notificationFr = wrapFr(`
 <td style="background-color:#f4f7fa;border-radius:8px;padding:20px;">
   <table role="presentation" cellpadding="0" cellspacing="0">
     <tr><td style="font-size:13px;color:#9ca3af;padding-bottom:4px;">Plan</td></tr>
-    <tr><td style="font-size:15px;font-weight:600;color:#1C1D1A;padding-bottom:12px;">{{planName}}</td></tr>
+    <tr><td style="font-size:15px;font-weight:600;color:#181B22;padding-bottom:12px;">{{planName}}</td></tr>
     <tr><td style="font-size:13px;color:#9ca3af;padding-bottom:4px;">Partag&eacute; par</td></tr>
     <tr><td style="font-size:15px;color:#4b5563;">{{senderName}} ({{senderEmail}})</td></tr>
   </table>
@@ -233,7 +233,7 @@ const marketingEn = wrap(`
 <table role="presentation" cellpadding="0" cellspacing="0" style="margin:20px 0;width:100%;">
 <tr>
 <td style="background:linear-gradient(135deg,#FFF7ED 0%,#FEF3C7 100%);border-radius:8px;padding:24px;border-left:4px solid #FF6B00;">
-  <h2 style="margin:0 0 8px;font-size:18px;font-weight:700;color:#1C1D1A;">{{featureName}}</h2>
+  <h2 style="margin:0 0 8px;font-size:18px;font-weight:700;color:#181B22;">{{featureName}}</h2>
   <p style="margin:0;font-size:15px;color:#4b5563;line-height:1.6;">{{featureDescription}}</p>
 </td>
 </tr>
@@ -255,7 +255,7 @@ const marketingFr = wrapFr(`
 <table role="presentation" cellpadding="0" cellspacing="0" style="margin:20px 0;width:100%;">
 <tr>
 <td style="background:linear-gradient(135deg,#FFF7ED 0%,#FEF3C7 100%);border-radius:8px;padding:24px;border-left:4px solid #FF6B00;">
-  <h2 style="margin:0 0 8px;font-size:18px;font-weight:700;color:#1C1D1A;">{{featureName}}</h2>
+  <h2 style="margin:0 0 8px;font-size:18px;font-weight:700;color:#181B22;">{{featureName}}</h2>
   <p style="margin:0;font-size:15px;color:#4b5563;line-height:1.6;">{{featureDescription}}</p>
 </td>
 </tr>
@@ -287,15 +287,15 @@ const billingEn = wrap(`
       <td style="padding:12px 20px;font-size:13px;font-weight:600;color:#6b7280;text-align:right;">Amount</td>
     </tr>
     <tr>
-      <td style="padding:16px 20px;font-size:15px;color:#1C1D1A;border-top:1px solid #e5e7eb;">{{planDescription}}</td>
-      <td style="padding:16px 20px;font-size:15px;color:#1C1D1A;border-top:1px solid #e5e7eb;text-align:right;">{{amount}}</td>
+      <td style="padding:16px 20px;font-size:15px;color:#181B22;border-top:1px solid #e5e7eb;">{{planDescription}}</td>
+      <td style="padding:16px 20px;font-size:15px;color:#181B22;border-top:1px solid #e5e7eb;text-align:right;">{{amount}}</td>
     </tr>
     <tr style="background-color:#f9fafb;">
       <td style="padding:12px 20px;font-size:13px;color:#6b7280;border-top:1px solid #e5e7eb;">Tax</td>
       <td style="padding:12px 20px;font-size:13px;color:#6b7280;border-top:1px solid #e5e7eb;text-align:right;">{{taxAmount}}</td>
     </tr>
     <tr>
-      <td style="padding:16px 20px;font-size:16px;font-weight:700;color:#1C1D1A;border-top:2px solid #e5e7eb;">Total</td>
+      <td style="padding:16px 20px;font-size:16px;font-weight:700;color:#181B22;border-top:2px solid #e5e7eb;">Total</td>
       <td style="padding:16px 20px;font-size:16px;font-weight:700;color:#FF6B00;border-top:2px solid #e5e7eb;text-align:right;">{{totalAmount}}</td>
     </tr>
   </table>
@@ -326,15 +326,15 @@ const billingFr = wrapFr(`
       <td style="padding:12px 20px;font-size:13px;font-weight:600;color:#6b7280;text-align:right;">Montant</td>
     </tr>
     <tr>
-      <td style="padding:16px 20px;font-size:15px;color:#1C1D1A;border-top:1px solid #e5e7eb;">{{planDescription}}</td>
-      <td style="padding:16px 20px;font-size:15px;color:#1C1D1A;border-top:1px solid #e5e7eb;text-align:right;">{{amount}}</td>
+      <td style="padding:16px 20px;font-size:15px;color:#181B22;border-top:1px solid #e5e7eb;">{{planDescription}}</td>
+      <td style="padding:16px 20px;font-size:15px;color:#181B22;border-top:1px solid #e5e7eb;text-align:right;">{{amount}}</td>
     </tr>
     <tr style="background-color:#f9fafb;">
       <td style="padding:12px 20px;font-size:13px;color:#6b7280;border-top:1px solid #e5e7eb;">Taxes</td>
       <td style="padding:12px 20px;font-size:13px;color:#6b7280;border-top:1px solid #e5e7eb;text-align:right;">{{taxAmount}}</td>
     </tr>
     <tr>
-      <td style="padding:16px 20px;font-size:16px;font-weight:700;color:#1C1D1A;border-top:2px solid #e5e7eb;">Total</td>
+      <td style="padding:16px 20px;font-size:16px;font-weight:700;color:#181B22;border-top:2px solid #e5e7eb;">Total</td>
       <td style="padding:16px 20px;font-size:16px;font-weight:700;color:#FF6B00;border-top:2px solid #e5e7eb;text-align:right;">{{totalAmount}}</td>
     </tr>
   </table>

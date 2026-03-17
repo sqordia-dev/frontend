@@ -92,12 +92,12 @@ export default function InvoicesPage() {
   const t = translations[language as keyof typeof translations] || translations.en;
 
   // Brand colors
-  const strategyBlue = '#1C1D1A';
+  const strategyBlue = '#181B22';
   const momentumOrange = '#FF6B00';
   const momentumOrangeHover = '#E55F00';
   const lightAIGrey = '#F4F7FA';
-  const darkBg = '#0B0C0A';
-  const darkCard = '#161714';
+  const darkBg = '#101318';
+  const darkCard = '#181B22';
   const darkBorder = 'rgba(255,255,255,0.08)';
 
   useEffect(() => {

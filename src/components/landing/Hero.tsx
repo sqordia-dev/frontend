@@ -70,7 +70,7 @@ export default function Hero() {
       ref={sectionRef}
       className={cn(
         'relative pt-24 pb-12 sm:pt-28 sm:pb-16 md:pt-44 md:pb-32 lg:pt-48 lg:pb-40 overflow-hidden min-h-[80vh] sm:min-h-[90vh] flex items-center',
-        isDark ? 'bg-[#0B0C0A]' : 'bg-[#FAFAF8]',
+        isDark ? 'bg-[#101318]' : 'bg-[#FAFAF8]',
       )}
       aria-labelledby="hero-heading"
     >
@@ -145,7 +145,7 @@ export default function Hero() {
                       key={i}
                       className={cn(
                         'w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold ring-2',
-                        isDark ? 'ring-[#0B0C0A]' : 'ring-[#FAFAF8]',
+                        isDark ? 'ring-[#101318]' : 'ring-[#FAFAF8]',
                       )}
                       style={{ background: `linear-gradient(135deg, ${avatar.from}, ${avatar.to})` }}
                     >
@@ -270,7 +270,7 @@ export default function Hero() {
                 <div
                   className={cn(
                     'flex items-center gap-2 px-4 py-3 border-b',
-                    isDark ? 'bg-[#1C1D1A] border-white/[0.06]' : 'bg-gray-100 border-gray-200',
+                    isDark ? 'bg-[#181B22] border-white/[0.06]' : 'bg-gray-100 border-gray-200',
                   )}
                 >
                   <div className="flex gap-1.5">

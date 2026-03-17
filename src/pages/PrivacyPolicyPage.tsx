@@ -8,13 +8,12 @@ import { getCanonicalUrl } from '../utils/seo';
 export default function PrivacyPolicyPage() {
   const { language } = useTheme();
   const { getContent: cms } = useCmsContent('legal');
-  const strategyBlue = '#1C1D1A';
-  const momentumOrange = '#FF6B00';
+  // Brand colors are applied via Tailwind classes: text-strategy-blue, text-momentum-orange
 
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-900">
+    <main id="main-content" className="min-h-screen bg-white dark:bg-gray-900">
       <SEO
-        title={language === 'fr' 
+        title={language === 'fr'
           ? "Politique de Confidentialité | Sqordia"
           : "Privacy Policy | Sqordia"}
         description={language === 'fr'
@@ -22,7 +21,7 @@ export default function PrivacyPolicyPage() {
           : "Read Sqordia's privacy policy to understand how we collect, use, and protect your personal data."}
         url={getCanonicalUrl('/privacy')}
       />
-      <div className="max-w-4xl mx-auto px-6 py-16">
+      <div className="max-w-prose mx-auto px-6 py-16">
         <Link
           to="/"
           className="inline-flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white mb-8 transition-colors"
@@ -31,7 +30,7 @@ export default function PrivacyPolicyPage() {
           <span>{cms('legal.back_to_home', '') || (language === 'fr' ? 'Retour à l\'accueil' : 'Back to Home')}</span>
         </Link>
 
-        <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-8" style={{ color: strategyBlue }}>
+        <h1 className="text-4xl font-bold text-strategy-blue dark:text-white mb-8">
           {cms('legal.privacy_title', '') || (language === 'fr' ? 'Politique de Confidentialité' : 'Privacy Policy')}
         </h1>
 
@@ -125,13 +124,13 @@ export default function PrivacyPolicyPage() {
                 : 'For any questions regarding this privacy policy, please contact us at:'}
             </p>
             <p className="text-gray-700 dark:text-gray-300 mt-2">
-              <a href="mailto:privacy@sqordia.app" className="font-semibold" style={{ color: momentumOrange }}>
+              <a href="mailto:privacy@sqordia.app" className="font-semibold text-momentum-orange">
                 privacy@sqordia.app
               </a>
             </p>
           </section>
         </div>
       </div>
-    </div>
+    </main>
   );
 }

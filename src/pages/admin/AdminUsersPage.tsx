@@ -370,7 +370,7 @@ export default function AdminUsersPage() {
               </div>
               <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
             </div>
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setError(null)}>
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setError(null)} aria-label="Dismiss error">
               <X className="w-4 h-4 text-red-400" />
             </Button>
           </motion.div>
@@ -471,6 +471,7 @@ export default function AdminUsersPage() {
                   onClick={handleRefresh}
                   disabled={isRefreshing}
                   title={language === 'fr' ? 'Actualiser' : 'Refresh'}
+                  aria-label={language === 'fr' ? 'Actualiser' : 'Refresh'}
                 >
                   <RefreshCw className={cn('w-4 h-4', isRefreshing && 'animate-spin')} />
                 </Button>
@@ -746,6 +747,7 @@ export default function AdminUsersPage() {
                               size="icon"
                               onClick={() => navigate(`/admin/users/${user.id}`)}
                               title={language === 'fr' ? 'Voir' : 'View'}
+                              aria-label={language === 'fr' ? 'Voir' : 'View'}
                             >
                               <Eye className="w-4 h-4" />
                             </Button>
@@ -754,6 +756,7 @@ export default function AdminUsersPage() {
                               size="icon"
                               onClick={() => openRoleModal(user)}
                               title={language === 'fr' ? 'Rôles' : 'Roles'}
+                              aria-label={language === 'fr' ? 'Rôles' : 'Roles'}
                             >
                               <Shield className="w-4 h-4" />
                             </Button>
@@ -921,7 +924,11 @@ export default function AdminUsersPage() {
                         {/* User Profile Section */}
                         <div
                           className="flex items-start gap-4"
+                          role="button"
+                          tabIndex={0}
                           onClick={() => navigate(`/admin/users/${user.id}`)}
+                          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(`/admin/users/${user.id}`); } }}
+                          aria-label={`${language === 'fr' ? 'Voir le profil de' : 'View profile of'} ${user.firstName || ''} ${user.lastName || ''}`}
                         >
                           {/* Avatar with status ring */}
                           <div className="relative flex-shrink-0">
@@ -1043,6 +1050,7 @@ export default function AdminUsersPage() {
                   size="icon"
                   onClick={() => setPage(Math.max(1, page - 1))}
                   disabled={page <= 1}
+                  aria-label="Previous page"
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </Button>
@@ -1076,6 +1084,7 @@ export default function AdminUsersPage() {
                   size="icon"
                   onClick={() => setPage(Math.min(totalPages, page + 1))}
                   disabled={page >= totalPages}
+                  aria-label="Next page"
                 >
                   <ChevronRight className="w-4 h-4" />
                 </Button>
@@ -1352,6 +1361,7 @@ function Modal({ children, onClose }: { children: React.ReactNode; onClose: () =
           size="icon"
           className="absolute top-4 right-4 z-10"
           onClick={onClose}
+          aria-label="Close"
         >
           <X className="w-5 h-5" />
         </Button>

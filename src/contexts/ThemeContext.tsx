@@ -1110,6 +1110,7 @@ const translations = {
     'nav.subscription': 'Subscription',
     'nav.invoices': 'Invoices',
     'nav.notifications': 'Notifications',
+    'nav.notificationPreferences': 'Notification Preferences',
     'nav.profile': 'Profile',
     'nav.settings': 'Settings',
     'nav.adminPanel': 'Admin Panel',
@@ -2346,6 +2347,18 @@ const translations = {
     'profile.processing': 'Processing...',
     'profile.viewDocument': 'View',
     'profile.lastActive': 'Last active',
+    'profile.messages.profileUpdated': 'Profile updated successfully',
+    'profile.messages.pictureUploaded': 'Profile picture uploaded successfully',
+    'profile.messages.passwordChanged': 'Password changed successfully',
+    'profile.messages.sessionRevoked': 'Session revoked successfully',
+    'profile.messages.allSessionsRevoked': 'All other sessions revoked successfully',
+    'profile.messages.dataExported': 'Your data has been exported successfully',
+    'profile.messages.passwordsMismatch': 'Passwords do not match',
+    'profile.messages.sessionsError': 'Sessions Error',
+    'profile.messages.sessionsErrorDescription': 'Failed to load active sessions.',
+    'profile.messages.privacyError': 'Privacy Error',
+    'profile.messages.privacyErrorDescription': 'Failed to load consent preferences.',
+    'profile.messages.uploadError': 'Upload Error',
     // onboarding
     'onboarding.skip': 'Skip',
     'onboarding.skipForNow': 'Skip for now',
@@ -3445,6 +3458,7 @@ const translations = {
     'nav.subscription': 'Abonnement',
     'nav.invoices': 'Factures',
     'nav.notifications': 'Notifications',
+    'nav.notificationPreferences': 'Préférences de notifications',
     'nav.profile': 'Profil',
     'nav.settings': 'Paramètres',
     'nav.adminPanel': 'Panneau d\'administration',
@@ -4680,6 +4694,18 @@ const translations = {
     'profile.processing': 'Traitement...',
     'profile.viewDocument': 'Voir',
     'profile.lastActive': 'Dernière activité',
+    'profile.messages.profileUpdated': 'Profil mis à jour avec succès',
+    'profile.messages.pictureUploaded': 'Photo de profil téléchargée avec succès',
+    'profile.messages.passwordChanged': 'Mot de passe changé avec succès',
+    'profile.messages.sessionRevoked': 'Session révoquée avec succès',
+    'profile.messages.allSessionsRevoked': 'Toutes les autres sessions révoquées avec succès',
+    'profile.messages.dataExported': 'Vos données ont été exportées avec succès',
+    'profile.messages.passwordsMismatch': 'Les mots de passe ne correspondent pas',
+    'profile.messages.sessionsError': 'Erreur de sessions',
+    'profile.messages.sessionsErrorDescription': 'Impossible de charger les sessions actives.',
+    'profile.messages.privacyError': 'Erreur de confidentialité',
+    'profile.messages.privacyErrorDescription': 'Impossible de charger les préférences de consentement.',
+    'profile.messages.uploadError': 'Erreur de téléversement',
     // intégration
     'onboarding.skip': 'Passer',
     'onboarding.skipForNow': 'Passer pour le moment',
@@ -4732,6 +4758,8 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     localStorage.setItem('language', language);
+    // Update <html lang> attribute for screen readers (WCAG 3.1.1)
+    document.documentElement.lang = language;
   }, [language]);
 
   useEffect(() => {

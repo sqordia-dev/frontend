@@ -146,9 +146,9 @@ export default function SignupPage() {
 
       {/* Title */}
       <div className="mb-8 animate-fade-in-up">
-        <h2 className="mb-2 text-3xl font-bold font-heading text-foreground">
+        <h1 className="mb-2 text-3xl font-bold font-heading text-foreground">
           {cms('auth.signup.title', 'register.title')}
-        </h2>
+        </h1>
         <p className="text-base text-muted-foreground">
           {cms('auth.signup.subtitle', 'register.subtitle')}
         </p>

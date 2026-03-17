@@ -71,7 +71,7 @@ const FinancialTable: React.FC<FinancialTableProps> = ({
     <div className={`w-full ${className}`}>
       {/* Title */}
       <h3
-        className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-[#1C1D1A]"
+        className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-[#181B22]"
         style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}
       >
         {title}
@@ -102,7 +102,7 @@ const FinancialTable: React.FC<FinancialTableProps> = ({
           <thead>
             <tr className="border-b border-gray-200 dark:border-gray-700">
               <th 
-                className="text-left py-2 sm:py-3 px-3 sm:px-4 font-semibold text-xs sm:text-sm sticky left-0 z-20 bg-white dark:bg-gray-900 text-[#1C1D1A]"
+                className="text-left py-2 sm:py-3 px-3 sm:px-4 font-semibold text-xs sm:text-sm sticky left-0 z-20 bg-white dark:bg-gray-900 text-[#181B22]"
                 scope="col"
                 aria-label="Row label"
               >
@@ -114,7 +114,7 @@ const FinancialTable: React.FC<FinancialTableProps> = ({
                   className={`py-2 sm:py-3 px-3 sm:px-4 font-semibold text-xs sm:text-sm whitespace-nowrap ${
                     col.align === 'right' ? 'text-right' : 
                     col.align === 'center' ? 'text-center' : 'text-left'
-                  } text-[#1C1D1A]`}
+                  } text-[#181B22]`}
                   scope="col"
                 >
                   {col.header}
@@ -200,7 +200,7 @@ const FinancialTable: React.FC<FinancialTableProps> = ({
       )}
 
       {/* Bottom border line */}
-      <div className="mt-4 h-0.5 bg-[#1C1D1A]"></div>
+      <div className="mt-4 h-0.5 bg-[#181B22]"></div>
     </div>
   );
 };

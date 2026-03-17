@@ -136,9 +136,9 @@ export default function BugReportPage() {
             <div className="w-16 h-16 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mx-auto mb-4">
               <Bug className="w-8 h-8 text-green-600 dark:text-green-400" />
             </div>
-            <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
+            <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
               Bug Report Submitted
-            </h2>
+            </h1>
             <p className="text-slate-600 dark:text-slate-400 mb-4">
               Your bug report has been submitted successfully.
             </p>
@@ -198,7 +198,7 @@ export default function BugReportPage() {
       </nav>
 
       {/* Main Content */}
-      <main className="max-w-4xl mx-auto py-12 px-6">
+      <main id="main-content" className="max-w-4xl mx-auto py-12 px-6">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Report a Bug</h1>
           <p className="text-slate-500 dark:text-slate-400 mt-2">

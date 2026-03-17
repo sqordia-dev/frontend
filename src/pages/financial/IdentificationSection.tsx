@@ -211,7 +211,7 @@ const IdentificationSection: FC = () => {
             onClick={() => fileInputRef.current?.click()}
           >
             {logoUrl ? (
-              <img src={logoUrl} alt="Logo" className="max-h-20 object-contain" />
+              <img src={logoUrl} alt="Company logo" className="max-h-20 object-contain" />
             ) : (
               <ImageIcon className="w-12 h-12 text-muted-foreground/40" />
             )}

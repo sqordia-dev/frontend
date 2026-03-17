@@ -403,8 +403,12 @@ export default function AdminBusinessPlansPage() {
                 return (
                   <div
                     key={plan.id}
+                    role="button"
+                    tabIndex={0}
                     onClick={() => window.open(`/business-plan/${plan.id}/preview`, '_blank')}
-                    className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5 hover:shadow-md hover:border-purple-300 dark:hover:border-purple-700 cursor-pointer transition-all group"
+                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); window.open(`/business-plan/${plan.id}/preview`, '_blank'); } }}
+                    aria-label={`${fr ? 'Ouvrir le plan' : 'Open plan'} ${plan.title || (fr ? 'Sans titre' : 'Untitled')}`}
+                    className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5 hover:shadow-md hover:border-purple-300 dark:hover:border-purple-700 cursor-pointer transition-all group focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
                   >
                     {/* Card header */}
                     <div className="flex items-start justify-between mb-3">

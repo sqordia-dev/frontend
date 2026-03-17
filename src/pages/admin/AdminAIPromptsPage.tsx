@@ -12,6 +12,7 @@ import { RichTextEditor } from '../../components/editor/RichTextEditor';
 import { getUserFriendlyError } from '../../utils/error-messages';
 import { sanitizeHtml } from '../../utils/sanitize';
 import { Button } from '../../components/ui/button';
+import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 
 // Section definitions with categories
 const SECTION_CATEGORIES = {
@@ -90,6 +91,7 @@ export default function AdminAIPromptsPage() {
   const { t } = useTheme();
   const toast = useToast();
   const navigate = useNavigate();
+  const { confirm, ConfirmDialog } = useConfirmDialog();
 
   useEffect(() => {
     loadPrompts();
@@ -109,7 +111,12 @@ export default function AdminAIPromptsPage() {
   };
 
   const handleMigrateDefaults = async () => {
-    if (!confirm(t('admin.promptsStudio.migrateConfirm'))) return;
+    const ok = await confirm({
+      title: t('admin.promptsStudio.migrateConfirm'),
+      description: t('admin.promptsStudio.migrateConfirm'),
+      variant: 'destructive',
+    });
+    if (!ok) return;
     
     try {
       setMigrating(true);
@@ -181,7 +188,12 @@ export default function AdminAIPromptsPage() {
   };
 
   const handleDelete = async (promptId: string) => {
-    if (!confirm(t('admin.aiPrompts.confirmDelete'))) return;
+    const ok = await confirm({
+      title: t('admin.aiPrompts.confirmDelete'),
+      description: t('admin.aiPrompts.confirmDelete'),
+      variant: 'destructive',
+    });
+    if (!ok) return;
     try {
       await adminService.deleteAIPrompt(promptId);
       await loadPrompts();
@@ -389,6 +401,7 @@ export default function AdminAIPromptsPage() {
             size="icon"
             onClick={() => navigate('/dashboard')}
             title={t('admin.promptsStudio.backToDashboard')}
+            aria-label={t('admin.promptsStudio.backToDashboard')}
           >
             <ArrowLeft className="w-5 h-5" />
           </Button>
@@ -718,6 +731,7 @@ export default function AdminAIPromptsPage() {
                               size="icon"
                               onClick={() => openEditModal(prompt)}
                               title={t('admin.aiPrompts.edit')}
+                              aria-label={t('admin.aiPrompts.edit')}
                             >
                               <Edit className="w-4 h-4" />
                             </Button>
@@ -726,6 +740,7 @@ export default function AdminAIPromptsPage() {
                               size="icon"
                               onClick={() => handleDuplicate(prompt)}
                               title={t('admin.promptsStudio.duplicate')}
+                              aria-label={t('admin.promptsStudio.duplicate')}
                             >
                               <Copy className="w-4 h-4" />
                             </Button>
@@ -735,6 +750,7 @@ export default function AdminAIPromptsPage() {
                               className="bg-transparent hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 shadow-none"
                               onClick={() => handleDelete(prompt.id)}
                               title={t('admin.aiPrompts.delete')}
+                              aria-label={t('admin.aiPrompts.delete')}
                             >
                               <Trash className="w-4 h-4" />
                             </Button>
@@ -772,6 +788,7 @@ export default function AdminAIPromptsPage() {
               <Button
                 variant="ghost"
                 size="icon"
+                aria-label="Close"
                 onClick={() => {
                   setShowCreateModal(false);
                   setEditingPrompt(null);
@@ -1002,6 +1019,7 @@ export default function AdminAIPromptsPage() {
           </div>
         </div>
       )}
+      <ConfirmDialog />
     </div>
   );
 }

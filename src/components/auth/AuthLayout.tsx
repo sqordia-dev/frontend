@@ -36,7 +36,7 @@ export default function AuthLayout({
         {/* Animated gradient orbs */}
         <AnimatedBackground />
 
-        <div className="relative z-10 w-full max-w-md text-foreground">
+        <main id="main-content" className="relative z-10 w-full max-w-md text-foreground">
           {/* Logo + Language */}
           <div className="mb-8 flex items-center justify-between">
             <Link to="/" className="inline-flex items-center gap-3 group">
@@ -59,7 +59,7 @@ export default function AuthLayout({
           <p className="mt-8 text-center text-sm text-muted-foreground">
             {new Date().getFullYear()} {t('auth.common.copyright')}
           </p>
-        </div>
+        </main>
       </div>
     );
   }
@@ -68,7 +68,7 @@ export default function AuthLayout({
   return (
     <div className="flex min-h-screen">
       {/* LEFT Panel - Form */}
-      <div className="flex flex-1 flex-col items-center justify-center overflow-y-auto bg-background text-foreground px-4 py-12 sm:px-6 lg:px-12">
+      <main id="main-content" className="flex flex-1 flex-col items-center justify-center overflow-y-auto bg-background text-foreground px-4 py-12 sm:px-6 lg:px-12">
         <div className="w-full max-w-[480px]">
           {/* Mobile Logo + Language (shown when illustration panel is hidden) */}
           <div className="mb-8 flex items-center justify-between lg:hidden">
@@ -94,7 +94,7 @@ export default function AuthLayout({
             &copy; {new Date().getFullYear()} {t('auth.common.copyright')}
           </p>
         </div>
-      </div>
+      </main>
 
       {/* RIGHT Panel - Illustration (desktop only) */}
       <IllustrationPanel

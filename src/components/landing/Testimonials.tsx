@@ -103,7 +103,7 @@ export default function Testimonials() {
       id="testimonials"
       className={cn(
         'relative py-12 sm:py-16 md:py-24 lg:py-32',
-        isDark ? 'bg-[#161714]' : 'bg-gray-50',
+        isDark ? 'bg-[#181B22]' : 'bg-gray-50',
       )}
       aria-labelledby="testimonials-heading"
     >
@@ -169,12 +169,11 @@ export default function Testimonials() {
                         {cmsItem.avatar && isSafeUrl(cmsItem.avatar) ? (
                           <img
                             src={cmsItem.avatar}
-                            alt=""
+                            alt={cmsItem.name}
                             className="w-11 h-11 rounded-full object-cover ring-2 ring-border shrink-0"
                             loading="lazy"
                             width={44}
                             height={44}
-                            aria-hidden="true"
                           />
                         ) : (
                           <div className="w-11 h-11 rounded-full bg-gradient-to-br from-momentum-orange to-amber-500 flex items-center justify-center text-white font-bold text-sm shrink-0">

@@ -502,6 +502,7 @@ export default function AdminEmailTemplatesPage() {
                               variant="ghost"
                               size="icon-sm"
                               onClick={() => handlePreview(template, 'en')}
+                              aria-label="Preview"
                             >
                               <Eye className="h-4 w-4" />
                             </Button>
@@ -516,6 +517,7 @@ export default function AdminEmailTemplatesPage() {
                               variant="ghost"
                               size="icon-sm"
                               onClick={() => setEditTemplate(template)}
+                              aria-label="Edit"
                             >
                               <Edit2 className="h-4 w-4" />
                             </Button>
@@ -526,7 +528,7 @@ export default function AdminEmailTemplatesPage() {
                         {/* More menu */}
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon-sm">
+                            <Button variant="ghost" size="icon-sm" aria-label="More actions">
                               <MoreHorizontal className="h-4 w-4" />
                             </Button>
                           </DropdownMenuTrigger>

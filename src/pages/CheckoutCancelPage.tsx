@@ -8,7 +8,7 @@ export default function CheckoutCancelPage() {
   const { t } = useTheme();
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <main id="main-content" className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <SEO
         title="Checkout Cancelled | Sqordia"
         description="Your payment was cancelled"
@@ -20,9 +20,9 @@ export default function CheckoutCancelPage() {
           <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-orange-100 dark:bg-orange-900 mb-4">
             <XCircle className="w-10 h-10 text-orange-600 dark:text-orange-400" />
           </div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
             {t('checkout.cancelled') || 'Payment Cancelled'}
-          </h2>
+          </h1>
           <p className="text-gray-600 dark:text-gray-400 mb-6">
             {t('checkout.cancelledMessage') || 'Your payment was cancelled. No charges were made. You can try again anytime.'}
           </p>
@@ -43,7 +43,7 @@ export default function CheckoutCancelPage() {
           </div>
         </div>
       </div>
-    </div>
+    </main>
   );
 }
 

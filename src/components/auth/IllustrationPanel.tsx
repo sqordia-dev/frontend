@@ -83,7 +83,6 @@ export default function IllustrationPanel({
               src={illustrationSrc}
               alt=""
               className="w-full h-auto object-contain"
-              aria-hidden="true"
             />
           ) : (
             <AuthLoginSvg

@@ -5,6 +5,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { useToast } from '../../contexts/ToastContext';
 import { getUserFriendlyError } from '../../utils/error-messages';
 import { Button } from '../../components/ui/button';
+import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 
 export default function AdminTemplatesPage() {
   const [templates, setTemplates] = useState<any[]>([]);
@@ -33,6 +34,7 @@ export default function AdminTemplatesPage() {
   const [saving, setSaving] = useState(false);
   const { t } = useTheme();
   const toast = useToast();
+  const { confirm, ConfirmDialog } = useConfirmDialog();
 
   useEffect(() => {
     loadTemplates();
@@ -56,9 +58,12 @@ export default function AdminTemplatesPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!window.confirm(t('admin.templates.confirmDelete'))) {
-      return;
-    }
+    const ok = await confirm({
+      title: t('admin.templates.delete'),
+      description: t('admin.templates.confirmDelete'),
+      variant: 'destructive',
+    });
+    if (!ok) return;
 
     try {
       await templateService.deleteTemplate(id);
@@ -360,6 +365,7 @@ export default function AdminTemplatesPage() {
                           size="icon"
                           onClick={() => window.open(`/template/${template.id}`, '_blank')}
                           title={t('admin.templates.preview')}
+                          aria-label={t('admin.templates.preview')}
                         >
                           <Eye size={18} />
                         </Button>
@@ -368,6 +374,7 @@ export default function AdminTemplatesPage() {
                           size="icon"
                           onClick={() => openEditModal(template)}
                           title={t('admin.templates.edit')}
+                          aria-label={t('admin.templates.edit')}
                         >
                           <Edit size={18} />
                         </Button>
@@ -376,6 +383,7 @@ export default function AdminTemplatesPage() {
                           size="icon"
                           onClick={() => handleClone(template.id)}
                           title={t('admin.templates.clone')}
+                          aria-label={t('admin.templates.clone')}
                         >
                           <Copy size={18} />
                         </Button>
@@ -385,6 +393,7 @@ export default function AdminTemplatesPage() {
                             size="icon"
                             onClick={() => handlePublish(template.id)}
                             title={t('admin.templates.publish')}
+                            aria-label={t('admin.templates.publish')}
                           >
                             <CheckCircle size={18} />
                           </Button>
@@ -394,6 +403,7 @@ export default function AdminTemplatesPage() {
                           size="icon"
                           onClick={() => handleArchive(template.id)}
                           title={t('admin.templates.archive')}
+                          aria-label={t('admin.templates.archive')}
                         >
                           <Archive size={18} />
                         </Button>
@@ -403,6 +413,7 @@ export default function AdminTemplatesPage() {
                           className="bg-transparent hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400 shadow-none"
                           onClick={() => handleDelete(template.id)}
                           title={t('admin.templates.delete')}
+                          aria-label={t('admin.templates.delete')}
                         >
                           <Trash2 size={18} />
                         </Button>
@@ -428,6 +439,7 @@ export default function AdminTemplatesPage() {
                 <Button
                   variant="ghost"
                   size="icon"
+                  aria-label="Close"
                   onClick={() => {
                     setShowCreateModal(false);
                     setEditingTemplate(null);
@@ -612,6 +624,8 @@ export default function AdminTemplatesPage() {
           </div>
         </div>
       )}
+
+      <ConfirmDialog />
     </div>
   );
 }

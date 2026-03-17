@@ -117,7 +117,7 @@ export default function Header() {
     dropdownTimeoutRef.current = setTimeout(() => setOpenDropdown(null), 150);
   };
 
-  const textColor = isDark ? '#F3F4F6' : '#1C1D1A';
+  const textColor = isDark ? '#F3F4F6' : '#181B22';
 
   return (
     <header ref={headerRef} className="fixed top-0 left-0 right-0 z-50">
@@ -129,7 +129,7 @@ export default function Header() {
             ? cn(
                 'mx-3 sm:mx-4 lg:mx-auto mt-3 max-w-[1100px] rounded-2xl backdrop-blur-xl border',
                 isDark
-                  ? 'bg-[#161714]/80 border-white/[0.06] shadow-[0_8px_30px_rgba(0,0,0,0.25)]'
+                  ? 'bg-[#181B22]/80 border-white/[0.06] shadow-[0_8px_30px_rgba(0,0,0,0.25)]'
                   : 'bg-white/80 border-gray-200/40 shadow-[0_8px_30px_rgba(0,0,0,0.06)]',
               )
             : '',
@@ -150,7 +150,7 @@ export default function Header() {
             {cmsLogoUrl ? (
               <img
                 src={cmsLogoUrl}
-                alt="Sqordia"
+                alt="Sqordia logo"
                 className={cn(
                   'rounded-xl object-contain transition-all duration-300 group-hover:scale-105',
                   isFloating ? 'w-8 h-8' : 'w-10 h-10',
@@ -226,7 +226,7 @@ export default function Header() {
                       className={cn(
                         'absolute top-full left-0 mt-2 py-2 min-w-[200px] rounded-xl backdrop-blur-xl border shadow-lg animate-slide-down',
                         isDark
-                          ? 'bg-[#1C1D1A]/90 border-white/[0.08]'
+                          ? 'bg-[#181B22]/90 border-white/[0.08]'
                           : 'bg-white/90 border-gray-200/50',
                       )}
                     >
@@ -330,7 +330,7 @@ export default function Header() {
           className={cn(
             'lg:hidden mt-2 mx-3 sm:mx-4 rounded-2xl backdrop-blur-xl border animate-slide-down',
             isDark
-              ? 'bg-[#161714]/95 border-white/[0.06] shadow-[0_8px_30px_rgba(0,0,0,0.3)]'
+              ? 'bg-[#181B22]/95 border-white/[0.06] shadow-[0_8px_30px_rgba(0,0,0,0.3)]'
               : 'bg-white/95 border-gray-200/40 shadow-[0_8px_30px_rgba(0,0,0,0.08)]',
           )}
         >
@@ -345,7 +345,7 @@ export default function Header() {
                       'hover:bg-black/[0.04] dark:hover:bg-white/[0.06]',
                       'focus:outline-none focus:ring-2 focus:ring-momentum-orange/40',
                     )}
-                    style={{ color: isDark ? '#F3F4F6' : '#1C1D1A' }}
+                    style={{ color: isDark ? '#F3F4F6' : '#181B22' }}
                   >
                     {entry.label}
                     <ChevronDown
@@ -386,7 +386,7 @@ export default function Header() {
                     'hover:bg-black/[0.04] dark:hover:bg-white/[0.06]',
                     'focus:outline-none focus:ring-2 focus:ring-momentum-orange/40',
                   )}
-                  style={{ color: isDark ? '#F3F4F6' : '#1C1D1A' }}
+                  style={{ color: isDark ? '#F3F4F6' : '#181B22' }}
                 >
                   {entry.label}
                 </a>

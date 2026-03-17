@@ -1134,7 +1134,7 @@ function InterviewQuestionnaireContent() {
                       {user.profilePictureUrl ? (
                         <img
                           src={user.profilePictureUrl}
-                          alt={user.firstName || 'User'}
+                          alt={`${user.firstName || ''} ${user.lastName || ''}`.trim() || 'User profile picture'}
                           className="w-8 h-8 rounded-full object-cover ring-2 ring-white dark:ring-slate-800 shadow-sm"
                         />
                       ) : (
@@ -1186,6 +1186,7 @@ function InterviewQuestionnaireContent() {
         </div>
       </header>
 
+      <main id="main-content">
       {/* Main Content — Two-column layout */}
       <div className="max-w-6xl mx-auto flex gap-6 px-4 md:px-6 pb-24 md:pb-8">
         {/* Section Sidebar */}
@@ -1692,6 +1693,7 @@ function InterviewQuestionnaireContent() {
           </>
         )}
       </AnimatePresence>
+      </main>
     </div>
   );
 }

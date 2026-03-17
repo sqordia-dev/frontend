@@ -85,7 +85,7 @@ export default function Personas() {
       id="personas"
       className={cn(
         'relative py-12 sm:py-16 md:py-24 lg:py-32',
-        isDark ? 'bg-[#0B0C0A]' : 'bg-white',
+        isDark ? 'bg-[#101318]' : 'bg-white',
       )}
       aria-labelledby="personas-heading"
     >

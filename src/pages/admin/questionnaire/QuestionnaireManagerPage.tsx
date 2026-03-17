@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { Loader2, Search, Plus, FilePlus, Send, Trash2, AlertCircle, History, Languages, Eye, Pencil, X } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { QuestionnaireVersionProvider, useQuestionnaireVersion } from '@/contexts/QuestionnaireVersionContext';
@@ -72,6 +73,7 @@ function QuestionnaireManagerInner() {
   } = useQuestionnaireManager();
 
   const ai = useAiContentActions();
+  const { confirm, ConfirmDialog } = useConfirmDialog();
 
   const allQuestions = activeVersion?.questions ?? [];
   const allSteps = activeVersion?.steps ?? [];
@@ -147,13 +149,24 @@ function QuestionnaireManagerInner() {
   };
 
   const handlePublish = async () => {
-    if (!confirm('Publish this draft? It will become the active questionnaire for all users.')) return;
+    const ok = await confirm({
+      title: 'Publish Draft',
+      description: 'Publish this draft? It will become the active questionnaire for all users.',
+      confirmLabel: 'Publish',
+    });
+    if (!ok) return;
     setIsPublishing(true);
     try { await publishDraft(); } finally { setIsPublishing(false); }
   };
 
   const handleDiscard = async () => {
-    if (!confirm('Discard this draft? All unpublished changes will be lost.')) return;
+    const ok = await confirm({
+      title: 'Discard Draft',
+      description: 'Discard this draft? All unpublished changes will be lost.',
+      variant: 'destructive',
+      confirmLabel: 'Discard',
+    });
+    if (!ok) return;
     setIsDiscarding(true);
     try { await discardDraft(); } finally { setIsDiscarding(false); }
   };
@@ -518,6 +531,7 @@ function QuestionnaireManagerInner() {
       </AnimatePresence>
 
       <QuestionnaireVersionHistory open={historyOpen} onOpenChange={setHistoryOpen} />
+      <ConfirmDialog />
     </div>
   );
 }

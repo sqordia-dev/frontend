@@ -25,6 +25,8 @@
     /* Primary - Sqordia momentum orange (matches landing theme) */
     --primary: 24 100% 50%;
     --primary-foreground: 0 0% 100%;
+    /* Darker orange for text on white — WCAG AA 4.5:1 contrast (~5.0:1) */
+    --primary-text: 24 100% 38%;
 
     /* Secondary */
     --secondary: 210 40% 96.1%;
@@ -32,14 +34,15 @@
 
     /* Muted */
     --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    /* Darkened from 46.9% to 40% for WCAG AA 4.5:1 contrast on white (~4.6:1) */
+    --muted-foreground: 215.4 16.3% 40%;
 
     /* Accent */
     --accent: 210 40% 96.1%;
     --accent-foreground: 222.2 47.4% 11.2%;
 
-    /* Destructive */
-    --destructive: 0 84.2% 60.2%;
+    /* Destructive — darkened from 60.2% to 50% for WCAG AA text contrast (~4.6:1) */
+    --destructive: 0 84.2% 50%;
     --destructive-foreground: 210 40% 98%;
 
     /* Border, Input, Ring */
@@ -51,12 +54,12 @@
     --radius: 0.5rem;
 
     /* Sqordia brand color HSL values for reference */
-    --sqordia-blue: 213 52% 19%;      /* #1A2B47 */
+    --sqordia-blue: 225 15% 11%;      /* #181B22 */
     --sqordia-orange: 24 100% 50%;    /* #FF6B00 */
     --sqordia-grey: 213 33% 97%;      /* #F4F7FA */
 
-    /* Semantic status colors */
-    --success: 142 76% 36%;
+    /* Semantic status colors — darkened for WCAG AA text contrast (~4.8:1 on white) */
+    --success: 142 76% 29%;
     --success-foreground: 0 0% 100%;
     --warning: 38 92% 50%;
     --warning-foreground: 0 0% 0%;
@@ -69,64 +72,67 @@
   }
 
   .dark {
-    /* ── Forge Theme ──
-       Dark olive/military aesthetic. Earthy, grounded, uncommon.
-       Orange accents pop hard against the olive undertones.
+    /* ── Graphite Theme ──
+       Cool-neutral charcoal with subtle blue undertone.
+       Modern SaaS aesthetic (Linear / Vercel / Raycast).
+       Orange primary pops cleanly against cool grays.
     */
 
-    /* Base colors — deep olive black */
-    --background: 80 10% 4%;
-    --foreground: 60 8% 90%;
+    /* Base colors — deep charcoal with blue hint */
+    --background: 225 12% 7%;
+    --foreground: 220 10% 93%;
 
-    /* Card colors — olive surface */
-    --card: 80 7% 11%;
-    --card-foreground: 60 8% 90%;
+    /* Card colors — elevated surface */
+    --card: 224 10% 12%;
+    --card-foreground: 220 10% 93%;
 
     /* Popover — same as card */
-    --popover: 80 7% 11%;
-    --popover-foreground: 60 8% 90%;
+    --popover: 224 10% 12%;
+    --popover-foreground: 220 10% 93%;
 
-    /* Primary — brand orange (pops against olive) */
+    /* Primary — brand orange (pops against cool gray) */
     --primary: 24 100% 50%;
     --primary-foreground: 0 0% 100%;
+    /* Lighter orange for text on dark backgrounds — WCAG AA */
+    --primary-text: 24 100% 65%;
 
-    /* Secondary — olive mid-dark */
-    --secondary: 80 5% 14%;
-    --secondary-foreground: 60 8% 90%;
+    /* Secondary — hover/active surface */
+    --secondary: 223 10% 16%;
+    --secondary-foreground: 220 10% 93%;
 
-    /* Muted — olive surface with olive-400 text */
-    --muted: 80 5% 14%;
-    --muted-foreground: 60 4.5% 58%;
+    /* Muted — surface with cool gray text */
+    --muted: 223 10% 16%;
+    --muted-foreground: 220 6% 55%;
 
-    /* Accent — olive mid-dark */
-    --accent: 80 5% 14%;
-    --accent-foreground: 60 8% 90%;
+    /* Accent — same as secondary */
+    --accent: 223 10% 16%;
+    --accent-foreground: 220 10% 93%;
 
-    /* Destructive — warm red for contrast */
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 60 8% 90%;
+    /* Destructive — slightly lighter red for dark bg */
+    --destructive: 0 84% 65%;
+    --destructive-foreground: 220 10% 93%;
 
-    /* Border — olive subtle edge */
-    --border: 80 5% 18%;
-    --input: 80 7% 11%;
+    /* Border — visible but subtle */
+    --border: 222 8% 22%;
+    --input: 224 10% 12%;
     --ring: 24 100% 50%;
 
     /* Semantic status colors */
-    --success: 142 71% 45%;
+    --success: 142 71% 50%;
     --success-foreground: 0 0% 100%;
-    --warning: 38 92% 50%;
+    --warning: 38 92% 55%;
     --warning-foreground: 0 0% 0%;
-    --info: 217 91% 65%;
+    --info: 217 91% 70%;
     --info-foreground: 0 0% 100%;
 
     /* RGB values for shadows/glows */
     --primary-rgb: 255, 107, 0;
     --orange-rgb: 255, 107, 0;
 
-    /* Glass morphism tokens — olive-tinted */
-    --glass-border: rgba(154, 154, 144, 0.08);
-    --glass-border-hover: rgba(154, 154, 144, 0.14);
-    --glass-highlight: rgba(154, 154, 144, 0.04);
+    /* Glass morphism tokens — cool-tinted */
+    --glass-border: rgba(135, 140, 149, 0.08);
+    --glass-border-hover: rgba(135, 140, 149, 0.14);
+    --glass-highlight: rgba(135, 140, 149, 0.04);
   }
 }
 
@@ -179,7 +185,7 @@
 }
 
 .dark .ai-chat-content table {
-  border-color: #262622;
+  border-color: #252830;
 }
 
 /* Fade hint on right edge when table overflows */
@@ -191,7 +197,7 @@
   border-radius: 2px;
 }
 .dark .ai-chat-content table::-webkit-scrollbar-thumb {
-  background: #3C3C36;
+  background: #3A3E47;
 }
 
 .ai-chat-content thead {
@@ -218,9 +224,9 @@
 }
 
 .dark .ai-chat-content thead th {
-  background: linear-gradient(to bottom, #131410, #161714);
+  background: linear-gradient(to bottom, #12151C, #181B22);
   color: #F8F8F6;
-  border-bottom-color: #262622;
+  border-bottom-color: #252830;
 }
 
 .ai-chat-content tbody td {
@@ -231,7 +237,7 @@
 }
 
 .dark .ai-chat-content tbody td {
-  border-bottom-color: #262622;
+  border-bottom-color: #252830;
 }
 
 .ai-chat-content tbody tr:last-child td {
@@ -300,7 +306,7 @@
 
 /* ── Code blocks ── */
 .ai-chat-content pre {
-  background: #161714;
+  background: #181B22;
   color: #CCCCC4;
   padding: 0.75rem 1rem;
   border-radius: 0.5rem;
@@ -350,7 +356,7 @@
 }
 
 .dark .ai-chat-content hr {
-  border-top-color: #262622;
+  border-top-color: #252830;
 }
 
 /* ── Bold / Strong for metric labels ── */
@@ -387,7 +393,7 @@
 }
 
 .dark .ai-chat-content::-webkit-scrollbar-thumb {
-  background: #3C3C36;
+  background: #3A3E47;
 }
 
 @keyframes fadeInUp {
@@ -711,7 +717,7 @@
 }
 
 .dark .document-prose blockquote {
-  color: #9A9A90;
+  color: #878C95;
 }
 
 /* Document section heading - bold with bottom border */
@@ -728,7 +734,7 @@
 
 .dark .document-section-heading {
   color: #F8F8F6;
-  border-bottom-color: #3C3C36;
+  border-bottom-color: #3A3E47;
 }
 
 /* Document divider between sections */
@@ -740,7 +746,7 @@
 }
 
 .dark .document-divider {
-  border-top-color: #262622;
+  border-top-color: #252830;
 }
 
 /* Document header/footer - small text */
@@ -758,8 +764,8 @@
 }
 
 .dark .document-header {
-  border-bottom-color: #262622;
-  color: #52524A;
+  border-bottom-color: #252830;
+  color: #515560;
 }
 
 .document-footer {
@@ -774,8 +780,8 @@
 }
 
 .dark .document-footer {
-  border-top-color: #262622;
-  color: #52524A;
+  border-top-color: #252830;
+  color: #515560;
 }
 
 /* Page background for document container */
@@ -785,7 +791,7 @@
 }
 
 .dark .document-background {
-  background-color: hsl(80, 10%, 6%);
+  background-color: hsl(225, 12%, 5%);
 }
 
 /* Print styles for document */
@@ -959,7 +965,7 @@
 
 .dark .prose-warm blockquote,
 .dark .prose-warm-content blockquote {
-  color: #9A9A90;
+  color: #878C95;
 }
 
 /* Code */
@@ -974,7 +980,7 @@
 
 .dark .prose-warm code,
 .dark .prose-warm-content code {
-  background-color: #262622;
+  background-color: #252830;
 }
 
 /* Horizontal rule */
@@ -988,7 +994,7 @@
 
 .dark .prose-warm hr,
 .dark .prose-warm-content hr {
-  background: linear-gradient(to right, transparent, #262622, transparent);
+  background: linear-gradient(to right, transparent, #252830, transparent);
 }
 
 /* Professional Business Plan Table Styles */
@@ -1067,19 +1073,19 @@
 
 /* Dark mode adjustments — Obsidian */
 .dark .business-plan-table {
-  border-color: #262622;
+  border-color: #252830;
 }
 
 .dark .business-plan-table thead {
-  background-color: #161714;
+  background-color: #181B22;
 }
 
 .dark .business-plan-table th {
-  border-bottom-color: #3C3C36;
+  border-bottom-color: #3A3E47;
 }
 
 .dark .business-plan-table td {
-  border-bottom-color: #262622;
+  border-bottom-color: #252830;
 }
 
 .dark .business-plan-table tbody tr:nth-child(even) {
@@ -1092,7 +1098,7 @@
 
 .dark .business-plan-table tfoot tr,
 .dark .business-plan-table tbody tr.table-footer {
-  background-color: #161714 !important;
+  background-color: #181B22 !important;
 }
 
 .dark .business-plan-table tbody tr.additional-info {
@@ -1100,7 +1106,7 @@
 }
 
 .dark .business-plan-table tbody tr.additional-info td {
-  color: #9A9A90;
+  color: #878C95;
 }
 
 /* Simple two-column table (like funding requirements) */
@@ -1134,11 +1140,11 @@
 }
 
 .dark .plan-section-footer {
-  border-top-color: #262622;
+  border-top-color: #252830;
 }
 
 .dark .plan-section-footer .company-name {
-  color: #9A9A90;
+  color: #878C95;
 }
 
 .dark .plan-section-footer .company-name strong {
@@ -1184,20 +1190,20 @@
 }
 
 .dark .rich-text-content table {
-  border-color: #262622;
+  border-color: #252830;
 }
 
 .dark .rich-text-content table thead {
-  background-color: #161714;
+  background-color: #181B22;
 }
 
 .dark .rich-text-content table th {
-  border-bottom-color: #3C3C36;
+  border-bottom-color: #3A3E47;
   color: #F8F8F6;
 }
 
 .dark .rich-text-content table td {
-  border-bottom-color: #262622;
+  border-bottom-color: #252830;
 }
 
 .dark .rich-text-content table tbody tr:nth-child(even) {
@@ -1277,8 +1283,8 @@
   /* Dark mode checkbox styling — Obsidian */
   .dark input[type="checkbox"] {
     accent-color: #FF6B00 !important;
-    border-color: #3C3C36;
-    background-color: #262622;
+    border-color: #3A3E47;
+    background-color: #252830;
   }
 
   .dark input[type="checkbox"]:checked {
@@ -1406,7 +1412,7 @@
 }
 
 .dark .prose-editor p.is-editor-empty:first-child::before {
-  color: #52524A;
+  color: #515560;
 }
 
 /* Paragraph spacing */
@@ -1422,7 +1428,7 @@
   line-height: 1.25;
   margin-top: 1.5rem;
   margin-bottom: 1rem;
-  color: #161714;
+  color: #181B22;
 }
 
 .dark .prose-editor h1 {
@@ -1531,8 +1537,8 @@
 }
 
 .dark .prose-editor blockquote {
-  border-left-color: #3C3C36;
-  color: #9A9A90;
+  border-left-color: #3A3E47;
+  color: #878C95;
 }
 
 /* Horizontal rule */
@@ -1544,7 +1550,7 @@
 }
 
 .dark .prose-editor hr {
-  border-top-color: #262622;
+  border-top-color: #252830;
 }
 
 /* Link styling */
@@ -1576,11 +1582,11 @@
 }
 
 .dark .prose-editor code {
-  background-color: #262622;
+  background-color: #252830;
 }
 
 .prose-editor pre {
-  background-color: #161714;
+  background-color: #181B22;
   color: #f3f4f6;
   padding: 1rem;
   border-radius: 0.5rem;
@@ -1632,11 +1638,11 @@
 }
 
 .dark .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #3C3C36;
+  background: #3A3E47;
 }
 
 .dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #52524A;
+  background: #515560;
 }
 
 /* Firefox scrollbar */
@@ -1646,7 +1652,7 @@
 }
 
 .dark .custom-scrollbar {
-  scrollbar-color: #3C3C36 transparent;
+  scrollbar-color: #3A3E47 transparent;
 }
 
 /* =============================================================
@@ -1873,7 +1879,7 @@
   }
 
   .dark .img-lazy {
-    background: linear-gradient(90deg, #161714 25%, #262622 50%, #161714 75%);
+    background: linear-gradient(90deg, #181B22 25%, #252830 50%, #181B22 75%);
     background-size: 200% 100%;
   }
 }
@@ -1908,20 +1914,20 @@
 }
 
 /* =============================================================
-   Forge Dark Theme — Glass Morphism & Ambient Effects
-   Dark olive surfaces with orange accents
+   Graphite Dark Theme — Glass Morphism & Ambient Effects
+   Cool charcoal surfaces with orange accents
    ============================================================= */
 
-/* Glass card surface — olive translucency */
+/* Glass card surface — cool charcoal translucency */
 .dark .glass-surface {
-  background: rgba(22, 23, 20, 0.75);
-  border: 1px solid var(--glass-border, rgba(154, 154, 144, 0.08));
+  background: rgba(24, 27, 34, 0.75);
+  border: 1px solid var(--glass-border, rgba(135, 140, 149, 0.08));
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
 }
 
 .dark .glass-surface:hover {
-  border-color: var(--glass-border-hover, rgba(154, 154, 144, 0.14));
+  border-color: var(--glass-border-hover, rgba(135, 140, 149, 0.14));
 }
 
 /* Subtle top-edge highlight for elevated cards */

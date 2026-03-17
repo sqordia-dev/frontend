@@ -1,18 +1,19 @@
 /** @type {import('tailwindcss').Config} */
 
-// Forge olive palette — replaces cool gray/slate/zinc across the app
-const olive = {
-  50: '#F8F8F6',
-  100: '#F0F0EC',
-  200: '#E0E0DA',
-  300: '#CCCCC4',
-  400: '#9A9A90',
-  500: '#6E6E64',
-  600: '#52524A',
-  700: '#3C3C36',
-  800: '#262622',
-  900: '#161714',
-  950: '#0B0C0A',
+// Graphite palette — cool-neutral charcoal with blue undertone
+// Replaces cool gray/slate/zinc across the app (Linear/Vercel aesthetic)
+const graphite = {
+  50: '#F4F5F7',
+  100: '#E8EAED',
+  200: '#D1D4DA',
+  300: '#B0B5BF',
+  400: '#878C95',
+  500: '#6B707A',
+  600: '#515560',
+  700: '#3A3E47',
+  800: '#252830',
+  900: '#181B22',
+  950: '#101318',
 };
 
 export default {
@@ -65,14 +66,14 @@ export default {
         'component-xl': '2.5rem',
       },
       colors: {
-        // Remap cool neutral palettes → warm stone (Graphite theme)
-        gray: olive,
-        slate: olive,
-        zinc: olive,
-        neutral: olive,
+        // Remap neutral palettes → graphite (cool charcoal with blue undertone)
+        gray: graphite,
+        slate: graphite,
+        zinc: graphite,
+        neutral: graphite,
 
         // Sqordia brand colors (preserved)
-        'strategy-blue': '#1C1D1A',
+        'strategy-blue': '#181B22',
         'momentum-orange': '#FF6B00',
         'light-ai-grey': '#F4F7FA',
 
@@ -100,6 +101,7 @@ export default {
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
+          text: "hsl(var(--primary-text))",
         },
         secondary: {
           DEFAULT: "hsl(var(--secondary))",
@@ -274,8 +276,8 @@ export default {
       },
       backgroundImage: {
         // Clean background patterns
-        'dot-pattern': 'radial-gradient(circle, #262622 1px, transparent 1px)',
-        'dot-pattern-light': 'radial-gradient(circle, rgba(38, 38, 34, 0.15) 1px, transparent 1px)',
+        'dot-pattern': 'radial-gradient(circle, #252830 1px, transparent 1px)',
+        'dot-pattern-light': 'radial-gradient(circle, rgba(37, 40, 48, 0.15) 1px, transparent 1px)',
       },
     },
   },

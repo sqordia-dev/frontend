@@ -9,7 +9,7 @@ import CA from 'country-flag-icons/react/3x2/CA';
 const QuebecFlag = ({ size = 20, className = '' }: { size?: number; className?: string }) => (
   <img
     src="/quebec-flag.svg"
-    alt="Quebec Flag"
+    alt=""
     width={size}
     height={size * 0.67}
     className={className}

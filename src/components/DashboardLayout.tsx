@@ -41,6 +41,7 @@ const ROUTE_LABELS: Record<string, string> = {
   '/subscription': 'nav.subscription',
   '/invoices': 'nav.invoices',
   '/notifications': 'nav.notifications',
+  '/notifications/preferences': 'nav.notificationPreferences',
 };
 
 // Match dynamic org manage route

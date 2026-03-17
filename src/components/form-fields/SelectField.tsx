@@ -31,8 +31,12 @@ interface SelectFieldProps {
   description?: string;
   /** Whether the field is disabled */
   disabled?: boolean;
+  /** Whether the field is required */
+  required?: boolean;
   /** Additional class names */
   className?: string;
+  /** Error message */
+  error?: string;
 }
 
 /**
@@ -46,18 +50,30 @@ export function SelectField({
   placeholder = 'Select an option',
   description,
   disabled = false,
+  required = false,
   className,
+  error,
 }: SelectFieldProps) {
+  const id = React.useId();
+  const errorId = `${id}-error`;
+  const descriptionId = `${id}-description`;
+
   return (
     <div className={cn('space-y-2', className)}>
       {label && (
-        <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+        <Label htmlFor={id} className="text-sm font-medium text-gray-700 dark:text-gray-300">
           {label}
+          {required && <span className="text-red-500 ml-0.5" aria-hidden="true">*</span>}
         </Label>
       )}
 
-      <Select value={value} onValueChange={onChange} disabled={disabled}>
-        <SelectTrigger className="w-full">
+      <Select value={value} onValueChange={onChange} disabled={disabled} required={required}>
+        <SelectTrigger
+          id={id}
+          className={cn('w-full', error && 'border-red-500 focus:ring-red-500')}
+          aria-invalid={!!error || undefined}
+          aria-describedby={error ? errorId : description ? descriptionId : undefined}
+        >
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>
         <SelectContent>
@@ -69,7 +85,7 @@ export function SelectField({
             >
               <div className="flex items-center gap-2">
                 {option.icon && (
-                  <span className="flex-shrink-0 text-gray-500">
+                  <span className="flex-shrink-0 text-gray-500" aria-hidden="true">
                     {option.icon}
                   </span>
                 )}
@@ -81,7 +97,11 @@ export function SelectField({
       </Select>
 
       {description && (
-        <p className="text-xs text-gray-500 dark:text-gray-400">{description}</p>
+        <p id={descriptionId} className="text-xs text-gray-500 dark:text-gray-400">{description}</p>
+      )}
+
+      {error && (
+        <p id={errorId} role="alert" className="text-xs text-red-500">{error}</p>
       )}
     </div>
   );

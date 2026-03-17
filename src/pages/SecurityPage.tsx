@@ -6,13 +6,12 @@ import { getCanonicalUrl } from '../utils/seo';
 
 export default function SecurityPage() {
   const { t, language } = useTheme();
-  const strategyBlue = '#1C1D1A';
-  const momentumOrange = '#FF6B00';
+  // Brand colors are applied via Tailwind classes: text-strategy-blue, text-momentum-orange
 
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-900">
+    <main id="main-content" className="min-h-screen bg-white dark:bg-gray-900">
       <SEO
-        title={language === 'fr' 
+        title={language === 'fr'
           ? "Sécurité | Sqordia"
           : "Security | Sqordia"}
         description={language === 'fr'
@@ -20,7 +19,7 @@ export default function SecurityPage() {
           : "Learn about the bank-level security measures Sqordia uses to protect your data and business information."}
         url={getCanonicalUrl('/security')}
       />
-      <div className="max-w-4xl mx-auto px-6 py-16">
+      <div className="max-w-prose mx-auto px-6 py-16">
         <Link
           to="/"
           className="inline-flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white mb-8 transition-colors"
@@ -29,14 +28,14 @@ export default function SecurityPage() {
           <span>{language === 'fr' ? 'Retour à l\'accueil' : 'Back to Home'}</span>
         </Link>
 
-        <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-8" style={{ color: strategyBlue }}>
+        <h1 className="text-4xl font-bold text-strategy-blue dark:text-white mb-8">
           {language === 'fr' ? 'Sécurité' : 'Security'}
         </h1>
 
         <div className="prose prose-lg dark:prose-invert max-w-none">
           <section className="mb-12">
             <div className="flex items-center gap-3 mb-4">
-              <Shield size={32} style={{ color: momentumOrange }} />
+              <Shield size={32} className="text-momentum-orange" />
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
                 {language === 'fr' ? 'Sécurité de niveau bancaire' : 'Bank-Level Security'}
               </h2>
@@ -50,7 +49,7 @@ export default function SecurityPage() {
 
           <section className="mb-12">
             <div className="flex items-center gap-3 mb-4">
-              <Lock size={32} style={{ color: momentumOrange }} />
+              <Lock size={32} className="text-momentum-orange" />
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
                 {language === 'fr' ? 'Chiffrement des données' : 'Data Encryption'}
               </h2>
@@ -64,7 +63,7 @@ export default function SecurityPage() {
 
           <section className="mb-12">
             <div className="flex items-center gap-3 mb-4">
-              <Key size={32} style={{ color: momentumOrange }} />
+              <Key size={32} className="text-momentum-orange" />
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
                 {language === 'fr' ? 'Authentification sécurisée' : 'Secure Authentication'}
               </h2>
@@ -78,7 +77,7 @@ export default function SecurityPage() {
 
           <section className="mb-12">
             <div className="flex items-center gap-3 mb-4">
-              <Eye size={32} style={{ color: momentumOrange }} />
+              <Eye size={32} className="text-momentum-orange" />
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
                 {language === 'fr' ? 'Surveillance et conformité' : 'Monitoring & Compliance'}
               </h2>
@@ -100,13 +99,13 @@ export default function SecurityPage() {
                 : 'To report a security vulnerability or for any security-related questions, please contact us at:'}
             </p>
             <p className="text-gray-700 dark:text-gray-300 mt-2">
-              <a href="mailto:security@sqordia.app" className="font-semibold" style={{ color: momentumOrange }}>
+              <a href="mailto:security@sqordia.app" className="font-semibold text-momentum-orange">
                 security@sqordia.app
               </a>
             </p>
           </section>
         </div>
       </div>
-    </div>
+    </main>
   );
 }

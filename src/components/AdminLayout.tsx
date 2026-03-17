@@ -206,6 +206,7 @@ export default function AdminLayout() {
 
       {/* Main Content */}
       <main
+        id="main-content"
         className="transition-all duration-300 ease-in-out min-h-screen md:ml-[var(--sidebar-width)]"
         style={{ '--sidebar-width': `${sidebarWidth}px` } as React.CSSProperties}
       >

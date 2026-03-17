@@ -60,7 +60,7 @@ export default function FAQ() {
   return (
     <section
       id="faq"
-      className="relative py-12 sm:py-16 md:py-24 lg:py-32 bg-gray-50 dark:bg-[#0B0C0A]"
+      className="relative py-12 sm:py-16 md:py-24 lg:py-32 bg-gray-50 dark:bg-[#101318]"
       aria-labelledby="faq-heading"
     >
       {/* Noise texture */}

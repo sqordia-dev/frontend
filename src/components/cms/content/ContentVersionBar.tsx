@@ -3,6 +3,7 @@ import { Save, Send, Trash2, Plus, Loader2, AlertCircle } from 'lucide-react';
 import { useCms } from '@/contexts/CmsContext';
 import { VersionBadge } from '@/components/cms/shared/VersionBadge';
 import { useContentBlocks } from '@/hooks/useContentBlocks';
+import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { cn } from '@/lib/utils';
 
 interface ContentVersionBarProps {
@@ -13,6 +14,7 @@ interface ContentVersionBarProps {
 export function ContentVersionBar({ onToggleTimeline, className }: ContentVersionBarProps) {
   const { activeVersion, isLoading, error, publishVersion, createVersion, deleteVersion, clearError } = useCms();
   const { isDirty, isSaving, saveAllDirty } = useContentBlocks();
+  const { confirm, ConfirmDialog } = useConfirmDialog();
   const [isPublishing, setIsPublishing] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -42,7 +44,12 @@ export function ContentVersionBar({ onToggleTimeline, className }: ContentVersio
 
   async function handleDiscard() {
     if (!activeVersion) return;
-    if (!confirm('Discard this draft version? This cannot be undone.')) return;
+    const ok = await confirm({
+      title: 'Discard Draft',
+      description: 'Discard this draft version? This cannot be undone.',
+      variant: 'destructive',
+    });
+    if (!ok) return;
     setIsDeleting(true);
     try {
       await deleteVersion(activeVersion.id);
@@ -52,6 +59,8 @@ export function ContentVersionBar({ onToggleTimeline, className }: ContentVersio
   }
 
   return (
+    <>
+    <ConfirmDialog />
     <div
       className={cn(
         'sticky top-0 z-30 flex items-center gap-3 px-4 py-2.5',
@@ -168,5 +177,6 @@ export function ContentVersionBar({ onToggleTimeline, className }: ContentVersio
         )}
       </div>
     </div>
+    </>
   );
 }

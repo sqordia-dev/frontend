@@ -80,7 +80,7 @@ export default function CheckoutSuccessPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <main id="main-content" className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <SEO
         title="Checkout Success | Sqordia"
         description="Your subscription has been successfully activated"
@@ -94,9 +94,9 @@ export default function CheckoutSuccessPage() {
               <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100 dark:bg-red-900 mb-4">
                 <span className="text-2xl">⚠️</span>
               </div>
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
                 {t('checkout.error') || 'Error'}
-              </h2>
+              </h1>
               <p className="text-gray-600 dark:text-gray-400 mb-6">{error}</p>
             </>
           ) : (
@@ -104,9 +104,9 @@ export default function CheckoutSuccessPage() {
               <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100 dark:bg-green-900 mb-4">
                 <CheckCircle className="w-10 h-10 text-green-600 dark:text-green-400" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
                 {t('checkout.success') || 'Payment Successful!'}
-              </h2>
+              </h1>
               <p className="text-gray-600 dark:text-gray-400 mb-6">
                 {t('checkout.successMessage') || 'Your subscription has been activated. You can now access all premium features.'}
               </p>
@@ -129,7 +129,7 @@ export default function CheckoutSuccessPage() {
           </div>
         </div>
       </div>
-    </div>
+    </main>
   );
 }
 

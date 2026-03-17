@@ -93,7 +93,7 @@ export function CmsImageBlock({ value, onChange, blockKey: _blockKey }: CmsImage
       <div className="w-48 h-32 bg-gray-100 rounded-lg overflow-hidden border border-gray-200 relative group/img shrink-0">
         <img
           src={imageData.url}
-          alt={imageData.alt || 'Preview'}
+          alt={imageData.alt || ''}
           className="w-full h-full object-cover"
         />
         <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover/img:opacity-100 flex items-center justify-center transition-all">

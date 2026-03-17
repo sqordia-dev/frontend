@@ -68,13 +68,14 @@ import { questionnaireVersionService } from '../../lib/questionnaire-version-ser
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { cmsAiService } from '../../lib/cms-ai-service';
+import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { adminQuestionTemplateService, type TestCoachPromptResponse } from '../../lib/admin-question-template-service';
 
 // Quebec Flag Component
 const QuebecFlag = ({ className = '' }: { className?: string }) => (
   <img
     src="/quebec-flag.svg"
-    alt="French"
+    alt=""
     className={className}
     style={{ objectFit: 'contain', display: 'block' }}
   />
@@ -257,6 +258,7 @@ function QuestionEditor({
   onClose,
 }: QuestionEditorProps) {
   const toast = useToast();
+  const { confirm, ConfirmDialog } = useConfirmDialog();
   const [formData, setFormData] = useState({
     questionText: '',
     questionTextEN: '',
@@ -300,7 +302,14 @@ function QuestionEditor({
     setLoading: (v: boolean) => void,
   ) => {
     const currentValue = formData[field] as string;
-    if (currentValue && !confirm('This will overwrite existing content. Continue?')) return;
+    if (currentValue) {
+      const ok = await confirm({
+        title: 'Overwrite Content',
+        description: 'This will overwrite existing content. Continue?',
+        variant: 'destructive',
+      });
+      if (!ok) return;
+    }
     setLoading(true);
     try {
       const result = await cmsAiService.generate({
@@ -1028,6 +1037,7 @@ function QuestionEditor({
           </div>
         </div>
       </div>
+      <ConfirmDialog />
     </>
   );
 }
@@ -1054,6 +1064,7 @@ function QuestionnaireEditorContent() {
 
   const navigate = useNavigate();
   const { theme, toggleTheme, language: appLanguage, setLanguage: setAppLanguage, t } = useTheme();
+  const { confirm, ConfirmDialog } = useConfirmDialog();
 
   // Logout handler
   const handleLogout = async () => {
@@ -1158,7 +1169,12 @@ function QuestionnaireEditorContent() {
 
   // Handle publish
   const handlePublish = async () => {
-    if (!confirm('Publish this draft? Changes will go live.')) return;
+    const okPublish = await confirm({
+      title: 'Publish Draft',
+      description: 'Publish this draft? Changes will go live.',
+      variant: 'destructive',
+    });
+    if (!okPublish) return;
     setIsPublishing(true);
     try {
       await publishDraft();
@@ -1171,7 +1187,12 @@ function QuestionnaireEditorContent() {
 
   // Handle discard
   const handleDiscard = async () => {
-    if (!confirm('Discard this draft? All changes will be lost.')) return;
+    const okDiscard = await confirm({
+      title: 'Discard Draft',
+      description: 'Discard this draft? All changes will be lost.',
+      variant: 'destructive',
+    });
+    if (!okDiscard) return;
     setIsDiscarding(true);
     try {
       await discardDraft();
@@ -1218,7 +1239,12 @@ function QuestionnaireEditorContent() {
 
   // Handle delete
   const handleDeleteQuestion = async (id: string) => {
-    if (!confirm('Delete this question?')) return;
+    const okDelete = await confirm({
+      title: 'Delete Question',
+      description: 'Delete this question?',
+      variant: 'destructive',
+    });
+    if (!okDelete) return;
     const result = await deleteQuestion(id);
     if (result) {
       if (editingQuestion?.id === id) {
@@ -1661,6 +1687,7 @@ function QuestionnaireEditorContent() {
         onLanguageChange={setAppLanguage}
         showUserProfile={false}
       />
+      <ConfirmDialog />
     </div>
   );
 }

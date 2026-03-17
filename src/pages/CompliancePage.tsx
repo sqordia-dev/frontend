@@ -6,13 +6,12 @@ import { getCanonicalUrl } from '../utils/seo';
 
 export default function CompliancePage() {
   const { t, language } = useTheme();
-  const strategyBlue = '#1C1D1A';
-  const momentumOrange = '#FF6B00';
+  // Colors now use Tailwind classes: text-strategy-blue, text-momentum-orange
 
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-900">
+    <main id="main-content" className="min-h-screen bg-white dark:bg-gray-900">
       <SEO
-        title={language === 'fr' 
+        title={language === 'fr'
           ? "Conformité | Sqordia"
           : "Compliance | Sqordia"}
         description={language === 'fr'
@@ -20,7 +19,7 @@ export default function CompliancePage() {
           : "Learn about the certifications and compliance standards that Sqordia adheres to ensure security and compliance of our services."}
         url={getCanonicalUrl('/compliance')}
       />
-      <div className="max-w-4xl mx-auto px-6 py-16">
+      <div className="max-w-prose mx-auto px-6 py-16">
         <Link
           to="/"
           className="inline-flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white mb-8 transition-colors"
@@ -29,14 +28,14 @@ export default function CompliancePage() {
           <span>{language === 'fr' ? 'Retour à l\'accueil' : 'Back to Home'}</span>
         </Link>
 
-        <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-8" style={{ color: strategyBlue }}>
+        <h1 className="text-4xl font-bold text-strategy-blue dark:text-white mb-8">
           {language === 'fr' ? 'Conformité' : 'Compliance'}
         </h1>
 
         <div className="prose prose-lg dark:prose-invert max-w-none">
           <section className="mb-12">
             <div className="flex items-center gap-3 mb-4">
-              <CheckCircle size={32} style={{ color: momentumOrange }} />
+              <CheckCircle size={32} className="text-momentum-orange" />
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
                 {language === 'fr' ? 'Certifications et normes' : 'Certifications & Standards'}
               </h2>
@@ -50,7 +49,7 @@ export default function CompliancePage() {
 
           <section className="mb-12">
             <div className="flex items-center gap-3 mb-4">
-              <FileCheck size={32} style={{ color: momentumOrange }} />
+              <FileCheck size={32} className="text-momentum-orange" />
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
                 {language === 'fr' ? 'GDPR' : 'GDPR'}
               </h2>
@@ -64,7 +63,7 @@ export default function CompliancePage() {
 
           <section className="mb-12">
             <div className="flex items-center gap-3 mb-4">
-              <Shield size={32} style={{ color: momentumOrange }} />
+              <Shield size={32} className="text-momentum-orange" />
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
                 {language === 'fr' ? 'CCPA' : 'CCPA'}
               </h2>
@@ -97,13 +96,13 @@ export default function CompliancePage() {
                 : 'For any questions regarding compliance, please contact us at:'}
             </p>
             <p className="text-gray-700 dark:text-gray-300 mt-2">
-              <a href="mailto:compliance@sqordia.app" className="font-semibold" style={{ color: momentumOrange }}>
+              <a href="mailto:compliance@sqordia.app" className="font-semibold text-momentum-orange">
                 compliance@sqordia.app
               </a>
             </p>
           </section>
         </div>
       </div>
-    </div>
+    </main>
   );
 }

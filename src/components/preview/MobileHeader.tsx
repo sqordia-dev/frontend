@@ -22,7 +22,7 @@ interface MobileHeaderProps {
  *
  * Features:
  * - Visible only on mobile (lg:hidden)
- * - Dark navy background (#1C1D1A) matching sidebar
+ * - Dark navy background (#181B22) matching sidebar
  * - Hamburger menu button to open drawer
  * - Current section/plan title
  * - Optional action buttons (export, share)

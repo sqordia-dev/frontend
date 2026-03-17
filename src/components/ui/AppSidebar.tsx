@@ -199,6 +199,7 @@ export default function AppSidebar({
           {mobileMenuOpen && (
             <button
               onClick={onMobileMenuClose}
+              aria-label="Close sidebar"
               className="lg:hidden flex items-center justify-center h-8 w-8 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 dark:text-gray-400 transition-colors ml-2"
             >
               <ChevronLeft className="h-5 w-5" />
@@ -267,6 +268,7 @@ export default function AppSidebar({
                       key={item.href}
                       to={item.href}
                       onClick={onMobileMenuClose}
+                      aria-current={isActive ? "page" : undefined}
                       className={cn(
                         "group relative flex items-center gap-3 h-10 rounded-lg transition-all duration-150",
                         isCollapsed ? "justify-center px-2" : "px-3",
@@ -356,6 +358,7 @@ export default function AppSidebar({
                 isCollapsed ? "justify-center px-2" : "px-3"
               )}
               title={isCollapsed ? (theme === 'light' ? t('admin.theme.dark') : t('admin.theme.light')) : undefined}
+              aria-label={theme === 'light' ? t('admin.theme.dark') : t('admin.theme.light')}
             >
               <div className={cn(
                 "flex h-5 w-5 items-center justify-center rounded-md transition-colors",
@@ -393,6 +396,7 @@ export default function AppSidebar({
               isCollapsed ? "justify-center px-2" : "px-3"
             )}
             title={isCollapsed ? (language === 'fr' ? 'Développer' : 'Expand') : undefined}
+            aria-label={isCollapsed ? (language === 'fr' ? 'Développer' : 'Expand sidebar') : (language === 'fr' ? 'Réduire' : 'Collapse sidebar')}
           >
             {isCollapsed ? (
               <PanelLeft className="h-4 w-4 shrink-0" />
@@ -456,6 +460,7 @@ export default function AppSidebar({
                 isCollapsed ? "justify-center px-2" : "px-3"
               )}
               title={isCollapsed ? t('admin.logout') : undefined}
+              aria-label={t('admin.logout')}
             >
               <LogOut className="h-4 w-4 shrink-0" />
               <AnimatePresence mode="wait">

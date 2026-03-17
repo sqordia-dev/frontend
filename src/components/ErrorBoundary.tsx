@@ -1,6 +1,7 @@
 import { Component, ErrorInfo, ReactNode } from 'react';
 import { AlertCircle } from 'lucide-react';
 import * as Sentry from '@sentry/react';
+import { Button } from './ui/button';
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -9,6 +10,25 @@ interface ErrorBoundaryProps {
 interface ErrorBoundaryState {
   hasError: boolean;
   error: Error | null;
+}
+
+// Localized strings (class component can't use useTheme, so read localStorage directly)
+function getErrorStrings() {
+  const lang = localStorage.getItem('language') || 'fr';
+  if (lang === 'fr') {
+    return {
+      title: 'Une erreur est survenue',
+      description: 'Une erreur inattendue s\u2019est produite. Veuillez rafra\u00eechir la page.',
+      refresh: 'Rafra\u00eechir la page',
+      dashboard: 'Aller au tableau de bord',
+    };
+  }
+  return {
+    title: 'Something went wrong',
+    description: 'An unexpected error occurred. Please try refreshing the page.',
+    refresh: 'Refresh Page',
+    dashboard: 'Go to Dashboard',
+  };
 }
 
 export default class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
@@ -30,32 +50,35 @@ export default class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBo
 
   render() {
     if (this.state.hasError) {
+      const strings = getErrorStrings();
       return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
-          <div className="text-center max-w-md">
-            <AlertCircle size={48} className="mx-auto mb-4 text-red-500" />
+        <main id="main-content" className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
+          <div className="text-center max-w-md" role="alert">
+            <AlertCircle size={48} className="mx-auto mb-4 text-destructive" aria-hidden="true" />
             <h1 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-              Something went wrong
+              {strings.title}
             </h1>
             <p className="text-gray-600 dark:text-gray-400 mb-6">
-              An unexpected error occurred. Please try refreshing the page.
+              {strings.description}
             </p>
             <div className="flex gap-3 justify-center">
-              <button
+              <Button
                 onClick={() => window.location.reload()}
-                className="px-5 py-2.5 rounded-lg bg-momentum-orange hover:bg-orange-600 text-white font-medium transition-colors"
+                variant="default"
               >
-                Refresh Page
-              </button>
-              <a
-                href="/dashboard"
-                className="px-5 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 font-medium transition-colors"
+                {strings.refresh}
+              </Button>
+              <Button
+                variant="outline"
+                asChild
               >
-                Go to Dashboard
-              </a>
+                <a href="/dashboard">
+                  {strings.dashboard}
+                </a>
+              </Button>
             </div>
           </div>
-        </div>
+        </main>
       );
     }
 
