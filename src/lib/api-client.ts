@@ -89,11 +89,25 @@ class ApiClient {
 
   private setupInterceptors() {
     this.client.interceptors.request.use(
-      (config: InternalAxiosRequestConfig) => {
+      async (config: InternalAxiosRequestConfig) => {
         // Remove Content-Type header for FormData - axios will set it automatically with boundary
         if (config.data instanceof FormData && config.headers) {
           delete config.headers['Content-Type'];
         }
+
+        // Proactive token refresh: if access token expires within 5 minutes,
+        // refresh it BEFORE sending the request (avoids 401 round-trip).
+        // Skip for refresh-token endpoint itself to avoid infinite loop.
+        if (_accessToken && !config.url?.includes('refresh-token')) {
+          try {
+            const payload = JSON.parse(atob(_accessToken.split('.')[1]));
+            const expiresIn = payload.exp * 1000 - Date.now();
+            if (expiresIn < 5 * 60 * 1000) { // less than 5 minutes left
+              await this.refreshToken();
+            }
+          } catch { /* ignore parse errors */ }
+        }
+
         // Attach in-memory access token as Authorization header (primary auth transport)
         // Backend checks Authorization header first, then falls back to cookies
         if (_accessToken && config.headers) {
